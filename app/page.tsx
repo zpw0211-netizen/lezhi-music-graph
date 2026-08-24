@@ -1,0 +1,92 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+
+type Entity = { id: string; name: string; type: string; aliases?: string[]; description?: string; firstPage?: number | null; confidence?: number };
+type Triple = { id: string; subject: string; predicate: string; objectId?: string | null; literal?: string | null; objectKind?: string; sourcePage?: number | null; section?: string; confidence?: number };
+type Evidence = { tripleId: string; pdfPage?: number | null; textbookPage?: string; summary?: string; region?: string; confidence?: number };
+type Book = { key: string; title: string; grade: number; semester: string; pages: number; entityCount: number; tripleCount: number; evidenceCount: number; workCount: number; reviewCount: number; structureShare: number; entities: Entity[]; triples: Triple[]; evidenceByTriple: Record<string, Evidence[]>; relations: Record<string, string> };
+type Dataset = { books: Book[] };
+
+const demoBook: Book = {
+  key: 'g8s2', title: '人音版八年级下册', grade: 8, semester: '下册', pages: 79,
+  entityCount: 6, tripleCount: 7, evidenceCount: 7, workCount: 1, reviewCount: 0, structureShare: 0.58,
+  relations: { WORK_IN_UNIT: '属于单元', COMPOSER: '作曲', GENRE: '属于体裁', LEARNING_MODE: '学习方式', HAS_SCORE: '拥有乐谱', THEME: '表现主题', TEMPO: '速度' },
+  entities: [
+    { id: 'demo-work', name: '游击队歌', type: '音乐作品', description: '抗战题材歌曲，适合从节奏、力度和历史背景展开学习。', firstPage: 34 },
+    { id: 'demo-composer', name: '贺绿汀', type: '人物' }, { id: 'demo-unit', name: '第五单元 环球音乐', type: '单元' },
+    { id: 'demo-genre', name: '进行曲', type: '体裁' }, { id: 'demo-score', name: '教材乐谱·PDF第34页', type: '乐谱资源' }, { id: 'demo-theme', name: '抗战与人民力量', type: '主题' },
+  ],
+  triples: [
+    { id: 'demo-1', subject: 'demo-work', predicate: 'WORK_IN_UNIT', objectId: 'demo-unit', sourcePage: 34 }, { id: 'demo-2', subject: 'demo-work', predicate: 'COMPOSER', objectId: 'demo-composer', sourcePage: 34 }, { id: 'demo-3', subject: 'demo-work', predicate: 'GENRE', objectId: 'demo-genre', sourcePage: 34 }, { id: 'demo-4', subject: 'demo-work', predicate: 'LEARNING_MODE', literal: '演唱', objectKind: '字面值', sourcePage: 34 }, { id: 'demo-5', subject: 'demo-work', predicate: 'HAS_SCORE', objectId: 'demo-score', sourcePage: 34 }, { id: 'demo-6', subject: 'demo-work', predicate: 'THEME', objectId: 'demo-theme', sourcePage: 34 }, { id: 'demo-7', subject: 'demo-work', predicate: 'TEMPO', literal: '中速稍快', objectKind: '字面值', sourcePage: 34 },
+  ],
+  evidenceByTriple: Object.fromEntries(['demo-1', 'demo-2', 'demo-3', 'demo-4', 'demo-5', 'demo-6', 'demo-7'].map((id) => [id, [{ tripleId: id, pdfPage: 34, summary: '教材正文页提供了可回溯的作品、乐谱或学习提示证据。' }]])),
+};
+const initialData: Dataset = { books: [demoBook] };
+const typeStyle: Record<string, string> = { 音乐作品: 'node-work', 人物: 'node-person', 单元: 'node-unit', 体裁: 'node-genre', 主题: 'node-theme', 乐谱资源: 'node-resource' };
+const formatNumber = (value: number) => new Intl.NumberFormat('zh-CN').format(value);
+
+export default function Home() {
+  const [dataset, setDataset] = useState<Dataset>(initialData);
+  const [bookKey, setBookKey] = useState('g8s2');
+  const [selectedId, setSelectedId] = useState('demo-work');
+  const [query, setQuery] = useState('');
+  const [scope, setScope] = useState<'book' | 'all'>('book');
+  const [view, setView] = useState<'graph' | 'records' | 'import'>('graph');
+  const [activePanel, setActivePanel] = useState<'profile' | 'evidence'>('profile');
+  const [loaded, setLoaded] = useState(false);
+  const [importSummary, setImportSummary] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/data/music-graph.json').then((response) => response.json()).then((payload: Dataset) => {
+      if (!payload.books?.length) return;
+      setDataset(payload);
+      const preferred = payload.books.find((book) => book.key === bookKey) ?? payload.books[0];
+      setBookKey(preferred.key);
+      const firstWork = preferred.entities.find((entity) => entity.type === '音乐作品');
+      if (firstWork) setSelectedId(firstWork.id);
+    }).catch(() => undefined).finally(() => setLoaded(true));
+  }, []);
+
+  const currentBook = dataset.books.find((book) => book.key === bookKey) ?? dataset.books[0];
+  const entityMap = useMemo(() => new Map(currentBook.entities.map((entity) => [entity.id, entity])), [currentBook]);
+  const selectedEntity = entityMap.get(selectedId) ?? currentBook.entities.find((entity) => entity.type === '音乐作品') ?? currentBook.entities[0];
+  const searchResults = useMemo(() => {
+    const normalized = query.trim().toLowerCase(); if (!normalized) return [] as Array<{ entity: Entity; book: Book }>;
+    const books = scope === 'all' ? dataset.books : [currentBook]; const results: Array<{ entity: Entity; book: Book }> = [];
+    for (const book of books) for (const entity of book.entities) { const haystack = [entity.name, entity.type, entity.description, ...(entity.aliases ?? [])].join(' ').toLowerCase(); if (haystack.includes(normalized)) results.push({ entity, book }); if (results.length >= 10) return results; }
+    return results;
+  }, [currentBook, dataset.books, query, scope]);
+  const directTriples = useMemo(() => currentBook.triples.filter((triple) => triple.subject === selectedEntity?.id || triple.objectId === selectedEntity?.id), [currentBook, selectedEntity]);
+  const graphItems = useMemo(() => {
+    if (!selectedEntity) return { nodes: [] as Array<{ triple: Triple; entity: Entity }>, lines: [] as Triple[] };
+    const related = currentBook.triples.filter((triple) => triple.subject === selectedEntity.id && triple.objectId && triple.objectId !== selectedEntity.id);
+    const seen = new Set<string>(); const nodes = related.map((triple) => ({ triple, entity: entityMap.get(triple.objectId ?? '') })).filter((item): item is { triple: Triple; entity: Entity } => Boolean(item.entity)).filter((item) => { if (seen.has(item.entity.id)) return false; seen.add(item.entity.id); return true; }).slice(0, 9);
+    return { nodes, lines: related.slice(0, 9) };
+  }, [currentBook, entityMap, selectedEntity]);
+  const selectEntity = (entity: Entity, nextBook = currentBook) => { if (nextBook.key !== bookKey) setBookKey(nextBook.key); setSelectedId(entity.id); setView('graph'); setQuery(''); };
+  const chooseBook = (book: Book) => { setBookKey(book.key); const firstWork = book.entities.find((entity) => entity.type === '音乐作品') ?? book.entities[0]; if (firstWork) setSelectedId(firstWork.id); setView('graph'); };
+  const submitSearch = (event: FormEvent) => { event.preventDefault(); if (searchResults[0]) selectEntity(searchResults[0].entity, searchResults[0].book); };
+  const onImport = async (event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; try { const payload = JSON.parse(await file.text()) as { books?: Book[]; entities?: Entity[]; triples?: Triple[] }; const books = payload.books?.length ?? 0; const entities = payload.entities?.length ?? payload.books?.reduce((sum, book) => sum + book.entities.length, 0) ?? 0; const triples = payload.triples?.length ?? payload.books?.reduce((sum, book) => sum + book.triples.length, 0) ?? 0; setImportSummary(`已读取 ${file.name}：${books || 1} 个数据集、${formatNumber(entities)} 个实体、${formatNumber(triples)} 条关系。部署后将通过 D1/R2 导入接口持久化。`); } catch { setImportSummary('文件格式无法识别。请上传由实体、三元组和证据链组成的 JSON 导入包。'); } };
+  const objectLabel = (triple: Triple) => triple.objectId ? entityMap.get(triple.objectId)?.name ?? triple.objectId : triple.literal ?? '未命名客体';
+  const relationLabel = (triple: Triple) => currentBook.relations[triple.predicate] ?? triple.predicate.replaceAll('_', ' ');
+  const evidence = directTriples.flatMap((triple) => (currentBook.evidenceByTriple[triple.id] ?? []).map((item) => ({ ...item, triple })));
+
+  return <main className="app-shell">
+    <aside className="sidebar">
+      <div className="brand-lockup"><div className="brand-mark"><span /><span /><span /></div><div><p className="eyebrow">MUSIC GRAPH</p><p className="brand-name">乐知图谱</p></div></div>
+      <div className="sidebar-section"><p className="section-label">工作区</p><button className={`nav-item ${view === 'graph' ? 'active' : ''}`} onClick={() => setView('graph')}><span>⌘</span>知识图谱</button><button className={`nav-item ${view === 'records' ? 'active' : ''}`} onClick={() => setView('records')}><span>▦</span>作品档案</button><button className={`nav-item ${view === 'import' ? 'active' : ''}`} onClick={() => setView('import')}><span>↥</span>数据导入</button></div>
+      <div className="sidebar-section book-section"><div className="section-label-row"><p className="section-label">教材册次</p><span className="count-badge">{dataset.books.length}</span></div><div className="book-list">{dataset.books.map((book) => <button key={book.key} className={`book-item ${book.key === bookKey ? 'selected' : ''}`} onClick={() => chooseBook(book)}><span className="book-dot" /><span className="book-copy"><strong>{book.grade}年级{book.semester}</strong><small>{formatNumber(book.tripleCount)} 条关系</small></span>{book.key === bookKey && <span className="book-arrow">›</span>}</button>)}</div></div>
+      <div className="sidebar-footer"><span className="status-dot" />六册数据已载入<span className="sync-label">SYNCED</span></div>
+    </aside>
+    <section className="workspace">
+      <header className="topbar"><div><p className="eyebrow muted">知识图谱工作台 / {currentBook.title}</p><h1>{view === 'graph' ? '探索教材关系' : view === 'records' ? '逐作品档案' : '教材数据导入'}</h1></div><form className="search-wrap" onSubmit={submitSearch}><span className="search-icon">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索作品、人物、体裁或知识点…" aria-label="搜索知识图谱" /><button type="submit" className="search-submit">搜索</button>{query && searchResults.length > 0 && <div className="search-results">{searchResults.map(({ entity, book }) => <button key={`${book.key}-${entity.id}`} onClick={() => selectEntity(entity, book)}><span className={`mini-dot ${typeStyle[entity.type] ?? 'node-other'}`} /><span><strong>{entity.name}</strong><small>{book.grade}年级{book.semester} · {entity.type}</small></span></button>)}</div>}</form><div className="top-actions"><span className="live-pill"><span className="status-dot" />数据在线</span><button className="avatar">教</button></div></header>
+      <div className="book-tabs">{dataset.books.map((book) => <button key={book.key} className={book.key === bookKey ? 'active' : ''} onClick={() => chooseBook(book)}>{book.grade}年级 · {book.semester}</button>)}</div>
+      {view === 'graph' && <div className="content-grid"><div className="main-column"><section className="hero-strip"><div><span className="tag violet">当前教材</span><h2>{currentBook.title}</h2><p>{currentBook.pages} 页 · {formatNumber(currentBook.entityCount)} 个实体 · {formatNumber(currentBook.tripleCount)} 条可追溯关系</p></div><div className="hero-stat"><strong>{formatNumber(currentBook.workCount)}</strong><span>教材作品</span></div><div className="hero-stat"><strong>{Math.round((1 - currentBook.structureShare) * 100)}%</strong><span>作品知识占比</span></div></section><section className="graph-card"><div className="card-head"><div><span className="eyebrow muted">LIVE GRAPH / {scope === 'book' ? currentBook.title : '全部教材'}</span><h2>{selectedEntity?.name ?? '选择一个知识节点'}</h2></div><div className="graph-tools"><button onClick={() => setScope(scope === 'book' ? 'all' : 'book')}>{scope === 'book' ? '本册' : '六册'}⌄</button><button onClick={() => setSelectedId(currentBook.entities.find((entity) => entity.type === '音乐作品')?.id ?? currentBook.entities[0]?.id)}>⌖ 重置</button></div></div><div className="graph-canvas"><div className="canvas-grid" />{graphItems.lines.map((triple, index) => { const angle = (index / Math.max(graphItems.lines.length, 1)) * 360 - 90; return <div key={`line-${triple.id}`} className="graph-line-wrap" style={{ transform: `rotate(${angle}deg)` }}><div className="graph-line" /><span className="line-label">{relationLabel(triple)}</span></div>; })}{graphItems.nodes.map(({ entity }, index) => { const angle = (index / Math.max(graphItems.nodes.length, 1)) * Math.PI * 2 - Math.PI / 2; const x = 50 + Math.cos(angle) * 35; const y = 50 + Math.sin(angle) * 34; return <button key={entity.id} className={`graph-node ${typeStyle[entity.type] ?? 'node-other'}`} style={{ left: `${x}%`, top: `${y}%` }} onClick={() => selectEntity(entity)}><span className="node-icon">{entity.type === '人物' ? '✦' : entity.type === '体裁' ? '◒' : entity.type === '乐谱资源' ? '♫' : '◆'}</span><strong>{entity.name}</strong><small>{entity.type}</small></button>; })}{selectedEntity && <button className={`graph-node center-node ${typeStyle[selectedEntity.type] ?? 'node-other'}`} onClick={() => setActivePanel('profile')}><span className="node-icon">♫</span><strong>{selectedEntity.name}</strong><small>{selectedEntity.type}</small></button>}<div className="graph-legend"><span><i className="legend-dot node-work" />作品</span><span><i className="legend-dot node-person" />人物</span><span><i className="legend-dot node-genre" />概念</span><span><i className="legend-dot node-resource" />资源</span></div></div></section><section className="relation-table card-surface"><div className="card-head"><div><span className="eyebrow muted">SELECTED NODE / RELATIONS</span><h2>关系明细</h2></div><span className="soft-count">{directTriples.length} 条直连关系</span></div><div className="table-wrap"><table><thead><tr><th>关系</th><th>客体</th><th>教材页</th><th>置信度</th></tr></thead><tbody>{directTriples.slice(0, 10).map((triple) => <tr key={triple.id}><td><span className="relation-chip">{relationLabel(triple)}</span></td><td><button className="table-entity" onClick={() => triple.objectId && entityMap.get(triple.objectId) && selectEntity(entityMap.get(triple.objectId) as Entity)}>{objectLabel(triple)}</button></td><td>PDF · {triple.sourcePage ?? '—'}</td><td><span className={`confidence ${Number(triple.confidence ?? 1) < 0.85 ? 'review' : ''}`}>{Math.round(Number(triple.confidence ?? 1) * 100)}%</span></td></tr>)}</tbody></table></div></section></div><aside className="detail-column"><section className="detail-card"><div className="detail-tabs"><button className={activePanel === 'profile' ? 'active' : ''} onClick={() => setActivePanel('profile')}>实体档案</button><button className={activePanel === 'evidence' ? 'active' : ''} onClick={() => setActivePanel('evidence')}>证据链 <span>{evidence.length}</span></button></div>{activePanel === 'profile' ? <div className="detail-body"><div className={`entity-emblem ${typeStyle[selectedEntity?.type ?? ''] ?? 'node-other'}`}>♫</div><p className="eyebrow muted">{selectedEntity?.type ?? '实体'}</p><h2>{selectedEntity?.name ?? '未选择实体'}</h2><p className="detail-description">{selectedEntity?.description || '这个节点的教材描述、关系和页码证据会集中显示在这里。'}</p><div className="detail-meta"><span>首次出现</span><strong>PDF 第 {selectedEntity?.firstPage ?? '—'} 页</strong></div><div className="detail-meta"><span>当前册次</span><strong>{currentBook.title}</strong></div><button className="primary-button" onClick={() => setView('records')}>打开作品档案 <span>→</span></button></div> : <div className="evidence-list">{evidence.slice(0, 8).map((item) => <div className="evidence-item" key={`${item.triple.id}-${item.pdfPage}`}><div className="evidence-page">{item.pdfPage ?? '—'}<small>PDF</small></div><div><strong>{relationLabel(item.triple)} · {objectLabel(item.triple)}</strong><p>{item.summary}</p></div></div>)}</div>}</section><section className="learning-card"><div className="section-label-row"><span className="eyebrow muted">PERSONAL LEARNING</span><span className="spark">✦</span></div><h3>你的学习路径</h3><p>从当前作品继续，系统会根据已查看的知识点推荐下一步。</p><div className="progress-track"><span style={{ width: '62%' }} /></div><div className="progress-row"><span>本册探索进度</span><strong>62%</strong></div><button className="secondary-button">继续学习 <span>→</span></button></section><section className="mini-stats"><div><strong>{formatNumber(currentBook.evidenceCount)}</strong><span>证据记录</span></div><div><strong>{currentBook.reviewCount || '—'}</strong><span>待复核项</span></div><div><strong>{currentBook.pages}</strong><span>教材页</span></div></section></aside></div>}
+      {view === 'records' && <section className="records-view"><div className="records-intro"><div><span className="tag violet">WORK LIBRARY</span><h2>{currentBook.title} · 逐作品档案</h2><p>作品、创作人员、音乐要素、教材页码和证据密度集中查看。</p></div><div className="records-filter">{currentBook.workCount} 首作品</div></div><div className="record-grid">{currentBook.entities.filter((entity) => entity.type === '音乐作品').slice(0, 48).map((work) => { const count = currentBook.triples.filter((triple) => triple.subject === work.id).length; return <button className="record-card" key={work.id} onClick={() => selectEntity(work)}><div className="record-number">{String(work.firstPage ?? '—').padStart(2, '0')}</div><div><span className="eyebrow muted">音乐作品</span><h3>{work.name}</h3><p>{work.description || '打开图谱查看创作者、体裁、音乐要素和证据链。'}</p><div className="record-footer"><span>{count} 条关系</span><span>查看 →</span></div></div></button>; })}</div></section>}
+      {view === 'import' && <section className="import-view"><div className="import-hero"><span className="tag cyan">DATA PIPELINE</span><h2>把更多教材接入图谱</h2><p>网站的数据结构已经按“教材 → 单元 → 作品 → 音乐要素 → 多模态资源”设计。后续可以持续追加教材版本、校本课程和课堂活动。</p></div><div className="import-grid"><div className="import-card"><div className="import-icon">↥</div><h3>导入 JSON 数据包</h3><p>上传包含 entities、triples、evidence 的标准化数据包，先在浏览器中校验字段和数量。</p><label className="upload-button">选择文件<input type="file" accept=".json,.jsonl" onChange={onImport} /></label>{importSummary && <div className="import-result">{importSummary}</div>}</div><div className="import-card"><div className="import-icon">⌘</div><h3>数据模型</h3><div className="schema-list"><span><b>实体</b>作品、人物、单元、体裁、乐器、资源</span><span><b>关系</b>作曲、属于单元、学习方式、拥有乐谱</span><span><b>证据</b>PDF 页码、教材页码、页面区域、摘要</span><span><b>资源</b>乐谱、音频、视频、授权状态</span></div></div><div className="import-card"><div className="import-icon">◌</div><h3>部署后的持久化</h3><p>教材结构化数据写入 D1，PDF、乐谱图片、音频和视频封面放入 R2；学生学习进度按登录用户保存。</p><div className="pipeline"><span>JSON</span><i>→</i><span>D1</span><i>+</i><span>R2</span><i>→</i><span>图谱 API</span></div></div></div></section>}
+      <footer className="site-footer"><span>乐知图谱 · 中小学音乐知识图谱工作台</span><span>{loaded ? '已载入六册完整数据' : '正在载入完整数据…'} · 仅显示有教材证据的关系</span></footer>
+    </section>
+  </main>;
+}
