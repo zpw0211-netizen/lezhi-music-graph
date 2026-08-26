@@ -245,26 +245,44 @@ body:has(.neo-card.expanded) { overflow:hidden; }
   transform:none;
 }
 
-.assistant-card { border:1px solid #cbd9ce; border-radius:18px; padding:17px; background:linear-gradient(145deg,#fffefa,#edf5ee); box-shadow:0 14px 34px rgba(55,68,57,.08); }
-.assistant-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-.assistant-head h3 { margin:5px 0 0; color:#284a3a; font-family:Georgia,"Songti SC","SimSun",serif; font-size:19px; }
-.grounded-badge { flex:0 0 auto; border:1px solid #a6cab4; border-radius:999px; padding:5px 8px; background:#e9f6ed; color:#2d7252; font-size:9px; font-weight:800; }
-.assistant-card form { display:grid; gap:10px; margin-top:14px; }
-.assistant-card textarea { width:100%; resize:vertical; border:1px solid #cdd9d0; border-radius:11px; padding:11px 12px; background:#fffefa; color:#253d31; font:inherit; font-size:12px; line-height:1.6; }
-.assistant-card textarea:focus { outline:3px solid rgba(86,151,112,.17); border-color:#699f80; }
-.assistant-prompts { display:flex; flex-wrap:wrap; gap:6px; }
-.assistant-prompts button { border:1px solid #d1ddd3; border-radius:999px; padding:5px 8px; background:#f5f8f3; color:#587063; font-size:9px; cursor:pointer; }
-.assistant-prompts button:hover { border-color:#82aa91; color:#245a43; background:#e8f2e9; }
-.assistant-submit { border:0; border-radius:10px; padding:10px 12px; background:linear-gradient(135deg,#275f48,#438c6d); color:#fff; font-size:11px; font-weight:800; cursor:pointer; box-shadow:0 7px 18px rgba(47,112,80,.2); }
-.assistant-submit:hover { filter:brightness(1.06); }
-.assistant-result { margin-top:13px; border-top:1px solid #dbe4dc; padding-top:12px; }
-.assistant-result>p { margin:0; color:#344e40; font-size:12px; line-height:1.75; }
-.assistant-facts { display:grid; gap:7px; margin-top:10px; }
-.assistant-fact { border:1px solid #dce5dd; border-radius:10px; padding:9px 10px; background:rgba(255,255,252,.86); }
-.assistant-fact div { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; gap:7px; }
-.assistant-fact strong,.assistant-fact b { overflow:hidden; color:#284b3a; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
-.assistant-fact b { color:#2e6575; text-align:right; }
-.assistant-fact span { border-radius:999px; padding:3px 6px; background:#e6f0e9; color:#36715c; font-size:8px; }
-.assistant-fact small { display:block; margin-top:6px; color:#87928a; font-size:8px; }
-.assistant-locate { width:100%; margin-top:10px; border:1px solid #8eb49b; border-radius:9px; padding:8px 10px; background:#edf6ef; color:#2d674d; font-size:10px; font-weight:700; cursor:pointer; }
-.assistant-locate:hover { background:#dfeee3; }
+/* A clean knowledge assistant sits directly below the global search. */
+.topbar { height:auto; min-height:84px; align-items:flex-start; padding:17px 0 14px; }
+.topbar>div:first-child { padding-top:4px; }
+.search-zone { width:min(680px,55vw); }
+.search-zone .search-wrap { width:100%; }
+.assistant-inline { margin-top:9px; border:1px solid #d1ddd4; border-radius:15px; padding:12px 13px; background:rgba(255,254,250,.94); box-shadow:0 10px 28px rgba(43,68,53,.08); }
+.assistant-invite { display:flex; align-items:center; gap:10px; }
+.assistant-invite>span { width:28px; height:28px; flex:0 0 28px; display:grid; place-items:center; border-radius:50%; background:linear-gradient(135deg,#2c7053,#6eaa87); color:#fff; font-size:13px; box-shadow:0 5px 14px rgba(48,111,82,.22); }
+.assistant-invite div { min-width:0; }
+.assistant-invite strong { display:block; color:#284639; font-family:Georgia,"Songti SC","SimSun",serif; font-size:13px; }
+.assistant-invite small { display:block; margin-top:2px; overflow:hidden; color:#7a887f; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
+.assistant-query { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:10px; }
+.assistant-query input { min-width:0; border:0; border-bottom:1px solid #cfdad2; border-radius:0; padding:8px 3px; background:transparent; color:#293f34; font:inherit; font-size:11px; outline:none; box-shadow:none; }
+.assistant-query input:focus { border-bottom-color:#498568; box-shadow:none; }
+.assistant-query button { border:0; border-radius:9px; padding:8px 13px; background:#e6f1e9; color:#2e6b50; font-size:10px; font-weight:800; cursor:pointer; }
+.assistant-query button:hover { background:#d7eadc; }
+.assistant-query button:disabled { cursor:wait; opacity:.6; }
+.assistant-suggestions { display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+.assistant-suggestions button { border:0; padding:2px 0; background:transparent; color:#6d8175; font-size:9px; cursor:pointer; }
+.assistant-suggestions button+button:before { content:"·"; margin-right:7px; color:#a4aea7; }
+.assistant-suggestions button:hover { color:#2d6d50; }
+.assistant-inline-answer { margin-top:11px; border-top:1px solid #e0e6e1; padding-top:10px; }
+.assistant-answer-meta { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.assistant-answer-meta span { border-radius:999px; padding:4px 7px; background:#e7f3ea; color:#2f7655; font-size:8px; font-weight:800; }
+.assistant-answer-meta b { color:#8a958d; font-size:8px; font-weight:600; }
+.assistant-inline-answer>p { margin:8px 0 0; color:#30483b; font-size:11px; line-height:1.75; }
+.assistant-answer-actions { display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-top:8px; }
+.assistant-answer-actions small { color:#8a958d; font-size:8px; line-height:1.5; }
+.assistant-answer-actions button { flex:0 0 auto; border:0; padding:0; background:transparent; color:#327357; font-size:9px; font-weight:800; cursor:pointer; }
+
+@media (max-width:1000px) {
+  .topbar { flex-wrap:wrap; }
+  .search-zone { order:3; width:100%; }
+  .top-actions { margin-left:auto; }
+}
+@media (max-width:760px) {
+  .topbar { display:flex; padding-bottom:10px; }
+  .assistant-inline { padding:10px; }
+  .assistant-invite small { white-space:normal; }
+  .assistant-answer-actions { align-items:flex-start; flex-direction:column; }
+}
