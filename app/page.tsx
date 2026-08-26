@@ -34,7 +34,7 @@ export default function Home(){
     for(const entity of book.entities){if(entity.id!==center.id)map.set(entity.id,edgeList.find(t=>t.subject===entity.id||t.objectId===entity.id)??{id:'synthetic-'+book.key+'-'+entity.id,subject:center.id,predicate:'RELATED_ENTITY',objectId:entity.id});}
     const ids=[...map.keys()];
     const seed=(value:string)=>{let hash=2166136261;for(const char of value){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619)>>>0;}return hash;};
-    const positions=ids.map((id,i)=>{const hash=seed(book.key+'-'+id);return{x:base[0]+((hash%1000)/1000-.5)*720,y:base[1]+(((Math.floor(hash/1000)%1000)/1000)-.5)*470,entity:book.entities.find(e=>e.id===id)??{id,name:id,type:'音乐概念'},triple:map.get(id)!};});
+    const positions=ids.map((id,i)=>{const hash=seed(book.key+'-'+id);const angle=((hash%100000)/100000)*Math.PI*2;const radial=Math.sqrt(((Math.floor(hash/100000)%1000)/1000))*360;return{x:base[0]+Math.cos(angle)*radial,y:base[1]+Math.sin(angle)*radial*.72,entity:book.entities.find(e=>e.id===id)??{id,name:id,type:'音乐概念'},triple:map.get(id)!};});
     const positionById=new Map(positions.map((node,i)=>[ids[i],node]));
     const links=edgeList.filter(t=>positionById.has(t.subject)&&positionById.has(t.objectId!));
     for(let iteration=0;iteration<34;iteration++){
@@ -43,7 +43,7 @@ export default function Home(){
         const dx=positions[a].x-positions[b].x; const dy=positions[a].y-positions[b].y; const distance=Math.max(24,Math.hypot(dx,dy)); const push=Math.min(32,5200/(distance*distance)); force[a].x+=dx/distance*push; force[a].y+=dy/distance*push; force[b].x-=dx/distance*push; force[b].y-=dy/distance*push;
       }
       for(const link of links){const from=positionById.get(link.subject)!;const to=positionById.get(link.objectId!)!;const fromIndex=ids.indexOf(link.subject);const toIndex=ids.indexOf(link.objectId!);const dx=to.x-from.x;const dy=to.y-from.y;const distance=Math.max(1,Math.hypot(dx,dy));const spring=(distance-138)*.006;force[fromIndex].x+=dx/distance*spring;force[fromIndex].y+=dy/distance*spring;force[toIndex].x-=dx/distance*spring;force[toIndex].y-=dy/distance*spring;}
-      positions.forEach((node,nodeIndex)=>{const dx=base[0]-node.x;const dy=base[1]-node.y;force[nodeIndex].x+=dx*.0018;force[nodeIndex].y+=dy*.0018;const distance=Math.max(1,Math.hypot(node.x-base[0],node.y-base[1]));if(distance<118){force[nodeIndex].x+=(node.x-base[0])/distance*4;force[nodeIndex].y+=(node.y-base[1])/distance*4;}node.x=Math.max(base[0]-390,Math.min(base[0]+390,node.x+force[nodeIndex].x));node.y=Math.max(base[1]-260,Math.min(base[1]+260,node.y+force[nodeIndex].y));});
+      positions.forEach((node,nodeIndex)=>{const dx=base[0]-node.x;const dy=base[1]-node.y;force[nodeIndex].x+=dx*.0018;force[nodeIndex].y+=dy*.0018;const distance=Math.max(1,Math.hypot(node.x-base[0],node.y-base[1]));if(distance<118){force[nodeIndex].x+=(node.x-base[0])/distance*4;force[nodeIndex].y+=(node.y-base[1])/distance*4;}node.x+=force[nodeIndex].x;node.y+=force[nodeIndex].y;const boundedX=node.x-base[0];const boundedY=node.y-base[1];const ellipse=Math.hypot(boundedX/390,boundedY/285);if(ellipse>1){node.x=base[0]+boundedX/ellipse;node.y=base[1]+boundedY/ellipse;}});
     }
     return{book,center,nodes:positions};
   };
@@ -71,7 +71,7 @@ export default function Home(){
     const edges=group.book.triples.filter(t=>t.objectId&&point(t.subject)&&point(t.objectId));
     return <g key={group.book.key}>
       {edges.map(t=>{const from=point(t.subject)!;const to=point(t.objectId!)!;return <g key={'edge-'+group.book.key+'-'+t.id}><line className="neo-edge" x1={from.x} y1={from.y} x2={to.x} y2={to.y} markerEnd="url(#arrow)"/><text className="edge-label" x={(from.x+to.x)/2} y={(from.y+to.y)/2-4}>{showLabels?relationText(t.predicate,group.book):''}</text></g>})}
-      <g className={'svg-node center '+(typeClass[group.center.type]??'book')} transform={'translate('+baseX+' '+baseY+')'} onClick={()=>{setBookKey(group.book.key);setGraphMode('book');setTypeFilter('全部')}}><circle r={graphMode==='all'?58:78}/><circle className="node-ring" r={graphMode==='all'?70:90}/><text className="node-glyph" y="-9">▣</text><text className="node-name" y="10">{group.book.grade+'年级'+group.book.semester}</text><text className="node-type" y="25">教材中心</text></g>
+      <g className={'svg-node center '+(typeClass[group.center.type]??'book')} transform={'translate('+baseX+' '+baseY+')'} onClick={()=>{setBookKey(group.book.key);setGraphMode('book');setTypeFilter('全部')}}><circle r={graphMode==='all'?42:54}/><circle className="node-ring" r={graphMode==='all'?53:66}/><text className="node-glyph" y="-9">▣</text><text className="node-name" y="10">{group.book.grade+'年级'+group.book.semester}</text><text className="node-type" y="25">教材中心</text></g>
       {group.nodes.filter(node=>visible(node.entity.id)).map(node=>renderNode(node,group.book))}
     </g>;
   };
