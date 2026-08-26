@@ -214,7 +214,19 @@ body {
 .neo-canvas .svg-node.organization circle { fill:#677fc0; stroke:#3e5791; }
 .neo-canvas .svg-node.page circle { fill:#b9c0c7; stroke:#7b858d; }
 .neo-canvas .svg-node.rhythm circle { fill:#9dbb67; stroke:#668535; }
+.neo-canvas .svg-node.literal circle { fill:#f0b86c; stroke:#bd7e2c; }
 .neo-canvas .svg-node.highlighted circle { stroke:#1d3b30; stroke-width:3px; filter:drop-shadow(0 3px 6px rgba(27,72,51,.25)); }
 .neo-canvas .svg-node:not(.center) .node-name { fill:#233d31; paint-order:stroke; stroke:#f8fbf6; stroke-width:3px; stroke-linejoin:round; }
 .neo-canvas .svg-node:not(.center) .node-type { fill:#50675a; paint-order:stroke; stroke:#f8fbf6; stroke-width:2px; }
 .neo-canvas .edge-label { fill:#536b5d; paint-order:stroke; stroke:#f1f6f0; stroke-width:3px; stroke-linejoin:round; }
+.zoom-slider { width:112px; accent-color:#3d8768; cursor:pointer; }
+.zoom-value { min-width:42px; color:#426355; font-size:10px; text-align:center; }
+.neo-card.expanded { position:fixed; inset:14px; z-index:1000; display:flex; flex-direction:column; border-radius:18px; background:#f8faf6; box-shadow:0 30px 90px rgba(20,42,31,.28); }
+.neo-card.expanded .neo-toolbar { flex:0 0 auto; }
+.neo-card.expanded .neo-canvas { flex:1; min-height:0; }
+.neo-card.expanded .neo-canvas svg { height:calc(100vh - 104px); }
+body:has(.neo-card.expanded) { overflow:hidden; }
+@media (max-width:900px) {
+  .neo-actions { flex-wrap:wrap; justify-content:flex-end; }
+  .zoom-slider { width:88px; }
+}
