@@ -194,3 +194,27 @@ body {
   .graph-metrics strong { font-size: 16px; }
   .neo-actions select { max-width: 140px; }
 }
+
+/* Neo4j-style semantic palette: the same entity type always keeps one color. */
+.neo-canvas .svg-node.work circle { fill:#e98452; stroke:#b9512b; }
+.neo-canvas .svg-node.person circle { fill:#a866b8; stroke:#74428d; }
+.neo-canvas .svg-node.unit circle { fill:#63a7b5; stroke:#357c89; }
+.neo-canvas .svg-node.genre circle { fill:#e4c64f; stroke:#b69822; }
+.neo-canvas .svg-node.theme circle { fill:#d989a2; stroke:#aa5473; }
+.neo-canvas .svg-node.resource circle { fill:#71a96a; stroke:#4c8248; }
+.neo-canvas .svg-node.concept circle { fill:#7ca6d8; stroke:#4c73a8; }
+.neo-canvas .svg-node.region circle { fill:#5da9da; stroke:#367ba9; }
+.neo-canvas .svg-node.instrument circle { fill:#d98f78; stroke:#a65c4b; }
+.neo-canvas .svg-node.style circle { fill:#d77bb2; stroke:#9b4e88; }
+.neo-canvas .svg-node.activity circle { fill:#a0aab8; stroke:#667384; }
+.neo-canvas .svg-node.performance circle { fill:#86b993; stroke:#4e8660; }
+.neo-canvas .svg-node.source circle { fill:#b28e68; stroke:#805b3d; }
+.neo-canvas .svg-node.creator circle { fill:#b16ca5; stroke:#7d4675; }
+.neo-canvas .svg-node.event circle { fill:#e07070; stroke:#a94545; }
+.neo-canvas .svg-node.organization circle { fill:#677fc0; stroke:#3e5791; }
+.neo-canvas .svg-node.page circle { fill:#b9c0c7; stroke:#7b858d; }
+.neo-canvas .svg-node.rhythm circle { fill:#9dbb67; stroke:#668535; }
+.neo-canvas .svg-node.highlighted circle { stroke:#1d3b30; stroke-width:3px; filter:drop-shadow(0 3px 6px rgba(27,72,51,.25)); }
+.neo-canvas .svg-node:not(.center) .node-name { fill:#233d31; paint-order:stroke; stroke:#f8fbf6; stroke-width:3px; stroke-linejoin:round; }
+.neo-canvas .svg-node:not(.center) .node-type { fill:#50675a; paint-order:stroke; stroke:#f8fbf6; stroke-width:2px; }
+.neo-canvas .edge-label { fill:#536b5d; paint-order:stroke; stroke:#f1f6f0; stroke-width:3px; stroke-linejoin:round; }
