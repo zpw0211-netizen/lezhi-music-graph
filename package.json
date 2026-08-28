@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "vinext build",
+    "build": "node scripts/build-graph-index.mjs && vinext build",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
@@ -15,8 +15,10 @@
     "quality:audit": "node scripts/audit-quality.mjs",
     "quality:p0": "node scripts/audit-p0-regression.mjs",
     "graph:canonical": "node scripts/build-canonical-graph.mjs",
+    "graph:index": "node scripts/build-graph-index.mjs",
     "quality:v21": "node scripts/audit-v21-graph.mjs",
     "quality:pages": "node scripts/audit-github-pages.mjs",
+    "quality:performance": "node scripts/audit-performance.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
   },
   "dependencies": {

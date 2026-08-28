@@ -11,6 +11,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -28,6 +29,12 @@ import {
   schemaCategoryMeta,
   type SchemaCategoryKey,
 } from "./graph-schema";
+import {
+  FullGraphCanvas,
+  FullGraphMiniMap,
+  type CanvasPerformanceMetrics,
+} from "./components/FullGraphCanvas";
+import { graphRuntimeFor, neighborhood } from "./graph-runtime";
 
 type MediaAsset = {
   kind: "audio" | "video" | "score";
@@ -55,6 +62,7 @@ type Entity = {
   relationCount?: number;
   descriptions?: string[];
   rawTypes?: string[];
+  layout?: { x: number; y: number };
 };
 type Triple = {
   id: string;
@@ -99,6 +107,12 @@ type Book = {
   relations: Record<string, string>;
 };
 type Dataset = { books: Book[] };
+type GraphIndexPayload = {
+  version: string;
+  generatedAt: string;
+  dataset: Dataset;
+  canonicalGraph: CanonicalGraph;
+};
 type CanonicalSource = {
   bookKey: string;
   bookTitle: string;
@@ -163,9 +177,15 @@ type CanonicalGraph = {
     objectId: string;
   }>;
   quality: GraphQuality;
+  performance?: { layoutBuildMs?: number };
 };
 type PositionedNode = { entity: Entity; triple: Triple; x: number; y: number };
-type BookGroup = { book: Book; center: Entity; nodes: PositionedNode[] };
+type BookGroup = {
+  book: Book;
+  center: Entity;
+  nodes: PositionedNode[];
+  layoutMs?: number;
+};
 type AssistantFact = {
   subject: string;
   predicate: string;
@@ -214,6 +234,19 @@ type ViewSnapshot = {
   expandedNodeIds: Record<string, string[]>;
   highlightedCanonicalIds: string[];
   highlightedCanonicalRelationIds: string[];
+};
+type EvidencePayload = {
+  bookKey: string;
+  evidenceByTriple: Record<string, Evidence[]>;
+  occurrences: KnowledgeOccurrence[];
+  relationshipEvidenceById: Record<string, CanonicalSource[]>;
+};
+type LoadPerformance = {
+  jsonDownloadMs: number;
+  jsonParseMs: number;
+  preprocessingMs: number;
+  firstRenderMs: number;
+  graphIndexBytes: number;
 };
 
 const RELATION_LABELS: Record<string, string> = {
@@ -519,6 +552,29 @@ export default function Home() {
   const [assistantBusy, setAssistantBusy] = useState(false);
   const [motionEnabled, setMotionEnabled] = useState(true);
   const [motionPhase, setMotionPhase] = useState(0);
+  const [canvasMetrics, setCanvasMetrics] = useState<CanvasPerformanceMetrics>({
+    fps: 0,
+    visibleNodes: 0,
+    visibleEdges: 0,
+    renderedLabels: 0,
+    renderer: "Canvas 2D",
+    domElementCount: 0,
+  });
+  const canvasMetricsRef = useRef(canvasMetrics);
+  const loadStartedAtRef = useRef(0);
+  const [loadPerformance, setLoadPerformance] = useState<LoadPerformance>({
+    jsonDownloadMs: 0,
+    jsonParseMs: 0,
+    preprocessingMs: 0,
+    firstRenderMs: 0,
+    graphIndexBytes: 0,
+  });
+  const [evidencePayloads, setEvidencePayloads] = useState<
+    Record<string, EvidencePayload>
+  >({});
+  const evidenceRequestCache = useRef(
+    new Map<string, Promise<EvidencePayload>>(),
+  );
   const [dragging, setDragging] = useState<DragState | null>(null);
   const [dragPositions, setDragPositions] = useState<
     Record<string, { x: number; y: number }>
@@ -550,15 +606,32 @@ export default function Home() {
     originY: number;
   } | null>(null);
   useEffect(() => {
-    Promise.all([
-      fetch(publicAssetUrl("data/music-graph.json")).then((response) =>
-        response.json(),
-      ),
-      fetch(publicAssetUrl("data/canonical-graph.json")).then((response) =>
-        response.json(),
-      ),
-    ])
-      .then(([payload, canonical]: [Dataset, CanonicalGraph]) => {
+    let active = true;
+    const load = async () => {
+      loadStartedAtRef.current = Date.now();
+      const downloadStarted = Date.now();
+      const response = await fetch(publicAssetUrl("data/graph-index.json"));
+      if (!response.ok) throw new Error("graph-index unavailable");
+      const text = await response.text();
+      const downloadFinished = Date.now();
+      const parseStarted = Date.now();
+      const index = JSON.parse(text) as GraphIndexPayload;
+      const parseFinished = Date.now();
+      const preprocessStarted = Date.now();
+      for (const book of index.dataset.books)
+        graphRuntimeFor(book, book.entities, book.triples);
+      const preprocessFinished = Date.now();
+      if (!active) return;
+      setLoadPerformance((previous) => ({
+        ...previous,
+        jsonDownloadMs: downloadFinished - downloadStarted,
+        jsonParseMs: parseFinished - parseStarted,
+        preprocessingMs: preprocessFinished - preprocessStarted,
+        graphIndexBytes: new Blob([text]).size,
+      }));
+      const payload = index.dataset;
+      const canonical = index.canonicalGraph;
+      {
         if (!payload.books?.length) return;
         setDataset(payload);
         setCanonicalGraph(canonical);
@@ -576,20 +649,34 @@ export default function Home() {
           )[0];
         if (crossBookCore) setSelectedId(crossBookCore.id);
         else if (work) setSelectedId(work.id);
-      })
+      }
+    };
+    load()
       .catch(() => undefined)
-      .finally(() => setLoaded(true));
+      .finally(() => active && setLoaded(true));
+    return () => {
+      active = false;
+    };
   }, []);
   useEffect(() => {
-    if (!motionEnabled || graphMode === "focus" || dragging) return;
+    if (
+      !motionEnabled ||
+      graphMode === "all" ||
+      graphMode === "focus" ||
+      dragging
+    )
+      return;
     const timer = window.setInterval(
       () => setMotionPhase((value) => value + 0.055),
       90,
     );
     return () => window.clearInterval(timer);
   }, [dragging, graphMode, motionEnabled]);
-  const currentBook =
-    dataset.books.find((b) => b.key === bookKey) ?? dataset.books[0];
+  const datasetBookMap = useMemo(
+    () => new Map(dataset.books.map((book) => [book.key, book])),
+    [dataset.books],
+  );
+  const currentBook = datasetBookMap.get(bookKey) ?? dataset.books[0];
   const canonicalBook = useMemo<Book | null>(() => {
     if (!canonicalGraph) return null;
     const relations = Object.fromEntries(
@@ -640,10 +727,16 @@ export default function Home() {
   }, [canonicalGraph, dataset.books]);
   const inspectionBook =
     graphMode === "all" && canonicalBook ? canonicalBook : currentBook;
-  const entityMap = useMemo(
-    () => new Map(inspectionBook.entities.map((e) => [e.id, e])),
+  const inspectionRuntime = useMemo(
+    () =>
+      graphRuntimeFor(
+        inspectionBook,
+        inspectionBook.entities,
+        inspectionBook.triples,
+      ),
     [inspectionBook],
   );
+  const entityMap = inspectionRuntime.entityMap;
   const selected =
     entityMap.get(selectedId) ??
     inspectionBook.entities.find((e) => isWorkType(e.type)) ??
@@ -694,23 +787,103 @@ export default function Home() {
   }, [currentBook, dataset.books, query, scope]);
   const directTriples = useMemo(
     () =>
-      inspectionBook.triples.filter(
-        (t) => t.subject === selected?.id || t.objectId === selected?.id,
-      ),
-    [inspectionBook, selected],
+      selected
+        ? (inspectionRuntime.adjacencyMap.get(selected.id) ?? []).map(
+            (item) => item.edge,
+          )
+        : [],
+    [inspectionRuntime, selected],
   );
-  const evidence = directTriples.flatMap((t) =>
-    (inspectionBook.evidenceByTriple[t.id] ?? []).map((e) => ({
-      ...e,
-      triple: t,
-    })),
+  useEffect(() => {
+    if (panel !== "evidence" || !selected) return;
+    const keys =
+      graphMode === "all"
+        ? (selected.bookKeys ?? [])
+        : [currentBook.key];
+    for (const key of keys) {
+      if (evidencePayloads[key]) continue;
+      let request = evidenceRequestCache.current.get(key);
+      if (!request) {
+        request = fetch(publicAssetUrl(`data/evidence/${key}.json`)).then(
+          async (response) => {
+            if (!response.ok) throw new Error(`evidence ${key} unavailable`);
+            return (await response.json()) as EvidencePayload;
+          },
+        );
+        evidenceRequestCache.current.set(key, request);
+      }
+      request
+        .then((payload) =>
+          setEvidencePayloads((previous) =>
+            previous[key] ? previous : { ...previous, [key]: payload },
+          ),
+        )
+        .catch(() => evidenceRequestCache.current.delete(key));
+    }
+  }, [
+    currentBook.key,
+    evidencePayloads,
+    graphMode,
+    panel,
+    selected,
+  ]);
+  const evidence = useMemo(
+    () =>
+      directTriples.flatMap((triple) => {
+        const local = inspectionBook.evidenceByTriple[triple.id] ?? [];
+        const lazyLocal = Object.values(evidencePayloads).flatMap(
+          (payload) => payload.evidenceByTriple[triple.id] ?? [],
+        );
+        const lazyCanonical = Object.values(evidencePayloads).flatMap(
+          (payload) =>
+            (payload.relationshipEvidenceById[triple.id] ?? []).flatMap(
+              (source) =>
+                source.evidence?.length
+                  ? source.evidence
+                  : [
+                      {
+                        tripleId: triple.id,
+                        pdfPage: source.pdfPage ?? triple.sourcePage ?? null,
+                        summary: `${source.bookTitle}中的教材出现记录`,
+                        confidence: triple.confidence ?? 1,
+                      },
+                    ],
+            ),
+        );
+        return [...local, ...lazyLocal, ...lazyCanonical].map((item) => ({
+          ...item,
+          triple,
+        }));
+      }),
+    [directTriples, evidencePayloads, inspectionBook.evidenceByTriple],
   );
   const selectedOccurrences = useMemo(
-    () =>
-      canonicalGraph?.occurrences.filter(
-        (occurrence) => occurrence.canonicalId === selected?.id,
-      ) ?? [],
-    [canonicalGraph, selected?.id],
+    () => {
+      if (!selected) return [];
+      const loaded = [
+        ...(canonicalGraph?.occurrences ?? []),
+        ...Object.values(evidencePayloads).flatMap(
+          (payload) => payload.occurrences,
+        ),
+      ].filter((occurrence) => occurrence.canonicalId === selected.id);
+      if (loaded.length) return loaded;
+      return (selected.bookKeys ?? []).map((key) => ({
+        id: `index-${selected.id}-${key}`,
+        canonicalId: selected.id,
+        sourceEntityId: selected.id,
+        sourceName: selected.name,
+        textbook: key,
+        textbookTitle: datasetBookMap.get(key)?.title ?? key,
+        unit: null,
+        lesson: null,
+        page: selected.firstPageByBook?.[key] ?? null,
+        sourceText: null,
+        evidence: [],
+        occurrenceRole: "教材出现",
+        entityType: selected.type,
+      }));
+    },
+    [canonicalGraph, datasetBookMap, evidencePayloads, selected],
   );
   const activeBooks =
     graphMode === "all" && canonicalBook
@@ -765,11 +938,12 @@ export default function Home() {
     ): BookGroup => {
       const center = centerOverride ?? bookEntity(book);
       const spacious = layout === "book";
+      const runtime = graphRuntimeFor(book, book.entities, book.triples);
       const edgeList = book.triples.filter(
         (t) =>
           t.objectId &&
-          book.entities.some((e) => e.id === t.subject) &&
-          book.entities.some((e) => e.id === t.objectId),
+          runtime.entityIdSet.has(t.subject) &&
+          runtime.entityIdSet.has(t.objectId),
       );
       const base = [
         [420, 300],
@@ -784,9 +958,7 @@ export default function Home() {
         if (entity.id !== center.id)
           map.set(
             entity.id,
-            edgeList.find(
-              (t) => t.subject === entity.id || t.objectId === entity.id,
-            ) ?? {
+            runtime.adjacencyMap.get(entity.id)?.[0]?.edge ?? {
               id: "synthetic-" + book.key + "-" + entity.id,
               subject: center.id,
               predicate: "RELATED_ENTITY",
@@ -804,7 +976,7 @@ export default function Home() {
         return {
           x: base[0] + Math.cos(angle) * radial,
           y: base[1] + Math.sin(angle) * radial * (spacious ? 0.78 : 0.72),
-          entity: book.entities.find((e) => e.id === id) ?? {
+          entity: runtime.entityMap.get(id) ?? {
             id,
             name: id,
             type: "音乐概念",
@@ -913,6 +1085,17 @@ export default function Home() {
         relationByEntity.set(relationship.objectId, relationship);
     }
     const nodes = canonicalBook.entities.map((entity) => {
+      if (entity.layout)
+        return {
+          entity,
+          triple: relationByEntity.get(entity.id) ?? {
+            id: `canonical-node-${entity.id}`,
+            subject: entity.id,
+            predicate: "规范实体",
+          },
+          x: entity.layout.x,
+          y: entity.layout.y,
+        };
       const textbookKey = entity.bookKeys?.[0] ?? "g7s1";
       const seed = stableSeed(entity.canonicalKey ?? entity.id);
       let x = 1200;
@@ -952,10 +1135,16 @@ export default function Home() {
         type: "教材",
       },
       nodes,
+      layoutMs: 0,
     };
   }, [canonicalBook]);
   const focusGroup = useMemo(() => {
     if (!selected) return singleGroup;
+    const currentRuntime = graphRuntimeFor(
+      currentBook,
+      currentBook.entities,
+      currentBook.triples,
+    );
     const priority = [
       "作曲",
       "作词",
@@ -990,8 +1179,8 @@ export default function Home() {
       "WORK_IN_UNIT",
       "LEARNING_MODE",
     ];
-    const direct = currentBook.triples
-      .filter((t) => t.subject === selected.id || t.objectId === selected.id)
+    const direct = (currentRuntime.adjacencyMap.get(selected.id) ?? [])
+      .map((item) => item.edge)
       .sort((a, b) => {
         const ai = priority.indexOf(a.predicate);
         const bi = priority.indexOf(b.predicate);
@@ -1005,9 +1194,7 @@ export default function Home() {
       if (triple.objectId) {
         const otherId =
           triple.subject === selected.id ? triple.objectId : triple.subject;
-        const other = currentBook.entities.find(
-          (entity) => entity.id === otherId,
-        );
+        const other = currentRuntime.entityMap.get(otherId);
         if (other && !seen.has(other.id)) {
           seen.add(other.id);
           focusEntities.push(other);
@@ -1104,9 +1291,13 @@ export default function Home() {
   ]);
   const canonicalEntityById = useMemo(
     () =>
-      new Map(
-        (canonicalBook?.entities ?? []).map((entity) => [entity.id, entity]),
-      ),
+      canonicalBook
+        ? graphRuntimeFor(
+            canonicalBook,
+            canonicalBook.entities,
+            canonicalBook.triples,
+          ).entityMap
+        : new Map<string, Entity>(),
     [canonicalBook],
   );
   const fullGraphVisibleIds = useMemo(() => {
@@ -1260,39 +1451,24 @@ export default function Home() {
     relationFilter?: string,
   ) => {
     rememberView();
-    const discovered = new Set<string>([entity.id]);
-    const discoveredRelations = new Set<string>();
-    let frontier = new Set<string>([entity.id]);
-    for (let step = 0; step < depth; step++) {
-      const next = new Set<string>();
-      for (const triple of book.triples) {
-        if (!triple.objectId) continue;
-        if (
-          relationFilter &&
-          relationText(triple.predicate, book) !== relationFilter
-        )
-          continue;
-        if (frontier.has(triple.subject)) {
-          next.add(triple.objectId);
-          discoveredRelations.add(triple.id);
-        }
-        if (frontier.has(triple.objectId)) {
-          next.add(triple.subject);
-          discoveredRelations.add(triple.id);
-        }
-      }
-      const fresh = [...next].filter((id) => !discovered.has(id));
-      for (const id of fresh) discovered.add(id);
-      frontier = new Set(fresh);
-    }
-    const allowed = [...discovered].filter((id) => {
+    const runtime = graphRuntimeFor(book, book.entities, book.triples);
+    const discovered = neighborhood(
+      runtime,
+      entity.id,
+      depth,
+      relationFilter
+        ? (triple) =>
+            relationText(triple.predicate, book) === relationFilter
+        : undefined,
+    );
+    const allowed = [...discovered.nodeIds].filter((id) => {
       if (!category || id === entity.id) return true;
-      const neighbor = book.entities.find((item) => item.id === id);
+      const neighbor = runtime.entityMap.get(id);
       return neighbor ? schemaCategoryFor(neighbor.type) === category : false;
     });
     if (book.key === "canonical") {
       setHighlightedCanonicalIds(allowed);
-      setHighlightedCanonicalRelationIds([...discoveredRelations]);
+      setHighlightedCanonicalRelationIds([...discovered.edgeIds]);
       const target = canonicalGroup?.nodes.find(
         (node) => node.entity.id === entity.id,
       );
@@ -1891,6 +2067,8 @@ export default function Home() {
       </g>
     );
   };
+  // Retained as the measured SVG fallback for visual regression and rollback.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderCanonicalGraph = () => {
     if (!canonicalGroup || !canonicalBook) return null;
     const positions = new Map(
@@ -2172,6 +2350,63 @@ export default function Home() {
       </g>
     );
   };
+
+  const selectEntityRef = useRef(selectEntity);
+  const expandNodeRef = useRef(expandNode);
+  const canonicalBookRef = useRef(canonicalBook);
+  useEffect(() => {
+    selectEntityRef.current = selectEntity;
+    expandNodeRef.current = expandNode;
+    canonicalBookRef.current = canonicalBook;
+  });
+  const handleCanvasSelect = useCallback((entity: Entity) => {
+    const book = canonicalBookRef.current;
+    if (book) {
+      setShowLabels(true);
+      selectEntityRef.current(entity, book);
+    }
+  }, []);
+  const handleCanvasExpand = useCallback((entity: Entity) => {
+    const book = canonicalBookRef.current;
+    if (book) expandNodeRef.current(entity, book, 1);
+  }, []);
+  const handleCanvasContextMenu = useCallback(
+    (x: number, y: number, entity: Entity) => {
+      const book = canonicalBookRef.current;
+      if (book) setContextMenu({ x, y, entity, book });
+    },
+    [],
+  );
+  const handleCanvasNodePosition = useCallback(
+    (nodeKey: string, point: { x: number; y: number }) => {
+      setDragPositions((previous) => ({ ...previous, [nodeKey]: point }));
+      setPinnedNodeKeys((previous) =>
+        previous.includes(nodeKey) ? previous : [...previous, nodeKey],
+      );
+    },
+    [],
+  );
+  const handleCanvasMetrics = useCallback(
+    (metrics: CanvasPerformanceMetrics) => {
+      canvasMetricsRef.current = metrics;
+      if (process.env.NODE_ENV !== "production") setCanvasMetrics(metrics);
+      if (loadStartedAtRef.current)
+        setLoadPerformance((previous) =>
+          previous.firstRenderMs
+            ? previous
+            : {
+                ...previous,
+                firstRenderMs: Date.now() - loadStartedAtRef.current,
+              },
+        );
+    },
+    [],
+  );
+  const handleCanvasZoom = useCallback((value: number) => setZoom(value), []);
+  const handleCanvasPan = useCallback(
+    (value: { x: number; y: number }) => setCanvasPan(value),
+    [],
+  );
 
   if (!hydrated)
     return (
@@ -2796,60 +3031,88 @@ export default function Home() {
                 <div
                   className="neo-canvas"
                   onClick={() => setContextMenu(null)}
-                  onWheel={(event) => {
-                    event.preventDefault();
-                    setZoom((value) =>
-                      Math.max(
-                        0.3,
-                        Math.min(
-                          3.2,
-                          value + (event.deltaY < 0 ? 0.12 : -0.12),
-                        ),
-                      ),
-                    );
-                  }}
+                  onWheel={
+                    graphMode === "all"
+                      ? undefined
+                      : (event) => {
+                          event.preventDefault();
+                          setZoom((value) =>
+                            Math.max(
+                              0.3,
+                              Math.min(
+                                3.2,
+                                value + (event.deltaY < 0 ? 0.12 : -0.12),
+                              ),
+                            ),
+                          );
+                        }
+                  }
                 >
-                  <svg
-                    viewBox="0 0 2400 1500"
-                    role="img"
-                    aria-label="全量教材知识图谱"
-                  >
-                    <defs>
-                      <marker
-                        id="arrow"
-                        viewBox="0 0 10 10"
-                        refX="9"
-                        refY="5"
-                        markerWidth="7"
-                        markerHeight="7"
-                        orient="auto-start-reverse"
-                      >
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#8295bd" />
-                      </marker>
-                    </defs>
-                    <rect
-                      className="graph-pan-surface"
-                      x="0"
-                      y="0"
-                      width="2400"
-                      height="1500"
-                      onPointerDown={beginCanvasPan}
-                      onPointerMove={moveCanvasPan}
-                      onPointerUp={endCanvasPan}
-                      onPointerCancel={() => setPanStart(null)}
+                  {graphMode === "all" && canonicalGroup && canonicalBook ? (
+                    <FullGraphCanvas
+                      nodes={canonicalGroup.nodes}
+                      relationships={fullGraphRelationships}
+                      visibleNodeIds={fullGraphVisibleIds}
+                      selectedId={selected?.id}
+                      highlightedNodeIds={highlightedCanonicalIds}
+                      highlightedRelationshipIds={
+                        highlightedCanonicalRelationIds
+                      }
+                      relationLabels={canonicalBook.relations}
+                      book={canonicalBook}
+                      zoom={zoom}
+                      pan={canvasPan}
+                      showLabels={showLabels}
+                      motionEnabled={motionEnabled}
+                      draggedPositions={dragPositions}
+                      onZoomChange={handleCanvasZoom}
+                      onPanChange={handleCanvasPan}
+                      onSelect={handleCanvasSelect}
+                      onExpand={handleCanvasExpand}
+                      onContextMenu={handleCanvasContextMenu}
+                      onNodePosition={handleCanvasNodePosition}
+                      onMetrics={handleCanvasMetrics}
                     />
-                    <g
-                      className="svg-zoom"
-                      transform={`translate(${1200 + canvasPan.x} ${750 + canvasPan.y}) scale(${zoom}) translate(-1200 -750)`}
+                  ) : (
+                    <svg
+                      viewBox="0 0 2400 1500"
+                      role="img"
+                      aria-label="教材知识图谱"
                     >
-                      {graphMode === "all"
-                        ? renderCanonicalGraph()
-                        : (graphMode === "focus"
-                            ? [focusGroup]
-                            : [singleGroup]
-                          ).map(renderGroup)}
-                    </g>
-                  </svg>
+                      <defs>
+                        <marker
+                          id="arrow"
+                          viewBox="0 0 10 10"
+                          refX="9"
+                          refY="5"
+                          markerWidth="7"
+                          markerHeight="7"
+                          orient="auto-start-reverse"
+                        >
+                          <path d="M 0 0 L 10 5 L 0 10 z" fill="#8295bd" />
+                        </marker>
+                      </defs>
+                      <rect
+                        className="graph-pan-surface"
+                        x="0"
+                        y="0"
+                        width="2400"
+                        height="1500"
+                        onPointerDown={beginCanvasPan}
+                        onPointerMove={moveCanvasPan}
+                        onPointerUp={endCanvasPan}
+                        onPointerCancel={() => setPanStart(null)}
+                      />
+                      <g
+                        className="svg-zoom"
+                        transform={`translate(${1200 + canvasPan.x} ${750 + canvasPan.y}) scale(${zoom}) translate(-1200 -750)`}
+                      >
+                        {(graphMode === "focus" ? [focusGroup] : [singleGroup]).map(
+                          renderGroup,
+                        )}
+                      </g>
+                    </svg>
+                  )}
                   {graphMode === "all" && canonicalGroup && (
                     <div
                       className="graph-minimap"
@@ -2866,38 +3129,52 @@ export default function Home() {
                           复位
                         </button>
                       </div>
-                      <svg viewBox="0 0 2400 1500" role="img">
-                        {canonicalGroup.nodes
-                          .filter(
-                            (node, index) =>
-                              node.entity.type === "教材" ||
-                              (node.entity.textbookCount ?? 1) >= 2 ||
-                              index % 7 === 0,
-                          )
-                          .map((node) => (
-                            <circle
-                              key={`mini-${node.entity.id}`}
-                              cx={node.x}
-                              cy={node.y}
-                              r={node.entity.type === "教材" ? 28 : 10}
-                              fill={schemaCategoryMeta(node.entity.type).color}
-                              opacity={
-                                fullGraphVisibleIds.has(node.entity.id)
-                                  ? 0.85
-                                  : 0.12
-                              }
-                            />
-                          ))}
-                        <rect
-                          className="minimap-viewport"
-                          x={480 - canvasPan.x / Math.max(zoom, 0.3)}
-                          y={300 - canvasPan.y / Math.max(zoom, 0.3)}
-                          width={1440 / Math.max(zoom, 0.3)}
-                          height={900 / Math.max(zoom, 0.3)}
-                        />
-                      </svg>
+                      <FullGraphMiniMap
+                        nodes={canonicalGroup.nodes}
+                        visibleNodeIds={fullGraphVisibleIds}
+                        zoom={zoom}
+                        pan={canvasPan}
+                      />
                     </div>
                   )}
+                  {process.env.NODE_ENV !== "production" &&
+                    graphMode === "all" && (
+                      <aside
+                        className="performance-debug"
+                        aria-label="Performance Debug"
+                      >
+                        <strong>PERFORMANCE DEBUG</strong>
+                        <span>
+                          Renderer {canvasMetrics.renderer} · FPS{" "}
+                          {canvasMetrics.fps || "—"}
+                        </span>
+                        <span>
+                          Nodes {fmt(canonicalBook?.entityCount ?? 0)} · Edges{" "}
+                          {fmt(fullGraphRelationships.length)}
+                        </span>
+                        <span>
+                          Visible {fmt(canvasMetrics.visibleNodes)} /{" "}
+                          {fmt(canvasMetrics.visibleEdges)} · Labels{" "}
+                          {fmt(canvasMetrics.renderedLabels)}
+                        </span>
+                        <span>
+                          Graph DOM {fmt(canvasMetrics.domElementCount)} · Memory{" "}
+                          {canvasMetrics.memoryMb
+                            ? `${canvasMetrics.memoryMb} MB`
+                            : "N/A"}
+                        </span>
+                        <span>
+                          JSON {fmt(loadPerformance.graphIndexBytes)} B · Download{" "}
+                          {loadPerformance.jsonDownloadMs} ms · Parse{" "}
+                          {loadPerformance.jsonParseMs} ms
+                        </span>
+                        <span>
+                          Preprocess {loadPerformance.preprocessingMs} ms · Layout{" "}
+                          {canonicalGroup?.layoutMs ?? 0} ms · First render{" "}
+                          {loadPerformance.firstRenderMs || "—"} ms
+                        </span>
+                      </aside>
+                    )}
                   {contextMenu && (
                     <div
                       className="graph-context-menu"

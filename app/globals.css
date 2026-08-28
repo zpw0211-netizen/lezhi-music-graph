@@ -179,6 +179,63 @@ button,input { font:inherit; } button { cursor:pointer; }
   stroke: #3e6b91;
   stroke-width: 12;
 }
+
+/* Full Graph performance renderer: keep the existing Bloom workspace while the
+   large six-book scene is painted into one Canvas instead of 13k SVG nodes. */
+.neo-canvas .full-graph-canvas {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 680px;
+  min-height: 680px;
+  touch-action: none;
+  outline: 0;
+}
+.neo-card.expanded .neo-canvas .full-graph-canvas {
+  height: calc(100vh - 104px);
+  min-height: calc(100vh - 104px);
+}
+.graph-first .neo-canvas .graph-minimap canvas {
+  display: block;
+  width: 100%;
+  height: 92px;
+  border: 1px solid #d8dde1;
+  background: #edf1f3;
+}
+@media (max-width: 1100px) {
+  .neo-canvas .full-graph-canvas {
+    height: 530px;
+    min-height: 530px;
+  }
+}
+@media (max-width: 760px) {
+  .neo-canvas .full-graph-canvas {
+    height: 500px;
+    min-height: 500px;
+  }
+}
+.performance-debug {
+  position: absolute;
+  z-index: 8;
+  left: 10px;
+  top: 10px;
+  display: grid;
+  gap: 3px;
+  min-width: 232px;
+  padding: 8px 10px;
+  border: 1px solid rgba(74, 101, 124, 0.48);
+  border-radius: 4px;
+  background: rgba(249, 250, 248, 0.93);
+  color: #4b5e6c;
+  box-shadow: 0 4px 16px rgba(36, 52, 65, 0.12);
+  font: 8px/1.35 var(--font-geist-mono), monospace;
+  pointer-events: none;
+}
+.performance-debug strong {
+  color: #264a67;
+  letter-spacing: 0.08em;
+}
 .graph-quality-summary {
   margin: 8px 4px;
   border: 1px solid #d2d9df;

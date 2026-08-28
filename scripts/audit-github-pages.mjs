@@ -12,6 +12,9 @@ const requiredFiles = [
   "data/music-graph.json",
   "data/canonical-graph.json",
   "data/graph-quality.json",
+  "data/graph-index.json",
+  "data/evidence/g7s1.json",
+  "data/evidence/g9s2.json",
 ];
 
 for (const relativePath of requiredFiles) {
@@ -61,8 +64,8 @@ for (const forbidden of [
 }
 assert(
   pageBundle.includes(basePath) &&
-    pageBundle.includes("data/music-graph.json") &&
-    pageBundle.includes("data/canonical-graph.json"),
+    pageBundle.includes("data/graph-index.json") &&
+    pageBundle.includes("data/evidence/"),
   "页面客户端脚本没有使用 basePath 读取静态图谱数据",
 );
 
