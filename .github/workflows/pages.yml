@@ -28,14 +28,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Quality check
-        run: npm run quality:audit
+        run: |
+          npm run quality:audit
+          npm run quality:p0
+          npm run quality:v21
       - name: Build static export
         run: npm run build
         env:
-          GITHUB_PAGES: 'true'
-          NEXT_PUBLIC_STATIC_EXPORT: '1'
+          GITHUB_PAGES: "true"
+          NEXT_PUBLIC_STATIC_EXPORT: "1"
+          NEXT_PUBLIC_BASE_PATH: "/lezhi-music-graph"
       - name: Prepare Pages artifact
         run: node scripts/prepare-github-pages.mjs
+      - name: Audit Pages artifact
+        run: npm run quality:pages
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

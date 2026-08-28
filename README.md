@@ -17,7 +17,9 @@ npm run dev
 npm run build
 ```
 
-GitHub Pages 使用 `GITHUB_PAGES=true` 生成静态导出，由 `.github/workflows/pages.yml` 自动构建和发布。
+GitHub Pages 与 Sites 共用同一套前端。`GITHUB_PAGES=true` 只切换
+`basePath`、静态数据来源和后端接口可用性，由
+`.github/workflows/pages.yml` 自动完成质量审计、静态导出与发布。
 
 ## 部署
 

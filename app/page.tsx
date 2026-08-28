@@ -2,6 +2,11 @@
 
 export const dynamic = "force-static";
 
+const IS_STATIC_EXPORT = process.env.NEXT_PUBLIC_STATIC_EXPORT === "1";
+const PUBLIC_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const publicAssetUrl = (path: string) =>
+  `${PUBLIC_BASE_PATH}/${path.replace(/^\/+/, "")}`;
+
 import {
   useCallback,
   useEffect,
@@ -546,8 +551,12 @@ export default function Home() {
   } | null>(null);
   useEffect(() => {
     Promise.all([
-      fetch("./data/music-graph.json").then((response) => response.json()),
-      fetch("./data/canonical-graph.json").then((response) => response.json()),
+      fetch(publicAssetUrl("data/music-graph.json")).then((response) =>
+        response.json(),
+      ),
+      fetch(publicAssetUrl("data/canonical-graph.json")).then((response) =>
+        response.json(),
+      ),
     ])
       .then(([payload, canonical]: [Dataset, CanonicalGraph]) => {
         if (!payload.books?.length) return;
@@ -1606,31 +1615,33 @@ export default function Home() {
     );
     let answer = fallback;
     let poweredBy: "gpt" | "graph" = "graph";
-    try {
-      const response = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          question,
-          entityName: match.entity.name,
-          bookTitle: match.book.title,
-          facts,
-          analytics,
-          previousAnswer: assistantResult?.answer ?? "",
-        }),
-      });
-      if (response.ok) {
-        const payload = (await response.json()) as {
-          answer?: string;
-          poweredBy?: string;
-        };
-        if (payload.answer) {
-          answer = payload.answer;
-          poweredBy = payload.poweredBy === "gpt" ? "gpt" : "graph";
+    if (!IS_STATIC_EXPORT) {
+      try {
+        const response = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            question,
+            entityName: match.entity.name,
+            bookTitle: match.book.title,
+            facts,
+            analytics,
+            previousAnswer: assistantResult?.answer ?? "",
+          }),
+        });
+        if (response.ok) {
+          const payload = (await response.json()) as {
+            answer?: string;
+            poweredBy?: string;
+          };
+          if (payload.answer) {
+            answer = payload.answer;
+            poweredBy = payload.poweredBy === "gpt" ? "gpt" : "graph";
+          }
         }
+      } catch {
+        /* 无模型密钥时继续使用本地图谱逻辑回答。 */
       }
-    } catch {
-      /* 无模型密钥时继续使用本地图谱逻辑回答。 */
     }
     const summary = `${poweredBy === "gpt" ? "AI 深度分析" : "图谱分析"} · ${analytics.booksHit} 册 · ${analytics.directCount} 条直接关系 · ${analytics.multiHopCount} 条二跳关系`;
     setAssistantResult({
@@ -1652,7 +1663,7 @@ export default function Home() {
       const books = payload.books?.length ?? 0;
       const triples =
         payload.books?.reduce((s, b) => s + (b.triples?.length ?? 0), 0) ?? 0;
-      if (process.env.NEXT_PUBLIC_STATIC_EXPORT === "1") {
+      if (IS_STATIC_EXPORT) {
         setImportSummary(
           `已读取 ${file.name}：${books || 1} 册、${fmt(triples)} 条关系。静态公开版支持本地校验；在线持久化导入需连接独立后端。`,
         );
@@ -3489,7 +3500,7 @@ export default function Home() {
               <span className="tag cyan">DATA PIPELINE</span>
               <h2>持续接入更多教材与资源</h2>
               <p>
-                {process.env.NEXT_PUBLIC_STATIC_EXPORT === "1"
+                {IS_STATIC_EXPORT
                   ? "当前为 GitHub Pages 静态公开版；JSON 可在本地校验，在线持久化需连接独立后端。"
                   : "结构化数据进入 D1，乐谱图片、音频、视频和 PDF 进入 R2，再通过中文关系边挂回作品节点。"}
               </p>
@@ -3499,7 +3510,7 @@ export default function Home() {
                 <div className="import-icon">⇧</div>
                 <h3>导入 JSON 数据包</h3>
                 <p>
-                  {process.env.NEXT_PUBLIC_STATIC_EXPORT === "1"
+                  {IS_STATIC_EXPORT
                     ? "上传标准包后进行本地格式校验，不会把文件发送到第三方。"
                     : "上传包含 books、entities、triples、evidenceByTriple 的标准包，网站会先校验，再写入持久化层。"}
                 </p>

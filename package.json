@@ -16,6 +16,7 @@
     "quality:p0": "node scripts/audit-p0-regression.mjs",
     "graph:canonical": "node scripts/build-canonical-graph.mjs",
     "quality:v21": "node scripts/audit-v21-graph.mjs",
+    "quality:pages": "node scripts/audit-github-pages.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
   },
   "dependencies": {

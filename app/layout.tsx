@@ -12,21 +12,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const isGitHubPages = process.env.GITHUB_PAGES === "true";
+const publicBasePath = isGitHubPages ? "/lezhi-music-graph" : "";
+const publicOrigin = isGitHubPages
+  ? "https://zpw0211-netizen.github.io/"
+  : "https://lezhi-music-graph.zpw0211.chatgpt.site/";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://lezhi-music-graph.zpw0211.chatgpt.site"),
+  metadataBase: new URL(publicOrigin),
   title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
   description:
     "面向中小学音乐教育的跨教材知识图谱、教材证据、多模态资源与智能分析平台。",
+  icons: {
+    icon: `${publicBasePath}/favicon.svg`,
+  },
   openGraph: {
     title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
     description: "探索六册教材共同构成的中小学音乐知识网络与跨册关联。",
-    images: ["/og.png"],
+    images: [`${publicBasePath}/og.png`],
   },
   twitter: {
     card: "summary_large_image",
     title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
     description: "探索六册教材共同构成的中小学音乐知识网络与跨册关联。",
-    images: ["/og.png"],
+    images: [`${publicBasePath}/og.png`],
   },
 };
 
