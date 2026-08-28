@@ -162,3 +162,12 @@ export function relationVisualKind(
 }
 
 export const ALL_SCHEMA_KEYS = SCHEMA_CATEGORIES.map((item) => item.key);
+
+export const PROGRESSION_RELATION_TYPES = [
+  { key: "PREREQUISITE_OF", label: "前置于", evidenceRequired: true },
+  { key: "REVISITS", label: "复现", evidenceRequired: true },
+  { key: "DEEPENS", label: "深化", evidenceRequired: true },
+  { key: "EXTENDS", label: "扩展", evidenceRequired: true },
+  { key: "APPLIES_TO", label: "应用于", evidenceRequired: true },
+  { key: "RELATED_TO", label: "相关", evidenceRequired: true },
+] as const;
