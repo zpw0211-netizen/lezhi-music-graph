@@ -290,6 +290,15 @@ body:has(.neo-card.expanded) { overflow:hidden; }
 .assistant-answer-actions small { color:#8a958d; font-size:8px; line-height:1.5; }
 .assistant-answer-actions button { flex:0 0 auto; border:0; padding:0; background:transparent; color:#327357; font-size:9px; font-weight:800; cursor:pointer; }
 
+.assistant-analysis-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:9px; }
+.assistant-analysis-grid span { border:1px solid #dce7df; border-radius:8px; padding:6px 5px; background:#f4f8f4; color:#708077; font-size:8px; text-align:center; }
+.assistant-analysis-grid b { display:block; margin-bottom:1px; color:#286b4e; font-size:12px; }
+.neo-canvas .svg-node.draggable { cursor:grab; touch-action:none; user-select:none; }
+.neo-canvas .svg-node.draggable.dragging { cursor:grabbing; }
+.neo-canvas .svg-node.draggable.dragging circle { stroke:#174d3b; stroke-width:3px; filter:drop-shadow(0 5px 8px rgba(23,77,59,.34)); }
+.neo-card:not(.expanded) .neo-canvas,
+.neo-card:not(.expanded) .neo-canvas svg { min-height:680px; height:680px; }
+
 @media (max-width:1000px) {
   .topbar { flex-wrap:wrap; }
   .search-zone { order:3; width:100%; }
@@ -300,4 +309,7 @@ body:has(.neo-card.expanded) { overflow:hidden; }
   .assistant-inline { padding:10px; }
   .assistant-invite small { white-space:normal; }
   .assistant-answer-actions { align-items:flex-start; flex-direction:column; }
+  .assistant-analysis-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .neo-card:not(.expanded) .neo-canvas,
+  .neo-card:not(.expanded) .neo-canvas svg { min-height:500px; height:500px; }
 }

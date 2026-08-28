@@ -1,149 +1,2193 @@
-'use client';
+"use client";
 
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
-import { useEffect, useMemo, useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import type {
+  ChangeEvent,
+  FormEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
 
-type MediaAsset={kind:'audio'|'video'|'score';url:string;title?:string;source?:string};
-type Entity={id:string;name:string;type:string;aliases?:string[];description?:string;firstPage?:number|null;confidence?:number;media?:MediaAsset[]};
-type Triple={id:string;subject:string;predicate:string;objectId?:string|null;literal?:string|null;objectKind?:string;sourcePage?:number|null;section?:string;confidence?:number};
-type Evidence={tripleId:string;pdfPage?:number|null;textbookPage?:string;summary?:string;region?:string;confidence?:number};
-type Book={key:string;title:string;grade:number;semester:string;pages:number;entityCount:number;tripleCount:number;evidenceCount:number;workCount:number;reviewCount:number;structureShare:number;entities:Entity[];triples:Triple[];candidateTriples?:Triple[];evidenceByTriple:Record<string,Evidence[]>;relations:Record<string,string>};
-type Dataset={books:Book[]}; type PositionedNode={entity:Entity;triple:Triple;x:number;y:number}; type BookGroup={book:Book;center:Entity;nodes:PositionedNode[]}; type AssistantFact={subject:string;predicate:string;object:string;bookTitle:string;page?:number|null}; type AssistantResult={summary:string;answer:string;facts:AssistantFact[];entity?:Entity;book?:Book;poweredBy?:'gpt'|'graph'};
-
-const RELATION_LABELS:Record<string,string>={BOOK_HAS_UNIT:'包含单元',UNIT_ORDER:'单元顺序',UNIT_SEQUENCE:'单元顺序',UNIT_THEME:'单元主题',WORK_IN_TEXTBOOK:'作品收录于教材',WORK_IN_UNIT:'作品属于单元',LEARNING_MODE:'学习方式',LYRICIST:'作词',COMPOSER:'作曲',GENRE:'体裁',TEMPO:'速度',LYRICS_ADAPTED_BY:'歌词改编',LYRIC_ADAPTER:'歌词改编',ORIGIN_REGION:'来源地区',TRANSLATOR:'翻译',ETHNIC_GROUP:'民族',SONG_ADAPTED_BY:'配歌',MUSICAL_STYLE:'音乐风格',PERFORMANCE_FORM:'演出形式',INSTRUMENT:'乐器',RECORDED_BY:'记录者',ARRANGER:'编曲',TONALITY:'调性',HAS_SCORE:'拥有乐谱',VOCAL_TYPE:'声乐类型',MELODY_CHARACTER:'旋律特点',PERFORMANCE_GUIDANCE:'演唱提示',THEME:'表现主题',CREATION_PERIOD:'创作时期',METER:'节拍',MUSICAL_FORM:'曲式',CREATION_YEAR:'创作年份',HISTORICAL_EVENT:'历史事件',DEPICTS:'描绘',RHYTHM_PATTERN:'节奏型',SOURCE_WORK:'改编来源',RELATED_WORK:'相关作品',CREDIT_NOTE:'署名说明',TEACHING_POINT:'教学要点',CONCEPT_CATEGORY:'概念类别',EXPLAINS_CONCEPT:'解释概念',TASK_ACTION:'教学活动',TASK_TARGET:'活动对象'};
-const WORK_TYPES=new Set(['音乐作品','歌曲','民歌','器乐曲','戏曲歌曲','戏曲选段','舞蹈音乐','影视音乐','交响作品','合唱作品','歌剧音乐','进行曲','朗诵作品']);
-const isWorkType=(type?:string)=>Boolean(type&&WORK_TYPES.has(type));
-const ENTITY_TYPE_ORDER=['知识概念','音乐概念','人物','歌曲','民歌','器乐曲','戏曲歌曲','戏曲选段','舞蹈音乐','影视音乐','交响作品','合唱作品','歌剧音乐','进行曲','朗诵作品','音乐作品','地域','民族','乐器','音乐体裁','音乐风格','表演形式','主题与情感','历史事件','学习活动','单元','教材'];
-const RELATION_PRIORITY=['作曲','作词','音乐体裁','来源于','所属国家或地区','所属民族','使用乐器','表演形式','曲式结构','速度特点','节拍特点','节奏特点','旋律特点','音乐风格','表现主题','表现情感','描绘内容','塑造形象','改编自','收录作品','包含作品','学习方式','分析维度','适合开展'];
-const typeClass:Record<string,string>={教材:'book',音乐作品:'work',歌曲:'song',民歌:'folk',器乐曲:'instrumental',戏曲歌曲:'operaSong',戏曲选段:'opera',舞蹈音乐:'dance',影视音乐:'screen',交响作品:'symphonic',合唱作品:'choral',歌剧音乐:'stage',进行曲:'march',朗诵作品:'recitation',人物:'person',单元:'unit',音乐体裁:'genre',主题与情感:'theme',知识概念:'knowledge',音乐概念:'concept',地域:'region',民族:'ethnic',乐器:'instrument',音乐风格:'style',学习活动:'activity',表演形式:'performance',来源作品:'source',创作主体:'creator',创作群体:'creator',署名主体:'creator',历史事件:'event',机构:'organization',节奏型:'rhythm'};
-const fmt=(n:number)=>new Intl.NumberFormat('zh-CN').format(n);
-const factSentence=(fact:AssistantFact)=>{
-  const subject=fact.subject; const object=fact.object;
-  const patterns:Record<string,string>={作曲:`${subject}由${object}作曲`,作词:`${subject}由${object}作词`,编曲:`${subject}由${object}编曲`,体裁:`${subject}属于${object}`,速度:`${subject}的速度为${object}`,节拍:`${subject}采用${object}节拍`,来源地区:`${subject}来源于${object}`,民族:`${subject}与${object}相关`,乐器:`${subject}使用或关联${object}`,表现主题:`${subject}表现${object}`,拥有乐谱:`${subject}配有${object}`,学习方式:`教材建议以${object}方式学习${subject}`,作品属于单元:`${subject}编排在${object}`,作品收录于教材:`${subject}收录于${object}`,解释概念:`${subject}可解释为${object}`,指:`${subject}是指${object}`,是:`${subject}是${object}`};
-  return patterns[fact.predicate]??`${subject}${fact.predicate}${object}`;
+type MediaAsset = {
+  kind: "audio" | "video" | "score";
+  url: string;
+  title?: string;
+  source?: string;
 };
-const composeGraphAnswer=(entityName:string,bookTitle:string,facts:AssistantFact[])=>{
-  if(!facts.length)return `图谱已经定位到“${entityName}”，但现有正式关系不足以形成可靠回答。你可以换一种问法，或等待补充教材证据。`;
-  const pages=[...new Set(facts.map(fact=>fact.page).filter((page):page is number=>typeof page==='number'))];
-  const evidence=pages.length?`（教材 PDF 第 ${pages.slice(0,4).join('、')} 页）`:'';
-  const sentences=facts.slice(0,6).map(factSentence);
-  return `根据《${bookTitle}》${evidence}，${sentences.join('；')}。这些关系共同说明了“${entityName}”在教材中的创作信息、音乐属性或教学联系。`;
+type Entity = {
+  id: string;
+  name: string;
+  type: string;
+  aliases?: string[];
+  description?: string;
+  firstPage?: number | null;
+  confidence?: number;
+  media?: MediaAsset[];
 };
-const demoBook:Book={key:'g8s2',title:'人音版八年级下册',grade:8,semester:'下册',pages:79,entityCount:7,tripleCount:8,evidenceCount:8,workCount:1,reviewCount:0,structureShare:.2,relations:{},entities:[{id:'demo-book',name:'人音版八年级下册',type:'教材'},{id:'demo-work',name:'游击队歌',type:'音乐作品',description:'抗战题材歌曲，适合从节奏、力度和历史背景展开学习。',firstPage:34},{id:'demo-composer',name:'贺绿汀',type:'人物'},{id:'demo-unit',name:'第五单元 环球音乐',type:'单元'},{id:'demo-genre',name:'进行曲',type:'体裁'},{id:'demo-score',name:'教材乐谱·PDF第34页',type:'乐谱资源'},{id:'demo-theme',name:'抗战与人民力量',type:'主题'}],triples:[{id:'demo-0',subject:'demo-book',predicate:'BOOK_HAS_UNIT',objectId:'demo-unit',sourcePage:6,confidence:1},{id:'demo-1',subject:'demo-work',predicate:'WORK_IN_TEXTBOOK',objectId:'demo-book',sourcePage:34},{id:'demo-2',subject:'demo-work',predicate:'COMPOSER',objectId:'demo-composer',sourcePage:34},{id:'demo-3',subject:'demo-work',predicate:'GENRE',objectId:'demo-genre',sourcePage:34},{id:'demo-4',subject:'demo-work',predicate:'HAS_SCORE',objectId:'demo-score',sourcePage:34},{id:'demo-5',subject:'demo-work',predicate:'THEME',objectId:'demo-theme',sourcePage:34},{id:'demo-6',subject:'demo-work',predicate:'TEMPO',literal:'中速稍快',objectKind:'字面值',sourcePage:34},{id:'demo-7',subject:'demo-work',predicate:'LEARNING_MODE',literal:'演唱',objectKind:'字面值',sourcePage:34}],evidenceByTriple:{}};
+type Triple = {
+  id: string;
+  subject: string;
+  predicate: string;
+  objectId?: string | null;
+  literal?: string | null;
+  objectKind?: string;
+  sourcePage?: number | null;
+  section?: string;
+  confidence?: number;
+};
+type Evidence = {
+  tripleId: string;
+  pdfPage?: number | null;
+  textbookPage?: string;
+  summary?: string;
+  region?: string;
+  confidence?: number;
+};
+type Book = {
+  key: string;
+  title: string;
+  grade: number;
+  semester: string;
+  pages: number;
+  entityCount: number;
+  tripleCount: number;
+  evidenceCount: number;
+  workCount: number;
+  reviewCount: number;
+  structureShare: number;
+  entities: Entity[];
+  triples: Triple[];
+  candidateTriples?: Triple[];
+  evidenceByTriple: Record<string, Evidence[]>;
+  relations: Record<string, string>;
+};
+type Dataset = { books: Book[] };
+type PositionedNode = { entity: Entity; triple: Triple; x: number; y: number };
+type BookGroup = { book: Book; center: Entity; nodes: PositionedNode[] };
+type AssistantFact = {
+  subject: string;
+  predicate: string;
+  object: string;
+  bookTitle: string;
+  page?: number | null;
+  distance?: 1 | 2;
+};
+type SimilarWork = { name: string; bookTitle: string; shared: string[] };
+type GraphAnalytics = {
+  booksHit: number;
+  directCount: number;
+  multiHopCount: number;
+  relationTypes: number;
+  neighborCount: number;
+  similarWorks: SimilarWork[];
+};
+type AssistantResult = {
+  summary: string;
+  answer: string;
+  facts: AssistantFact[];
+  analytics?: GraphAnalytics;
+  entity?: Entity;
+  book?: Book;
+  poweredBy?: "gpt" | "graph";
+};
+type DragState = {
+  nodeKey: string;
+  pointerId: number;
+  offsetX: number;
+  offsetY: number;
+  startClientX: number;
+  startClientY: number;
+  entity: Entity;
+  book: Book;
+};
 
-export default function Home(){
-  const [dataset,setDataset]=useState<Dataset>({books:[demoBook]}); const [bookKey,setBookKey]=useState('g8s2'); const [selectedId,setSelectedId]=useState('demo-work'); const [query,setQuery]=useState(''); const [scope,setScope]=useState<'book'|'all'>('book'); const [view,setView]=useState<'graph'|'records'|'import'>('graph'); const [graphMode,setGraphMode]=useState<'all'|'book'|'focus'>('all'); const [panel,setPanel]=useState<'profile'|'evidence'>('profile'); const [loaded,setLoaded]=useState(false); const [hydrated,setHydrated]=useState(false); const [zoom,setZoom]=useState(1); const [hoveredId,setHoveredId]=useState<string|null>(null); const [importSummary,setImportSummary]=useState<string|null>(null); const [typeFilter,setTypeFilter]=useState('全部'); const [showLabels,setShowLabels]=useState(true); const [expanded,setExpanded]=useState(false); const [assistantQuestion,setAssistantQuestion]=useState(''); const [assistantResult,setAssistantResult]=useState<AssistantResult|null>(null); const [assistantBusy,setAssistantBusy]=useState(false);
-  useEffect(()=>{setHydrated(true);},[]);
-  useEffect(()=>{fetch('./data/music-graph.json').then(r=>r.json()).then((payload:Dataset)=>{if(!payload.books?.length)return;setDataset(payload);const book=payload.books.find(b=>b.key===bookKey)??payload.books[0];setBookKey(book.key);const work=book.entities.find(e=>isWorkType(e.type))??book.entities[0];if(work)setSelectedId(work.id);}).catch(()=>undefined).finally(()=>setLoaded(true));},[]);
-  const currentBook=dataset.books.find(b=>b.key===bookKey)??dataset.books[0]; const entityMap=useMemo(()=>new Map(currentBook.entities.map(e=>[e.id,e])),[currentBook]); const selected=entityMap.get(selectedId)??currentBook.entities.find(e=>isWorkType(e.type))??currentBook.entities[0];
-  const bookEntity=(book:Book):Entity=>book.entities.find(e=>e.type==='教材')??{id:`BOOK_${book.key}`,name:book.title,type:'教材'};
-  const relationText=(predicate:string,book:Book=currentBook)=>RELATION_LABELS[predicate]??book.relations[predicate]??predicate.replaceAll('_',' '); const relationLabel=(t:Triple)=>relationText(t.predicate); const objectLabel=(t:Triple)=>t.objectId?entityMap.get(t.objectId)?.name??t.objectId:t.literal??'未命名客体';
-  const searchResults=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return [] as Array<{entity:Entity;book:Book}>;const books=scope==='all'?dataset.books:[currentBook];const out:Array<{entity:Entity;book:Book}>=[];for(const book of books)for(const entity of book.entities){if([entity.name,entity.type,entity.description,...(entity.aliases??[])].join(' ').toLowerCase().includes(q))out.push({entity,book});if(out.length===10)return out;}return out;},[currentBook,dataset.books,query,scope]);
-  const directTriples=useMemo(()=>currentBook.triples.filter(t=>t.subject===selected?.id||t.objectId===selected?.id),[currentBook,selected]); const evidence=directTriples.flatMap(t=>(currentBook.evidenceByTriple[t.id]??[]).map(e=>({...e,triple:t}))); const activeBooks=graphMode==='all'?dataset.books:[currentBook]; const networkEntities=activeBooks.flatMap(book=>book.entities); const networkTriples=activeBooks.flatMap(book=>book.triples); const typeCounts:Record<string,number>={}; const relationCounts:Record<string,number>={}; for(const entity of networkEntities)typeCounts[entity.type]=(typeCounts[entity.type]??0)+1; for(const triple of networkTriples)relationCounts[relationText(triple.predicate,activeBooks.find(book=>book.triples.includes(triple))??currentBook)]=(relationCounts[relationText(triple.predicate,activeBooks.find(book=>book.triples.includes(triple))??currentBook)]??0)+1; const typeRows=Object.entries(typeCounts).sort((a,b)=>{const ai=ENTITY_TYPE_ORDER.indexOf(a[0]);const bi=ENTITY_TYPE_ORDER.indexOf(b[0]);return (ai<0?999:ai)-(bi<0?999:bi)||b[1]-a[1]}); const relationRows=Object.entries(relationCounts).sort((a,b)=>{const ai=RELATION_PRIORITY.indexOf(a[0]);const bi=RELATION_PRIORITY.indexOf(b[0]);return (ai<0?999:ai)-(bi<0?999:bi)||b[1]-a[1]}); const maxTypeCount=Math.max(1,...typeRows.map(([,count])=>count));
-  const buildGroup=(book:Book,index:number,centerOverride?:Entity):BookGroup=>{
-    const center=centerOverride??bookEntity(book);
-    const edgeList=book.triples.filter(t=>t.objectId&&book.entities.some(e=>e.id===t.subject)&&book.entities.some(e=>e.id===t.objectId));
-    const base=[[420,300],[1200,300],[1980,300],[420,1050],[1200,1050],[1980,1050]][index]??[1200,650];
-    const map=new Map<string,Triple>();
-    for(const entity of book.entities){if(entity.id!==center.id)map.set(entity.id,edgeList.find(t=>t.subject===entity.id||t.objectId===entity.id)??{id:'synthetic-'+book.key+'-'+entity.id,subject:center.id,predicate:'RELATED_ENTITY',objectId:entity.id});}
-    const ids=[...map.keys()];
-    const seed=(value:string)=>{let hash=2166136261;for(const char of value){hash^=char.charCodeAt(0);hash=Math.imul(hash,16777619)>>>0;}return hash;};
-    const positions=ids.map((id,i)=>{const hash=seed(book.key+'-'+id);const angle=((hash%100000)/100000)*Math.PI*2;const radial=Math.sqrt(((Math.floor(hash/100000)%1000)/1000))*360;return{x:base[0]+Math.cos(angle)*radial,y:base[1]+Math.sin(angle)*radial*.72,entity:book.entities.find(e=>e.id===id)??{id,name:id,type:'音乐概念'},triple:map.get(id)!};});
-    const positionById=new Map(positions.map((node,i)=>[ids[i],node]));
-    const links=edgeList.filter(t=>positionById.has(t.subject)&&positionById.has(t.objectId!));
-    for(let iteration=0;iteration<34;iteration++){
-      const force=positions.map(()=>({x:0,y:0}));
-      for(let a=0;a<positions.length;a++)for(let b=a+1;b<positions.length;b++){
-        const dx=positions[a].x-positions[b].x; const dy=positions[a].y-positions[b].y; const distance=Math.max(36,Math.hypot(dx,dy)); const push=Math.min(44,9000/(distance*distance)); force[a].x+=dx/distance*push; force[a].y+=dy/distance*push; force[b].x-=dx/distance*push; force[b].y-=dy/distance*push;
-      }
-      for(const link of links){const from=positionById.get(link.subject)!;const to=positionById.get(link.objectId!)!;const fromIndex=ids.indexOf(link.subject);const toIndex=ids.indexOf(link.objectId!);const dx=to.x-from.x;const dy=to.y-from.y;const distance=Math.max(1,Math.hypot(dx,dy));const spring=(distance-190)*.005;force[fromIndex].x+=dx/distance*spring;force[fromIndex].y+=dy/distance*spring;force[toIndex].x-=dx/distance*spring;force[toIndex].y-=dy/distance*spring;}
-      positions.forEach((node,nodeIndex)=>{const dx=base[0]-node.x;const dy=base[1]-node.y;force[nodeIndex].x+=dx*.0013;force[nodeIndex].y+=dy*.0013;const distance=Math.max(1,Math.hypot(node.x-base[0],node.y-base[1]));if(distance<155){force[nodeIndex].x+=(node.x-base[0])/distance*5;force[nodeIndex].y+=(node.y-base[1])/distance*5;}node.x+=force[nodeIndex].x;node.y+=force[nodeIndex].y;const boundedX=node.x-base[0];const boundedY=node.y-base[1];const ellipse=Math.hypot(boundedX/470,boundedY/350);if(ellipse>1){node.x=base[0]+boundedX/ellipse;node.y=base[1]+boundedY/ellipse;}});
-    }
-    return{book,center,nodes:positions};
+const RELATION_LABELS: Record<string, string> = {
+  BOOK_HAS_UNIT: "包含单元",
+  UNIT_ORDER: "单元顺序",
+  UNIT_SEQUENCE: "单元顺序",
+  UNIT_THEME: "单元主题",
+  WORK_IN_TEXTBOOK: "作品收录于教材",
+  WORK_IN_UNIT: "作品属于单元",
+  LEARNING_MODE: "学习方式",
+  LYRICIST: "作词",
+  COMPOSER: "作曲",
+  GENRE: "体裁",
+  TEMPO: "速度",
+  LYRICS_ADAPTED_BY: "歌词改编",
+  LYRIC_ADAPTER: "歌词改编",
+  ORIGIN_REGION: "来源地区",
+  TRANSLATOR: "翻译",
+  ETHNIC_GROUP: "民族",
+  SONG_ADAPTED_BY: "配歌",
+  MUSICAL_STYLE: "音乐风格",
+  PERFORMANCE_FORM: "演出形式",
+  INSTRUMENT: "乐器",
+  RECORDED_BY: "记录者",
+  ARRANGER: "编曲",
+  TONALITY: "调性",
+  HAS_SCORE: "拥有乐谱",
+  VOCAL_TYPE: "声乐类型",
+  MELODY_CHARACTER: "旋律特点",
+  PERFORMANCE_GUIDANCE: "演唱提示",
+  THEME: "表现主题",
+  CREATION_PERIOD: "创作时期",
+  METER: "节拍",
+  MUSICAL_FORM: "曲式",
+  CREATION_YEAR: "创作年份",
+  HISTORICAL_EVENT: "历史事件",
+  DEPICTS: "描绘",
+  RHYTHM_PATTERN: "节奏型",
+  SOURCE_WORK: "改编来源",
+  RELATED_WORK: "相关作品",
+  CREDIT_NOTE: "署名说明",
+  TEACHING_POINT: "教学要点",
+  CONCEPT_CATEGORY: "概念类别",
+  EXPLAINS_CONCEPT: "解释概念",
+  TASK_ACTION: "教学活动",
+  TASK_TARGET: "活动对象",
+};
+const WORK_TYPES = new Set([
+  "音乐作品",
+  "歌曲",
+  "民歌",
+  "器乐曲",
+  "戏曲歌曲",
+  "戏曲选段",
+  "舞蹈音乐",
+  "影视音乐",
+  "交响作品",
+  "合唱作品",
+  "歌剧音乐",
+  "进行曲",
+  "朗诵作品",
+]);
+const isWorkType = (type?: string) => Boolean(type && WORK_TYPES.has(type));
+const ENTITY_TYPE_ORDER = [
+  "知识概念",
+  "音乐概念",
+  "人物",
+  "歌曲",
+  "民歌",
+  "器乐曲",
+  "戏曲歌曲",
+  "戏曲选段",
+  "舞蹈音乐",
+  "影视音乐",
+  "交响作品",
+  "合唱作品",
+  "歌剧音乐",
+  "进行曲",
+  "朗诵作品",
+  "音乐作品",
+  "地域",
+  "民族",
+  "乐器",
+  "音乐体裁",
+  "音乐风格",
+  "表演形式",
+  "主题与情感",
+  "历史事件",
+  "学习活动",
+  "单元",
+  "教材",
+];
+const RELATION_PRIORITY = [
+  "作曲",
+  "作词",
+  "音乐体裁",
+  "来源于",
+  "所属国家或地区",
+  "所属民族",
+  "使用乐器",
+  "表演形式",
+  "曲式结构",
+  "速度特点",
+  "节拍特点",
+  "节奏特点",
+  "旋律特点",
+  "音乐风格",
+  "表现主题",
+  "表现情感",
+  "描绘内容",
+  "塑造形象",
+  "改编自",
+  "收录作品",
+  "包含作品",
+  "学习方式",
+  "分析维度",
+  "适合开展",
+];
+const typeClass: Record<string, string> = {
+  教材: "book",
+  音乐作品: "work",
+  歌曲: "song",
+  民歌: "folk",
+  器乐曲: "instrumental",
+  戏曲歌曲: "operaSong",
+  戏曲选段: "opera",
+  舞蹈音乐: "dance",
+  影视音乐: "screen",
+  交响作品: "symphonic",
+  合唱作品: "choral",
+  歌剧音乐: "stage",
+  进行曲: "march",
+  朗诵作品: "recitation",
+  人物: "person",
+  单元: "unit",
+  音乐体裁: "genre",
+  主题与情感: "theme",
+  知识概念: "knowledge",
+  音乐概念: "concept",
+  地域: "region",
+  民族: "ethnic",
+  乐器: "instrument",
+  音乐风格: "style",
+  学习活动: "activity",
+  表演形式: "performance",
+  来源作品: "source",
+  创作主体: "creator",
+  创作群体: "creator",
+  署名主体: "creator",
+  历史事件: "event",
+  机构: "organization",
+  节奏型: "rhythm",
+};
+const fmt = (n: number) => new Intl.NumberFormat("zh-CN").format(n);
+const stableSeed = (value: string) => {
+  let hash = 2166136261;
+  for (const char of value) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  return hash;
+};
+const factSentence = (fact: AssistantFact) => {
+  const subject = fact.subject;
+  const object = fact.object;
+  const patterns: Record<string, string> = {
+    作曲: `${subject}由${object}作曲`,
+    作词: `${subject}由${object}作词`,
+    编曲: `${subject}由${object}编曲`,
+    体裁: `${subject}属于${object}`,
+    速度: `${subject}的速度为${object}`,
+    节拍: `${subject}采用${object}节拍`,
+    来源地区: `${subject}来源于${object}`,
+    民族: `${subject}与${object}相关`,
+    乐器: `${subject}使用或关联${object}`,
+    表现主题: `${subject}表现${object}`,
+    拥有乐谱: `${subject}配有${object}`,
+    学习方式: `教材建议以${object}方式学习${subject}`,
+    作品属于单元: `${subject}编排在${object}`,
+    作品收录于教材: `${subject}收录于${object}`,
+    解释概念: `${subject}可解释为${object}`,
+    指: `${subject}是指${object}`,
+    是: `${subject}是${object}`,
   };
-  const allGroups=useMemo(()=>dataset.books.map(buildGroup),[dataset]);
-  const singleGroup=useMemo(()=>{const group=buildGroup(currentBook,0);return {...group,nodes:group.nodes.map(node=>({...node,x:node.x+780,y:node.y+450}))};},[currentBook]);
-  const focusGroup=useMemo(()=>{
-    if(!selected)return singleGroup;
-    const priority=['作曲','作词','编曲','音乐体裁','节拍','速度特点','使用调性','所属国家或地区','所属民族','使用乐器','表现主题','表演形式','曲式','预留乐谱资源','收录作品','学习方式','COMPOSER','LYRICIST','ARRANGER','GENRE','METER','TEMPO','TONALITY','ORIGIN_REGION','ETHNIC_GROUP','INSTRUMENT','THEME','PERFORMANCE_FORM','MUSICAL_FORM','HAS_SCORE','WORK_IN_UNIT','LEARNING_MODE'];
-    const direct=currentBook.triples.filter(t=>t.subject===selected.id||t.objectId===selected.id).sort((a,b)=>{const ai=priority.indexOf(a.predicate);const bi=priority.indexOf(b.predicate);return (ai<0?99:ai)-(bi<0?99:bi);}).slice(0,22);
-    const focusEntities:Entity[]=[selected]; const focusTriples:Triple[]=[]; const seen=new Set<string>([selected.id]);
-    for(const triple of direct){
-      if(triple.objectId){const otherId=triple.subject===selected.id?triple.objectId:triple.subject;const other=currentBook.entities.find(entity=>entity.id===otherId);if(other&&!seen.has(other.id)){seen.add(other.id);focusEntities.push(other);}focusTriples.push(triple);}
-      else if(triple.literal){const literal:Entity={id:'literal-'+triple.id,name:triple.literal,type:'属性值',description:relationText(triple.predicate,currentBook)};focusEntities.push(literal);focusTriples.push({...triple,objectId:literal.id,literal:null});}
+  return patterns[fact.predicate] ?? `${subject}${fact.predicate}${object}`;
+};
+const composeGraphAnswer = (
+  entityName: string,
+  bookTitle: string,
+  facts: AssistantFact[],
+  analytics: GraphAnalytics,
+) => {
+  if (!facts.length)
+    return `图谱已经定位到“${entityName}”，但现有正式关系不足以形成可靠回答。你可以换一种问法，或等待补充教材证据。`;
+  const pages = [
+    ...new Set(
+      facts
+        .map((fact) => fact.page)
+        .filter((page): page is number => typeof page === "number"),
+    ),
+  ];
+  const evidence = pages.length
+    ? `（教材 PDF 第 ${pages.slice(0, 4).join("、")} 页）`
+    : "";
+  const direct = facts
+    .filter((fact) => fact.distance !== 2)
+    .slice(0, 5)
+    .map(factSentence);
+  const linked = facts
+    .filter((fact) => fact.distance === 2)
+    .slice(0, 3)
+    .map(factSentence);
+  const similar = analytics.similarWorks
+    .slice(0, 3)
+    .map((item) => `${item.name}（共同维度：${item.shared.join("、")}）`)
+    .join("、");
+  return `根据《${bookTitle}》${evidence}，${direct.join("；")}。图谱还沿相邻节点分析出：${linked.length ? linked.join("；") : "目前没有足够的二跳关联"}。从六册教材的统计看，共命中 ${analytics.booksHit} 册、${analytics.relationTypes} 种关系和 ${analytics.neighborCount} 个邻接知识点${similar ? `；可进一步对比 ${similar}` : ""}。补充理解：这些关联可用于从“作品事实—音乐要素—文化语境—同类作品”四个层次组织课堂学习，但未在教材证据中出现的具体事实仍需核查。`;
+};
+const demoBook: Book = {
+  key: "g8s2",
+  title: "人音版八年级下册",
+  grade: 8,
+  semester: "下册",
+  pages: 79,
+  entityCount: 7,
+  tripleCount: 8,
+  evidenceCount: 8,
+  workCount: 1,
+  reviewCount: 0,
+  structureShare: 0.2,
+  relations: {},
+  entities: [
+    { id: "demo-book", name: "人音版八年级下册", type: "教材" },
+    {
+      id: "demo-work",
+      name: "游击队歌",
+      type: "音乐作品",
+      description: "抗战题材歌曲，适合从节奏、力度和历史背景展开学习。",
+      firstPage: 34,
+    },
+    { id: "demo-composer", name: "贺绿汀", type: "人物" },
+    { id: "demo-unit", name: "第五单元 环球音乐", type: "单元" },
+    { id: "demo-genre", name: "进行曲", type: "体裁" },
+    { id: "demo-score", name: "教材乐谱·PDF第34页", type: "乐谱资源" },
+    { id: "demo-theme", name: "抗战与人民力量", type: "主题" },
+  ],
+  triples: [
+    {
+      id: "demo-0",
+      subject: "demo-book",
+      predicate: "BOOK_HAS_UNIT",
+      objectId: "demo-unit",
+      sourcePage: 6,
+      confidence: 1,
+    },
+    {
+      id: "demo-1",
+      subject: "demo-work",
+      predicate: "WORK_IN_TEXTBOOK",
+      objectId: "demo-book",
+      sourcePage: 34,
+    },
+    {
+      id: "demo-2",
+      subject: "demo-work",
+      predicate: "COMPOSER",
+      objectId: "demo-composer",
+      sourcePage: 34,
+    },
+    {
+      id: "demo-3",
+      subject: "demo-work",
+      predicate: "GENRE",
+      objectId: "demo-genre",
+      sourcePage: 34,
+    },
+    {
+      id: "demo-4",
+      subject: "demo-work",
+      predicate: "HAS_SCORE",
+      objectId: "demo-score",
+      sourcePage: 34,
+    },
+    {
+      id: "demo-5",
+      subject: "demo-work",
+      predicate: "THEME",
+      objectId: "demo-theme",
+      sourcePage: 34,
+    },
+    {
+      id: "demo-6",
+      subject: "demo-work",
+      predicate: "TEMPO",
+      literal: "中速稍快",
+      objectKind: "字面值",
+      sourcePage: 34,
+    },
+    {
+      id: "demo-7",
+      subject: "demo-work",
+      predicate: "LEARNING_MODE",
+      literal: "演唱",
+      objectKind: "字面值",
+      sourcePage: 34,
+    },
+  ],
+  evidenceByTriple: {},
+};
+
+export default function Home() {
+  const [dataset, setDataset] = useState<Dataset>({ books: [demoBook] });
+  const [bookKey, setBookKey] = useState("g8s2");
+  const [selectedId, setSelectedId] = useState("demo-work");
+  const [query, setQuery] = useState("");
+  const [scope, setScope] = useState<"book" | "all">("book");
+  const [view, setView] = useState<"graph" | "records" | "import">("graph");
+  const [graphMode, setGraphMode] = useState<"all" | "book" | "focus">("all");
+  const [panel, setPanel] = useState<"profile" | "evidence">("profile");
+  const [loaded, setLoaded] = useState(false);
+  const hydrated = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+  const [zoom, setZoom] = useState(1);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [importSummary, setImportSummary] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState("全部");
+  const [showLabels, setShowLabels] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+  const [assistantQuestion, setAssistantQuestion] = useState("");
+  const [assistantResult, setAssistantResult] =
+    useState<AssistantResult | null>(null);
+  const [assistantBusy, setAssistantBusy] = useState(false);
+  const [motionEnabled, setMotionEnabled] = useState(true);
+  const [motionPhase, setMotionPhase] = useState(0);
+  const [dragging, setDragging] = useState<DragState | null>(null);
+  const [dragPositions, setDragPositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
+  useEffect(() => {
+    fetch("./data/music-graph.json")
+      .then((r) => r.json())
+      .then((payload: Dataset) => {
+        if (!payload.books?.length) return;
+        setDataset(payload);
+        const book =
+          payload.books.find((b) => b.key === bookKey) ?? payload.books[0];
+        setBookKey(book.key);
+        const work =
+          book.entities.find((e) => isWorkType(e.type)) ?? book.entities[0];
+        if (work) setSelectedId(work.id);
+      })
+      .catch(() => undefined)
+      .finally(() => setLoaded(true));
+  }, []);
+  useEffect(() => {
+    if (!motionEnabled || graphMode === "focus" || dragging) return;
+    const timer = window.setInterval(
+      () => setMotionPhase((value) => value + 0.055),
+      90,
+    );
+    return () => window.clearInterval(timer);
+  }, [dragging, graphMode, motionEnabled]);
+  const currentBook =
+    dataset.books.find((b) => b.key === bookKey) ?? dataset.books[0];
+  const entityMap = useMemo(
+    () => new Map(currentBook.entities.map((e) => [e.id, e])),
+    [currentBook],
+  );
+  const selected =
+    entityMap.get(selectedId) ??
+    currentBook.entities.find((e) => isWorkType(e.type)) ??
+    currentBook.entities[0];
+  const bookEntity = (book: Book): Entity =>
+    book.entities.find((e) => e.type === "教材") ?? {
+      id: `BOOK_${book.key}`,
+      name: book.title,
+      type: "教材",
+    };
+  const relationText = (predicate: string, book: Book = currentBook) =>
+    RELATION_LABELS[predicate] ??
+    book.relations[predicate] ??
+    predicate.replaceAll("_", " ");
+  const relationLabel = (t: Triple) => relationText(t.predicate);
+  const objectLabel = (t: Triple) =>
+    t.objectId
+      ? (entityMap.get(t.objectId)?.name ?? t.objectId)
+      : (t.literal ?? "未命名客体");
+  const searchResults = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [] as Array<{ entity: Entity; book: Book }>;
+    const books = scope === "all" ? dataset.books : [currentBook];
+    const out: Array<{ entity: Entity; book: Book }> = [];
+    for (const book of books)
+      for (const entity of book.entities) {
+        if (
+          [
+            entity.name,
+            entity.type,
+            entity.description,
+            ...(entity.aliases ?? []),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(q)
+        )
+          out.push({ entity, book });
+        if (out.length === 10) return out;
+      }
+    return out;
+  }, [currentBook, dataset.books, query, scope]);
+  const directTriples = useMemo(
+    () =>
+      currentBook.triples.filter(
+        (t) => t.subject === selected?.id || t.objectId === selected?.id,
+      ),
+    [currentBook, selected],
+  );
+  const evidence = directTriples.flatMap((t) =>
+    (currentBook.evidenceByTriple[t.id] ?? []).map((e) => ({
+      ...e,
+      triple: t,
+    })),
+  );
+  const activeBooks = graphMode === "all" ? dataset.books : [currentBook];
+  const networkEntities = activeBooks.flatMap((book) => book.entities);
+  const networkTriples = activeBooks.flatMap((book) => book.triples);
+  const typeCounts: Record<string, number> = {};
+  const relationCounts: Record<string, number> = {};
+  for (const entity of networkEntities)
+    typeCounts[entity.type] = (typeCounts[entity.type] ?? 0) + 1;
+  for (const triple of networkTriples)
+    relationCounts[
+      relationText(
+        triple.predicate,
+        activeBooks.find((book) => book.triples.includes(triple)) ??
+          currentBook,
+      )
+    ] =
+      (relationCounts[
+        relationText(
+          triple.predicate,
+          activeBooks.find((book) => book.triples.includes(triple)) ??
+            currentBook,
+        )
+      ] ?? 0) + 1;
+  const typeRows = Object.entries(typeCounts).sort((a, b) => {
+    const ai = ENTITY_TYPE_ORDER.indexOf(a[0]);
+    const bi = ENTITY_TYPE_ORDER.indexOf(b[0]);
+    return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi) || b[1] - a[1];
+  });
+  const relationRows = Object.entries(relationCounts).sort((a, b) => {
+    const ai = RELATION_PRIORITY.indexOf(a[0]);
+    const bi = RELATION_PRIORITY.indexOf(b[0]);
+    return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi) || b[1] - a[1];
+  });
+  const maxTypeCount = Math.max(1, ...typeRows.map(([, count]) => count));
+  const buildGroup = (
+    book: Book,
+    index: number,
+    centerOverride?: Entity,
+    layout: "all" | "book" = "all",
+  ): BookGroup => {
+    const center = centerOverride ?? bookEntity(book);
+    const spacious = layout === "book";
+    const edgeList = book.triples.filter(
+      (t) =>
+        t.objectId &&
+        book.entities.some((e) => e.id === t.subject) &&
+        book.entities.some((e) => e.id === t.objectId),
+    );
+    const base = [
+      [420, 300],
+      [1200, 300],
+      [1980, 300],
+      [420, 1050],
+      [1200, 1050],
+      [1980, 1050],
+    ][index] ?? [1200, 650];
+    const map = new Map<string, Triple>();
+    for (const entity of book.entities) {
+      if (entity.id !== center.id)
+        map.set(
+          entity.id,
+          edgeList.find(
+            (t) => t.subject === entity.id || t.objectId === entity.id,
+          ) ?? {
+            id: "synthetic-" + book.key + "-" + entity.id,
+            subject: center.id,
+            predicate: "RELATED_ENTITY",
+            objectId: entity.id,
+          },
+        );
     }
-    const nodes=focusEntities.filter(entity=>entity.id!==selected.id).map((entity,index,all)=>{const count=all.length;const inner=count<=14||index<14;const ringIndex=inner?index:index-14;const ringCount=inner?Math.min(count,14):count-14;const angle=-Math.PI/2+(ringIndex/Math.max(1,ringCount))*Math.PI*2+(inner?0:.16);const radius=inner?390:610;return{entity,triple:focusTriples.find(t=>t.subject===entity.id||t.objectId===entity.id)??{id:'focus-'+entity.id,subject:selected.id,predicate:'RELATED_ENTITY',objectId:entity.id},x:1200+Math.cos(angle)*radius,y:750+Math.sin(angle)*radius*.76};});
-    const focusBook={...currentBook,entities:focusEntities,triples:focusTriples,entityCount:focusEntities.length,tripleCount:focusTriples.length};
-    return {book:focusBook,center:selected,nodes};
-  },[currentBook,selected,singleGroup]);
-  const selectEntity=(entity:Entity,book=currentBook,focus=false)=>{if(book.key!==bookKey)setBookKey(book.key);setSelectedId(entity.id);setQuery('');setView('graph');if(focus){setGraphMode('focus');setTypeFilter('全部');setZoom(1.65);}};
-  const chooseBook=(book:Book)=>{setBookKey(book.key);const work=book.entities.find(e=>isWorkType(e.type))??book.entities[0];if(work)setSelectedId(work.id);setGraphMode('book');setView('graph');setZoom(1);};
-  const submitSearch=(e:FormEvent)=>{e.preventDefault();if(searchResults[0])selectEntity(searchResults[0].entity,searchResults[0].book,true);};
-  const askAssistant=async(e:FormEvent)=>{
+    const ids = [...map.keys()];
+    const positions = ids.map((id) => {
+      const hash = stableSeed(book.key + "-" + id);
+      const angle = ((hash % 100000) / 100000) * Math.PI * 2;
+      const radial =
+        Math.sqrt((Math.floor(hash / 100000) % 1000) / 1000) *
+        (spacious ? 520 : 360);
+      return {
+        x: base[0] + Math.cos(angle) * radial,
+        y: base[1] + Math.sin(angle) * radial * (spacious ? 0.78 : 0.72),
+        entity: book.entities.find((e) => e.id === id) ?? {
+          id,
+          name: id,
+          type: "音乐概念",
+        },
+        triple: map.get(id)!,
+      };
+    });
+    const positionById = new Map(positions.map((node, i) => [ids[i], node]));
+    const links = edgeList.filter(
+      (t) => positionById.has(t.subject) && positionById.has(t.objectId!),
+    );
+    for (let iteration = 0; iteration < (spacious ? 48 : 34); iteration++) {
+      const force = positions.map(() => ({ x: 0, y: 0 }));
+      for (let a = 0; a < positions.length; a++)
+        for (let b = a + 1; b < positions.length; b++) {
+          const dx = positions[a].x - positions[b].x;
+          const dy = positions[a].y - positions[b].y;
+          const distance = Math.max(spacious ? 48 : 36, Math.hypot(dx, dy));
+          const push = Math.min(
+            spacious ? 58 : 44,
+            (spacious ? 15000 : 9000) / (distance * distance),
+          );
+          force[a].x += (dx / distance) * push;
+          force[a].y += (dy / distance) * push;
+          force[b].x -= (dx / distance) * push;
+          force[b].y -= (dy / distance) * push;
+        }
+      for (const link of links) {
+        const from = positionById.get(link.subject)!;
+        const to = positionById.get(link.objectId!)!;
+        const fromIndex = ids.indexOf(link.subject);
+        const toIndex = ids.indexOf(link.objectId!);
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const spring = (distance - (spacious ? 245 : 190)) * 0.005;
+        force[fromIndex].x += (dx / distance) * spring;
+        force[fromIndex].y += (dy / distance) * spring;
+        force[toIndex].x -= (dx / distance) * spring;
+        force[toIndex].y -= (dy / distance) * spring;
+      }
+      positions.forEach((node, nodeIndex) => {
+        const dx = base[0] - node.x;
+        const dy = base[1] - node.y;
+        force[nodeIndex].x += dx * (spacious ? 0.0009 : 0.0013);
+        force[nodeIndex].y += dy * (spacious ? 0.0009 : 0.0013);
+        const distance = Math.max(
+          1,
+          Math.hypot(node.x - base[0], node.y - base[1]),
+        );
+        if (distance < (spacious ? 195 : 155)) {
+          force[nodeIndex].x += ((node.x - base[0]) / distance) * 5;
+          force[nodeIndex].y += ((node.y - base[1]) / distance) * 5;
+        }
+        node.x += force[nodeIndex].x;
+        node.y += force[nodeIndex].y;
+        const boundedX = node.x - base[0];
+        const boundedY = node.y - base[1];
+        const ellipse = Math.hypot(
+          boundedX / (spacious ? 620 : 470),
+          boundedY / (spacious ? 460 : 350),
+        );
+        if (ellipse > 1) {
+          node.x = base[0] + boundedX / ellipse;
+          node.y = base[1] + boundedY / ellipse;
+        }
+      });
+    }
+    return { book, center, nodes: positions };
+  };
+  const allGroups = useMemo(
+    () =>
+      dataset.books.map((book, index) =>
+        buildGroup(book, index, undefined, "all"),
+      ),
+    [dataset],
+  );
+  const singleGroup = useMemo(() => {
+    const group = buildGroup(currentBook, 0, undefined, "book");
+    return {
+      ...group,
+      nodes: group.nodes.map((node) => ({
+        ...node,
+        x: node.x + 780,
+        y: node.y + 450,
+      })),
+    };
+  }, [currentBook]);
+  const focusGroup = useMemo(() => {
+    if (!selected) return singleGroup;
+    const priority = [
+      "作曲",
+      "作词",
+      "编曲",
+      "音乐体裁",
+      "节拍",
+      "速度特点",
+      "使用调性",
+      "所属国家或地区",
+      "所属民族",
+      "使用乐器",
+      "表现主题",
+      "表演形式",
+      "曲式",
+      "预留乐谱资源",
+      "收录作品",
+      "学习方式",
+      "COMPOSER",
+      "LYRICIST",
+      "ARRANGER",
+      "GENRE",
+      "METER",
+      "TEMPO",
+      "TONALITY",
+      "ORIGIN_REGION",
+      "ETHNIC_GROUP",
+      "INSTRUMENT",
+      "THEME",
+      "PERFORMANCE_FORM",
+      "MUSICAL_FORM",
+      "HAS_SCORE",
+      "WORK_IN_UNIT",
+      "LEARNING_MODE",
+    ];
+    const direct = currentBook.triples
+      .filter((t) => t.subject === selected.id || t.objectId === selected.id)
+      .sort((a, b) => {
+        const ai = priority.indexOf(a.predicate);
+        const bi = priority.indexOf(b.predicate);
+        return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+      })
+      .slice(0, 22);
+    const focusEntities: Entity[] = [selected];
+    const focusTriples: Triple[] = [];
+    const seen = new Set<string>([selected.id]);
+    for (const triple of direct) {
+      if (triple.objectId) {
+        const otherId =
+          triple.subject === selected.id ? triple.objectId : triple.subject;
+        const other = currentBook.entities.find(
+          (entity) => entity.id === otherId,
+        );
+        if (other && !seen.has(other.id)) {
+          seen.add(other.id);
+          focusEntities.push(other);
+        }
+        focusTriples.push(triple);
+      } else if (triple.literal) {
+        const literal: Entity = {
+          id: "literal-" + triple.id,
+          name: triple.literal,
+          type: "属性值",
+          description: relationText(triple.predicate, currentBook),
+        };
+        focusEntities.push(literal);
+        focusTriples.push({ ...triple, objectId: literal.id, literal: null });
+      }
+    }
+    const nodes = focusEntities
+      .filter((entity) => entity.id !== selected.id)
+      .map((entity, index, all) => {
+        const count = all.length;
+        const inner = count <= 14 || index < 14;
+        const ringIndex = inner ? index : index - 14;
+        const ringCount = inner ? Math.min(count, 14) : count - 14;
+        const angle =
+          -Math.PI / 2 +
+          (ringIndex / Math.max(1, ringCount)) * Math.PI * 2 +
+          (inner ? 0 : 0.16);
+        const radius = inner ? 450 : 700;
+        return {
+          entity,
+          triple: focusTriples.find(
+            (t) => t.subject === entity.id || t.objectId === entity.id,
+          ) ?? {
+            id: "focus-" + entity.id,
+            subject: selected.id,
+            predicate: "RELATED_ENTITY",
+            objectId: entity.id,
+          },
+          x: 1200 + Math.cos(angle) * radius,
+          y: 750 + Math.sin(angle) * radius * 0.76,
+        };
+      });
+    const focusBook = {
+      ...currentBook,
+      entities: focusEntities,
+      triples: focusTriples,
+      entityCount: focusEntities.length,
+      tripleCount: focusTriples.length,
+    };
+    return { book: focusBook, center: selected, nodes };
+  }, [currentBook, selected, singleGroup]);
+  const selectEntity = (entity: Entity, book = currentBook, focus = false) => {
+    if (book.key !== bookKey) setBookKey(book.key);
+    setSelectedId(entity.id);
+    setQuery("");
+    setView("graph");
+    if (focus) {
+      setGraphMode("focus");
+      setTypeFilter("全部");
+      setZoom(1.65);
+    }
+  };
+  const chooseBook = (book: Book) => {
+    setBookKey(book.key);
+    const work =
+      book.entities.find((e) => isWorkType(e.type)) ?? book.entities[0];
+    if (work) setSelectedId(work.id);
+    setGraphMode("book");
+    setView("graph");
+    setZoom(1);
+  };
+  const submitSearch = (e: FormEvent) => {
     e.preventDefault();
-    const question=assistantQuestion.trim();
-    if(!question){setAssistantResult({summary:'需要一个问题',answer:'请输入作品、人物、体裁或音乐概念，我会从六册教材图谱中寻找证据。',facts:[],poweredBy:'graph'});return;}
+    if (searchResults[0])
+      selectEntity(searchResults[0].entity, searchResults[0].book, true);
+  };
+  const askAssistant = async (e: FormEvent) => {
+    e.preventDefault();
+    const question = assistantQuestion.trim();
+    if (!question) {
+      setAssistantResult({
+        summary: "需要一个问题",
+        answer:
+          "请输入作品、人物、体裁或音乐概念，我会从六册教材图谱中寻找证据。",
+        facts: [],
+        poweredBy: "graph",
+      });
+      return;
+    }
     setAssistantBusy(true);
-    const compact=(value:string)=>value.toLowerCase().replace(/[《》“”"'\s，。！？、：；·（）()]/g,'');
-    const normalizedQuestion=compact(question);
-    const matches:Array<{entity:Entity;book:Book;score:number}>=[];
-    for(const book of dataset.books)for(const entity of book.entities){let score=0;for(const term of [entity.name,...(entity.aliases??[])]){const normalizedTerm=compact(term);if(normalizedTerm&&normalizedQuestion.includes(normalizedTerm))score=Math.max(score,200+normalizedTerm.length);else if(normalizedQuestion.length>1&&normalizedTerm.includes(normalizedQuestion))score=Math.max(score,80);}if(score>0)matches.push({entity,book,score});}
-    matches.sort((a,b)=>b.score-a.score);
-    const match=matches[0]??(assistantResult?.entity&&assistantResult.book&&/[它这首这个该作品还有那么]/.test(question)?{entity:assistantResult.entity,book:assistantResult.book,score:50}:undefined);
-    if(!match){setAssistantResult({summary:'没有找到教材证据',answer:'当前六册教材知识图谱中没有找到与这个问题直接对应的实体。请尝试输入完整的作品名、人物名或音乐概念。',facts:[],poweredBy:'graph'});setAssistantBusy(false);return;}
-    const entityById=new Map(match.book.entities.map(entity=>[entity.id,entity]));
-    let triples=match.book.triples.filter(t=>t.subject===match.entity.id||t.objectId===match.entity.id);
-    const intentHints:Record<string,string[]>={作曲:['作曲','谁创作','曲作者','作者'],作词:['作词','词作者'],体裁:['体裁','类型'],速度:['速度','快慢'],节拍:['节拍','拍子'],来源地区:['来源','地区','国家'],民族:['民族'],乐器:['乐器','演奏什么'],表现主题:['主题','表现什么'],拥有乐谱:['乐谱','谱子'],学习方式:['学习方式','怎么学习']};
-    const intent=Object.entries(intentHints).find(([,hints])=>hints.some(hint=>question.includes(hint)))?.[0];
-    if(intent){const filtered=triples.filter(t=>relationText(t.predicate,match.book).includes(intent));if(filtered.length)triples=filtered;}
-    const seen=new Set<string>();
-    const facts:AssistantFact[]=[];
-    for(const triple of triples){const subject=entityById.get(triple.subject)?.name??triple.subject;const object=triple.objectId?(entityById.get(triple.objectId)?.name??triple.objectId):(triple.literal??'未记录');const predicate=relationText(triple.predicate,match.book);const key=subject+'|'+predicate+'|'+object;if(seen.has(key))continue;seen.add(key);facts.push({subject,predicate,object,bookTitle:match.book.title,page:triple.sourcePage});if(facts.length===8)break;}
-    const fallback=composeGraphAnswer(match.entity.name,match.book.title,facts);
-    let answer=fallback; let poweredBy:'gpt'|'graph'='graph';
-    try{
-      const response=await fetch('/api/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question,entityName:match.entity.name,bookTitle:match.book.title,facts,previousAnswer:assistantResult?.answer??''})});
-      if(response.ok){const payload=await response.json() as {answer?:string;poweredBy?:string};if(payload.answer){answer=payload.answer;poweredBy=payload.poweredBy==='gpt'?'gpt':'graph';}}
-    }catch{/* 无模型密钥时继续使用本地图谱逻辑回答。 */}
-    const summary=poweredBy==='gpt'?`GPT 已综合 ${facts.length} 条教材关系`:`已综合 ${facts.length} 条教材关系`;
-    setAssistantResult({summary,answer,facts,entity:match.entity,book:match.book,poweredBy});
+    const compact = (value: string) =>
+      value.toLowerCase().replace(/[《》“”"'\s，。！？、：；·（）()]/g, "");
+    const normalizedQuestion = compact(question);
+    const matches: Array<{ entity: Entity; book: Book; score: number }> = [];
+    for (const book of dataset.books)
+      for (const entity of book.entities) {
+        let score = 0;
+        for (const term of [entity.name, ...(entity.aliases ?? [])]) {
+          const normalizedTerm = compact(term);
+          if (normalizedTerm && normalizedQuestion.includes(normalizedTerm))
+            score = Math.max(score, 240 + normalizedTerm.length);
+          else if (
+            normalizedQuestion.length > 1 &&
+            normalizedTerm.includes(normalizedQuestion)
+          )
+            score = Math.max(score, 100);
+        }
+        if (question.includes(entity.type)) score = Math.max(score, 30);
+        if (score > 0) matches.push({ entity, book, score });
+      }
+    matches.sort((a, b) => b.score - a.score);
+    const match =
+      matches[0] ??
+      (assistantResult?.entity &&
+      assistantResult.book &&
+      /[它这首这个该作品还有那么]/.test(question)
+        ? {
+            entity: assistantResult.entity,
+            book: assistantResult.book,
+            score: 50,
+          }
+        : undefined);
+    if (!match) {
+      setAssistantResult({
+        summary: "没有找到教材证据",
+        answer:
+          "当前六册教材知识图谱中没有找到与这个问题直接对应的实体。请尝试输入完整的作品名、人物名或音乐概念。",
+        facts: [],
+        poweredBy: "graph",
+      });
+      setAssistantBusy(false);
+      return;
+    }
+    const intentHints: Record<string, string[]> = {
+      作曲: ["作曲", "谁创作", "曲作者", "作者"],
+      作词: ["作词", "词作者"],
+      体裁: ["体裁", "类型"],
+      速度: ["速度", "快慢"],
+      节拍: ["节拍", "拍子"],
+      来源地区: ["来源", "地区", "国家"],
+      民族: ["民族"],
+      乐器: ["乐器", "演奏什么"],
+      表现主题: ["主题", "表现什么"],
+      拥有乐谱: ["乐谱", "谱子"],
+      学习方式: ["学习方式", "怎么学习"],
+    };
+    const intent = Object.entries(intentHints).find(([, hints]) =>
+      hints.some((hint) => question.includes(hint)),
+    )?.[0];
+    const anchors: Array<{ entity: Entity; book: Book }> = [];
+    const anchorName = compact(match.entity.name);
+    for (const book of dataset.books)
+      for (const entity of book.entities)
+        if (compact(entity.name) === anchorName) anchors.push({ entity, book });
+    if (
+      !anchors.some(
+        (item) =>
+          item.entity.id === match.entity.id &&
+          item.book.key === match.book.key,
+      )
+    )
+      anchors.unshift({ entity: match.entity, book: match.book });
+    const seen = new Set<string>();
+    const neighbors = new Set<string>();
+    const hitBooks = new Set<string>();
+    const facts: AssistantFact[] = [];
+    const addFact = (book: Book, triple: Triple, distance: 1 | 2) => {
+      const map = new Map(book.entities.map((entity) => [entity.id, entity]));
+      const subject = map.get(triple.subject)?.name ?? triple.subject;
+      const object = triple.objectId
+        ? (map.get(triple.objectId)?.name ?? triple.objectId)
+        : (triple.literal ?? "未记录");
+      const predicate = relationText(triple.predicate, book);
+      const key = subject + "|" + predicate + "|" + object + "|" + book.key;
+      if (seen.has(key) || facts.length >= 32) return;
+      seen.add(key);
+      hitBooks.add(book.key);
+      facts.push({
+        subject,
+        predicate,
+        object,
+        bookTitle: book.title,
+        page: triple.sourcePage,
+        distance,
+      });
+    };
+    for (const anchor of anchors) {
+      const direct = anchor.book.triples
+        .filter(
+          (t) =>
+            t.subject === anchor.entity.id || t.objectId === anchor.entity.id,
+        )
+        .sort((a, b) => {
+          const aIntent =
+            intent && relationText(a.predicate, anchor.book).includes(intent)
+              ? -1
+              : 0;
+          const bIntent =
+            intent && relationText(b.predicate, anchor.book).includes(intent)
+              ? -1
+              : 0;
+          return aIntent - bIntent + (b.confidence ?? 0) - (a.confidence ?? 0);
+        })
+        .slice(0, 18);
+      for (const triple of direct) {
+        addFact(anchor.book, triple, 1);
+        if (triple.objectId)
+          neighbors.add(
+            anchor.book.key +
+              "|" +
+              (triple.subject === anchor.entity.id
+                ? triple.objectId
+                : triple.subject),
+          );
+      }
+      const neighborIds = [
+        ...new Set(
+          direct.flatMap((triple) =>
+            triple.objectId
+              ? [
+                  triple.subject === anchor.entity.id
+                    ? triple.objectId
+                    : triple.subject,
+                ]
+              : [],
+          ),
+        ),
+      ].slice(0, 10);
+      for (const neighborId of neighborIds) {
+        for (const triple of anchor.book.triples
+          .filter(
+            (item) =>
+              (item.subject === neighborId || item.objectId === neighborId) &&
+              item.subject !== anchor.entity.id &&
+              item.objectId !== anchor.entity.id,
+          )
+          .slice(0, 2))
+          addFact(anchor.book, triple, 2);
+      }
+    }
+    const comparePredicates = new Set([
+      "作曲",
+      "作词",
+      "编曲",
+      "音乐体裁",
+      "所属国家或地区",
+      "来源地区",
+      "所属民族",
+      "民族",
+      "使用乐器",
+      "乐器",
+      "音乐风格",
+      "表现主题",
+      "表演形式",
+      "曲式结构",
+      "曲式",
+    ]);
+    const signatures = (book: Book, entity: Entity) => {
+      const map = new Map(book.entities.map((item) => [item.id, item]));
+      const values = new Map<string, string>();
+      for (const triple of book.triples.filter(
+        (item) => item.subject === entity.id,
+      )) {
+        const predicate = relationText(triple.predicate, book);
+        if (!comparePredicates.has(predicate)) continue;
+        const object = triple.objectId
+          ? (map.get(triple.objectId)?.name ?? "")
+          : (triple.literal ?? "");
+        if (object)
+          values.set(
+            predicate + "|" + compact(object),
+            predicate + "：" + object,
+          );
+      }
+      return values;
+    };
+    const anchorSignatures = new Map<string, string>();
+    for (const anchor of anchors)
+      for (const [key, label] of signatures(anchor.book, anchor.entity))
+        anchorSignatures.set(key, label);
+    const similarWorks: Array<SimilarWork & { score: number }> = [];
+    for (const book of dataset.books)
+      for (const entity of book.entities) {
+        if (!isWorkType(entity.type) || compact(entity.name) === anchorName)
+          continue;
+        const shared = [...signatures(book, entity)]
+          .filter(([key]) => anchorSignatures.has(key))
+          .map(([, label]) => label);
+        if (shared.length)
+          similarWorks.push({
+            name: entity.name,
+            bookTitle: book.title,
+            shared: shared.slice(0, 4),
+            score: shared.length,
+          });
+      }
+    similarWorks.sort(
+      (a, b) => b.score - a.score || a.name.localeCompare(b.name, "zh-CN"),
+    );
+    const analytics: GraphAnalytics = {
+      booksHit: hitBooks.size,
+      directCount: facts.filter((fact) => fact.distance === 1).length,
+      multiHopCount: facts.filter((fact) => fact.distance === 2).length,
+      relationTypes: new Set(facts.map((fact) => fact.predicate)).size,
+      neighborCount: neighbors.size,
+      similarWorks: similarWorks
+        .slice(0, 5)
+        .map(({ name, bookTitle, shared }) => ({ name, bookTitle, shared })),
+    };
+    const fallback = composeGraphAnswer(
+      match.entity.name,
+      match.book.title,
+      facts,
+      analytics,
+    );
+    let answer = fallback;
+    let poweredBy: "gpt" | "graph" = "graph";
+    try {
+      const response = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          question,
+          entityName: match.entity.name,
+          bookTitle: match.book.title,
+          facts,
+          analytics,
+          previousAnswer: assistantResult?.answer ?? "",
+        }),
+      });
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          answer?: string;
+          poweredBy?: string;
+        };
+        if (payload.answer) {
+          answer = payload.answer;
+          poweredBy = payload.poweredBy === "gpt" ? "gpt" : "graph";
+        }
+      }
+    } catch {
+      /* 无模型密钥时继续使用本地图谱逻辑回答。 */
+    }
+    const summary = `${poweredBy === "gpt" ? "AI 深度分析" : "图谱分析"} · ${analytics.booksHit} 册 · ${analytics.directCount} 条直接关系 · ${analytics.multiHopCount} 条二跳关系`;
+    setAssistantResult({
+      summary,
+      answer,
+      facts,
+      analytics,
+      entity: match.entity,
+      book: match.book,
+      poweredBy,
+    });
     setAssistantBusy(false);
   };
-  const onImport=async(e:ChangeEvent<HTMLInputElement>)=>{const file=e.target.files?.[0];if(!file)return;try{const payload=JSON.parse(await file.text()) as {books?:Book[]};const books=payload.books?.length??0;const triples=payload.books?.reduce((s,b)=>s+(b.triples?.length??0),0)??0;if(process.env.NEXT_PUBLIC_STATIC_EXPORT==='1'){setImportSummary(`已读取 ${file.name}：${books||1} 册、${fmt(triples)} 条关系。静态公开版支持本地校验；在线持久化导入需连接独立后端。`);return;}setImportSummary(`已读取 ${file.name}：${books||1} 册、${fmt(triples)} 条关系，正在写入…`);const response=await fetch('/api/import',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const result=await response.json() as {ok?:boolean;message?:string;statements?:number};setImportSummary(response.ok&&result.ok?`导入成功：${fmt(result.statements??0)} 条持久化记录。`:`格式已校验，但未写入：${result.message??'请检查登录状态。'}`);}catch{setImportSummary('文件格式无法识别，请上传标准 JSON 导入包。');}};
-  const renderNode=(node:PositionedNode,book:Book)=>{
-    const nodeKey=book.key+'-'+node.entity.id;
-    const selectedNode=node.entity.id===selectedId;
-    const highlighted=selectedNode||hoveredId===nodeKey;
-    const radius=selectedNode?24:(isWorkType(node.entity.type)?17:13);
-    const label=node.entity.name.length>14?node.entity.name.slice(0,14)+'…':node.entity.name;
-    return <g key={nodeKey} className={'svg-node '+(typeClass[node.entity.type]??'concept')+(highlighted?' highlighted':'')} transform={'translate('+node.x+' '+node.y+')'} onMouseEnter={()=>setHoveredId(nodeKey)} onMouseLeave={()=>setHoveredId(null)} onClick={()=>selectEntity(node.entity,book)}>
-      <title>{node.entity.name+' · '+node.entity.type}</title>
-      <circle r={radius}/>
-      {showLabels&&<><text className="node-glyph" y="-6">{node.entity.type==='人物'?'✦':node.entity.type==='乐谱资源'?'♫':node.entity.type==='体裁'?'◒':'◆'}</text><text className="node-name" y="15">{label}</text><text className="node-type" y="29">{node.entity.type}</text></>}
-    </g>;
+  const onImport = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const payload = JSON.parse(await file.text()) as { books?: Book[] };
+      const books = payload.books?.length ?? 0;
+      const triples =
+        payload.books?.reduce((s, b) => s + (b.triples?.length ?? 0), 0) ?? 0;
+      if (process.env.NEXT_PUBLIC_STATIC_EXPORT === "1") {
+        setImportSummary(
+          `已读取 ${file.name}：${books || 1} 册、${fmt(triples)} 条关系。静态公开版支持本地校验；在线持久化导入需连接独立后端。`,
+        );
+        return;
+      }
+      setImportSummary(
+        `已读取 ${file.name}：${books || 1} 册、${fmt(triples)} 条关系，正在写入…`,
+      );
+      const response = await fetch("/api/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        message?: string;
+        statements?: number;
+      };
+      setImportSummary(
+        response.ok && result.ok
+          ? `导入成功：${fmt(result.statements ?? 0)} 条持久化记录。`
+          : `格式已校验，但未写入：${result.message ?? "请检查登录状态。"}`,
+      );
+    } catch {
+      setImportSummary("文件格式无法识别，请上传标准 JSON 导入包。");
+    }
   };
-  const renderGroup=(group:BookGroup)=>{
-    const isFocus=graphMode==='focus'&&group===focusGroup;
-    const groupIndex=allGroups.indexOf(group);
-    const baseX=isFocus||group===singleGroup?1200:([420,1200,1980][groupIndex%3]??1200);
-    const baseY=isFocus||group===singleGroup?750:([300,300,300,1050,1050,1050][groupIndex]??750);
-    const positions=new Map(group.nodes.map(node=>[node.entity.id,node]));
-    const visible=(id:string)=>{const entity=group.book.entities.find(item=>item.id===id);return id===group.center.id||typeFilter==='全部'||entity?.type===typeFilter||id===selectedId;};
-    const point=(id:string)=>id===group.center.id?{x:baseX,y:baseY}:visible(id)?positions.get(id):undefined;
-    const edges=group.book.triples.filter(t=>t.objectId&&point(t.subject)&&point(t.objectId));
-    return <g key={group.book.key}>
-      {edges.map(t=>{const from=point(t.subject)!;const to=point(t.objectId!)!;const active=t.subject===selectedId||t.objectId===selectedId;return <g key={'edge-'+group.book.key+'-'+t.id}><line className={'neo-edge '+(active?'active':'')} x1={from.x} y1={from.y} x2={to.x} y2={to.y} markerEnd="url(#arrow)"/><text className={'edge-label '+(active?'active':'')} x={(from.x+to.x)/2} y={(from.y+to.y)/2-4}>{showLabels?relationText(t.predicate,group.book):''}</text></g>})}
-      <g className={'svg-node center '+(typeClass[group.center.type]??'book')} transform={'translate('+baseX+' '+baseY+')'} onClick={()=>{if(!isFocus){setBookKey(group.book.key);setGraphMode('book');setTypeFilter('全部')}}}><circle r={isFocus?46:graphMode==='all'?42:54}/><circle className="node-ring" r={isFocus?58:graphMode==='all'?53:66}/><text className="node-glyph" y="-9">{isFocus?'◎':'▣'}</text><text className="node-name" y="10">{isFocus?(group.center.name.length>12?group.center.name.slice(0,12)+'…':group.center.name):group.book.grade+'年级'+group.book.semester}</text><text className="node-type" y="25">{isFocus?group.center.type:'教材中心'}</text></g>
-      {group.nodes.filter(node=>visible(node.entity.id)).map(node=>renderNode(node,group.book))}
-    </g>;
+  const nodePoint = (
+    node: Pick<PositionedNode, "entity" | "x" | "y">,
+    book: Book,
+  ) => {
+    const nodeKey = book.key + "-" + node.entity.id;
+    const dragged = dragPositions[nodeKey];
+    if (dragged) return dragged;
+    if (!motionEnabled || graphMode === "focus")
+      return { x: node.x, y: node.y };
+    const seed = stableSeed(nodeKey);
+    const amplitude = graphMode === "all" ? 4.5 : 8;
+    return {
+      x:
+        node.x + Math.sin(motionPhase + (seed % 31)) * (amplitude + (seed % 4)),
+      y:
+        node.y +
+        Math.cos(motionPhase * 0.82 + (seed % 47)) *
+          (amplitude * 0.72 + (seed % 3)),
+    };
+  };
+  const graphPointer = (event: ReactPointerEvent<SVGGElement>) => {
+    const svg = event.currentTarget.ownerSVGElement;
+    const rect = svg?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+    const rawX = ((event.clientX - rect.left) / rect.width) * 2400;
+    const rawY = ((event.clientY - rect.top) / rect.height) * 1500;
+    return { x: 1200 + (rawX - 1200) / zoom, y: 750 + (rawY - 750) / zoom };
+  };
+  const beginDrag = (
+    event: ReactPointerEvent<SVGGElement>,
+    entity: Entity,
+    book: Book,
+    point: { x: number; y: number },
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const cursor = graphPointer(event);
+    setDragging({
+      nodeKey: book.key + "-" + entity.id,
+      pointerId: event.pointerId,
+      offsetX: cursor.x - point.x,
+      offsetY: cursor.y - point.y,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      entity,
+      book,
+    });
+  };
+  const moveDrag = (event: ReactPointerEvent<SVGGElement>) => {
+    if (!dragging || dragging.pointerId !== event.pointerId) return;
+    const cursor = graphPointer(event);
+    setDragPositions((previous) => ({
+      ...previous,
+      [dragging.nodeKey]: {
+        x: cursor.x - dragging.offsetX,
+        y: cursor.y - dragging.offsetY,
+      },
+    }));
+  };
+  const endDrag = (event: ReactPointerEvent<SVGGElement>) => {
+    if (!dragging || dragging.pointerId !== event.pointerId) return;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    const moved = Math.hypot(
+      event.clientX - dragging.startClientX,
+      event.clientY - dragging.startClientY,
+    );
+    if (moved < 5) selectEntity(dragging.entity, dragging.book);
+    setDragging(null);
+  };
+  const renderNode = (node: PositionedNode, book: Book) => {
+    const nodeKey = book.key + "-" + node.entity.id;
+    const selectedNode = node.entity.id === selectedId;
+    const highlighted = selectedNode || hoveredId === nodeKey;
+    const radius = selectedNode ? 24 : isWorkType(node.entity.type) ? 17 : 13;
+    const label =
+      node.entity.name.length > 14
+        ? node.entity.name.slice(0, 14) + "…"
+        : node.entity.name;
+    const point = nodePoint(node, book);
+    return (
+      <g
+        key={nodeKey}
+        className={
+          "svg-node draggable " +
+          (typeClass[node.entity.type] ?? "concept") +
+          (highlighted ? " highlighted" : "") +
+          (dragging?.nodeKey === nodeKey ? " dragging" : "")
+        }
+        transform={"translate(" + point.x + " " + point.y + ")"}
+        onMouseEnter={() => setHoveredId(nodeKey)}
+        onMouseLeave={() => setHoveredId(null)}
+        onPointerDown={(event) => beginDrag(event, node.entity, book, point)}
+        onPointerMove={moveDrag}
+        onPointerUp={endDrag}
+        onPointerCancel={() => setDragging(null)}
+      >
+        <title>{node.entity.name + " · " + node.entity.type}</title>
+        <circle r={radius} />
+        {showLabels && (
+          <>
+            <text className="node-glyph" y="-6">
+              {node.entity.type === "人物"
+                ? "✦"
+                : node.entity.type === "乐谱资源"
+                  ? "♫"
+                  : node.entity.type === "体裁"
+                    ? "◒"
+                    : "◆"}
+            </text>
+            <text className="node-name" y="15">
+              {label}
+            </text>
+            <text className="node-type" y="29">
+              {node.entity.type}
+            </text>
+          </>
+        )}
+      </g>
+    );
+  };
+  const renderGroup = (group: BookGroup) => {
+    const isFocus = graphMode === "focus" && group === focusGroup;
+    const groupIndex = allGroups.indexOf(group);
+    const baseX =
+      isFocus || group === singleGroup
+        ? 1200
+        : ([420, 1200, 1980][groupIndex % 3] ?? 1200);
+    const baseY =
+      isFocus || group === singleGroup
+        ? 750
+        : ([300, 300, 300, 1050, 1050, 1050][groupIndex] ?? 750);
+    const positions = new Map(
+      group.nodes.map((node) => [node.entity.id, node]),
+    );
+    const visible = (id: string) => {
+      const entity = group.book.entities.find((item) => item.id === id);
+      return (
+        id === group.center.id ||
+        typeFilter === "全部" ||
+        entity?.type === typeFilter ||
+        id === selectedId
+      );
+    };
+    const centerNode = {
+      entity: group.center,
+      x: baseX,
+      y: baseY,
+      triple: {
+        id: "center-" + group.book.key,
+        subject: group.center.id,
+        predicate: "教材中心",
+      },
+    };
+    const centerPoint = nodePoint(centerNode, group.book);
+    const point = (id: string) =>
+      id === group.center.id
+        ? centerPoint
+        : visible(id) && positions.get(id)
+          ? nodePoint(positions.get(id)!, group.book)
+          : undefined;
+    const edges = group.book.triples.filter(
+      (t) => t.objectId && point(t.subject) && point(t.objectId),
+    );
+    return (
+      <g key={group.book.key}>
+        {edges.map((t) => {
+          const from = point(t.subject)!;
+          const to = point(t.objectId!)!;
+          const active = t.subject === selectedId || t.objectId === selectedId;
+          return (
+            <g key={"edge-" + group.book.key + "-" + t.id}>
+              <line
+                className={"neo-edge " + (active ? "active" : "")}
+                x1={from.x}
+                y1={from.y}
+                x2={to.x}
+                y2={to.y}
+                markerEnd="url(#arrow)"
+              />
+              <text
+                className={"edge-label " + (active ? "active" : "")}
+                x={(from.x + to.x) / 2}
+                y={(from.y + to.y) / 2 - 4}
+              >
+                {showLabels ? relationText(t.predicate, group.book) : ""}
+              </text>
+            </g>
+          );
+        })}
+        <g
+          className={
+            "svg-node center draggable " +
+            (typeClass[group.center.type] ?? "book") +
+            (dragging?.nodeKey === group.book.key + "-" + group.center.id
+              ? " dragging"
+              : "")
+          }
+          transform={"translate(" + centerPoint.x + " " + centerPoint.y + ")"}
+          onPointerDown={(event) =>
+            beginDrag(event, group.center, group.book, centerPoint)
+          }
+          onPointerMove={moveDrag}
+          onPointerUp={(event) => {
+            const moved = dragging
+              ? Math.hypot(
+                  event.clientX - dragging.startClientX,
+                  event.clientY - dragging.startClientY,
+                )
+              : 0;
+            endDrag(event);
+            if (moved < 5 && !isFocus) {
+              setBookKey(group.book.key);
+              setGraphMode("book");
+              setTypeFilter("全部");
+            }
+          }}
+          onPointerCancel={() => setDragging(null)}
+        >
+          <circle r={isFocus ? 46 : graphMode === "all" ? 42 : 54} />
+          <circle
+            className="node-ring"
+            r={isFocus ? 58 : graphMode === "all" ? 53 : 66}
+          />
+          <text className="node-glyph" y="-9">
+            {isFocus ? "◎" : "▣"}
+          </text>
+          <text className="node-name" y="10">
+            {isFocus
+              ? group.center.name.length > 12
+                ? group.center.name.slice(0, 12) + "…"
+                : group.center.name
+              : group.book.grade + "年级" + group.book.semester}
+          </text>
+          <text className="node-type" y="25">
+            {isFocus ? group.center.type : "教材中心"}
+          </text>
+        </g>
+        {group.nodes
+          .filter((node) => visible(node.entity.id))
+          .map((node) => renderNode(node, group.book))}
+      </g>
+    );
   };
 
-  if (!hydrated) return <div className="app-loading" aria-busy="true">正在载入乐知图谱…</div>;
-  return <main className="app-shell"><aside className="sidebar"><div className="brand-lockup"><div className="brand-mark"><span/><span/><span/></div><div><p className="eyebrow">MUSIC KNOWLEDGE GRAPH</p><p className="brand-name">乐知图谱</p></div></div><div className="sidebar-section"><p className="section-label">图谱空间</p><button className={`nav-item ${view==='graph'?'active':''}`} onClick={()=>setView('graph')}><span>◉</span>图谱探索</button><button className={`nav-item ${view==='records'?'active':''}`} onClick={()=>setView('records')}><span>▦</span>作品档案</button><button className={`nav-item ${view==='import'?'active':''}`} onClick={()=>setView('import')}><span>⇧</span>数据导入</button></div><div className="sidebar-section book-section"><div className="section-label-row"><p className="section-label">独立教材图谱</p><span className="count-badge">{dataset.books.length}</span></div><div className="book-list">{dataset.books.map(book=><button key={book.key} className={`book-item ${book.key===bookKey?'selected':''}`} onClick={()=>chooseBook(book)}><span className="book-dot"/><span className="book-copy"><strong>{book.grade}年级{book.semester}</strong><small>{fmt(book.tripleCount)} 条正式关系</small></span>{book.key===bookKey&&<span className="book-arrow">›</span>}</button>)}</div></div><div className="sidebar-footer"><span className="status-dot"/>公开访问<span className="sync-label">{loaded?'LIVE':'LOAD'}</span></div></aside><section className="workspace"><header className="topbar"><div><p className="eyebrow muted">GRAPH EXPLORER / {graphMode==='all'?'六册叠加':graphMode==='focus'?'知识点聚焦':'单册展开'}</p><h1>{view==='graph'?'教材知识图谱':view==='records'?'逐作品档案':'教材数据导入'}</h1></div><div className="search-zone"><form className="search-wrap" onSubmit={submitSearch}><span className="search-icon">⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="搜索作品、人物、体裁、乐理概念…"/><button type="submit" className="search-submit">定位</button>{query&&searchResults.length>0&&<div className="search-results">{searchResults.map(({entity,book})=><button type="button" className="search-result" key={`${book.key}-${entity.id}`} onClick={()=>selectEntity(entity,book,true)}><span><strong>{entity.name}</strong><small>{book.grade}年级{book.semester} · {entity.type}</small></span><b>→</b></button>)}</div>}</form><section className="assistant-inline"><div className="assistant-invite"><span>✦</span><div><strong>有什么不懂的，可以来问问我</strong><small>我会综合六册教材知识图谱中的关系，给出有依据的回答</small></div></div><form className="assistant-query" onSubmit={askAssistant}><input aria-label="向图谱AI助手提问" value={assistantQuestion} onChange={event=>setAssistantQuestion(event.target.value)} placeholder="例如：《游击队歌》的音乐特点是什么？"/><button type="submit" disabled={assistantBusy}>{assistantBusy?'思考中…':'问一问'}</button></form><div className="assistant-suggestions"><button type="button" onClick={()=>setAssistantQuestion('《游击队歌》的创作和音乐特点是什么？')}>作品解读</button><button type="button" onClick={()=>setAssistantQuestion('节奏与节拍有什么区别？')}>乐理辨析</button><button type="button" onClick={()=>setAssistantQuestion('进行曲有哪些相关作品？')}>关联发现</button></div>{assistantResult&&<div className="assistant-inline-answer"><div className="assistant-answer-meta"><span>{assistantResult.poweredBy==='gpt'?'GPT 综合回答':'图谱逻辑回答'}</span><b>{assistantResult.summary}</b></div><p>{assistantResult.answer}</p><div className="assistant-answer-actions"><small>{[...new Set(assistantResult.facts.map(fact=>fact.bookTitle+(fact.page?` · PDF第${fact.page}页`:'')))].slice(0,3).join('　')}</small>{assistantResult.entity&&assistantResult.book&&<button type="button" onClick={()=>selectEntity(assistantResult.entity as Entity,assistantResult.book as Book,true)}>查看关系图 →</button>}</div></div>}</section></div><div className="top-actions"><span className="live-pill"><span className="status-dot"/>公开图谱</span><button className="avatar">教</button></div></header><div className="book-tabs"><button className={`book-tab ${graphMode==='all'?'active':''}`} onClick={()=>setGraphMode('all')}>六册叠加</button>{dataset.books.map(book=><button key={book.key} className={`book-tab ${graphMode!=='all'&&book.key===bookKey?'active':''}`} onClick={()=>chooseBook(book)}>{book.grade}年级{book.semester}</button>)}</div>
-    {view==='graph'&&<div className="neo-layout"><div className="graph-main"><section className="graph-intro"><div><span className="tag violet">{graphMode==='all'?'ALL TEXTBOOKS':graphMode==='focus'?'FOCUSED SUBGRAPH':'SINGLE TEXTBOOK'}</span><h2>{graphMode==='all'?'六本教材全量叠加知识图谱':graphMode==='focus'?(selected?.name??'知识点')+' · 关联子图':currentBook.title}</h2><p>{graphMode==='all'?`六个教材中心 · ${fmt(dataset.books.reduce((s,b)=>s+b.entityCount,0))} 个节点 · ${fmt(dataset.books.reduce((s,b)=>s+b.tripleCount,0))} 条关系`:graphMode==='focus'?`聚焦 ${selected?.name??'当前知识点'} · ${fmt(focusGroup.nodes.length+1)} 个关联节点 · ${fmt(focusGroup.book.triples.length)} 条关系`:`中心节点：${currentBook.title} · ${fmt(currentBook.entityCount)} 个节点 · ${fmt(currentBook.tripleCount)} 条正式关系`}</p></div><div className="graph-kpis"><div><strong>{graphMode==='all'?dataset.books.length:fmt(currentBook.entityCount)}</strong><span>{graphMode==='all'?'教材':'节点'}</span></div><div><strong>{graphMode==='all'?fmt(dataset.books.reduce((s,b)=>s+b.tripleCount,0)):fmt(currentBook.tripleCount)}</strong><span>关系</span></div><div><strong>{graphMode==='all'?'全量':currentBook.pages}</strong><span>{graphMode==='all'?'展示':'页'}</span></div></div><div className="graph-metrics"><div><span>实体总量</span><strong>{fmt(networkEntities.length)}</strong></div><div><span>关系总量</span><strong>{fmt(networkTriples.length)}</strong></div><div><span>关系类型</span><strong>{fmt(relationRows.length)}</strong></div></div></section><section className={'neo-card '+(expanded?'expanded':'')}><div className="neo-toolbar"><div><span className="eyebrow muted">NEO4J-STYLE FULL GRAPH</span><h3>{graphMode==='all'?'六册全量叠加视图':graphMode==='focus'?(selected?.name??'知识点')+' · 聚焦关系网络':currentBook.title+' · 全量节点'}</h3></div><div className="neo-actions"><select aria-label="实体类型筛选" value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}><option value="全部">全部实体</option>{typeRows.map(([type,count])=><option key={type} value={type}>{type} · {fmt(count)}</option>)}</select><button onClick={()=>setShowLabels(value=>!value)}>{showLabels?'隐藏标签':'显示标签'}</button><button onClick={()=>{if(graphMode==='all')setGraphMode('book');else if(graphMode==='focus'){setGraphMode('book');setZoom(1)}else setGraphMode('all')}}>{graphMode==='all'?'进入单册':graphMode==='focus'?'返回单册':'返回六册叠加'}</button><button aria-label="放大图谱" onClick={()=>setZoom(Math.min(3.2,zoom+.2))}>＋</button><input className="zoom-slider" aria-label="图谱缩放比例" type="range" min=".3" max="3.2" step=".05" value={zoom} onChange={event=>setZoom(Number(event.target.value))}/><span className="zoom-value">{Math.round(zoom*100)}%</span><button aria-label="缩小图谱" onClick={()=>setZoom(Math.max(.3,zoom-.2))}>−</button><button onClick={()=>setZoom(1)}>重置</button><button onClick={()=>setExpanded(value=>!value)}>{expanded?'退出全屏':'全屏画布'}</button></div></div><div className="neo-canvas" onWheel={event=>{event.preventDefault();setZoom(value=>Math.max(.3,Math.min(3.2,value+(event.deltaY<0?.12:-.12))))}}><svg viewBox="0 0 2400 1500" role="img" aria-label="全量教材知识图谱"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8295bd"/></marker></defs><g className="svg-zoom" style={{transform:`scale(${zoom})`,transformOrigin:'1200px 750px'}}>{(graphMode==='all'?allGroups:graphMode==='focus'?[focusGroup]:[singleGroup]).map(renderGroup)}</g></svg><div className="canvas-hint">{graphMode==='focus'?'已聚焦当前知识点 · 滚轮或滑杆放大 · 点击关联节点继续检查':'全量节点与关系已载入 · 滚轮缩放 · 可进入全屏画布 · 点击节点检查三元组'}</div><div className="graph-legend"><span><i className="legend-dot book"/>教材中心</span><span><i className="legend-dot work"/>作品分类</span><span><i className="legend-dot person"/>人物</span><span><i className="legend-dot genre"/>音乐概念</span><span><i className="legend-dot region"/>地域</span></div></div></section><section className="network-stats"><div className="stats-panel"><div className="stats-head"><div><span className="eyebrow muted">ENTITY DISTRIBUTION</span><h3>实体分布</h3></div><b>{fmt(networkEntities.length)}</b></div><div className="type-bars">{typeRows.slice(0,18).map(([type,count])=><button key={type} className={'type-bar '+(typeFilter===type?'active':'')} onClick={()=>setTypeFilter(type)}><span className="type-bar-label">{type}</span><span className="type-bar-track"><i style={{width:(count/maxTypeCount*100)+'%'}}/></span><b>{fmt(count)}</b></button>)}</div></div><div className="stats-panel"><div className="stats-head"><div><span className="eyebrow muted">RELATION TYPES</span><h3>关系类型</h3></div><b>{fmt(networkTriples.length)}</b></div><div className="relation-cloud">{relationRows.slice(0,24).map(([relation,count])=><button className="relation-chip" key={relation} onClick={()=>setTypeFilter('全部')}><span>{relation}</span><b>{fmt(count)}</b></button>)}</div></div></section><section className="triple-dock"><div className="dock-head"><div><span className="eyebrow muted">TRIPLE INSPECTOR</span><h3>{selected?.name??'当前节点'} 的三元组</h3></div><span className="dock-count">{directTriples.length} 条</span></div><div className="triple-list">{directTriples.slice(0,12).map(t=><button key={t.id} className="triple-row" onClick={()=>t.objectId&&entityMap.get(t.objectId)&&selectEntity(entityMap.get(t.objectId) as Entity)}><span className="triple-subject">{selected?.name}</span><span className="triple-predicate">{relationLabel(t)}</span><span className="triple-object">{objectLabel(t)}</span><span className="triple-page">第{t.sourcePage??'—'}页</span></button>)}</div></section></div><aside className="inspector"><section className="inspector-card"><div className="inspector-tabs"><button className={panel==='profile'?'active':''} onClick={()=>setPanel('profile')}>节点属性</button><button className={panel==='evidence'?'active':''} onClick={()=>setPanel('evidence')}>证据链 <em>{evidence.length}</em></button></div>{panel==='profile'?<div className="inspector-body"><div className={`inspector-icon ${typeClass[selected?.type??'concept']}`}>♫</div><span className="eyebrow muted">{selected?.type??'实体'}</span><h2>{selected?.name??'未选择实体'}</h2><p>{selected?.description||'选中节点后，这里显示教材描述、关系数量、页码与资源。'}</p><dl><div><dt>首次出现</dt><dd>PDF 第 {selected?.firstPage??'—'} 页</dd></div><div><dt>关系数量</dt><dd>{directTriples.length} 条</dd></div><div><dt>当前教材</dt><dd>{currentBook.grade}年级{currentBook.semester}</dd></div></dl><section className="media-card"><div className="media-head"><div><span className="eyebrow muted">MULTIMODAL ASSETS</span><h3>音频 · 视频 · 乐谱</h3></div><b>{selected?.media?.length??0}</b></div>{selected?.media?.length?<div className="media-list">{selected.media.map((asset,index)=><div className="media-item" key={asset.url+index}><strong>{asset.title??(asset.kind==='audio'?'音频资料':asset.kind==='video'?'视频资料':'乐谱资料')}</strong>{asset.kind==='audio'&&<audio controls preload="none" src={asset.url}/>} {asset.kind==='video'&&<video controls preload="metadata" src={asset.url}/>} {asset.kind==='score'&&<a href={asset.url} target="_blank" rel="noreferrer">打开乐谱 ↗</a>}<small>{asset.source??'外部资源链接'}</small></div>)}</div>:<p>这里是音频、视频和乐谱的挂载位。后续只需在实体的 <code>media</code> 数组中填入 URL，即可直接播放或打开。</p>}</section><button className="inspector-button" onClick={()=>setView('records')}>打开作品档案 →</button></div>:<div className="evidence-list">{evidence.slice(0,8).map(item=><div className="evidence-item" key={`${item.triple.id}-${item.pdfPage}`}><div className="evidence-page">{item.pdfPage??'—'}<small>PDF</small></div><div><strong>{relationLabel(item.triple)} · {objectLabel(item.triple)}</strong><p>{item.summary}</p></div></div>)}</div>}</section><section className="learning-card"><span className="eyebrow muted">PERSONAL LEARNING</span><h3>课堂路径</h3><p>按学生已查看节点推荐下一件作品或音乐要素。</p><div className="progress-track"><span style={{width:'62%'}}/></div><div className="progress-row"><span>本册探索进度</span><b>62%</b></div></section></aside></div>}
-    {view==='records'&&<section className="records-view"><div className="records-intro"><span className="tag violet">WORK LIBRARY</span><h2>{currentBook.title} · 逐作品档案</h2><p>从作品出发，查看创作者、音乐要素、教材页码与多模态证据。</p></div><div className="record-grid">{currentBook.entities.filter(e=>isWorkType(e.type)).slice(0,60).map(work=><button className="record-card" key={work.id} onClick={()=>selectEntity(work)}><span className="record-number">第 {work.firstPage??'—'} 页</span><span className="eyebrow muted">{work.type}</span><h3>{work.name}</h3><p>{work.description||'点击回到图谱查看作品关系。'}</p><div className="record-footer"><span>{currentBook.triples.filter(t=>t.subject===work.id).length} 条关系</span><span>打开图谱 →</span></div></button>)}</div></section>}
-    {view==='import'&&<section className="import-view"><div className="import-hero"><span className="tag cyan">DATA PIPELINE</span><h2>持续接入更多教材与资源</h2><p>{process.env.NEXT_PUBLIC_STATIC_EXPORT==='1'?'当前为 GitHub Pages 静态公开版；JSON 可在本地校验，在线持久化需连接独立后端。':'结构化数据进入 D1，乐谱图片、音频、视频和 PDF 进入 R2，再通过中文关系边挂回作品节点。'}</p></div><div className="import-grid"><div className="import-card"><div className="import-icon">⇧</div><h3>导入 JSON 数据包</h3><p>{process.env.NEXT_PUBLIC_STATIC_EXPORT==='1'?'上传标准包后进行本地格式校验，不会把文件发送到第三方。':'上传包含 books、entities、triples、evidenceByTriple 的标准包，网站会先校验，再写入持久化层。'}</p><label className="upload-button">选择 JSON 文件<input type="file" accept=".json" onChange={onImport}/></label>{importSummary&&<div className="import-result">{importSummary}</div>}</div><div className="import-card"><div className="import-icon">◉</div><h3>中文关系标准</h3><ul className="schema-list"><li>作品关系 <span>作曲 · 作词 · 属于单元 · 表现主题</span></li><li>乐理关系 <span>是 · 指 · 凭借 · 解释概念</span></li><li>证据关系 <span>教材页码 · PDF页码 · 原文摘要</span></li><li>资源关系 <span>拥有乐谱 · 音频 · 视频</span></li></ul></div></div></section>}
-    <footer className="site-footer">乐知图谱 · {loaded?'六册数据已载入':'正在载入完整数据'} · 默认六册叠加，点击教材中心可独立查看</footer></section></main>;
+  if (!hydrated)
+    return (
+      <div className="app-loading" aria-busy="true">
+        正在载入乐知图谱…
+      </div>
+    );
+  return (
+    <main className="app-shell">
+      <aside className="sidebar">
+        <div className="brand-lockup">
+          <div className="brand-mark">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div>
+            <p className="eyebrow">MUSIC KNOWLEDGE GRAPH</p>
+            <p className="brand-name">乐知图谱</p>
+          </div>
+        </div>
+        <div className="sidebar-section">
+          <p className="section-label">图谱空间</p>
+          <button
+            className={`nav-item ${view === "graph" ? "active" : ""}`}
+            onClick={() => setView("graph")}
+          >
+            <span>◉</span>图谱探索
+          </button>
+          <button
+            className={`nav-item ${view === "records" ? "active" : ""}`}
+            onClick={() => setView("records")}
+          >
+            <span>▦</span>作品档案
+          </button>
+          <button
+            className={`nav-item ${view === "import" ? "active" : ""}`}
+            onClick={() => setView("import")}
+          >
+            <span>⇧</span>数据导入
+          </button>
+        </div>
+        <div className="sidebar-section book-section">
+          <div className="section-label-row">
+            <p className="section-label">独立教材图谱</p>
+            <span className="count-badge">{dataset.books.length}</span>
+          </div>
+          <div className="book-list">
+            {dataset.books.map((book) => (
+              <button
+                key={book.key}
+                className={`book-item ${book.key === bookKey ? "selected" : ""}`}
+                onClick={() => chooseBook(book)}
+              >
+                <span className="book-dot" />
+                <span className="book-copy">
+                  <strong>
+                    {book.grade}年级{book.semester}
+                  </strong>
+                  <small>{fmt(book.tripleCount)} 条正式关系</small>
+                </span>
+                {book.key === bookKey && <span className="book-arrow">›</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="sidebar-footer">
+          <span className="status-dot" />
+          公开访问<span className="sync-label">{loaded ? "LIVE" : "LOAD"}</span>
+        </div>
+      </aside>
+      <section className="workspace">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow muted">
+              GRAPH EXPLORER /{" "}
+              {graphMode === "all"
+                ? "六册叠加"
+                : graphMode === "focus"
+                  ? "知识点聚焦"
+                  : "单册展开"}
+            </p>
+            <h1>
+              {view === "graph"
+                ? "教材知识图谱"
+                : view === "records"
+                  ? "逐作品档案"
+                  : "教材数据导入"}
+            </h1>
+          </div>
+          <div className="search-zone">
+            <form className="search-wrap" onSubmit={submitSearch}>
+              <span className="search-icon">⌕</span>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="搜索作品、人物、体裁、乐理概念…"
+              />
+              <button type="submit" className="search-submit">
+                定位
+              </button>
+              {query && searchResults.length > 0 && (
+                <div className="search-results">
+                  {searchResults.map(({ entity, book }) => (
+                    <button
+                      type="button"
+                      className="search-result"
+                      key={`${book.key}-${entity.id}`}
+                      onClick={() => selectEntity(entity, book, true)}
+                    >
+                      <span>
+                        <strong>{entity.name}</strong>
+                        <small>
+                          {book.grade}年级{book.semester} · {entity.type}
+                        </small>
+                      </span>
+                      <b>→</b>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </form>
+            <section className="assistant-inline">
+              <div className="assistant-invite">
+                <span>✦</span>
+                <div>
+                  <strong>有什么不懂的，可以来问问我</strong>
+                  <small>
+                    我会综合六册教材知识图谱中的关系，给出有依据的回答
+                  </small>
+                </div>
+              </div>
+              <form className="assistant-query" onSubmit={askAssistant}>
+                <input
+                  aria-label="向图谱AI助手提问"
+                  value={assistantQuestion}
+                  onChange={(event) => setAssistantQuestion(event.target.value)}
+                  placeholder="例如：《游击队歌》的音乐特点是什么？"
+                />
+                <button type="submit" disabled={assistantBusy}>
+                  {assistantBusy ? "思考中…" : "问一问"}
+                </button>
+              </form>
+              <div className="assistant-suggestions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAssistantQuestion("《游击队歌》的创作和音乐特点是什么？")
+                  }
+                >
+                  作品解读
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAssistantQuestion("节奏与节拍有什么区别？")}
+                >
+                  乐理辨析
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAssistantQuestion("进行曲有哪些相关作品？")}
+                >
+                  关联发现
+                </button>
+              </div>
+              {assistantResult && (
+                <div className="assistant-inline-answer">
+                  <div className="assistant-answer-meta">
+                    <span>
+                      {assistantResult.poweredBy === "gpt"
+                        ? "AI 图谱深度回答"
+                        : "多跳图谱分析"}
+                    </span>
+                    <b>{assistantResult.summary}</b>
+                  </div>
+                  <p>{assistantResult.answer}</p>
+                  {assistantResult.analytics && (
+                    <div className="assistant-analysis-grid">
+                      <span>
+                        <b>{assistantResult.analytics.relationTypes}</b> 种关系
+                      </span>
+                      <span>
+                        <b>{assistantResult.analytics.neighborCount}</b> 个邻接点
+                      </span>
+                      <span>
+                        <b>{assistantResult.analytics.multiHopCount}</b> 条二跳关联
+                      </span>
+                      <span>
+                        <b>{assistantResult.analytics.similarWorks.length}</b> 个相似作品
+                      </span>
+                    </div>
+                  )}
+                  <div className="assistant-answer-actions">
+                    <small>
+                      {[
+                        ...new Set(
+                          assistantResult.facts.map(
+                            (fact) =>
+                              fact.bookTitle +
+                              (fact.page ? ` · PDF第${fact.page}页` : ""),
+                          ),
+                        ),
+                      ]
+                        .slice(0, 3)
+                        .join("　")}
+                    </small>
+                    {assistantResult.entity && assistantResult.book && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          selectEntity(
+                            assistantResult.entity as Entity,
+                            assistantResult.book as Book,
+                            true,
+                          )
+                        }
+                      >
+                        查看关系图 →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+          </div>
+          <div className="top-actions">
+            <span className="live-pill">
+              <span className="status-dot" />
+              公开图谱
+            </span>
+            <button className="avatar">教</button>
+          </div>
+        </header>
+        <div className="book-tabs">
+          <button
+            className={`book-tab ${graphMode === "all" ? "active" : ""}`}
+            onClick={() => setGraphMode("all")}
+          >
+            六册叠加
+          </button>
+          {dataset.books.map((book) => (
+            <button
+              key={book.key}
+              className={`book-tab ${graphMode !== "all" && book.key === bookKey ? "active" : ""}`}
+              onClick={() => chooseBook(book)}
+            >
+              {book.grade}年级{book.semester}
+            </button>
+          ))}
+        </div>
+        {view === "graph" && (
+          <div className="neo-layout">
+            <div className="graph-main">
+              <section className="graph-intro">
+                <div>
+                  <span className="tag violet">
+                    {graphMode === "all"
+                      ? "ALL TEXTBOOKS"
+                      : graphMode === "focus"
+                        ? "FOCUSED SUBGRAPH"
+                        : "SINGLE TEXTBOOK"}
+                  </span>
+                  <h2>
+                    {graphMode === "all"
+                      ? "六本教材全量叠加知识图谱"
+                      : graphMode === "focus"
+                        ? (selected?.name ?? "知识点") + " · 关联子图"
+                        : currentBook.title}
+                  </h2>
+                  <p>
+                    {graphMode === "all"
+                      ? `六个教材中心 · ${fmt(dataset.books.reduce((s, b) => s + b.entityCount, 0))} 个节点 · ${fmt(dataset.books.reduce((s, b) => s + b.tripleCount, 0))} 条关系`
+                      : graphMode === "focus"
+                        ? `聚焦 ${selected?.name ?? "当前知识点"} · ${fmt(focusGroup.nodes.length + 1)} 个关联节点 · ${fmt(focusGroup.book.triples.length)} 条关系`
+                        : `中心节点：${currentBook.title} · ${fmt(currentBook.entityCount)} 个节点 · ${fmt(currentBook.tripleCount)} 条正式关系`}
+                  </p>
+                </div>
+                <div className="graph-kpis">
+                  <div>
+                    <strong>
+                      {graphMode === "all"
+                        ? dataset.books.length
+                        : fmt(currentBook.entityCount)}
+                    </strong>
+                    <span>{graphMode === "all" ? "教材" : "节点"}</span>
+                  </div>
+                  <div>
+                    <strong>
+                      {graphMode === "all"
+                        ? fmt(
+                            dataset.books.reduce(
+                              (s, b) => s + b.tripleCount,
+                              0,
+                            ),
+                          )
+                        : fmt(currentBook.tripleCount)}
+                    </strong>
+                    <span>关系</span>
+                  </div>
+                  <div>
+                    <strong>
+                      {graphMode === "all" ? "全量" : currentBook.pages}
+                    </strong>
+                    <span>{graphMode === "all" ? "展示" : "页"}</span>
+                  </div>
+                </div>
+                <div className="graph-metrics">
+                  <div>
+                    <span>实体总量</span>
+                    <strong>{fmt(networkEntities.length)}</strong>
+                  </div>
+                  <div>
+                    <span>关系总量</span>
+                    <strong>{fmt(networkTriples.length)}</strong>
+                  </div>
+                  <div>
+                    <span>关系类型</span>
+                    <strong>{fmt(relationRows.length)}</strong>
+                  </div>
+                </div>
+              </section>
+              <section className={"neo-card " + (expanded ? "expanded" : "")}>
+                <div className="neo-toolbar">
+                  <div>
+                    <span className="eyebrow muted">
+                      NEO4J-STYLE FULL GRAPH
+                    </span>
+                    <h3>
+                      {graphMode === "all"
+                        ? "六册全量叠加视图"
+                        : graphMode === "focus"
+                          ? (selected?.name ?? "知识点") + " · 聚焦关系网络"
+                          : currentBook.title + " · 全量节点"}
+                    </h3>
+                  </div>
+                  <div className="neo-actions">
+                    <select
+                      aria-label="实体类型筛选"
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value)}
+                    >
+                      <option value="全部">全部实体</option>
+                      {typeRows.map(([type, count]) => (
+                        <option key={type} value={type}>
+                          {type} · {fmt(count)}
+                        </option>
+                      ))}
+                    </select>
+                    <button onClick={() => setShowLabels((value) => !value)}>
+                      {showLabels ? "隐藏标签" : "显示标签"}
+                    </button>
+                    <button onClick={() => setMotionEnabled((value) => !value)}>
+                      {motionEnabled ? "暂停运动" : "恢复运动"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (graphMode === "all") setGraphMode("book");
+                        else if (graphMode === "focus") {
+                          setGraphMode("book");
+                          setZoom(1);
+                        } else setGraphMode("all");
+                      }}
+                    >
+                      {graphMode === "all"
+                        ? "进入单册"
+                        : graphMode === "focus"
+                          ? "返回单册"
+                          : "返回六册叠加"}
+                    </button>
+                    <button
+                      aria-label="放大图谱"
+                      onClick={() => setZoom(Math.min(3.2, zoom + 0.2))}
+                    >
+                      ＋
+                    </button>
+                    <input
+                      className="zoom-slider"
+                      aria-label="图谱缩放比例"
+                      type="range"
+                      min=".3"
+                      max="3.2"
+                      step=".05"
+                      value={zoom}
+                      onChange={(event) => setZoom(Number(event.target.value))}
+                    />
+                    <span className="zoom-value">
+                      {Math.round(zoom * 100)}%
+                    </span>
+                    <button
+                      aria-label="缩小图谱"
+                      onClick={() => setZoom(Math.max(0.3, zoom - 0.2))}
+                    >
+                      −
+                    </button>
+                    <button onClick={() => setZoom(1)}>重置</button>
+                    <button onClick={() => setExpanded((value) => !value)}>
+                      {expanded ? "退出全屏" : "全屏画布"}
+                    </button>
+                  </div>
+                </div>
+                <div
+                  className="neo-canvas"
+                  onWheel={(event) => {
+                    event.preventDefault();
+                    setZoom((value) =>
+                      Math.max(
+                        0.3,
+                        Math.min(
+                          3.2,
+                          value + (event.deltaY < 0 ? 0.12 : -0.12),
+                        ),
+                      ),
+                    );
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 2400 1500"
+                    role="img"
+                    aria-label="全量教材知识图谱"
+                  >
+                    <defs>
+                      <marker
+                        id="arrow"
+                        viewBox="0 0 10 10"
+                        refX="9"
+                        refY="5"
+                        markerWidth="7"
+                        markerHeight="7"
+                        orient="auto-start-reverse"
+                      >
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#8295bd" />
+                      </marker>
+                    </defs>
+                    <g
+                      className="svg-zoom"
+                      style={{
+                        transform: `scale(${zoom})`,
+                        transformOrigin: "1200px 750px",
+                      }}
+                    >
+                      {(graphMode === "all"
+                        ? allGroups
+                        : graphMode === "focus"
+                          ? [focusGroup]
+                          : [singleGroup]
+                      ).map(renderGroup)}
+                    </g>
+                  </svg>
+                  <div className="canvas-hint">
+                    {graphMode === "focus"
+                      ? "查询结果已固定 · 节点仍可拖拽 · 滚轮或滑杆放大"
+                      : "节点可拖拽并缓慢运动 · 滚轮缩放 · 点击节点检查三元组"}
+                  </div>
+                  <div className="graph-legend">
+                    <span>
+                      <i className="legend-dot book" />
+                      教材中心
+                    </span>
+                    <span>
+                      <i className="legend-dot work" />
+                      作品分类
+                    </span>
+                    <span>
+                      <i className="legend-dot person" />
+                      人物
+                    </span>
+                    <span>
+                      <i className="legend-dot genre" />
+                      音乐概念
+                    </span>
+                    <span>
+                      <i className="legend-dot region" />
+                      地域
+                    </span>
+                  </div>
+                </div>
+              </section>
+              <section className="network-stats">
+                <div className="stats-panel">
+                  <div className="stats-head">
+                    <div>
+                      <span className="eyebrow muted">ENTITY DISTRIBUTION</span>
+                      <h3>实体分布</h3>
+                    </div>
+                    <b>{fmt(networkEntities.length)}</b>
+                  </div>
+                  <div className="type-bars">
+                    {typeRows.slice(0, 18).map(([type, count]) => (
+                      <button
+                        key={type}
+                        className={
+                          "type-bar " + (typeFilter === type ? "active" : "")
+                        }
+                        onClick={() => setTypeFilter(type)}
+                      >
+                        <span className="type-bar-label">{type}</span>
+                        <span className="type-bar-track">
+                          <i
+                            style={{
+                              width: (count / maxTypeCount) * 100 + "%",
+                            }}
+                          />
+                        </span>
+                        <b>{fmt(count)}</b>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="stats-panel">
+                  <div className="stats-head">
+                    <div>
+                      <span className="eyebrow muted">RELATION TYPES</span>
+                      <h3>关系类型</h3>
+                    </div>
+                    <b>{fmt(networkTriples.length)}</b>
+                  </div>
+                  <div className="relation-cloud">
+                    {relationRows.slice(0, 24).map(([relation, count]) => (
+                      <button
+                        className="relation-chip"
+                        key={relation}
+                        onClick={() => setTypeFilter("全部")}
+                      >
+                        <span>{relation}</span>
+                        <b>{fmt(count)}</b>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+              <section className="triple-dock">
+                <div className="dock-head">
+                  <div>
+                    <span className="eyebrow muted">TRIPLE INSPECTOR</span>
+                    <h3>{selected?.name ?? "当前节点"} 的三元组</h3>
+                  </div>
+                  <span className="dock-count">{directTriples.length} 条</span>
+                </div>
+                <div className="triple-list">
+                  {directTriples.slice(0, 12).map((t) => (
+                    <button
+                      key={t.id}
+                      className="triple-row"
+                      onClick={() =>
+                        t.objectId &&
+                        entityMap.get(t.objectId) &&
+                        selectEntity(entityMap.get(t.objectId) as Entity)
+                      }
+                    >
+                      <span className="triple-subject">{selected?.name}</span>
+                      <span className="triple-predicate">
+                        {relationLabel(t)}
+                      </span>
+                      <span className="triple-object">{objectLabel(t)}</span>
+                      <span className="triple-page">
+                        第{t.sourcePage ?? "—"}页
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+            <aside className="inspector">
+              <section className="inspector-card">
+                <div className="inspector-tabs">
+                  <button
+                    className={panel === "profile" ? "active" : ""}
+                    onClick={() => setPanel("profile")}
+                  >
+                    节点属性
+                  </button>
+                  <button
+                    className={panel === "evidence" ? "active" : ""}
+                    onClick={() => setPanel("evidence")}
+                  >
+                    证据链 <em>{evidence.length}</em>
+                  </button>
+                </div>
+                {panel === "profile" ? (
+                  <div className="inspector-body">
+                    <div
+                      className={`inspector-icon ${typeClass[selected?.type ?? "concept"]}`}
+                    >
+                      ♫
+                    </div>
+                    <span className="eyebrow muted">
+                      {selected?.type ?? "实体"}
+                    </span>
+                    <h2>{selected?.name ?? "未选择实体"}</h2>
+                    <p>
+                      {selected?.description ||
+                        "选中节点后，这里显示教材描述、关系数量、页码与资源。"}
+                    </p>
+                    <dl>
+                      <div>
+                        <dt>首次出现</dt>
+                        <dd>PDF 第 {selected?.firstPage ?? "—"} 页</dd>
+                      </div>
+                      <div>
+                        <dt>关系数量</dt>
+                        <dd>{directTriples.length} 条</dd>
+                      </div>
+                      <div>
+                        <dt>当前教材</dt>
+                        <dd>
+                          {currentBook.grade}年级{currentBook.semester}
+                        </dd>
+                      </div>
+                    </dl>
+                    <section className="media-card">
+                      <div className="media-head">
+                        <div>
+                          <span className="eyebrow muted">
+                            MULTIMODAL ASSETS
+                          </span>
+                          <h3>音频 · 视频 · 乐谱</h3>
+                        </div>
+                        <b>{selected?.media?.length ?? 0}</b>
+                      </div>
+                      {selected?.media?.length ? (
+                        <div className="media-list">
+                          {selected.media.map((asset, index) => (
+                            <div className="media-item" key={asset.url + index}>
+                              <strong>
+                                {asset.title ??
+                                  (asset.kind === "audio"
+                                    ? "音频资料"
+                                    : asset.kind === "video"
+                                      ? "视频资料"
+                                      : "乐谱资料")}
+                              </strong>
+                              {asset.kind === "audio" && (
+                                <audio
+                                  controls
+                                  preload="none"
+                                  src={asset.url}
+                                />
+                              )}{" "}
+                              {asset.kind === "video" && (
+                                <video
+                                  controls
+                                  preload="metadata"
+                                  src={asset.url}
+                                />
+                              )}{" "}
+                              {asset.kind === "score" && (
+                                <a
+                                  href={asset.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  打开乐谱 ↗
+                                </a>
+                              )}
+                              <small>{asset.source ?? "外部资源链接"}</small>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>
+                          这里是音频、视频和乐谱的挂载位。后续只需在实体的{" "}
+                          <code>media</code> 数组中填入
+                          URL，即可直接播放或打开。
+                        </p>
+                      )}
+                    </section>
+                    <button
+                      className="inspector-button"
+                      onClick={() => setView("records")}
+                    >
+                      打开作品档案 →
+                    </button>
+                  </div>
+                ) : (
+                  <div className="evidence-list">
+                    {evidence.slice(0, 8).map((item) => (
+                      <div
+                        className="evidence-item"
+                        key={`${item.triple.id}-${item.pdfPage}`}
+                      >
+                        <div className="evidence-page">
+                          {item.pdfPage ?? "—"}
+                          <small>PDF</small>
+                        </div>
+                        <div>
+                          <strong>
+                            {relationLabel(item.triple)} ·{" "}
+                            {objectLabel(item.triple)}
+                          </strong>
+                          <p>{item.summary}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+              <section className="learning-card">
+                <span className="eyebrow muted">PERSONAL LEARNING</span>
+                <h3>课堂路径</h3>
+                <p>按学生已查看节点推荐下一件作品或音乐要素。</p>
+                <div className="progress-track">
+                  <span style={{ width: "62%" }} />
+                </div>
+                <div className="progress-row">
+                  <span>本册探索进度</span>
+                  <b>62%</b>
+                </div>
+              </section>
+            </aside>
+          </div>
+        )}
+        {view === "records" && (
+          <section className="records-view">
+            <div className="records-intro">
+              <span className="tag violet">WORK LIBRARY</span>
+              <h2>{currentBook.title} · 逐作品档案</h2>
+              <p>从作品出发，查看创作者、音乐要素、教材页码与多模态证据。</p>
+            </div>
+            <div className="record-grid">
+              {currentBook.entities
+                .filter((e) => isWorkType(e.type))
+                .slice(0, 60)
+                .map((work) => (
+                  <button
+                    className="record-card"
+                    key={work.id}
+                    onClick={() => selectEntity(work)}
+                  >
+                    <span className="record-number">
+                      第 {work.firstPage ?? "—"} 页
+                    </span>
+                    <span className="eyebrow muted">{work.type}</span>
+                    <h3>{work.name}</h3>
+                    <p>{work.description || "点击回到图谱查看作品关系。"}</p>
+                    <div className="record-footer">
+                      <span>
+                        {
+                          currentBook.triples.filter(
+                            (t) => t.subject === work.id,
+                          ).length
+                        }{" "}
+                        条关系
+                      </span>
+                      <span>打开图谱 →</span>
+                    </div>
+                  </button>
+                ))}
+            </div>
+          </section>
+        )}
+        {view === "import" && (
+          <section className="import-view">
+            <div className="import-hero">
+              <span className="tag cyan">DATA PIPELINE</span>
+              <h2>持续接入更多教材与资源</h2>
+              <p>
+                {process.env.NEXT_PUBLIC_STATIC_EXPORT === "1"
+                  ? "当前为 GitHub Pages 静态公开版；JSON 可在本地校验，在线持久化需连接独立后端。"
+                  : "结构化数据进入 D1，乐谱图片、音频、视频和 PDF 进入 R2，再通过中文关系边挂回作品节点。"}
+              </p>
+            </div>
+            <div className="import-grid">
+              <div className="import-card">
+                <div className="import-icon">⇧</div>
+                <h3>导入 JSON 数据包</h3>
+                <p>
+                  {process.env.NEXT_PUBLIC_STATIC_EXPORT === "1"
+                    ? "上传标准包后进行本地格式校验，不会把文件发送到第三方。"
+                    : "上传包含 books、entities、triples、evidenceByTriple 的标准包，网站会先校验，再写入持久化层。"}
+                </p>
+                <label className="upload-button">
+                  选择 JSON 文件
+                  <input type="file" accept=".json" onChange={onImport} />
+                </label>
+                {importSummary && (
+                  <div className="import-result">{importSummary}</div>
+                )}
+              </div>
+              <div className="import-card">
+                <div className="import-icon">◉</div>
+                <h3>中文关系标准</h3>
+                <ul className="schema-list">
+                  <li>
+                    作品关系 <span>作曲 · 作词 · 属于单元 · 表现主题</span>
+                  </li>
+                  <li>
+                    乐理关系 <span>是 · 指 · 凭借 · 解释概念</span>
+                  </li>
+                  <li>
+                    证据关系 <span>教材页码 · PDF页码 · 原文摘要</span>
+                  </li>
+                  <li>
+                    资源关系 <span>拥有乐谱 · 音频 · 视频</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        )}
+        <footer className="site-footer">
+          乐知图谱 · {loaded ? "六册数据已载入" : "正在载入完整数据"} ·
+          默认六册叠加，点击教材中心可独立查看
+        </footer>
+      </section>
+    </main>
+  );
 }
