@@ -14,7 +14,11 @@ type CanvasEntity = {
   name: string;
   type: string;
   textbookCount?: number;
+  occurrenceCount?: number;
   degree?: number;
+  relationCount?: number;
+  visualImportance?: number;
+  visualRank?: number;
 };
 
 type CanvasEdge = {
@@ -177,6 +181,39 @@ function FullGraphCanvasScene({
     () => new Set(highlightedRelationshipIds),
     [highlightedRelationshipIds],
   );
+  const selectionFocus = useMemo(() => {
+    const depthByNode = new Map<string, 0 | 1 | 2>();
+    const directEdges = new Set<string>();
+    const secondaryEdges = new Set<string>();
+    if (!selectedId || !visibleNodeIds.has(selectedId))
+      return { depthByNode, directEdges, secondaryEdges };
+    depthByNode.set(selectedId, 0);
+    const adjacency = new Map<string, Array<{ id: string; neighbor: string }>>();
+    for (const edge of relationships) {
+      if (
+        !edge.objectId ||
+        !visibleNodeIds.has(edge.subject) ||
+        !visibleNodeIds.has(edge.objectId)
+      )
+        continue;
+      if (!adjacency.has(edge.subject)) adjacency.set(edge.subject, []);
+      if (!adjacency.has(edge.objectId)) adjacency.set(edge.objectId, []);
+      adjacency.get(edge.subject)?.push({ id: edge.id, neighbor: edge.objectId });
+      adjacency.get(edge.objectId)?.push({ id: edge.id, neighbor: edge.subject });
+    }
+    for (const item of adjacency.get(selectedId) ?? []) {
+      depthByNode.set(item.neighbor, 1);
+      directEdges.add(item.id);
+    }
+    for (const [id, depth] of [...depthByNode]) {
+      if (depth !== 1) continue;
+      for (const item of adjacency.get(id) ?? []) {
+        if (!depthByNode.has(item.neighbor)) depthByNode.set(item.neighbor, 2);
+        if (!directEdges.has(item.id)) secondaryEdges.add(item.id);
+      }
+    }
+    return { depthByNode, directEdges, secondaryEdges };
+  }, [relationships, selectedId, visibleNodeIds]);
 
   useEffect(() => {
     localPanRef.current = pan;
@@ -223,7 +260,9 @@ function FullGraphCanvasScene({
       const scaleX = width / DESIGN_TOKENS.graph.width;
       const scaleY = height / DESIGN_TOKENS.graph.height;
       const activePan = localPanRef.current;
-      const hasHighlight = highlightedNodes.size > 0;
+      const hasExplicitHighlight =
+        highlightedNodes.size > 0 || highlightedEdges.size > 0;
+      const hasSelectionFocus = selectionFocus.depthByNode.size > 0;
       const screenNodes: ScreenNode[] = [];
       const screenNodeById = new Map<string, ScreenNode>();
 
@@ -257,16 +296,16 @@ function FullGraphCanvasScene({
           scaleY;
         const isTextbook = node.entity.type === "教材";
         const isShared = (node.entity.textbookCount ?? 1) >= 2;
+        const importance = Math.max(
+          0,
+          Math.min(1, node.entity.visualImportance ?? 0),
+        );
         const baseRadius =
           node.entity.id === selectedId
-            ? 13
+            ? 14
             : isTextbook
-              ? 12
-              : isShared
-                ? 5.5 + Math.min(4, node.entity.textbookCount ?? 1)
-                : zoom < 0.75
-                  ? 3
-                  : 4.2;
+              ? 11.5
+              : 3.2 + Math.sqrt(importance) * 8.6 + (isShared ? 0.8 : 0);
         const radius = Math.max(3, baseRadius * Math.min(1.45, zoom));
         if (
           x < -radius - 50 ||
@@ -298,19 +337,25 @@ function FullGraphCanvasScene({
             highlightedEdges.has(edge.id) ||
             (highlightedNodes.has(edge.subject) &&
               highlightedNodes.has(edge.objectId));
-          const dimmed = hasHighlight && !highlighted;
+          const direct = selectionFocus.directEdges.has(edge.id);
+          const secondary = selectionFocus.secondaryEdges.has(edge.id);
+          const dimmed = hasExplicitHighlight
+            ? !highlighted
+            : hasSelectionFocus && !direct && !secondary;
           edgeContext.beginPath();
           edgeContext.moveTo(from.x, from.y);
           edgeContext.lineTo(to.x, to.y);
           edgeContext.globalAlpha = dimmed
-            ? 0.035
-            : active
-              ? 0.88
-              : edge.crossBook
-                ? 0.44
-                : edge.provenance
-                  ? 0.16
-                  : 0.2;
+            ? 0.045
+            : active || direct
+              ? 0.94
+              : secondary
+                ? 0.38
+                : edge.crossBook
+                  ? 0.4
+                  : edge.provenance
+                    ? 0.14
+                    : 0.16;
           edgeContext.strokeStyle = active
             ? "#315f86"
             : edge.crossBook
@@ -320,9 +365,13 @@ function FullGraphCanvasScene({
                 : "#8292a3";
           edgeContext.lineWidth = active
             ? 2.2
-            : edge.crossBook
-              ? 1.25
-              : 0.72;
+            : direct
+              ? 1.8
+              : secondary
+                ? 1.05
+                : edge.crossBook
+                  ? 1.2
+                  : 0.68;
           if (edge.provenance) edgeContext.setLineDash([3, 3]);
           else edgeContext.setLineDash([]);
           edgeContext.stroke();
@@ -380,6 +429,13 @@ function FullGraphCanvasScene({
       hoverEdgeRef.current = hoveredEdge?.edge.id ?? null;
 
       let renderedLabels = 0;
+      const nodeLabelCandidates: Array<{
+        node: ScreenNode;
+        selected: boolean;
+        hovered: boolean;
+        isTextbook: boolean;
+        focusDepth?: 0 | 1 | 2;
+      }> = [];
       for (const node of screenNodes) {
         const semantic = schemaCategoryMeta(node.entity.type);
         const colors = SEMANTIC_PALETTE[semantic.key];
@@ -387,10 +443,13 @@ function FullGraphCanvasScene({
         const isShared = (node.entity.textbookCount ?? 1) >= 2;
         const selected = node.entity.id === selectedId;
         const highlighted = highlightedNodes.has(node.entity.id);
-        const dimmed = hasHighlight && !highlighted;
+        const focusDepth = selectionFocus.depthByNode.get(node.entity.id);
+        const dimmed = hasExplicitHighlight
+          ? !highlighted
+          : hasSelectionFocus && focusDepth == null;
         const hovered = node.entity.id === hoverNodeRef.current;
 
-        context.globalAlpha = dimmed ? 0.09 : 1;
+        context.globalAlpha = dimmed ? 0.11 : focusDepth === 2 ? 0.5 : 1;
         if (isShared) {
           context.beginPath();
           context.arc(node.x, node.y, node.radius + 3.5, 0, Math.PI * 2);
@@ -406,36 +465,84 @@ function FullGraphCanvasScene({
         context.lineWidth = selected ? 2.5 : hovered ? 2 : 1.2;
         context.stroke();
 
+        const rankLimit =
+          zoom < 0.78 ? 35 : zoom < 1.08 ? 100 : zoom < 1.52 ? 300 : Infinity;
         const showNodeLabel =
           selected ||
           hovered ||
           isTextbook ||
+          (node.entity.visualRank ?? Infinity) <= rankLimit ||
           (showLabels &&
-            ((zoom >= 0.95 && (node.entity.textbookCount ?? 1) >= 4) ||
-              (zoom >= 1.25 && isShared) ||
-              zoom >= 1.85));
-        if (showNodeLabel) {
+            ((focusDepth === 1 &&
+              (node.entity.visualRank ?? Infinity) <= 160) ||
+              (focusDepth === 2 &&
+                zoom >= 1.25 &&
+                (node.entity.visualRank ?? Infinity) <= 300) ||
+              zoom >= 1.68));
+        if (showNodeLabel)
+          nodeLabelCandidates.push({
+            node,
+            selected,
+            hovered,
+            isTextbook,
+            focusDepth,
+          });
+      }
+
+      const occupiedLabels: Array<{
+        left: number;
+        right: number;
+        top: number;
+        bottom: number;
+      }> = [];
+      nodeLabelCandidates
+        .sort(
+          (a, b) =>
+            Number(b.selected || b.hovered) - Number(a.selected || a.hovered) ||
+            Number(b.isTextbook) - Number(a.isTextbook) ||
+            (a.node.entity.visualRank ?? Infinity) -
+              (b.node.entity.visualRank ?? Infinity),
+        )
+        .forEach(({ node, selected, hovered, isTextbook, focusDepth }) => {
           const name =
             node.entity.name.length > 15
               ? `${node.entity.name.slice(0, 15)}…`
               : node.entity.name;
           context.font = `${selected || isTextbook ? 600 : 500} ${Math.max(9, Math.min(12, 8.5 + zoom * 1.4))}px "Microsoft YaHei", sans-serif`;
+          const labelWidth = context.measureText(name).width + 8;
+          const top = node.y + node.radius + 2;
+          const box = {
+            left: node.x - labelWidth / 2,
+            right: node.x + labelWidth / 2,
+            top,
+            bottom: top + 15,
+          };
+          const collides = occupiedLabels.some(
+            (placed) =>
+              box.left < placed.right &&
+              box.right > placed.left &&
+              box.top < placed.bottom &&
+              box.bottom > placed.top,
+          );
+          if (collides && !selected && !hovered) return;
+          occupiedLabels.push(box);
+          context.globalAlpha = focusDepth === 2 ? 0.64 : 1;
           context.textAlign = "center";
           context.textBaseline = "top";
           context.lineWidth = 3;
           context.strokeStyle = "rgba(247,248,245,.94)";
-          context.strokeText(name, node.x, node.y + node.radius + 3);
+          context.strokeText(name, node.x, top);
           context.fillStyle = "#2d3e49";
-          context.fillText(name, node.x, node.y + node.radius + 3);
+          context.fillText(name, node.x, top);
           renderedLabels += 1;
-        }
-      }
+        });
 
       const labelEdges = screenEdges.filter(({ edge }) => {
         if (edge.id === hoverEdgeRef.current) return true;
         if (!showLabels) return false;
         if (edge.subject === selectedId || edge.objectId === selectedId)
           return true;
+        if (selectionFocus.directEdges.has(edge.id)) return true;
         if (highlightedEdges.has(edge.id) && zoom >= 0.95) return true;
         return zoom >= 2.15;
       });
@@ -546,6 +653,7 @@ function FullGraphCanvasScene({
     relationLabels,
     relationships,
     selectedId,
+    selectionFocus,
     showLabels,
     visibleNodeIds,
     zoom,

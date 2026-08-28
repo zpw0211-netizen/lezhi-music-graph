@@ -65,9 +65,16 @@ type Entity = {
   firstPageByBook?: Record<string, number>;
   degree?: number;
   relationCount?: number;
+  visualImportance?: number;
+  visualRank?: number;
   descriptions?: string[];
   rawTypes?: string[];
   layout?: { x: number; y: number };
+  layouts?: {
+    knowledge?: { x: number; y: number };
+    textbook?: { x: number; y: number };
+    schema?: { x: number; y: number };
+  };
 };
 type Triple = {
   id: string;
@@ -242,6 +249,7 @@ type ContextMenuState = {
   book: Book;
 };
 type FullGraphView = "all" | "cross" | "ownership" | "knowledge";
+type FullGraphLayoutMode = "knowledge" | "textbook" | "schema";
 type ViewSnapshot = {
   expandedNodeIds: Record<string, string[]>;
   highlightedCanonicalIds: string[];
@@ -606,6 +614,9 @@ export default function Home() {
   const [hiddenRelations, setHiddenRelations] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [fullGraphView, setFullGraphView] = useState<FullGraphView>("all");
+  const [fullGraphLayout, setFullGraphLayout] =
+    useState<FullGraphLayoutMode>("knowledge");
+  const [showTextbookSources, setShowTextbookSources] = useState(false);
   const [highlightedCanonicalIds, setHighlightedCanonicalIds] = useState<
     string[]
   >([]);
@@ -1101,7 +1112,8 @@ export default function Home() {
         relationByEntity.set(relationship.objectId, relationship);
     }
     const nodes = canonicalBook.entities.map((entity) => {
-      if (entity.layout)
+      const activeLayout = entity.layouts?.[fullGraphLayout] ?? entity.layout;
+      if (activeLayout)
         return {
           entity,
           triple: relationByEntity.get(entity.id) ?? {
@@ -1109,8 +1121,8 @@ export default function Home() {
             subject: entity.id,
             predicate: "规范实体",
           },
-          x: entity.layout.x,
-          y: entity.layout.y,
+          x: activeLayout.x,
+          y: activeLayout.y,
         };
       const textbookKey = entity.bookKeys?.[0] ?? "g7s1";
       const seed = stableSeed(entity.canonicalKey ?? entity.id);
@@ -1153,7 +1165,7 @@ export default function Home() {
       nodes,
       layoutMs: 0,
     };
-  }, [canonicalBook]);
+  }, [canonicalBook, fullGraphLayout]);
   const focusGroup = useMemo(() => {
     if (!selected) return singleGroup;
     const currentRuntime = graphRuntimeFor(
@@ -1322,10 +1334,15 @@ export default function Home() {
     for (const entity of canonicalBook.entities) {
       const isTextbook = entity.type === "教材";
       const isShared = (entity.textbookCount ?? 1) >= 2;
+      const sourceLayerVisible =
+        fullGraphLayout === "textbook" ||
+        showTextbookSources ||
+        fullGraphView === "ownership";
       const visibleInMode =
-        fullGraphView === "all" ||
+        (fullGraphView === "all" && (!isTextbook || sourceLayerVisible)) ||
         fullGraphView === "ownership" ||
-        (fullGraphView === "cross" && (isTextbook || isShared)) ||
+        (fullGraphView === "cross" &&
+          (isShared || (isTextbook && sourceLayerVisible))) ||
         (fullGraphView === "knowledge" && !isTextbook);
       if (
         visibleInMode &&
@@ -1340,9 +1357,11 @@ export default function Home() {
     return ids;
   }, [
     canonicalBook,
+    fullGraphLayout,
     fullGraphView,
     hiddenNodeKeys,
     selectedId,
+    showTextbookSources,
     typeFilter,
     visibleSchemaKeys,
   ]);
@@ -1360,6 +1379,12 @@ export default function Home() {
         return false;
       if (fullGraphView === "ownership")
         return Boolean(relationship.provenance);
+      if (
+        fullGraphLayout === "knowledge" &&
+        !showTextbookSources &&
+        relationship.provenance
+      )
+        return false;
       if (fullGraphView === "knowledge") return !relationship.provenance;
       if (fullGraphView === "cross") {
         const source = canonicalEntityById.get(relationship.subject);
@@ -1376,10 +1401,12 @@ export default function Home() {
   }, [
     canonicalBook,
     canonicalEntityById,
+    fullGraphLayout,
     fullGraphView,
     fullGraphVisibleIds,
     hiddenRelations,
     relationText,
+    showTextbookSources,
   ]);
   const displayedGraphStats = (() => {
     if (graphMode === "all" && canonicalBook) {
@@ -1549,13 +1576,18 @@ export default function Home() {
     setGraphMode("all");
     setView("graph");
     setZoom(0.64);
+    setShowLabels(false);
     setCanvasPan({ x: 0, y: 0 });
     setHighlightedCanonicalIds([]);
     setHighlightedCanonicalRelationIds([]);
+    setFullGraphLayout("knowledge");
+    setShowTextbookSources(false);
     const core = canonicalBook?.entities
       .filter((entity) => entity.type !== "教材")
       .sort(
         (a, b) =>
+          (a.visualRank ?? Number.MAX_SAFE_INTEGER) -
+            (b.visualRank ?? Number.MAX_SAFE_INTEGER) ||
           (b.textbookCount ?? 1) - (a.textbookCount ?? 1) ||
           (b.degree ?? 0) - (a.degree ?? 0),
       )[0];
@@ -1575,6 +1607,7 @@ export default function Home() {
         .map((relationship) => relationship.id);
       setView("graph");
       setGraphMode("all");
+      setFullGraphLayout("knowledge");
       setFullGraphView("all");
       setHighlightedCanonicalIds(entityIds);
       setHighlightedCanonicalRelationIds(relatedRelationships);
@@ -1612,17 +1645,10 @@ export default function Home() {
       if (!target || !canonicalBook) return;
       setView("graph");
       setGraphMode("all");
+      setFullGraphLayout("knowledge");
       setSelectedId(target.id);
-      setHighlightedCanonicalIds([target.id]);
-      setHighlightedCanonicalRelationIds(
-        canonicalBook.triples
-          .filter(
-            (relationship) =>
-              relationship.subject === target.id ||
-              relationship.objectId === target.id,
-          )
-          .map((relationship) => relationship.id),
-      );
+      setHighlightedCanonicalIds([]);
+      setHighlightedCanonicalRelationIds([]);
       setShowLabels(true);
       setZoom(1.45);
       if (target.layout)
@@ -2448,6 +2474,8 @@ export default function Home() {
     const book = canonicalBookRef.current;
     if (book) {
       setShowLabels(true);
+      setHighlightedCanonicalIds([]);
+      setHighlightedCanonicalRelationIds([]);
       selectEntityRef.current(entity, book);
     }
   }, []);
@@ -3011,7 +3039,11 @@ export default function Home() {
                     </span>
                     <h3>
                       {graphMode === "all"
-                        ? "六册全量叠加视图"
+                        ? fullGraphLayout === "knowledge"
+                          ? "知识网络 · Knowledge Network"
+                          : fullGraphLayout === "textbook"
+                            ? "教材分簇 · Textbook Clusters"
+                            : "知识模式 · Schema"
                         : graphMode === "focus"
                           ? (selected?.name ?? "知识点") + " · 聚焦关系网络"
                           : currentBook.title + " · 局部探索"}
@@ -3103,6 +3135,11 @@ export default function Home() {
                         setHighlightedCanonicalRelationIds([]);
                         setViewHistory([]);
                         setCanvasPan({ x: 0, y: 0 });
+                        setDragPositions({});
+                        setFullGraphLayout("knowledge");
+                        setFullGraphView("all");
+                        setShowTextbookSources(false);
+                        setZoom(0.64);
                       }}
                     >
                       重置视图
@@ -3117,6 +3154,31 @@ export default function Home() {
                     className="full-graph-filterbar"
                     aria-label="六册关系视图"
                   >
+                    <div className="full-graph-layout-tabs" aria-label="全景布局模式">
+                      {(
+                        [
+                          ["knowledge", "知识网络", "Knowledge Network"],
+                          ["textbook", "教材分簇", "Textbook Clusters"],
+                          ["schema", "知识模式", "Schema"],
+                        ] as Array<[FullGraphLayoutMode, string, string]>
+                      ).map(([key, label, english]) => (
+                        <button
+                          key={key}
+                          className={fullGraphLayout === key ? "active" : ""}
+                          title={english}
+                          onClick={() => {
+                            setFullGraphLayout(key);
+                            setCanvasPan({ x: 0, y: 0 });
+                            setZoom(0.64);
+                            setHighlightedCanonicalIds([]);
+                            setHighlightedCanonicalRelationIds([]);
+                          }}
+                        >
+                          <strong>{label}</strong>
+                          <small>{english}</small>
+                        </button>
+                      ))}
+                    </div>
                     <div className="full-graph-view-tabs">
                       {(
                         [
@@ -3140,6 +3202,19 @@ export default function Home() {
                       ))}
                     </div>
                     <div className="full-graph-operations">
+                      <label className="source-layer-toggle">
+                        <input
+                          type="checkbox"
+                          checked={
+                            showTextbookSources || fullGraphLayout === "textbook"
+                          }
+                          disabled={fullGraphLayout === "textbook"}
+                          onChange={(event) =>
+                            setShowTextbookSources(event.target.checked)
+                          }
+                        />
+                        显示教材来源
+                      </label>
                       <button onClick={undoView} disabled={!viewHistory.length}>
                         撤销展开
                       </button>
@@ -3186,7 +3261,7 @@ export default function Home() {
                         highlightedCanonicalRelationIds
                       }
                       relationLabels={canonicalBook.relations}
-                      book={canonicalBook}
+                      book={{ key: `${canonicalBook.key}:${fullGraphLayout}` }}
                       zoom={zoom}
                       pan={canvasPan}
                       showLabels={showLabels}

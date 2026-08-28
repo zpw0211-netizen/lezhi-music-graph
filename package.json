@@ -18,6 +18,7 @@
     "graph:index": "node scripts/build-graph-index.mjs",
     "quality:v21": "node scripts/audit-v21-graph.mjs",
     "quality:v22": "node scripts/audit-v22-research.mjs",
+    "quality:v23": "node scripts/audit-v23-full-graph.mjs",
     "quality:pages": "node scripts/audit-github-pages.mjs",
     "quality:performance": "node scripts/audit-performance.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
@@ -41,6 +42,9 @@
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
+    "graphology": "^0.26.0",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "graphology-layout-noverlap": "^0.4.2",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
