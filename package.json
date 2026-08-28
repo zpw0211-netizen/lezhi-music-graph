@@ -12,7 +12,8 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "quality:check": "node scripts/build-graph-data.mjs && node scripts/audit-quality.mjs",
-    "quality:audit": "node scripts/audit-quality.mjs"
+    "quality:audit": "node scripts/audit-quality.mjs",
+    "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

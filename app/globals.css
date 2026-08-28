@@ -215,6 +215,21 @@ body {
 .neo-canvas .svg-node.page circle { fill:#b9c0c7; stroke:#7b858d; }
 .neo-canvas .svg-node.rhythm circle { fill:#9dbb67; stroke:#668535; }
 .neo-canvas .svg-node.literal circle { fill:#f0b86c; stroke:#bd7e2c; }
+.neo-canvas .svg-node.song circle { fill:#e77d52; stroke:#a84e2e; }
+.neo-canvas .svg-node.folk circle { fill:#78a96a; stroke:#477b42; }
+.neo-canvas .svg-node.instrumental circle { fill:#d5a74c; stroke:#9a7221; }
+.neo-canvas .svg-node.operaSong circle { fill:#c8688e; stroke:#8f3b61; }
+.neo-canvas .svg-node.opera circle { fill:#b45c92; stroke:#7b3865; }
+.neo-canvas .svg-node.dance circle { fill:#65a8b2; stroke:#357985; }
+.neo-canvas .svg-node.screen circle { fill:#6e91c8; stroke:#405f96; }
+.neo-canvas .svg-node.symphonic circle { fill:#8d72bd; stroke:#5d438d; }
+.neo-canvas .svg-node.choral circle { fill:#d56f69; stroke:#9c4540; }
+.neo-canvas .svg-node.stage circle { fill:#9a6cae; stroke:#68437d; }
+.neo-canvas .svg-node.march circle { fill:#d18a54; stroke:#985b2d; }
+.neo-canvas .svg-node.recitation circle { fill:#5c9ba6; stroke:#336e78; }
+.neo-canvas .svg-node.knowledge circle { fill:#75a6d2; stroke:#4676a4; }
+.neo-canvas .svg-node.ethnic circle { fill:#69a897; stroke:#3b796b; }
+.legend-dot.region { background:#5da9da; }
 .neo-canvas .svg-node.highlighted circle { stroke:#1d3b30; stroke-width:3px; filter:drop-shadow(0 3px 6px rgba(27,72,51,.25)); }
 .neo-canvas .svg-node:not(.center) .node-name { fill:#233d31; paint-order:stroke; stroke:#f8fbf6; stroke-width:3px; stroke-linejoin:round; }
 .neo-canvas .svg-node:not(.center) .node-type { fill:#50675a; paint-order:stroke; stroke:#f8fbf6; stroke-width:2px; }
