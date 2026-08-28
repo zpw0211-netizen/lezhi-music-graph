@@ -2,12 +2,27 @@
 
 export const dynamic = "force-static";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type {
   ChangeEvent,
   FormEvent,
+  MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
 } from "react";
+import {
+  ALL_SCHEMA_KEYS,
+  SCHEMA_CATEGORIES,
+  relationVisualKind,
+  schemaCategoryFor,
+  schemaCategoryMeta,
+  type SchemaCategoryKey,
+} from "./graph-schema";
 
 type MediaAsset = {
   kind: "audio" | "video" | "score";
@@ -98,6 +113,13 @@ type DragState = {
   offsetY: number;
   startClientX: number;
   startClientY: number;
+  entity: Entity;
+  book: Book;
+};
+type InspectorTab = "overview" | "relations" | "evidence" | "teaching";
+type ContextMenuState = {
+  x: number;
+  y: number;
   entity: Entity;
   book: Book;
 };
@@ -218,41 +240,6 @@ const RELATION_PRIORITY = [
   "分析维度",
   "适合开展",
 ];
-const typeClass: Record<string, string> = {
-  教材: "book",
-  音乐作品: "work",
-  歌曲: "song",
-  民歌: "folk",
-  器乐曲: "instrumental",
-  戏曲歌曲: "operaSong",
-  戏曲选段: "opera",
-  舞蹈音乐: "dance",
-  影视音乐: "screen",
-  交响作品: "symphonic",
-  合唱作品: "choral",
-  歌剧音乐: "stage",
-  进行曲: "march",
-  朗诵作品: "recitation",
-  人物: "person",
-  单元: "unit",
-  音乐体裁: "genre",
-  主题与情感: "theme",
-  知识概念: "knowledge",
-  音乐概念: "concept",
-  地域: "region",
-  民族: "ethnic",
-  乐器: "instrument",
-  音乐风格: "style",
-  学习活动: "activity",
-  表演形式: "performance",
-  来源作品: "source",
-  创作主体: "creator",
-  创作群体: "creator",
-  署名主体: "creator",
-  历史事件: "event",
-  机构: "organization",
-  节奏型: "rhythm",
-};
 const fmt = (n: number) => new Intl.NumberFormat("zh-CN").format(n);
 const stableSeed = (value: string) => {
   let hash = 2166136261;
@@ -415,10 +402,10 @@ export default function Home() {
   const [bookKey, setBookKey] = useState("g8s2");
   const [selectedId, setSelectedId] = useState("demo-work");
   const [query, setQuery] = useState("");
-  const [scope, setScope] = useState<"book" | "all">("book");
+  const scope = "all" as const;
   const [view, setView] = useState<"graph" | "records" | "import">("graph");
   const [graphMode, setGraphMode] = useState<"all" | "book" | "focus">("all");
-  const [panel, setPanel] = useState<"profile" | "evidence">("profile");
+  const [panel, setPanel] = useState<InspectorTab>("overview");
   const [loaded, setLoaded] = useState(false);
   const hydrated = useSyncExternalStore(
     () => () => undefined,
@@ -429,7 +416,7 @@ export default function Home() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState("全部");
-  const [showLabels, setShowLabels] = useState(true);
+  const [showLabels, setShowLabels] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [assistantQuestion, setAssistantQuestion] = useState("");
   const [assistantResult, setAssistantResult] =
@@ -441,6 +428,17 @@ export default function Home() {
   const [dragPositions, setDragPositions] = useState<
     Record<string, { x: number; y: number }>
   >({});
+  const [expandedNodeIds, setExpandedNodeIds] = useState<
+    Record<string, string[]>
+  >({});
+  const [hiddenNodeKeys, setHiddenNodeKeys] = useState<string[]>([]);
+  const [pinnedNodeKeys, setPinnedNodeKeys] = useState<string[]>([]);
+  const [visibleSchemaKeys, setVisibleSchemaKeys] = useState<
+    SchemaCategoryKey[]
+  >([...ALL_SCHEMA_KEYS]);
+  const [lastSchemaKey, setLastSchemaKey] = useState<SchemaCategoryKey>("work");
+  const [hiddenRelations, setHiddenRelations] = useState<string[]>([]);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   useEffect(() => {
     fetch("./data/music-graph.json")
       .then((r) => r.json())
@@ -448,7 +446,7 @@ export default function Home() {
         if (!payload.books?.length) return;
         setDataset(payload);
         const book =
-          payload.books.find((b) => b.key === bookKey) ?? payload.books[0];
+          payload.books.find((b) => b.key === "g8s2") ?? payload.books[0];
         setBookKey(book.key);
         const work =
           book.entities.find((e) => isWorkType(e.type)) ?? book.entities[0];
@@ -475,16 +473,22 @@ export default function Home() {
     entityMap.get(selectedId) ??
     currentBook.entities.find((e) => isWorkType(e.type)) ??
     currentBook.entities[0];
-  const bookEntity = (book: Book): Entity =>
-    book.entities.find((e) => e.type === "教材") ?? {
-      id: `BOOK_${book.key}`,
-      name: book.title,
-      type: "教材",
-    };
-  const relationText = (predicate: string, book: Book = currentBook) =>
-    RELATION_LABELS[predicate] ??
-    book.relations[predicate] ??
-    predicate.replaceAll("_", " ");
+  const bookEntity = useCallback(
+    (book: Book): Entity =>
+      book.entities.find((e) => e.type === "教材") ?? {
+        id: `BOOK_${book.key}`,
+        name: book.title,
+        type: "教材",
+      },
+    [],
+  );
+  const relationText = useCallback(
+    (predicate: string, book: Book = currentBook) =>
+      RELATION_LABELS[predicate] ??
+      book.relations[predicate] ??
+      predicate.replaceAll("_", " "),
+    [currentBook],
+  );
   const relationLabel = (t: Triple) => relationText(t.predicate);
   const objectLabel = (t: Triple) =>
     t.objectId
@@ -559,130 +563,139 @@ export default function Home() {
     return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi) || b[1] - a[1];
   });
   const maxTypeCount = Math.max(1, ...typeRows.map(([, count]) => count));
-  const buildGroup = (
-    book: Book,
-    index: number,
-    centerOverride?: Entity,
-    layout: "all" | "book" = "all",
-  ): BookGroup => {
-    const center = centerOverride ?? bookEntity(book);
-    const spacious = layout === "book";
-    const edgeList = book.triples.filter(
-      (t) =>
-        t.objectId &&
-        book.entities.some((e) => e.id === t.subject) &&
-        book.entities.some((e) => e.id === t.objectId),
-    );
-    const base = [
-      [420, 300],
-      [1200, 300],
-      [1980, 300],
-      [420, 1050],
-      [1200, 1050],
-      [1980, 1050],
-    ][index] ?? [1200, 650];
-    const map = new Map<string, Triple>();
-    for (const entity of book.entities) {
-      if (entity.id !== center.id)
-        map.set(
-          entity.id,
-          edgeList.find(
-            (t) => t.subject === entity.id || t.objectId === entity.id,
-          ) ?? {
-            id: "synthetic-" + book.key + "-" + entity.id,
-            subject: center.id,
-            predicate: "RELATED_ENTITY",
-            objectId: entity.id,
-          },
-        );
-    }
-    const ids = [...map.keys()];
-    const positions = ids.map((id) => {
-      const hash = stableSeed(book.key + "-" + id);
-      const angle = ((hash % 100000) / 100000) * Math.PI * 2;
-      const radial =
-        Math.sqrt((Math.floor(hash / 100000) % 1000) / 1000) *
-        (spacious ? 520 : 360);
-      return {
-        x: base[0] + Math.cos(angle) * radial,
-        y: base[1] + Math.sin(angle) * radial * (spacious ? 0.78 : 0.72),
-        entity: book.entities.find((e) => e.id === id) ?? {
-          id,
-          name: id,
-          type: "音乐概念",
-        },
-        triple: map.get(id)!,
-      };
-    });
-    const positionById = new Map(positions.map((node, i) => [ids[i], node]));
-    const links = edgeList.filter(
-      (t) => positionById.has(t.subject) && positionById.has(t.objectId!),
-    );
-    for (let iteration = 0; iteration < (spacious ? 48 : 34); iteration++) {
-      const force = positions.map(() => ({ x: 0, y: 0 }));
-      for (let a = 0; a < positions.length; a++)
-        for (let b = a + 1; b < positions.length; b++) {
-          const dx = positions[a].x - positions[b].x;
-          const dy = positions[a].y - positions[b].y;
-          const distance = Math.max(spacious ? 48 : 36, Math.hypot(dx, dy));
-          const push = Math.min(
-            spacious ? 58 : 44,
-            (spacious ? 15000 : 9000) / (distance * distance),
+  const schemaCounts = Object.fromEntries(
+    SCHEMA_CATEGORIES.map((category) => [category.key, 0]),
+  ) as Record<SchemaCategoryKey, number>;
+  for (const entity of networkEntities)
+    schemaCounts[schemaCategoryFor(entity.type)] += 1;
+  const propertyKeyCount = 6;
+  const buildGroup = useCallback(
+    (
+      book: Book,
+      index: number,
+      centerOverride?: Entity,
+      layout: "all" | "book" = "all",
+    ): BookGroup => {
+      const center = centerOverride ?? bookEntity(book);
+      const spacious = layout === "book";
+      const edgeList = book.triples.filter(
+        (t) =>
+          t.objectId &&
+          book.entities.some((e) => e.id === t.subject) &&
+          book.entities.some((e) => e.id === t.objectId),
+      );
+      const base = [
+        [420, 300],
+        [1200, 300],
+        [1980, 300],
+        [420, 1050],
+        [1200, 1050],
+        [1980, 1050],
+      ][index] ?? [1200, 650];
+      const map = new Map<string, Triple>();
+      for (const entity of book.entities) {
+        if (entity.id !== center.id)
+          map.set(
+            entity.id,
+            edgeList.find(
+              (t) => t.subject === entity.id || t.objectId === entity.id,
+            ) ?? {
+              id: "synthetic-" + book.key + "-" + entity.id,
+              subject: center.id,
+              predicate: "RELATED_ENTITY",
+              objectId: entity.id,
+            },
           );
-          force[a].x += (dx / distance) * push;
-          force[a].y += (dy / distance) * push;
-          force[b].x -= (dx / distance) * push;
-          force[b].y -= (dy / distance) * push;
-        }
-      for (const link of links) {
-        const from = positionById.get(link.subject)!;
-        const to = positionById.get(link.objectId!)!;
-        const fromIndex = ids.indexOf(link.subject);
-        const toIndex = ids.indexOf(link.objectId!);
-        const dx = to.x - from.x;
-        const dy = to.y - from.y;
-        const distance = Math.max(1, Math.hypot(dx, dy));
-        const spring = (distance - (spacious ? 245 : 190)) * 0.005;
-        force[fromIndex].x += (dx / distance) * spring;
-        force[fromIndex].y += (dy / distance) * spring;
-        force[toIndex].x -= (dx / distance) * spring;
-        force[toIndex].y -= (dy / distance) * spring;
       }
-      positions.forEach((node, nodeIndex) => {
-        const dx = base[0] - node.x;
-        const dy = base[1] - node.y;
-        force[nodeIndex].x += dx * (spacious ? 0.0009 : 0.0013);
-        force[nodeIndex].y += dy * (spacious ? 0.0009 : 0.0013);
-        const distance = Math.max(
-          1,
-          Math.hypot(node.x - base[0], node.y - base[1]),
-        );
-        if (distance < (spacious ? 195 : 155)) {
-          force[nodeIndex].x += ((node.x - base[0]) / distance) * 5;
-          force[nodeIndex].y += ((node.y - base[1]) / distance) * 5;
-        }
-        node.x += force[nodeIndex].x;
-        node.y += force[nodeIndex].y;
-        const boundedX = node.x - base[0];
-        const boundedY = node.y - base[1];
-        const ellipse = Math.hypot(
-          boundedX / (spacious ? 620 : 470),
-          boundedY / (spacious ? 460 : 350),
-        );
-        if (ellipse > 1) {
-          node.x = base[0] + boundedX / ellipse;
-          node.y = base[1] + boundedY / ellipse;
-        }
+      const ids = [...map.keys()];
+      const positions = ids.map((id) => {
+        const hash = stableSeed(book.key + "-" + id);
+        const angle = ((hash % 100000) / 100000) * Math.PI * 2;
+        const radial =
+          Math.sqrt((Math.floor(hash / 100000) % 1000) / 1000) *
+          (spacious ? 520 : 360);
+        return {
+          x: base[0] + Math.cos(angle) * radial,
+          y: base[1] + Math.sin(angle) * radial * (spacious ? 0.78 : 0.72),
+          entity: book.entities.find((e) => e.id === id) ?? {
+            id,
+            name: id,
+            type: "音乐概念",
+          },
+          triple: map.get(id)!,
+        };
       });
-    }
-    return { book, center, nodes: positions };
-  };
+      const positionById = new Map(positions.map((node, i) => [ids[i], node]));
+      const links = edgeList.filter(
+        (t) => positionById.has(t.subject) && positionById.has(t.objectId!),
+      );
+      for (let iteration = 0; iteration < (spacious ? 48 : 34); iteration++) {
+        const force = positions.map(() => ({ x: 0, y: 0 }));
+        for (let a = 0; a < positions.length; a++)
+          for (let b = a + 1; b < positions.length; b++) {
+            const dx = positions[a].x - positions[b].x;
+            const dy = positions[a].y - positions[b].y;
+            const distance = Math.max(spacious ? 48 : 36, Math.hypot(dx, dy));
+            const push = Math.min(
+              spacious ? 58 : 44,
+              (spacious ? 15000 : 9000) / (distance * distance),
+            );
+            force[a].x += (dx / distance) * push;
+            force[a].y += (dy / distance) * push;
+            force[b].x -= (dx / distance) * push;
+            force[b].y -= (dy / distance) * push;
+          }
+        for (const link of links) {
+          const from = positionById.get(link.subject)!;
+          const to = positionById.get(link.objectId!)!;
+          const fromIndex = ids.indexOf(link.subject);
+          const toIndex = ids.indexOf(link.objectId!);
+          const dx = to.x - from.x;
+          const dy = to.y - from.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          const spring = (distance - (spacious ? 245 : 190)) * 0.005;
+          force[fromIndex].x += (dx / distance) * spring;
+          force[fromIndex].y += (dy / distance) * spring;
+          force[toIndex].x -= (dx / distance) * spring;
+          force[toIndex].y -= (dy / distance) * spring;
+        }
+        positions.forEach((node, nodeIndex) => {
+          const dx = base[0] - node.x;
+          const dy = base[1] - node.y;
+          force[nodeIndex].x += dx * (spacious ? 0.0009 : 0.0013);
+          force[nodeIndex].y += dy * (spacious ? 0.0009 : 0.0013);
+          const distance = Math.max(
+            1,
+            Math.hypot(node.x - base[0], node.y - base[1]),
+          );
+          if (distance < (spacious ? 195 : 155)) {
+            force[nodeIndex].x += ((node.x - base[0]) / distance) * 5;
+            force[nodeIndex].y += ((node.y - base[1]) / distance) * 5;
+          }
+          node.x += force[nodeIndex].x;
+          node.y += force[nodeIndex].y;
+          const boundedX = node.x - base[0];
+          const boundedY = node.y - base[1];
+          const ellipse = Math.hypot(
+            boundedX / (spacious ? 620 : 470),
+            boundedY / (spacious ? 460 : 350),
+          );
+          if (ellipse > 1) {
+            node.x = base[0] + boundedX / ellipse;
+            node.y = base[1] + boundedY / ellipse;
+          }
+        });
+      }
+      return { book, center, nodes: positions };
+    },
+    [bookEntity],
+  );
   const allGroups = useMemo(
     () =>
       dataset.books.map((book, index) =>
         buildGroup(book, index, undefined, "all"),
       ),
-    [dataset],
+    [buildGroup, dataset],
   );
   const singleGroup = useMemo(() => {
     const group = buildGroup(currentBook, 0, undefined, "book");
@@ -694,7 +707,7 @@ export default function Home() {
         y: node.y + 450,
       })),
     };
-  }, [currentBook]);
+  }, [buildGroup, currentBook]);
   const focusGroup = useMemo(() => {
     if (!selected) return singleGroup;
     const priority = [
@@ -799,15 +812,142 @@ export default function Home() {
       tripleCount: focusTriples.length,
     };
     return { book: focusBook, center: selected, nodes };
-  }, [currentBook, selected, singleGroup]);
+  }, [currentBook, relationText, selected, singleGroup]);
+  const visibleNodeIdsByBook = useMemo(() => {
+    const result: Record<string, Set<string>> = {};
+    for (const book of dataset.books) {
+      const center = bookEntity(book);
+      const degree = new Map<string, number>();
+      for (const triple of book.triples) {
+        degree.set(triple.subject, (degree.get(triple.subject) ?? 0) + 1);
+        if (triple.objectId)
+          degree.set(triple.objectId, (degree.get(triple.objectId) ?? 0) + 1);
+      }
+      const limit =
+        graphMode === "all" ? 26 : book.key === currentBook.key ? 82 : 0;
+      const seeds = new Set<string>([center.id]);
+      const rankedWorks = book.entities
+        .filter((entity) => isWorkType(entity.type))
+        .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0));
+      const rankedUnits = book.entities
+        .filter((entity) => entity.type === "单元")
+        .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0));
+      const rankedAll = [...book.entities].sort(
+        (a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0),
+      );
+      for (const entity of rankedUnits.slice(0, graphMode === "all" ? 3 : 10))
+        seeds.add(entity.id);
+      for (const entity of rankedWorks.slice(0, graphMode === "all" ? 14 : 42))
+        seeds.add(entity.id);
+      for (const entity of rankedAll) {
+        if (seeds.size >= limit) break;
+        seeds.add(entity.id);
+      }
+      for (const id of expandedNodeIds[book.key] ?? []) seeds.add(id);
+      if (book.key === currentBook.key && selectedId) seeds.add(selectedId);
+      result[book.key] = seeds;
+    }
+    return result;
+  }, [
+    bookEntity,
+    currentBook.key,
+    dataset.books,
+    expandedNodeIds,
+    graphMode,
+    selectedId,
+  ]);
+  const displayedGraphStats = (() => {
+    const books = graphMode === "all" ? dataset.books : [currentBook];
+    let nodes = 0;
+    let relationships = 0;
+    const labels = new Set<SchemaCategoryKey>();
+    for (const book of books) {
+      const center = bookEntity(book);
+      const visibleIds = new Set<string>([center.id]);
+      const sourceIds =
+        graphMode === "focus" && book.key === currentBook.key
+          ? new Set(focusGroup.book.entities.map((entity) => entity.id))
+          : (visibleNodeIdsByBook[book.key] ?? new Set<string>());
+      for (const id of sourceIds) {
+        const entity = book.entities.find((item) => item.id === id);
+        if (!entity) continue;
+        const key = `${book.key}-${id}`;
+        const category = schemaCategoryFor(entity.type);
+        if (
+          !hiddenNodeKeys.includes(key) &&
+          visibleSchemaKeys.includes(category)
+        ) {
+          visibleIds.add(id);
+          labels.add(category);
+        }
+      }
+      nodes += visibleIds.size;
+      relationships += book.triples.filter(
+        (triple) =>
+          triple.objectId &&
+          visibleIds.has(triple.subject) &&
+          visibleIds.has(triple.objectId) &&
+          !hiddenRelations.includes(relationText(triple.predicate, book)),
+      ).length;
+    }
+    return { nodes, relationships, labels: labels.size };
+  })();
+  const expandNode = (
+    entity: Entity,
+    book: Book,
+    depth: 1 | 2 = 1,
+    category?: SchemaCategoryKey,
+  ) => {
+    const discovered = new Set<string>([entity.id]);
+    let frontier = new Set<string>([entity.id]);
+    for (let step = 0; step < depth; step++) {
+      const next = new Set<string>();
+      for (const triple of book.triples) {
+        if (!triple.objectId) continue;
+        if (frontier.has(triple.subject)) next.add(triple.objectId);
+        if (frontier.has(triple.objectId)) next.add(triple.subject);
+      }
+      for (const id of next) discovered.add(id);
+      frontier = next;
+    }
+    const allowed = [...discovered].filter((id) => {
+      if (!category || id === entity.id) return true;
+      const neighbor = book.entities.find((item) => item.id === id);
+      return neighbor ? schemaCategoryFor(neighbor.type) === category : false;
+    });
+    setExpandedNodeIds((previous) => ({
+      ...previous,
+      [book.key]: [...new Set([...(previous[book.key] ?? []), ...allowed])],
+    }));
+    setBookKey(book.key);
+    setSelectedId(entity.id);
+    setGraphMode("book");
+    setPanel("relations");
+    setContextMenu(null);
+  };
+  const hideNode = (entity: Entity, book: Book) => {
+    const key = `${book.key}-${entity.id}`;
+    setHiddenNodeKeys((previous) =>
+      previous.includes(key) ? previous : [...previous, key],
+    );
+    setContextMenu(null);
+  };
+  const showNodeEvidence = (entity: Entity, book: Book) => {
+    selectEntity(entity, book);
+    setPanel("evidence");
+    setContextMenu(null);
+  };
   const selectEntity = (entity: Entity, book = currentBook, focus = false) => {
     if (book.key !== bookKey) setBookKey(book.key);
     setSelectedId(entity.id);
     setQuery("");
     setView("graph");
+    setContextMenu(null);
+    setPanel("overview");
     if (focus) {
       setGraphMode("focus");
       setTypeFilter("全部");
+      setShowLabels(true);
       setZoom(1.65);
     }
   };
@@ -1147,6 +1287,7 @@ export default function Home() {
     const nodeKey = book.key + "-" + node.entity.id;
     const dragged = dragPositions[nodeKey];
     if (dragged) return dragged;
+    if (pinnedNodeKeys.includes(nodeKey)) return { x: node.x, y: node.y };
     if (!motionEnabled || graphMode === "focus")
       return { x: node.x, y: node.y };
     const seed = stableSeed(nodeKey);
@@ -1208,13 +1349,56 @@ export default function Home() {
       event.clientY - dragging.startClientY,
     );
     if (moved < 5) selectEntity(dragging.entity, dragging.book);
+    else
+      setPinnedNodeKeys((previous) =>
+        previous.includes(dragging.nodeKey)
+          ? previous
+          : [...previous, dragging.nodeKey],
+      );
     setDragging(null);
+  };
+  const openContextMenu = (
+    event: ReactMouseEvent<SVGGElement>,
+    entity: Entity,
+    book: Book,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const canvas = event.currentTarget.ownerSVGElement?.closest(".neo-canvas");
+    const rect = canvas?.getBoundingClientRect();
+    setContextMenu({
+      x: rect ? event.clientX - rect.left : 24,
+      y: rect ? event.clientY - rect.top : 24,
+      entity,
+      book,
+    });
+  };
+  const togglePin = (entity: Entity, book: Book) => {
+    const key = `${book.key}-${entity.id}`;
+    const pinned = pinnedNodeKeys.includes(key);
+    setPinnedNodeKeys((previous) =>
+      pinned ? previous.filter((item) => item !== key) : [...previous, key],
+    );
+    if (pinned)
+      setDragPositions((previous) => {
+        const next = { ...previous };
+        delete next[key];
+        return next;
+      });
+    setContextMenu(null);
   };
   const renderNode = (node: PositionedNode, book: Book) => {
     const nodeKey = book.key + "-" + node.entity.id;
     const selectedNode = node.entity.id === selectedId;
     const highlighted = selectedNode || hoveredId === nodeKey;
-    const radius = selectedNode ? 24 : isWorkType(node.entity.type) ? 17 : 13;
+    const semantic = schemaCategoryMeta(node.entity.type);
+    const radius = selectedNode
+      ? 25
+      : semantic.nodeSize === "large"
+        ? 19
+        : semantic.nodeSize === "medium"
+          ? 15
+          : 12;
     const label =
       node.entity.name.length > 14
         ? node.entity.name.slice(0, 14) + "…"
@@ -1225,7 +1409,7 @@ export default function Home() {
         key={nodeKey}
         className={
           "svg-node draggable " +
-          (typeClass[node.entity.type] ?? "concept") +
+          `schema-${semantic.key}` +
           (highlighted ? " highlighted" : "") +
           (dragging?.nodeKey === nodeKey ? " dragging" : "")
         }
@@ -1236,17 +1420,19 @@ export default function Home() {
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
         onPointerCancel={() => setDragging(null)}
+        onDoubleClick={() => expandNode(node.entity, book, 1)}
+        onContextMenu={(event) => openContextMenu(event, node.entity, book)}
       >
         <title>{node.entity.name + " · " + node.entity.type}</title>
         <circle r={radius} />
         {showLabels && (
           <>
             <text className="node-glyph" y="-6">
-              {node.entity.type === "人物"
+              {semantic.key === "person"
                 ? "✦"
-                : node.entity.type === "乐谱资源"
+                : semantic.key === "work"
                   ? "♫"
-                  : node.entity.type === "体裁"
+                  : semantic.key === "genre"
                     ? "◒"
                     : "◆"}
             </text>
@@ -1277,11 +1463,19 @@ export default function Home() {
     );
     const visible = (id: string) => {
       const entity = group.book.entities.find((item) => item.id === id);
+      const nodeKey = `${group.book.key}-${id}`;
       return (
         id === group.center.id ||
-        typeFilter === "全部" ||
-        entity?.type === typeFilter ||
-        id === selectedId
+        (!hiddenNodeKeys.includes(nodeKey) &&
+          (graphMode === "focus" ||
+            visibleNodeIdsByBook[group.book.key]?.has(id)) &&
+          Boolean(
+            entity &&
+            visibleSchemaKeys.includes(schemaCategoryFor(entity.type)),
+          ) &&
+          (typeFilter === "全部" ||
+            entity?.type === typeFilter ||
+            id === selectedId))
       );
     };
     const centerNode = {
@@ -1302,7 +1496,11 @@ export default function Home() {
           ? nodePoint(positions.get(id)!, group.book)
           : undefined;
     const edges = group.book.triples.filter(
-      (t) => t.objectId && point(t.subject) && point(t.objectId),
+      (t) =>
+        t.objectId &&
+        point(t.subject) &&
+        point(t.objectId) &&
+        !hiddenRelations.includes(relationText(t.predicate, group.book)),
     );
     return (
       <g key={group.book.key}>
@@ -1310,10 +1508,13 @@ export default function Home() {
           const from = point(t.subject)!;
           const to = point(t.objectId!)!;
           const active = t.subject === selectedId || t.objectId === selectedId;
+          const relationKind = relationVisualKind(
+            relationText(t.predicate, group.book),
+          );
           return (
             <g key={"edge-" + group.book.key + "-" + t.id}>
               <line
-                className={"neo-edge " + (active ? "active" : "")}
+                className={`neo-edge ${relationKind} ${active ? "active" : ""}`}
                 x1={from.x}
                 y1={from.y}
                 x2={to.x}
@@ -1325,7 +1526,9 @@ export default function Home() {
                 x={(from.x + to.x) / 2}
                 y={(from.y + to.y) / 2 - 4}
               >
-                {showLabels ? relationText(t.predicate, group.book) : ""}
+                {showLabels && (zoom >= 0.85 || active)
+                  ? relationText(t.predicate, group.book)
+                  : ""}
               </text>
             </g>
           );
@@ -1333,7 +1536,7 @@ export default function Home() {
         <g
           className={
             "svg-node center draggable " +
-            (typeClass[group.center.type] ?? "book") +
+            `schema-${schemaCategoryFor(group.center.type)}` +
             (dragging?.nodeKey === group.book.key + "-" + group.center.id
               ? " dragging"
               : "")
@@ -1358,6 +1561,10 @@ export default function Home() {
             }
           }}
           onPointerCancel={() => setDragging(null)}
+          onDoubleClick={() => expandNode(group.center, group.book, 1)}
+          onContextMenu={(event) =>
+            openContextMenu(event, group.center, group.book)
+          }
         >
           <circle r={isFocus ? 46 : graphMode === "all" ? 42 : 54} />
           <circle
@@ -1392,7 +1599,7 @@ export default function Home() {
       </div>
     );
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${view === "graph" ? "graph-first" : ""}`}>
       <aside className="sidebar">
         <div className="brand-lockup">
           <div className="brand-mark">
@@ -1426,6 +1633,100 @@ export default function Home() {
             <span>⇧</span>数据导入
           </button>
         </div>
+        {view === "graph" && (
+          <section className="schema-panel" aria-label="图谱模式与图例">
+            <div className="schema-panel-head">
+              <div>
+                <p className="section-label">SCHEMA / 图例</p>
+                <strong>实体类型</strong>
+              </div>
+              <span>{displayedGraphStats.labels}</span>
+            </div>
+            <div className="schema-actions">
+              <button
+                type="button"
+                onClick={() => setVisibleSchemaKeys([...ALL_SCHEMA_KEYS])}
+              >
+                全部显示
+              </button>
+              <button type="button" onClick={() => setVisibleSchemaKeys([])}>
+                全部隐藏
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibleSchemaKeys([lastSchemaKey])}
+              >
+                只看当前
+              </button>
+            </div>
+            <div className="schema-types">
+              {SCHEMA_CATEGORIES.map((category) => {
+                const active = visibleSchemaKeys.includes(category.key);
+                return (
+                  <button
+                    type="button"
+                    key={category.key}
+                    className={active ? "active" : ""}
+                    aria-pressed={active}
+                    onClick={() => {
+                      setLastSchemaKey(category.key);
+                      setVisibleSchemaKeys((previous) =>
+                        previous.includes(category.key)
+                          ? previous.filter((key) => key !== category.key)
+                          : [...previous, category.key],
+                      );
+                    }}
+                  >
+                    <i style={{ background: category.color }} />
+                    <span>
+                      <strong>{category.label}</strong>
+                      <small>{category.neoLabel}</small>
+                    </span>
+                    <b>{fmt(schemaCounts[category.key])}</b>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="schema-relations-head">
+              <strong>关系类型</strong>
+              <small>点击隐藏 / 显示</small>
+            </div>
+            <div className="schema-relations">
+              {relationRows.slice(0, 10).map(([relation, count]) => {
+                const active = !hiddenRelations.includes(relation);
+                return (
+                  <button
+                    type="button"
+                    key={relation}
+                    className={active ? "active" : ""}
+                    onClick={() =>
+                      setHiddenRelations((previous) =>
+                        previous.includes(relation)
+                          ? previous.filter((item) => item !== relation)
+                          : [...previous, relation],
+                      )
+                    }
+                  >
+                    <i className={relationVisualKind(relation)} />
+                    <span>{relation}</span>
+                    <b>{fmt(count)}</b>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="schema-footer-stats">
+              <span>
+                Node Labels <b>{displayedGraphStats.labels}</b>
+              </span>
+              <span>
+                Relationship Types <b>{relationRows.length}</b>
+              </span>
+              <span>
+                Property Keys <b>{propertyKeyCount}</b>
+              </span>
+            </div>
+          </section>
+        )}
         <div className="sidebar-section book-section">
           <div className="section-label-row">
             <p className="section-label">独立教材图谱</p>
@@ -1506,8 +1807,8 @@ export default function Home() {
                 </div>
               )}
             </form>
-            <section className="assistant-inline">
-              <div className="assistant-invite">
+            <details className="assistant-inline">
+              <summary className="assistant-invite">
                 <span>✦</span>
                 <div>
                   <strong>有什么不懂的，可以来问问我</strong>
@@ -1515,7 +1816,7 @@ export default function Home() {
                     我会综合六册教材知识图谱中的关系，给出有依据的回答
                   </small>
                 </div>
-              </div>
+              </summary>
               <form className="assistant-query" onSubmit={askAssistant}>
                 <input
                   aria-label="向图谱AI助手提问"
@@ -1566,13 +1867,16 @@ export default function Home() {
                         <b>{assistantResult.analytics.relationTypes}</b> 种关系
                       </span>
                       <span>
-                        <b>{assistantResult.analytics.neighborCount}</b> 个邻接点
+                        <b>{assistantResult.analytics.neighborCount}</b>{" "}
+                        个邻接点
                       </span>
                       <span>
-                        <b>{assistantResult.analytics.multiHopCount}</b> 条二跳关联
+                        <b>{assistantResult.analytics.multiHopCount}</b>{" "}
+                        条二跳关联
                       </span>
                       <span>
-                        <b>{assistantResult.analytics.similarWorks.length}</b> 个相似作品
+                        <b>{assistantResult.analytics.similarWorks.length}</b>{" "}
+                        个相似作品
                       </span>
                     </div>
                   )}
@@ -1607,7 +1911,7 @@ export default function Home() {
                   </div>
                 </div>
               )}
-            </section>
+            </details>
           </div>
           <div className="top-actions">
             <span className="live-pill">
@@ -1709,29 +2013,25 @@ export default function Home() {
                 <div className="neo-toolbar">
                   <div>
                     <span className="eyebrow muted">
-                      NEO4J-STYLE FULL GRAPH
+                      DATA VIEW · LOCAL EXPLORATION
                     </span>
                     <h3>
                       {graphMode === "all"
                         ? "六册全量叠加视图"
                         : graphMode === "focus"
                           ? (selected?.name ?? "知识点") + " · 聚焦关系网络"
-                          : currentBook.title + " · 全量节点"}
+                          : currentBook.title + " · 局部探索"}
                     </h3>
                   </div>
                   <div className="neo-actions">
-                    <select
-                      aria-label="实体类型筛选"
-                      value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value)}
+                    <button onClick={() => setZoom(0.92)}>适配画布</button>
+                    <button
+                      onClick={() =>
+                        selected && selectEntity(selected, currentBook, true)
+                      }
                     >
-                      <option value="全部">全部实体</option>
-                      {typeRows.map(([type, count]) => (
-                        <option key={type} value={type}>
-                          {type} · {fmt(count)}
-                        </option>
-                      ))}
-                    </select>
+                      适配选中
+                    </button>
                     <button onClick={() => setShowLabels((value) => !value)}>
                       {showLabels ? "隐藏标签" : "显示标签"}
                     </button>
@@ -1778,7 +2078,17 @@ export default function Home() {
                     >
                       −
                     </button>
-                    <button onClick={() => setZoom(1)}>重置</button>
+                    <button
+                      onClick={() => {
+                        setZoom(1);
+                        setExpandedNodeIds({});
+                        setHiddenNodeKeys([]);
+                        setHiddenRelations([]);
+                        setVisibleSchemaKeys([...ALL_SCHEMA_KEYS]);
+                      }}
+                    >
+                      重置视图
+                    </button>
                     <button onClick={() => setExpanded((value) => !value)}>
                       {expanded ? "退出全屏" : "全屏画布"}
                     </button>
@@ -1786,6 +2096,7 @@ export default function Home() {
                 </div>
                 <div
                   className="neo-canvas"
+                  onClick={() => setContextMenu(null)}
                   onWheel={(event) => {
                     event.preventDefault();
                     setZoom((value) =>
@@ -1832,6 +2143,97 @@ export default function Home() {
                       ).map(renderGroup)}
                     </g>
                   </svg>
+                  {contextMenu && (
+                    <div
+                      className="graph-context-menu"
+                      style={{ left: contextMenu.x, top: contextMenu.y }}
+                      onClick={(event) => event.stopPropagation()}
+                      role="menu"
+                    >
+                      <div className="context-title">
+                        <strong>{contextMenu.entity.name}</strong>
+                        <small>
+                          {schemaCategoryMeta(contextMenu.entity.type).label}
+                        </small>
+                      </div>
+                      <button
+                        onClick={() =>
+                          expandNode(contextMenu.entity, contextMenu.book, 1)
+                        }
+                      >
+                        展开全部 1 跳邻居
+                      </button>
+                      <button
+                        onClick={() =>
+                          expandNode(contextMenu.entity, contextMenu.book, 2)
+                        }
+                      >
+                        展开全部 2 跳邻居
+                      </button>
+                      <div className="context-divider">按实体类型展开</div>
+                      {SCHEMA_CATEGORIES.filter((category) =>
+                        [
+                          "person",
+                          "genre",
+                          "instrument",
+                          "element",
+                          "textbook",
+                        ].includes(category.key),
+                      ).map((category) => (
+                        <button
+                          key={category.key}
+                          onClick={() =>
+                            expandNode(
+                              contextMenu.entity,
+                              contextMenu.book,
+                              1,
+                              category.key,
+                            )
+                          }
+                        >
+                          展开 → {category.label}
+                        </button>
+                      ))}
+                      <div className="context-divider" />
+                      <button
+                        onClick={() =>
+                          togglePin(contextMenu.entity, contextMenu.book)
+                        }
+                      >
+                        {pinnedNodeKeys.includes(
+                          `${contextMenu.book.key}-${contextMenu.entity.id}`,
+                        )
+                          ? "取消固定节点"
+                          : "固定节点"}
+                      </button>
+                      <button
+                        onClick={() =>
+                          selectEntity(
+                            contextMenu.entity,
+                            contextMenu.book,
+                            true,
+                          )
+                        }
+                      >
+                        聚焦此节点
+                      </button>
+                      <button
+                        onClick={() =>
+                          showNodeEvidence(contextMenu.entity, contextMenu.book)
+                        }
+                      >
+                        查看教材证据
+                      </button>
+                      <button
+                        className="danger"
+                        onClick={() =>
+                          hideNode(contextMenu.entity, contextMenu.book)
+                        }
+                      >
+                        隐藏节点
+                      </button>
+                    </div>
+                  )}
                   <div className="canvas-hint">
                     {graphMode === "focus"
                       ? "查询结果已固定 · 节点仍可拖拽 · 滚轮或滑杆放大"
@@ -1857,6 +2259,26 @@ export default function Home() {
                     <span>
                       <i className="legend-dot region" />
                       地域
+                    </span>
+                  </div>
+                  <div className="graph-statusbar">
+                    <span>
+                      Nodes <b>{fmt(displayedGraphStats.nodes)}</b>
+                    </span>
+                    <span>
+                      Relationships{" "}
+                      <b>{fmt(displayedGraphStats.relationships)}</b>
+                    </span>
+                    <span>
+                      Labels <b>{displayedGraphStats.labels}</b>
+                    </span>
+                    <span className="status-mode">
+                      当前视图：
+                      {graphMode === "all"
+                        ? "教材全景"
+                        : graphMode === "focus"
+                          ? "节点聚焦"
+                          : "单册探索"}
                     </span>
                   </div>
                 </div>
@@ -1946,38 +2368,62 @@ export default function Home() {
                 </div>
               </section>
             </div>
-            <aside className="inspector">
+            <aside className="inspector" aria-label="节点检查器">
               <section className="inspector-card">
-                <div className="inspector-tabs">
-                  <button
-                    className={panel === "profile" ? "active" : ""}
-                    onClick={() => setPanel("profile")}
+                <header className="inspector-header">
+                  <div
+                    className={`inspector-icon schema-${schemaCategoryFor(selected?.type ?? "音乐概念")}`}
                   >
-                    节点属性
-                  </button>
-                  <button
-                    className={panel === "evidence" ? "active" : ""}
-                    onClick={() => setPanel("evidence")}
-                  >
-                    证据链 <em>{evidence.length}</em>
-                  </button>
-                </div>
-                {panel === "profile" ? (
-                  <div className="inspector-body">
-                    <div
-                      className={`inspector-icon ${typeClass[selected?.type ?? "concept"]}`}
-                    >
-                      ♫
-                    </div>
-                    <span className="eyebrow muted">
-                      {selected?.type ?? "实体"}
+                    {schemaCategoryFor(selected?.type ?? "音乐概念") ===
+                    "person"
+                      ? "✦"
+                      : "♫"}
+                  </div>
+                  <div>
+                    <span>
+                      {
+                        schemaCategoryMeta(selected?.type ?? "音乐概念")
+                          .neoLabel
+                      }
                     </span>
                     <h2>{selected?.name ?? "未选择实体"}</h2>
+                    <small>{selected?.type ?? "实体"}</small>
+                  </div>
+                </header>
+                <div className="inspector-tabs">
+                  {(
+                    [
+                      ["overview", "概览"],
+                      ["relations", `关系 ${directTriples.length}`],
+                      ["evidence", `教材证据 ${evidence.length}`],
+                      ["teaching", "教学应用"],
+                    ] as Array<[InspectorTab, string]>
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      className={panel === key ? "active" : ""}
+                      onClick={() => setPanel(key)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {panel === "overview" && (
+                  <div className="inspector-body">
                     <p>
                       {selected?.description ||
-                        "选中节点后，这里显示教材描述、关系数量、页码与资源。"}
+                        "该节点来自教材知识图谱，可继续查看关系、来源证据与教学应用。"}
                     </p>
                     <dl>
+                      <div>
+                        <dt>语义标签</dt>
+                        <dd>
+                          {
+                            schemaCategoryMeta(selected?.type ?? "音乐概念")
+                              .label
+                          }
+                        </dd>
+                      </div>
                       <div>
                         <dt>首次出现</dt>
                         <dd>PDF 第 {selected?.firstPage ?? "—"} 页</dd>
@@ -1992,13 +2438,128 @@ export default function Home() {
                           {currentBook.grade}年级{currentBook.semester}
                         </dd>
                       </div>
+                      <div>
+                        <dt>可信度</dt>
+                        <dd>
+                          {selected?.confidence
+                            ? `${Math.round(selected.confidence * 100)}%`
+                            : "教材已收录"}
+                        </dd>
+                      </div>
                     </dl>
+                    <div className="inspector-actions-grid">
+                      <button
+                        onClick={() =>
+                          selected && expandNode(selected, currentBook, 1)
+                        }
+                      >
+                        展开 1 跳
+                      </button>
+                      <button
+                        onClick={() =>
+                          selected && expandNode(selected, currentBook, 2)
+                        }
+                      >
+                        展开 2 跳
+                      </button>
+                      <button
+                        onClick={() =>
+                          selected && selectEntity(selected, currentBook, true)
+                        }
+                      >
+                        聚焦节点
+                      </button>
+                      <button onClick={() => setView("records")}>
+                        作品档案
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {panel === "relations" && (
+                  <div className="inspector-relations">
+                    {directTriples.length ? (
+                      directTriples.slice(0, 30).map((triple) => {
+                        const outgoing = triple.subject === selected?.id;
+                        const targetId = outgoing
+                          ? triple.objectId
+                          : triple.subject;
+                        const target = targetId
+                          ? entityMap.get(targetId)
+                          : undefined;
+                        return (
+                          <button
+                            key={triple.id}
+                            onClick={() =>
+                              target && selectEntity(target, currentBook)
+                            }
+                          >
+                            <span className="relation-direction">
+                              {outgoing ? "→" : "←"}
+                            </span>
+                            <span>
+                              <b>{relationLabel(triple)}</b>
+                              <small>
+                                {target?.name ?? triple.literal ?? "属性值"}
+                              </small>
+                            </span>
+                            <em>P{triple.sourcePage ?? "—"}</em>
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <p className="empty-state">当前节点暂无正式关系。</p>
+                    )}
+                  </div>
+                )}
+                {panel === "evidence" && (
+                  <div className="evidence-list inspector-evidence">
+                    {evidence.length ? (
+                      evidence.slice(0, 30).map((item) => (
+                        <div
+                          className="evidence-item"
+                          key={`${item.triple.id}-${item.pdfPage}`}
+                        >
+                          <div className="evidence-page">
+                            {item.pdfPage ?? "—"}
+                            <small>PDF</small>
+                          </div>
+                          <div>
+                            <strong>
+                              {relationLabel(item.triple)} ·{" "}
+                              {objectLabel(item.triple)}
+                            </strong>
+                            <p>{item.summary || "教材关系证据记录"}</p>
+                            <small>
+                              {currentBook.title} ·{" "}
+                              {item.textbookPage
+                                ? `教材第${item.textbookPage}页`
+                                : "教材页码待对应"}
+                            </small>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="empty-state">
+                        该节点暂未绑定可显示的教材证据。
+                      </p>
+                    )}
+                  </div>
+                )}
+                {panel === "teaching" && (
+                  <div className="inspector-teaching">
+                    <section className="teaching-path">
+                      <span className="eyebrow muted">课堂路径</span>
+                      <h3>从作品事实到音乐理解</h3>
+                      <ol>
+                        <li>观察节点的作品、人物与教材位置</li>
+                        <li>展开体裁、乐器和音乐要素关系</li>
+                        <li>结合教材证据组织欣赏或实践活动</li>
+                      </ol>
+                    </section>
                     <section className="media-card">
                       <div className="media-head">
                         <div>
-                          <span className="eyebrow muted">
-                            MULTIMODAL ASSETS
-                          </span>
+                          <span className="eyebrow muted">多模态资料</span>
                           <h3>音频 · 视频 · 乐谱</h3>
                         </div>
                         <b>{selected?.media?.length ?? 0}</b>
@@ -2021,14 +2582,14 @@ export default function Home() {
                                   preload="none"
                                   src={asset.url}
                                 />
-                              )}{" "}
+                              )}
                               {asset.kind === "video" && (
                                 <video
                                   controls
                                   preload="metadata"
                                   src={asset.url}
                                 />
-                              )}{" "}
+                              )}
                               {asset.kind === "score" && (
                                 <a
                                   href={asset.url}
@@ -2044,53 +2605,12 @@ export default function Home() {
                         </div>
                       ) : (
                         <p>
-                          这里是音频、视频和乐谱的挂载位。后续只需在实体的{" "}
-                          <code>media</code> 数组中填入
-                          URL，即可直接播放或打开。
+                          已保留多模态挂载位，后续可直接关联教材乐谱、音频、视频或教学链接。
                         </p>
                       )}
                     </section>
-                    <button
-                      className="inspector-button"
-                      onClick={() => setView("records")}
-                    >
-                      打开作品档案 →
-                    </button>
-                  </div>
-                ) : (
-                  <div className="evidence-list">
-                    {evidence.slice(0, 8).map((item) => (
-                      <div
-                        className="evidence-item"
-                        key={`${item.triple.id}-${item.pdfPage}`}
-                      >
-                        <div className="evidence-page">
-                          {item.pdfPage ?? "—"}
-                          <small>PDF</small>
-                        </div>
-                        <div>
-                          <strong>
-                            {relationLabel(item.triple)} ·{" "}
-                            {objectLabel(item.triple)}
-                          </strong>
-                          <p>{item.summary}</p>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 )}
-              </section>
-              <section className="learning-card">
-                <span className="eyebrow muted">PERSONAL LEARNING</span>
-                <h3>课堂路径</h3>
-                <p>按学生已查看节点推荐下一件作品或音乐要素。</p>
-                <div className="progress-track">
-                  <span style={{ width: "62%" }} />
-                </div>
-                <div className="progress-row">
-                  <span>本册探索进度</span>
-                  <b>62%</b>
-                </div>
               </section>
             </aside>
           </div>
