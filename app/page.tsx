@@ -2165,7 +2165,7 @@ export default function Home() {
   if (!hydrated)
     return (
       <div className="app-loading" aria-busy="true">
-        正在载入乐知图谱…
+        正在载入芽谱…
       </div>
     );
   return (
@@ -2179,7 +2179,10 @@ export default function Home() {
           </div>
           <div>
             <p className="eyebrow">MUSIC KNOWLEDGE GRAPH</p>
-            <p className="brand-name">乐知图谱</p>
+            <p className="brand-name">芽谱</p>
+            <p className="brand-subtitle">
+              中小学音乐教育知识图谱与智能分析平台
+            </p>
           </div>
         </div>
         <div className="sidebar-section">
@@ -3530,7 +3533,7 @@ export default function Home() {
           </section>
         )}
         <footer className="site-footer">
-          乐知图谱 · {loaded ? "六册数据已载入" : "正在载入完整数据"} ·
+          芽谱 · {loaded ? "六册数据已载入" : "正在载入完整数据"} ·
           默认六册叠加，点击教材中心可独立查看
         </footer>
       </section>
