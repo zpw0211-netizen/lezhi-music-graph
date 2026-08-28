@@ -9,7 +9,7 @@
     "dev": "vinext dev",
     "build": "node scripts/build-graph-index.mjs && vinext build",
     "start": "vinext start",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern out --ignore-pattern .site-package-*",
     "db:generate": "drizzle-kit generate",
     "quality:check": "node scripts/build-graph-data.mjs && node scripts/audit-quality.mjs",
     "quality:audit": "node scripts/audit-quality.mjs",
@@ -17,6 +17,7 @@
     "graph:canonical": "node scripts/build-canonical-graph.mjs",
     "graph:index": "node scripts/build-graph-index.mjs",
     "quality:v21": "node scripts/audit-v21-graph.mjs",
+    "quality:v22": "node scripts/audit-v22-research.mjs",
     "quality:pages": "node scripts/audit-github-pages.mjs",
     "quality:performance": "node scripts/audit-performance.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs"

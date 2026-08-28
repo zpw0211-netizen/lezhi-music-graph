@@ -17,6 +17,7 @@ import {
 } from "react";
 import type {
   ChangeEvent,
+  CSSProperties,
   FormEvent,
   MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
@@ -35,6 +36,10 @@ import {
   type CanvasPerformanceMetrics,
 } from "./components/FullGraphCanvas";
 import { graphRuntimeFor, neighborhood } from "./graph-runtime";
+import { ResearchAnalysis } from "./components/ResearchAnalysis";
+import { ResearchInfo } from "./components/ResearchInfo";
+import { designTokenCssVariables } from "./design-tokens";
+import { semanticPaletteCssVariables } from "./semantic-palette";
 
 type MediaAsset = {
   kind: "audio" | "video" | "score";
@@ -161,6 +166,8 @@ type GraphQuality = {
     largestConnectedComponentNodeCount: number;
     collapsedSelfRelationshipCount: number;
     sharedEntityCount: number;
+    evidenceCoveredRelationshipCount?: number;
+    evidenceCoverageRate?: number;
   };
 };
 type CanonicalGraph = {
@@ -222,7 +229,12 @@ type DragState = {
   entity: Entity;
   book: Book;
 };
-type InspectorTab = "overview" | "relations" | "evidence" | "teaching";
+type InspectorTab =
+  | "overview"
+  | "relations"
+  | "occurrences"
+  | "evidence"
+  | "teaching";
 type ContextMenuState = {
   x: number;
   y: number;
@@ -531,7 +543,7 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState("demo-work");
   const [query, setQuery] = useState("");
   const scope = "all" as const;
-  const [view, setView] = useState<"graph" | "records" | "import">("graph");
+  const [view, setView] = useState<"graph" | "research" | "records" | "import">("graph");
   const [graphMode, setGraphMode] = useState<"all" | "book" | "focus">("all");
   const [panel, setPanel] = useState<InspectorTab>("overview");
   const [loaded, setLoaded] = useState(false);
@@ -540,7 +552,7 @@ export default function Home() {
     () => true,
     () => false,
   );
-  const [zoom, setZoom] = useState(0.72);
+  const [zoom, setZoom] = useState(0.64);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [importSummary, setImportSummary] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState("全部");
@@ -550,7 +562,7 @@ export default function Home() {
   const [assistantResult, setAssistantResult] =
     useState<AssistantResult | null>(null);
   const [assistantBusy, setAssistantBusy] = useState(false);
-  const [motionEnabled, setMotionEnabled] = useState(true);
+  const [motionEnabled, setMotionEnabled] = useState(false);
   const [motionPhase, setMotionPhase] = useState(0);
   const [canvasMetrics, setCanvasMetrics] = useState<CanvasPerformanceMetrics>({
     fps: 0,
@@ -559,7 +571,10 @@ export default function Home() {
     renderedLabels: 0,
     renderer: "Canvas 2D",
     domElementCount: 0,
+    renderMode: "on-demand",
   });
+  const [researchInfoOpen, setResearchInfoOpen] = useState(false);
+  const [graphGeneratedAt, setGraphGeneratedAt] = useState<string>();
   const canvasMetricsRef = useRef(canvasMetrics);
   const loadStartedAtRef = useRef(0);
   const [loadPerformance, setLoadPerformance] = useState<LoadPerformance>({
@@ -635,6 +650,7 @@ export default function Home() {
         if (!payload.books?.length) return;
         setDataset(payload);
         setCanonicalGraph(canonical);
+        setGraphGeneratedAt(index.generatedAt);
         const book =
           payload.books.find((b) => b.key === "g8s2") ?? payload.books[0];
         setBookKey(book.key);
@@ -1532,7 +1548,7 @@ export default function Home() {
   const chooseFullGraph = () => {
     setGraphMode("all");
     setView("graph");
-    setZoom(0.72);
+    setZoom(0.64);
     setCanvasPan({ x: 0, y: 0 });
     setHighlightedCanonicalIds([]);
     setHighlightedCanonicalRelationIds([]);
@@ -1545,6 +1561,75 @@ export default function Home() {
       )[0];
     if (core) setSelectedId(core.id);
   };
+  const openResearchPair = useCallback(
+    (leftBookKey: string, rightBookKey: string, entityIds: string[]) => {
+      if (!canonicalBook || !entityIds.length) return;
+      const idSet = new Set(entityIds);
+      const relatedRelationships = canonicalBook.triples
+        .filter(
+          (relationship) =>
+            relationship.objectId &&
+            idSet.has(relationship.subject) &&
+            idSet.has(relationship.objectId),
+        )
+        .map((relationship) => relationship.id);
+      setView("graph");
+      setGraphMode("all");
+      setFullGraphView("all");
+      setHighlightedCanonicalIds(entityIds);
+      setHighlightedCanonicalRelationIds(relatedRelationships);
+      setSelectedId(entityIds[0]);
+      setShowLabels(true);
+      setZoom(0.95);
+      const points = canonicalBook.entities
+        .filter((entity) => idSet.has(entity.id) && entity.layout)
+        .map((entity) => entity.layout as { x: number; y: number });
+      if (points.length) {
+        const average = points.reduce(
+          (sum, point) => ({ x: sum.x + point.x, y: sum.y + point.y }),
+          { x: 0, y: 0 },
+        );
+        setCanvasPan({
+          x: 1200 - average.x / points.length,
+          y: 750 - average.y / points.length,
+        });
+      }
+      const left = datasetBookMap.get(leftBookKey);
+      const right = datasetBookMap.get(rightBookKey);
+      if (left && right)
+        setAssistantResult({
+          summary: `${left.grade}${left.semester.slice(0, 1)} × ${right.grade}${right.semester.slice(0, 1)}共享知识`,
+          answer: `已在六册全景中高亮两册教材共同覆盖的 ${entityIds.length} 个规范知识实体。该结果表示实体融合后的教材关联，不等同于因果或前置关系。`,
+          facts: [],
+          poweredBy: "graph",
+        });
+    },
+    [canonicalBook, datasetBookMap],
+  );
+  const openResearchEntity = useCallback(
+    (entity: { id: string }) => {
+      const target = canonicalEntityById.get(entity.id);
+      if (!target || !canonicalBook) return;
+      setView("graph");
+      setGraphMode("all");
+      setSelectedId(target.id);
+      setHighlightedCanonicalIds([target.id]);
+      setHighlightedCanonicalRelationIds(
+        canonicalBook.triples
+          .filter(
+            (relationship) =>
+              relationship.subject === target.id ||
+              relationship.objectId === target.id,
+          )
+          .map((relationship) => relationship.id),
+      );
+      setShowLabels(true);
+      setZoom(1.45);
+      if (target.layout)
+        setCanvasPan({ x: 1200 - target.layout.x, y: 750 - target.layout.y });
+    },
+    [canonicalBook, canonicalEntityById],
+  );
   const submitSearch = (e: FormEvent) => {
     e.preventDefault();
     if (searchResults[0])
@@ -2415,7 +2500,15 @@ export default function Home() {
       </div>
     );
   return (
-    <main className={`app-shell ${view === "graph" ? "graph-first" : ""}`}>
+    <main
+      className={`app-shell ${view === "graph" || view === "research" ? "graph-first" : ""}`}
+      style={
+        {
+          ...designTokenCssVariables,
+          ...semanticPaletteCssVariables,
+        } as CSSProperties
+      }
+    >
       <aside className="sidebar">
         <div className="brand-lockup">
           <div className="brand-mark">
@@ -2444,6 +2537,12 @@ export default function Home() {
             onClick={() => setView("records")}
           >
             <span>▦</span>作品档案
+          </button>
+          <button
+            className={`nav-item ${view === "research" ? "active" : ""}`}
+            onClick={() => setView("research")}
+          >
+            <span>▤</span>研究分析
           </button>
           <button
             className={`nav-item ${view === "import" ? "active" : ""}`}
@@ -2536,7 +2635,7 @@ export default function Home() {
             {canonicalGraph && (
               <div className="graph-quality-summary">
                 <div>
-                  <strong>DATA QUALITY V2.1</strong>
+                  <strong>DATA QUALITY / CANONICAL</strong>
                   <span>规范融合后</span>
                 </div>
                 <dl>
@@ -2639,6 +2738,8 @@ export default function Home() {
             <h1>
               {view === "graph"
                 ? "教材知识图谱"
+                : view === "research"
+                  ? "研究分析"
                 : view === "records"
                   ? "逐作品档案"
                   : "教材数据导入"}
@@ -2724,12 +2825,31 @@ export default function Home() {
                   <div className="assistant-answer-meta">
                     <span>
                       {assistantResult.poweredBy === "gpt"
-                        ? "AI 图谱深度回答"
-                        : "多跳图谱分析"}
+                        ? "AI 辅助解释"
+                        : "图谱关联查询"}
                     </span>
                     <b>{assistantResult.summary}</b>
                   </div>
-                  <p>{assistantResult.answer}</p>
+                  <div className="assistant-evidence-boundary">
+                    <section>
+                      <strong>【图谱事实】</strong>
+                      <p>
+                        {assistantResult.facts.length
+                          ? assistantResult.facts
+                              .slice(0, 5)
+                              .map(
+                                (fact) =>
+                                  `${fact.subject}—${fact.predicate}—${fact.object}`,
+                              )
+                              .join("；")
+                          : "当前回答没有匹配到可追溯的教材三元组。"}
+                      </p>
+                    </section>
+                    <section>
+                      <strong>【AI辅助解释】</strong>
+                      <p>{assistantResult.answer}</p>
+                    </section>
+                  </div>
                   {assistantResult.analytics && (
                     <div className="assistant-analysis-grid">
                       <span>
@@ -2788,9 +2908,16 @@ export default function Home() {
               公开图谱
             </span>
             <button className="avatar">教</button>
+            <button
+              type="button"
+              className="research-info-trigger"
+              onClick={() => setResearchInfoOpen(true)}
+            >
+              研究信息
+            </button>
           </div>
         </header>
-        <div className="book-tabs">
+        {view === "graph" && <div className="book-tabs">
           <button
             className={`book-tab ${graphMode === "all" ? "active" : ""}`}
             onClick={chooseFullGraph}
@@ -2806,7 +2933,7 @@ export default function Home() {
               {book.grade}年级{book.semester}
             </button>
           ))}
-        </div>
+        </div>}
         {view === "graph" && (
           <div className="neo-layout">
             <div className="graph-main">
@@ -2893,7 +3020,7 @@ export default function Home() {
                   <div className="neo-actions">
                     <button
                       onClick={() => {
-                        setZoom(graphMode === "all" ? 0.72 : 0.92);
+                        setZoom(graphMode === "all" ? 0.64 : 0.92);
                         setCanvasPan({ x: 0, y: 0 });
                       }}
                     >
@@ -2923,7 +3050,7 @@ export default function Home() {
                       {showLabels ? "隐藏标签" : "显示标签"}
                     </button>
                     <button onClick={() => setMotionEnabled((value) => !value)}>
-                      {motionEnabled ? "暂停运动" : "恢复运动"}
+                      {motionEnabled ? "停止动态" : "动态演示"}
                     </button>
                     <button
                       onClick={() => {
@@ -3303,7 +3430,9 @@ export default function Home() {
                   <div className="canvas-hint">
                     {graphMode === "focus"
                       ? "查询结果已固定 · 节点仍可拖拽 · 滚轮或滑杆放大"
-                      : "节点可拖拽并缓慢运动 · 滚轮缩放 · 点击节点检查三元组"}
+                      : motionEnabled
+                        ? "动态演示已开启 · 节点可拖拽 · 滚轮缩放"
+                        : "稳定研究模式 · 节点可拖拽 · 滚轮缩放 · 点击检查三元组"}
                   </div>
                   <div className="graph-legend">
                     <span>
@@ -3464,6 +3593,10 @@ export default function Home() {
                     [
                       ["overview", "概览"],
                       ["relations", `关系 ${directTriples.length}`],
+                      [
+                        "occurrences",
+                        `跨册 ${selected?.textbookCount ?? 1}/6`,
+                      ],
                       ["evidence", `教材证据 ${evidence.length}`],
                       ["teaching", "教学应用"],
                     ] as Array<[InspectorTab, string]>
@@ -3576,7 +3709,7 @@ export default function Home() {
                           selected && expandNode(selected, inspectionBook, 3)
                         }
                       >
-                        展开 3 跳
+                        查找路径
                       </button>
                       <button
                         onClick={() =>
@@ -3584,11 +3717,12 @@ export default function Home() {
                           selectEntity(selected, inspectionBook, true)
                         }
                       >
-                        聚焦节点
+                        定位节点
                       </button>
-                      <button onClick={() => setView("records")}>
-                        作品档案
+                      <button onClick={() => setPanel("evidence")}>
+                        查看证据
                       </button>
+                      <button onClick={() => setView("records")}>作品档案</button>
                     </div>
                   </div>
                 )}
@@ -3626,6 +3760,91 @@ export default function Home() {
                     ) : (
                       <p className="empty-state">当前节点暂无正式关系。</p>
                     )}
+                  </div>
+                )}
+                {panel === "occurrences" && (
+                  <div className="inspector-occurrences">
+                    <section className="occurrence-summary">
+                      <span className="eyebrow muted">CANONICAL OCCURRENCE</span>
+                      <h3>跨册出现</h3>
+                      <div className="cross-book-metrics">
+                        <span>
+                          <b>{selected?.textbookCount ?? 1} / 6</b>覆盖教材
+                        </span>
+                        <span>
+                          <b>{selected?.occurrenceCount ?? 1}</b>出现次数
+                        </span>
+                        <span>
+                          <b>{directTriples.length}</b>相关关系
+                        </span>
+                      </div>
+                    </section>
+                    <ol className="occurrence-list">
+                      {(selectedOccurrences.length
+                        ? selectedOccurrences
+                        : (selected?.bookKeys ?? []).map((key, index) => ({
+                            id: `${selected?.id}-${key}`,
+                            textbook: key,
+                            textbookTitle:
+                              datasetBookMap.get(key)?.title ?? key,
+                            unit: null,
+                            lesson: null,
+                            page: selected?.firstPageByBook?.[key] ?? null,
+                            sourceText: null,
+                            evidence: [],
+                            occurrenceRole: "教材出现",
+                            canonicalId: selected?.id ?? "",
+                            sourceEntityId: `${selected?.id}-${index}`,
+                            entityType: selected?.type ?? "实体",
+                          }))).map((occurrence, index) => (
+                        <li key={occurrence.id}>
+                          <b>{String(index + 1).padStart(2, "0")}</b>
+                          <span>
+                            <strong>{occurrence.textbookTitle}</strong>
+                            <small>
+                              {occurrence.unit ?? "所属单元待细化"} · PDF 第
+                              {occurrence.page ?? "—"}页
+                            </small>
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                    <section className="related-knowledge-summary">
+                      <h3>相关作品与知识</h3>
+                      <div>
+                        {directTriples
+                          .map((triple) =>
+                            entityMap.get(
+                              triple.subject === selected?.id
+                                ? (triple.objectId ?? "")
+                                : triple.subject,
+                            ),
+                          )
+                          .filter((entity): entity is Entity => Boolean(entity))
+                          .filter(
+                            (entity, index, values) =>
+                              values.findIndex((item) => item.id === entity.id) ===
+                              index,
+                          )
+                          .slice(0, 12)
+                          .map((entity) => (
+                            <button
+                              key={entity.id}
+                              onClick={() =>
+                                selectEntity(entity, inspectionBook)
+                              }
+                            >
+                              <i
+                                style={{
+                                  background:
+                                    schemaCategoryMeta(entity.type).color,
+                                }}
+                              />
+                              {entity.name}
+                            </button>
+                          ))}
+                      </div>
+                    </section>
                   </div>
                 )}
                 {panel === "evidence" && (
@@ -3732,6 +3951,16 @@ export default function Home() {
             </aside>
           </div>
         )}
+        {view === "research" && canonicalGraph && (
+          <ResearchAnalysis
+            books={canonicalGraph.books}
+            entities={canonicalGraph.entities}
+            relationships={canonicalGraph.relationships}
+            quality={canonicalGraph.quality}
+            onSelectPair={openResearchPair}
+            onSelectEntity={openResearchEntity}
+          />
+        )}
         {view === "records" && (
           <section className="records-view">
             <div className="records-intro">
@@ -3825,6 +4054,12 @@ export default function Home() {
           默认六册叠加，点击教材中心可独立查看
         </footer>
       </section>
+      <ResearchInfo
+        open={researchInfoOpen}
+        version={canonicalGraph?.version ?? "V2.2"}
+        generatedAt={graphGeneratedAt}
+        onClose={() => setResearchInfoOpen(false)}
+      />
     </main>
   );
 }

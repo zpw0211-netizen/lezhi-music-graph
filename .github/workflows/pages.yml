@@ -32,6 +32,7 @@ jobs:
           npm run quality:audit
           npm run quality:p0
           npm run quality:v21
+          npm run quality:v22
           npm run quality:performance
       - name: Build static export
         run: npm run build

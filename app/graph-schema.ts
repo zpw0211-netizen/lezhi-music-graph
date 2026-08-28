@@ -1,3 +1,5 @@
+import { SEMANTIC_PALETTE } from "./semantic-palette";
+
 export type SchemaCategoryKey =
   | "textbook"
   | "work"
@@ -23,70 +25,70 @@ export const SCHEMA_CATEGORIES: SchemaCategory[] = [
     key: "textbook",
     label: "教材结构",
     neoLabel: "Textbook / Unit",
-    color: "#2F6BFF",
+    color: SEMANTIC_PALETTE.textbook.fill,
     nodeSize: "large",
   },
   {
     key: "work",
     label: "音乐作品",
     neoLabel: "MusicWork",
-    color: "#8B5CF6",
+    color: SEMANTIC_PALETTE.work.fill,
     nodeSize: "large",
   },
   {
     key: "person",
     label: "音乐人物",
     neoLabel: "Person",
-    color: "#F59E0B",
+    color: SEMANTIC_PALETTE.person.fill,
     nodeSize: "medium",
   },
   {
     key: "instrument",
     label: "乐器与人声",
     neoLabel: "InstrumentVoice",
-    color: "#06B6D4",
+    color: SEMANTIC_PALETTE.instrument.fill,
     nodeSize: "medium",
   },
   {
     key: "genre",
     label: "体裁与曲式",
     neoLabel: "GenreForm",
-    color: "#EC4899",
+    color: SEMANTIC_PALETTE.genre.fill,
     nodeSize: "medium",
   },
   {
     key: "element",
     label: "音乐基本要素",
     neoLabel: "MusicElement",
-    color: "#22C55E",
+    color: SEMANTIC_PALETTE.element.fill,
     nodeSize: "small",
   },
   {
     key: "theory",
     label: "音乐理论",
     neoLabel: "MusicTheory",
-    color: "#EAB308",
+    color: SEMANTIC_PALETTE.theory.fill,
     nodeSize: "small",
   },
   {
     key: "culture",
     label: "地域与文化",
     neoLabel: "CultureRegion",
-    color: "#EF4444",
+    color: SEMANTIC_PALETTE.culture.fill,
     nodeSize: "medium",
   },
   {
     key: "activity",
     label: "实践活动",
     neoLabel: "LearningActivity",
-    color: "#84CC16",
+    color: SEMANTIC_PALETTE.activity.fill,
     nodeSize: "small",
   },
   {
     key: "goal",
     label: "学习目标与教学",
     neoLabel: "LearningGoal",
-    color: "#14B8A6",
+    color: SEMANTIC_PALETTE.goal.fill,
     nodeSize: "small",
   },
 ];

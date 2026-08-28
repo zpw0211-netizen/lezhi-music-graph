@@ -5,8 +5,9 @@ import type { MouseEvent, PointerEvent, WheelEvent } from "react";
 import {
   schemaCategoryFor,
   schemaCategoryMeta,
-  type SchemaCategoryKey,
 } from "../graph-schema";
+import { SEMANTIC_PALETTE } from "../semantic-palette";
+import { DESIGN_TOKENS } from "../design-tokens";
 
 type CanvasEntity = {
   id: string;
@@ -42,6 +43,7 @@ export type CanvasPerformanceMetrics = {
   renderer: "Canvas 2D";
   memoryMb?: number;
   domElementCount: number;
+  renderMode: "on-demand" | "animated";
 };
 
 type Props = {
@@ -80,19 +82,6 @@ type ScreenEdge = {
   edge: CanvasEdge;
   from: ScreenNode;
   to: ScreenNode;
-};
-
-const COLORS: Record<SchemaCategoryKey, { fill: string; stroke: string }> = {
-  textbook: { fill: "#234c72", stroke: "#83b9e8" },
-  work: { fill: "#f29660", stroke: "#c96f3e" },
-  person: { fill: "#c48bc0", stroke: "#89558a" },
-  instrument: { fill: "#72b5d8", stroke: "#3d819f" },
-  genre: { fill: "#dfc45a", stroke: "#9f852a" },
-  element: { fill: "#8fcf7d", stroke: "#579d48" },
-  theory: { fill: "#7dbd78", stroke: "#4b8c48" },
-  culture: { fill: "#71b7ad", stroke: "#398478" },
-  activity: { fill: "#ef9fb0", stroke: "#b86378" },
-  goal: { fill: "#8ab8a2", stroke: "#4d8169" },
 };
 
 const stableSeed = (value: string) => {
@@ -152,6 +141,8 @@ function FullGraphCanvasScene({
   const hoverEdgeRef = useRef<string | null>(null);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
   const localPanRef = useRef(pan);
+  const drawRequestRef = useRef<() => void>(() => {});
+  const geometryDirtyRef = useRef(false);
   const dragRef = useRef<
     | {
         kind: "node";
@@ -189,6 +180,7 @@ function FullGraphCanvasScene({
 
   useEffect(() => {
     localPanRef.current = pan;
+    drawRequestRef.current();
   }, [pan]);
 
   useEffect(() => {
@@ -198,7 +190,9 @@ function FullGraphCanvasScene({
     if (!context) return;
 
     let frameHandle = 0;
-    let lastMetricsAt = Date.now();
+    let scheduled = false;
+    let disposed = false;
+    let lastMetricsAt = motionEnabled ? Date.now() : Date.now() - 1000;
     let frames = 0;
     const edgeLayer = document.createElement("canvas");
     const edgeContext = edgeLayer.getContext("2d", { alpha: true });
@@ -206,6 +200,11 @@ function FullGraphCanvasScene({
     let cachedScreenEdges: ScreenEdge[] = [];
 
     const draw = () => {
+      scheduled = false;
+      if (geometryDirtyRef.current) {
+        edgeLayerDirty = true;
+        geometryDirtyRef.current = false;
+      }
       const rect = canvas.getBoundingClientRect();
       const ratio = Math.min(2, window.devicePixelRatio || 1);
       const width = Math.max(1, rect.width);
@@ -221,8 +220,8 @@ function FullGraphCanvasScene({
       context.clearRect(0, 0, width, height);
 
       const now = Date.now();
-      const scaleX = width / 2400;
-      const scaleY = height / 1500;
+      const scaleX = width / DESIGN_TOKENS.graph.width;
+      const scaleY = height / DESIGN_TOKENS.graph.height;
       const activePan = localPanRef.current;
       const hasHighlight = highlightedNodes.size > 0;
       const screenNodes: ScreenNode[] = [];
@@ -246,8 +245,16 @@ function FullGraphCanvasScene({
           graphX += Math.sin(phase) * (2.2 + (seed % 3));
           graphY += Math.cos(phase * 0.83) * (1.8 + (seed % 2));
         }
-        const x = ((graphX - 1200) * zoom + 1200 + activePan.x) * scaleX;
-        const y = ((graphY - 750) * zoom + 750 + activePan.y) * scaleY;
+        const x =
+          ((graphX - DESIGN_TOKENS.graph.centerX) * zoom +
+            DESIGN_TOKENS.graph.centerX +
+            activePan.x) *
+          scaleX;
+        const y =
+          ((graphY - DESIGN_TOKENS.graph.centerY) * zoom +
+            DESIGN_TOKENS.graph.centerY +
+            activePan.y) *
+          scaleY;
         const isTextbook = node.entity.type === "教材";
         const isShared = (node.entity.textbookCount ?? 1) >= 2;
         const baseRadius =
@@ -375,7 +382,7 @@ function FullGraphCanvasScene({
       let renderedLabels = 0;
       for (const node of screenNodes) {
         const semantic = schemaCategoryMeta(node.entity.type);
-        const colors = COLORS[semantic.key];
+        const colors = SEMANTIC_PALETTE[semantic.key];
         const isTextbook = node.entity.type === "教材";
         const isShared = (node.entity.textbookCount ?? 1) >= 2;
         const selected = node.entity.id === selectedId;
@@ -468,11 +475,14 @@ function FullGraphCanvasScene({
       frames += 1;
       if (now - lastMetricsAt >= 1000) {
         const metrics: CanvasPerformanceMetrics = {
-          fps: Math.round((frames * 10000) / (now - lastMetricsAt)) / 10,
+          fps: motionEnabled
+            ? Math.round((frames * 10000) / (now - lastMetricsAt)) / 10
+            : 0,
           visibleNodes: screenNodes.length,
           visibleEdges: screenEdges.length,
           renderedLabels,
           renderer: "Canvas 2D",
+          renderMode: motionEnabled ? "animated" : "on-demand",
           domElementCount:
             canvas.closest(".neo-canvas")?.querySelectorAll("*").length ?? 1,
           memoryMb: (
@@ -495,17 +505,34 @@ function FullGraphCanvasScene({
         canvas.dataset.visibleEdges = String(metrics.visibleEdges);
         canvas.dataset.renderedLabels = String(metrics.renderedLabels);
         canvas.dataset.domElements = String(metrics.domElementCount);
+        canvas.dataset.renderMode = metrics.renderMode;
         if (metrics.memoryMb != null)
           canvas.dataset.memoryMb = String(metrics.memoryMb);
         onMetrics(metrics);
         frames = 0;
         lastMetricsAt = now;
       }
-      frameHandle = requestAnimationFrame(draw);
+      if (motionEnabled && !disposed) frameHandle = requestAnimationFrame(draw);
     };
 
-    frameHandle = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(frameHandle);
+    const requestDraw = () => {
+      if (disposed || scheduled) return;
+      scheduled = true;
+      frameHandle = requestAnimationFrame(draw);
+    };
+    drawRequestRef.current = requestDraw;
+    const resizeObserver = new ResizeObserver(() => {
+      edgeLayerDirty = true;
+      requestDraw();
+    });
+    resizeObserver.observe(canvas);
+    requestDraw();
+    return () => {
+      disposed = true;
+      resizeObserver.disconnect();
+      cancelAnimationFrame(frameHandle);
+      drawRequestRef.current = () => {};
+    };
   }, [
     book.key,
     draggedPositions,
@@ -531,11 +558,17 @@ function FullGraphCanvasScene({
 
   const graphPoint = (x: number, y: number, canvas: HTMLCanvasElement) => {
     const rect = canvas.getBoundingClientRect();
-    const rawX = (x / Math.max(1, rect.width)) * 2400;
-    const rawY = (y / Math.max(1, rect.height)) * 1500;
+    const rawX =
+      (x / Math.max(1, rect.width)) * DESIGN_TOKENS.graph.width;
+    const rawY =
+      (y / Math.max(1, rect.height)) * DESIGN_TOKENS.graph.height;
     return {
-      x: 1200 + (rawX - 1200 - localPanRef.current.x) / zoom,
-      y: 750 + (rawY - 750 - localPanRef.current.y) / zoom,
+      x:
+        DESIGN_TOKENS.graph.centerX +
+        (rawX - DESIGN_TOKENS.graph.centerX - localPanRef.current.x) / zoom,
+      y:
+        DESIGN_TOKENS.graph.centerY +
+        (rawY - DESIGN_TOKENS.graph.centerY - localPanRef.current.y) / zoom,
     };
   };
 
@@ -576,19 +609,30 @@ function FullGraphCanvasScene({
         originY: localPanRef.current.y,
       };
     }
+    drawRequestRef.current();
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
     const point = pointFromEvent(event);
     pointerRef.current = point;
     const drag = dragRef.current;
-    if (!drag) return;
+    if (!drag) {
+      drawRequestRef.current();
+      return;
+    }
     if (drag.kind === "pan") {
       const rect = event.currentTarget.getBoundingClientRect();
       localPanRef.current = {
-        x: drag.originX + ((point.x - drag.startX) / rect.width) * 2400,
-        y: drag.originY + ((point.y - drag.startY) / rect.height) * 1500,
+        x:
+          drag.originX +
+          ((point.x - drag.startX) / rect.width) *
+            DESIGN_TOKENS.graph.width,
+        y:
+          drag.originY +
+          ((point.y - drag.startY) / rect.height) *
+            DESIGN_TOKENS.graph.height,
       };
+      drawRequestRef.current();
       return;
     }
     const start = graphPoint(drag.startX, drag.startY, event.currentTarget);
@@ -597,6 +641,8 @@ function FullGraphCanvasScene({
       x: drag.graphX + current.x - start.x,
       y: drag.graphY + current.y - start.y,
     };
+    geometryDirtyRef.current = true;
+    drawRequestRef.current();
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLCanvasElement>) => {
@@ -614,6 +660,7 @@ function FullGraphCanvasScene({
       if (position && moved >= 5) onNodePosition(nodeKey, position);
     } else onPanChange(localPanRef.current);
     dragRef.current = null;
+    drawRequestRef.current();
   };
 
   const handleDoubleClick = (event: MouseEvent<HTMLCanvasElement>) => {
@@ -649,6 +696,7 @@ function FullGraphCanvasScene({
         pointerRef.current = null;
         hoverNodeRef.current = null;
         hoverEdgeRef.current = null;
+        drawRequestRef.current();
       }}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
@@ -691,7 +739,8 @@ function MiniMap({ nodes, visibleNodeIds, zoom, pan }: MiniMapProps) {
         0,
         Math.PI * 2,
       );
-      context.fillStyle = COLORS[schemaCategoryFor(node.entity.type)].fill;
+      context.fillStyle =
+        SEMANTIC_PALETTE[schemaCategoryFor(node.entity.type)].fill;
       context.fill();
     }
     const viewportWidth = rect.width / Math.max(0.4, zoom);
