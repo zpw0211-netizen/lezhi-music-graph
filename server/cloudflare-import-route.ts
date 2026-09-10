@@ -25,5 +25,5 @@ export async function POST(request: Request) {
     for (const triple of book.triples ?? []) for (const evidence of book.evidenceByTriple?.[String(triple.id)] ?? []) statements.push(env.DB.prepare(`INSERT OR REPLACE INTO graph_evidence (id,triple_id,book_key,pdf_page,textbook_page,summary,region,confidence) VALUES (?,?,?,?,?,?,?,?)`).bind(`${String(triple.id)}:${String(evidence.pdfPage ?? 'x')}:${String(evidence.region ?? '')}`,triple.id,book.key,evidence.pdfPage ?? null,evidence.textbookPage ?? null,evidence.summary ?? null,evidence.region ?? null,evidence.confidence ?? null));
   }
   for (let i=0; i<statements.length; i+=100) await env.DB.batch(statements.slice(i,i+100));
-  return json({ ok:true, importedBooks:books.length, statements:statements.length, importedBy:user.id ?? 'current-user' });
+  return json({ ok:true, importedBooks:books.length, statements:statements.length, importedBy:user.userId });
 }

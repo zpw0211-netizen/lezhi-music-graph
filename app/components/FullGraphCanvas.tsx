@@ -44,7 +44,7 @@ export type CanvasPerformanceMetrics = {
   visibleNodes: number;
   visibleEdges: number;
   renderedLabels: number;
-  renderer: "Canvas 2D";
+  renderer: "Canvas 2D" | "Sigma WebGL";
   memoryMb?: number;
   domElementCount: number;
   renderMode: "on-demand" | "animated";

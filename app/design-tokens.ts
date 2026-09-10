@@ -7,15 +7,15 @@ export const DESIGN_TOKENS = {
     xl: 16,
   },
   radius: {
-    control: 3,
-    panel: 5,
+    control: 7,
+    panel: 10,
     circle: 999,
   },
   typography: {
-    micro: 8,
-    small: 9,
-    body: 10,
-    title: 16,
+    micro: 11,
+    small: 12,
+    body: 14,
+    title: 22,
   },
   graph: {
     width: 2400,
@@ -35,4 +35,3 @@ export const designTokenCssVariables = {
   "--radius-control": `${DESIGN_TOKENS.radius.control}px`,
   "--radius-panel": `${DESIGN_TOKENS.radius.panel}px`,
 } as Record<string, string>;
-

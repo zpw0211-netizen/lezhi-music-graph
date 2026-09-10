@@ -83,7 +83,11 @@ if (!pageSource.includes("const [showTextbookSources, setShowTextbookSources] = 
   failures.push("textbook source layer is not hidden by default");
 if (!canvasSource.includes("selectionFocus") || !canvasSource.includes("rankLimit"))
   failures.push("Neo4j focus or label LOD logic missing");
-if (!packageJson.devDependencies.graphology || !packageJson.devDependencies["graphology-layout-forceatlas2"])
+if (
+  !(packageJson.dependencies?.graphology || packageJson.devDependencies?.graphology) ||
+  !(packageJson.dependencies?.["graphology-layout-forceatlas2"] ||
+    packageJson.devDependencies?.["graphology-layout-forceatlas2"])
+)
   failures.push("build-time force layout dependencies missing");
 if (packageJson.dependencies?.["@neo4j-nvl/base"] || packageJson.dependencies?.["@neo4j-nvl/react"])
   failures.push("unused NVL runtime dependencies should not ship");
