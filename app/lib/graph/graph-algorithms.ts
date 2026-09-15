@@ -38,21 +38,24 @@ export function buildGraphIndexes<E extends GraphEntity>(
 export function focusNeighborhood(
   indexes: GraphIndexes,
   selectedId?: string | null,
+  visibility?: { nodes: Set<string>; edges: Set<string> },
 ) {
   const depthByNode = new Map<string, 0 | 1 | 2>();
   const directEdges = new Set<string>();
   const secondaryEdges = new Set<string>();
-  if (!selectedId || !indexes.entityMap.has(selectedId))
+  if (!selectedId || !indexes.entityMap.has(selectedId) || (visibility && !visibility.nodes.has(selectedId)))
     return { depthByNode, directEdges, secondaryEdges };
 
   depthByNode.set(selectedId, 0);
   for (const item of indexes.adjacencyMap.get(selectedId) ?? []) {
+    if (visibility && (!visibility.nodes.has(item.neighborId) || !visibility.edges.has(item.edge.id))) continue;
     depthByNode.set(item.neighborId, 1);
     directEdges.add(item.edge.id);
   }
   for (const [nodeId, depth] of depthByNode) {
     if (depth !== 1) continue;
     for (const item of indexes.adjacencyMap.get(nodeId) ?? []) {
+      if (visibility && (!visibility.nodes.has(item.neighborId) || !visibility.edges.has(item.edge.id))) continue;
       if (!depthByNode.has(item.neighborId)) depthByNode.set(item.neighborId, 2);
       if (!directEdges.has(item.edge.id)) secondaryEdges.add(item.edge.id);
     }

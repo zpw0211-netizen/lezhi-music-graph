@@ -27,6 +27,7 @@ export type SigmaGraphSceneProps<E extends GraphEntity = GraphEntity> = {
   nodes: GraphPositionedNode<E>[];
   relationships: GraphRelationship[];
   visibleNodeIds: Set<string>;
+  visibleRelationshipIds: Set<string>;
   selectedId?: string | null;
   highlightedNodeIds: string[];
   highlightedRelationshipIds: string[];
@@ -64,6 +65,7 @@ type EdgeAttributes = {
   type: "arrow" | "line";
   relationship: GraphRelationship;
 };
+let graphBuildSequence = 0;
 
 // Sigma's WebGL programs use ONE / ONE_MINUS_SRC_ALPHA blending: color
 // channels must be premultiplied or translucent edges remain bright white.
@@ -96,6 +98,8 @@ function nodeSize(entity: GraphEntity) {
 function SigmaController<E extends GraphEntity>({
   dataGraph,
   indexes,
+  visibleNodeIds,
+  visibleRelationshipIds,
   selectedId,
   highlightedNodeIds,
   highlightedRelationshipIds,
@@ -112,7 +116,7 @@ function SigmaController<E extends GraphEntity>({
   onMetrics,
   onViewportChange,
   onClearFocus,
-}: Omit<SigmaGraphSceneProps<E>, "nodes" | "relationships" | "visibleNodeIds" | "draggedPositions"> & {
+}: Omit<SigmaGraphSceneProps<E>, "nodes" | "relationships" | "draggedPositions"> & {
   dataGraph: MultiDirectedGraph<NodeAttributes<E>, EdgeAttributes>;
   indexes: GraphIndexes<E>;
 }) {
@@ -125,10 +129,12 @@ function SigmaController<E extends GraphEntity>({
   const focusSuppressed = Boolean(selectedId && suppressedSelectionId === selectedId);
   const draggedNode = useRef<string | null>(null);
   const dragMoved = useRef(false);
+  const suppressClickUntil = useRef(0);
   const renderCounter = useRef<{ frames: number; startedAt: number } | null>(null);
+  const totalPaints = useRef(0);
   const focus = useMemo(
-    () => focusNeighborhood(indexes, focusSuppressed ? null : selectedId),
-    [focusSuppressed, indexes, selectedId],
+    () => focusNeighborhood(indexes, focusSuppressed ? null : selectedId, { nodes: visibleNodeIds, edges: visibleRelationshipIds }),
+    [focusSuppressed, indexes, selectedId, visibleNodeIds, visibleRelationshipIds],
   );
   const explicitNodes = useMemo(
     () => new Set(highlightedNodeIds),
@@ -159,6 +165,7 @@ function SigmaController<E extends GraphEntity>({
         const rankLimit = showLabels ? 280 : 38;
         return {
           ...data,
+          hidden: !visibleNodeIds.has(node),
           color: dimmed ? withAlpha(data.color, 0.08) : depth === 2 ? withAlpha(data.color, 0.62) : data.color,
           size: data.size * (selected ? 1.38 : hovered ? 1.12 : 1),
           label:
@@ -181,6 +188,7 @@ function SigmaController<E extends GraphEntity>({
         const label = relationLabels[relationship.predicate] ?? relationship.label ?? relationship.predicate;
         return {
           ...data,
+          hidden: !visibleRelationshipIds.has(edge) || !visibleNodeIds.has(data.relationship.subject) || !visibleNodeIds.has(data.relationship.objectId ?? ""),
           color: dimmed
             ? rgba(129, 146, 163, .035)
             : direct || hovered || highlighted
@@ -214,6 +222,8 @@ function SigmaController<E extends GraphEntity>({
     setSettings,
     showLabels,
     sigma,
+    visibleNodeIds,
+    visibleRelationshipIds,
   ]);
 
   useEffect(() => {
@@ -242,7 +252,7 @@ function SigmaController<E extends GraphEntity>({
     if (highlightedNodeIds.length < 2) return;
     const points = highlightedNodeIds
       .map((id) => sigma.getNodeDisplayData(id))
-      .filter((point): point is NonNullable<typeof point> => Boolean(point));
+      .filter((point): point is NonNullable<typeof point> => Boolean(point && !point.hidden));
     if (points.length < 2) return;
     const xs = points.map((point) => point.x);
     const ys = points.map((point) => point.y);
@@ -264,12 +274,16 @@ function SigmaController<E extends GraphEntity>({
     const finishDrag = () => {
       const node = draggedNode.current;
       if (node && dragMoved.current) {
+        suppressClickUntil.current = performance.now() + 220;
         const graph = sigma.getGraph();
+        const host = sigma.getContainer().parentElement;
+        if (host) host.dataset.lastDraggedNode = node;
         onNodePosition(`${sceneKey}-${node}`, {
           x: graph.getNodeAttribute(node, "x"),
           y: graph.getNodeAttribute(node, "y"),
         });
       }
+      if (node) sigma.getCamera().enable();
       draggedNode.current = null;
       dragMoved.current = false;
     };
@@ -287,6 +301,7 @@ function SigmaController<E extends GraphEntity>({
       updated: syncViewport,
       resize: syncViewport,
       clickNode: ({ node }) => {
+        if (performance.now() < suppressClickUntil.current) return;
         setSuppressedSelectionId(null);
         onSelect(sigma.getGraph().getNodeAttribute(node, "entity"));
       },
@@ -302,7 +317,7 @@ function SigmaController<E extends GraphEntity>({
           sigma.getGraph().getNodeAttribute(node, "entity"),
         );
       },
-      clickStage: () => { setSuppressedSelectionId(selectedId ?? null); onClearFocus(); },
+      clickStage: () => { if (performance.now() < suppressClickUntil.current) return; setSuppressedSelectionId(selectedId ?? null); onClearFocus(); },
       enterNode: ({ node }) => setHoveredNode(node),
       leaveNode: () => setHoveredNode(null),
       enterEdge: ({ edge }) => setHoveredEdge(edge),
@@ -310,13 +325,17 @@ function SigmaController<E extends GraphEntity>({
       downNode: ({ node, preventSigmaDefault }) => {
         draggedNode.current = node;
         dragMoved.current = false;
+        sigma.getCamera().disable();
         preventSigmaDefault();
       },
       moveBody: ({ event, preventSigmaDefault }) => {
         const node = draggedNode.current;
         if (!node) return;
         dragMoved.current = true;
-        const position = sigma.viewportToGraph({ x: event.x, y: event.y });
+        const rect = sigma.getContainer().getBoundingClientRect();
+        const original = event.original;
+        const point = "clientX" in original ? { x: original.clientX - rect.left, y: original.clientY - rect.top } : { x: event.x, y: event.y };
+        const position = sigma.viewportToGraph(point);
         sigma.getGraph().mergeNodeAttributes(node, position);
         preventSigmaDefault();
         event.original.preventDefault();
@@ -326,6 +345,9 @@ function SigmaController<E extends GraphEntity>({
       upNode: finishDrag,
       upStage: finishDrag,
       afterRender: () => {
+        totalPaints.current += 1;
+        const host = sigma.getContainer().parentElement;
+        if (host) host.dataset.renderCount = String(totalPaints.current);
         const now = performance.now();
         if (!renderCounter.current) {
           renderCounter.current = { frames: 1, startedAt: now };
@@ -334,11 +356,10 @@ function SigmaController<E extends GraphEntity>({
         renderCounter.current.frames += 1;
         const elapsed = now - renderCounter.current.startedAt;
         if (elapsed < 1000) return;
-        const graph = sigma.getGraph();
         onMetrics({
           fps: Math.round((renderCounter.current.frames * 1000) / elapsed),
-          visibleNodes: graph.order,
-          visibleEdges: graph.size,
+          visibleNodes: visibleNodeIds.size,
+          visibleEdges: visibleRelationshipIds.size,
           renderedLabels: document.querySelectorAll(".sigma-labels canvas").length,
           renderer: "Sigma WebGL",
           domElementCount: sigma.getContainer().querySelectorAll("*").length,
@@ -350,9 +371,11 @@ function SigmaController<E extends GraphEntity>({
         renderCounter.current = { frames: 0, startedAt: now };
       },
     });
+    window.addEventListener("mouseup", finishDrag);
+    window.addEventListener("blur", finishDrag);
     syncViewport();
-    return () => clearTimeout(cameraSyncTimer);
-  }, [onClearFocus, onContextMenu, onExpand, onMetrics, onNodePosition, onSelect, onViewportChange, registerEvents, sceneKey, selectedId, sigma]);
+    return () => { clearTimeout(cameraSyncTimer); window.removeEventListener("mouseup", finishDrag); window.removeEventListener("blur", finishDrag); if (draggedNode.current) sigma.getCamera().enable(); };
+  }, [onClearFocus, onContextMenu, onExpand, onMetrics, onNodePosition, onSelect, onViewportChange, registerEvents, sceneKey, selectedId, sigma, visibleNodeIds, visibleRelationshipIds]);
 
   return null;
 }
@@ -361,6 +384,7 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
   nodes,
   relationships,
   visibleNodeIds,
+  visibleRelationshipIds,
   selectedId,
   highlightedNodeIds,
   highlightedRelationshipIds,
@@ -379,33 +403,17 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
   onViewportChange,
   onClearFocus,
 }: SigmaGraphSceneProps<E>) {
-  const visibleNodes = useMemo(
-    () => nodes.filter((node) => visibleNodeIds.has(node.entity.id)),
-    [nodes, visibleNodeIds],
-  );
-  const visibleRelationships = useMemo(
-    () =>
-      relationships.filter(
-        (edge) =>
-          edge.objectId &&
-          visibleNodeIds.has(edge.subject) &&
-          visibleNodeIds.has(edge.objectId),
-      ),
-    [relationships, visibleNodeIds],
-  );
   const indexes = useMemo(
-    () => buildGraphIndexes(visibleNodes.map((node) => node.entity), visibleRelationships),
-    [visibleNodes, visibleRelationships],
+    () => buildGraphIndexes(nodes.map((node) => node.entity), relationships),
+    [nodes, relationships],
   );
   const graph = useMemo(() => {
     const value = new MultiDirectedGraph<NodeAttributes<E>, EdgeAttributes>();
-    for (const node of visibleNodes) {
-      const key = `${sceneKey}-${node.entity.id}`;
-      const fixed = draggedPositions[key];
+    for (const node of nodes) {
       const category = schemaCategoryFor(node.entity.type);
       value.addNode(node.entity.id, {
-        x: fixed?.x ?? node.x,
-        y: fixed?.y ?? node.y,
+        x: node.x,
+        y: node.y,
         size: nodeSize(node.entity),
         color: SEMANTIC_PALETTE[category].fill,
         label: node.entity.name,
@@ -414,18 +422,25 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
         category,
       });
     }
-    for (const edge of visibleRelationships) {
+    for (const edge of relationships) {
       if (!edge.objectId || !value.hasNode(edge.subject) || !value.hasNode(edge.objectId)) continue;
       value.addDirectedEdgeWithKey(edge.id, edge.subject, edge.objectId, {
         size: edge.crossBook ? 1.2 : 0.75,
         color: edge.provenance ? rgba(126, 139, 151, .14) : rgba(138, 151, 164, .2),
-        label: relationLabels[edge.predicate] ?? edge.label ?? edge.predicate,
+        label: edge.label ?? edge.predicate,
         type: edge.provenance ? "line" : "arrow",
         relationship: edge,
       });
     }
+    value.setAttribute("buildId", ++graphBuildSequence);
     return value;
-  }, [draggedPositions, relationLabels, sceneKey, visibleNodes, visibleRelationships]);
+  }, [nodes, relationships]);
+  useEffect(() => {
+    for (const [key, point] of Object.entries(draggedPositions)) {
+      const prefix = `${sceneKey}-`;
+      if (key.startsWith(prefix) && graph.hasNode(key.slice(prefix.length))) graph.mergeNodeAttributes(key.slice(prefix.length), point);
+    }
+  }, [draggedPositions, graph, sceneKey]);
   const initialGraph = useMemo(
     () => new MultiDirectedGraph<NodeAttributes<E>, EdgeAttributes>(),
     [],
@@ -458,6 +473,7 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
     [],
   );
   return (
+    <div className="sigma-scene-host" data-graph-build-id={graph.getAttribute("buildId")} data-full-nodes={graph.order} data-full-edges={graph.size} data-visible-nodes={visibleNodeIds.size} data-visible-edges={visibleRelationshipIds.size}>
     <SigmaContainer
       graph={initialGraph}
       className="sigma-graph-scene"
@@ -466,6 +482,8 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
       <SigmaController
         dataGraph={graph}
         indexes={indexes}
+        visibleNodeIds={visibleNodeIds}
+        visibleRelationshipIds={visibleRelationshipIds}
         selectedId={selectedId}
         highlightedNodeIds={highlightedNodeIds}
         highlightedRelationshipIds={highlightedRelationshipIds}
@@ -484,6 +502,7 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
         onClearFocus={onClearFocus}
       />
     </SigmaContainer>
+    </div>
   );
 }
 

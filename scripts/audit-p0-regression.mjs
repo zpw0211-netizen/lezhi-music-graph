@@ -4,7 +4,9 @@ const root = new URL("../", import.meta.url);
 const data = JSON.parse(
   await readFile(new URL("public/data/music-graph.json", root), "utf8"),
 );
-const pageSource = await readFile(new URL("app/page.tsx", root), "utf8");
+const pageSource = (await readFile(new URL("app/page.tsx", root), "utf8")) + "\n" +
+  (await readFile(new URL("app/components/graph/GraphSidebar.tsx", root), "utf8")) +
+  (await readFile(new URL("app/components/graph/EntityTypeFilter.tsx", root), "utf8"));
 const schemaSource = await readFile(new URL("app/graph-schema.ts", root), "utf8");
 const failures = [];
 
@@ -38,7 +40,7 @@ for (const keyword of ["游击队歌", "贺绿汀", "二胡", "音乐概念", "�
 }
 
 for (const token of [
-  "schema-panel",
+  "EntityTypeFilter",
   "expandNode",
   "onDoubleClick",
   "onContextMenu",

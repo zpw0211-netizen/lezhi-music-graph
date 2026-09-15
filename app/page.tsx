@@ -49,6 +49,12 @@ import { designTokenCssVariables } from "./design-tokens";
 import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AssistantPage } from "./components/assistant/AssistantPage";
 import type { AnswerResult } from "./lib/ai/graph-rag";
+import { GraphSidebar } from "./components/graph/GraphSidebar";
+import { SchemaExplorer } from "./components/graph/SchemaExplorer";
+import { NodeAIInterpretation } from "./components/assistant/NodeAIInterpretation";
+import { useGraphFilters } from "./hooks/useGraphFilters";
+import { useGraphActions } from "./hooks/useGraphActions";
+import type { GraphAction } from "./lib/graph/graph-actions";
 
 const SigmaGraphScene = nextDynamic<SigmaGraphSceneProps<Entity>>(
   () =>
@@ -574,7 +580,8 @@ export default function Home() {
   const scope = "all" as const;
   const [view, setView] = useState<"graph" | "assistant" | "research" | "records" | "import">("graph");
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [schemaOpen, setSchemaOpen] = useState(false);
+  const schemaOpen = true;
+  const [assistantEntry, setAssistantEntry] = useState({ question: "", token: 0 });
   const [graphMode, setGraphMode] = useState<"all" | "book" | "focus">("all");
   const [panel, setPanel] = useState<InspectorTab>("overview");
   const [loaded, setLoaded] = useState(false);
@@ -630,11 +637,6 @@ export default function Home() {
   >({});
   const [hiddenNodeKeys, setHiddenNodeKeys] = useState<string[]>([]);
   const [pinnedNodeKeys, setPinnedNodeKeys] = useState<string[]>([]);
-  const [visibleSchemaKeys, setVisibleSchemaKeys] = useState<
-    SchemaCategoryKey[]
-  >([...ALL_SCHEMA_KEYS]);
-  const [lastSchemaKey, setLastSchemaKey] = useState<SchemaCategoryKey>("work");
-  const [hiddenRelations, setHiddenRelations] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [fullGraphView, setFullGraphView] = useState<FullGraphView>("all");
   const [fullGraphLayout, setFullGraphLayout] =
@@ -786,6 +788,9 @@ export default function Home() {
       relations,
     };
   }, [canonicalGraph, dataset.books]);
+  const graphFilters = useGraphFilters(canonicalBook?.entities ?? EMPTY_ENTITIES, canonicalBook?.triples ?? EMPTY_TRIPLES, dataset.books, publicAssetUrl);
+  const { visibleSchemaKeys, setVisibleSchemaKeys, hiddenRelations, setHiddenRelations } = graphFilters;
+  const resetGraphFilters = graphFilters.reset;
   const { paths: graphPaths } = useGraphPath(
     canonicalBook?.entities ?? EMPTY_ENTITIES,
     canonicalBook?.triples ?? EMPTY_TRIPLES,
@@ -1064,12 +1069,6 @@ export default function Home() {
     return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi) || b[1] - a[1];
   });
   const maxTypeCount = Math.max(1, ...typeRows.map(([, count]) => count));
-  const schemaCounts = Object.fromEntries(
-    SCHEMA_CATEGORIES.map((category) => [category.key, 0]),
-  ) as Record<SchemaCategoryKey, number>;
-  for (const entity of networkEntities)
-    schemaCounts[schemaCategoryFor(entity.type)] += 1;
-  const propertyKeyCount = 6;
   const buildGroup = useCallback(
     (
       book: Book,
@@ -1503,6 +1502,8 @@ export default function Home() {
         (fullGraphView === "knowledge" && !isTextbook);
       if (
         visibleInMode &&
+        graphFilters.filteredEntityIds.has(entity.id) &&
+        (!graphFilters.relationEndpointIds || graphFilters.relationEndpointIds.has(entity.id)) &&
         perspectiveEntityIds.has(entity.id) &&
         visibleSchemaKeys.includes(schemaCategoryFor(entity.type)) &&
         !hiddenNodeKeys.includes(`${canonicalBook.key}-${entity.id}`) &&
@@ -1524,6 +1525,8 @@ export default function Home() {
     showTextbookSources,
     typeFilter,
     visibleSchemaKeys,
+    graphFilters.filteredEntityIds,
+    graphFilters.relationEndpointIds,
   ]);
   const fullGraphRelationships = useMemo(() => {
     if (!canonicalBook) return [] as Triple[];
@@ -1738,6 +1741,7 @@ export default function Home() {
         `${entity.name.trim().toLowerCase()}|${schemaCategoryFor(entity.type)}`,
       );
     if (canonical && canonicalBook) {
+      resetGraphFilters();
       setView("graph");
       setGraphMode("all");
       setGraphPerspective("comprehensive");
@@ -1807,6 +1811,8 @@ export default function Home() {
   };
   const applyGraphPath = () => {
     if (!activeGraphPath) return;
+    resetGraphFilters(); setFullGraphLayout("knowledge"); setInspectorOpen(true);
+    setFocusSelectionToken(value => value + 1);
     setView("graph");
     setGraphMode("all");
     setFullGraphView("all");
@@ -1827,6 +1833,7 @@ export default function Home() {
   const openResearchPair = useCallback(
     (leftBookKey: string, rightBookKey: string, entityIds: string[]) => {
       if (!canonicalBook || !entityIds.length) return;
+      resetGraphFilters(); setGraphPerspective("comprehensive"); setTypeFilter("全部"); setInspectorOpen(false);
       const idSet = new Set(entityIds);
       const relatedRelationships = canonicalBook.triples
         .filter(
@@ -1868,12 +1875,14 @@ export default function Home() {
           poweredBy: "graph",
         });
     },
-    [canonicalBook, datasetBookMap],
+    [canonicalBook, datasetBookMap, resetGraphFilters],
   );
   const openResearchEntity = useCallback(
     (entity: { id: string }) => {
       const target = canonicalEntityById.get(entity.id);
       if (!target || !canonicalBook) return;
+      resetGraphFilters(); setGraphPerspective("comprehensive"); setTypeFilter("全部"); setInspectorOpen(true);
+      setFullGraphView("all"); setFocusSelectionToken(value => value + 1);
       setView("graph");
       setGraphMode("all");
       setFullGraphLayout("knowledge");
@@ -1885,7 +1894,7 @@ export default function Home() {
       if (target.layout)
         setCanvasPan({ x: 1200 - target.layout.x, y: 750 - target.layout.y });
     },
-    [canonicalBook, canonicalEntityById],
+    [canonicalBook, canonicalEntityById, resetGraphFilters],
   );
   const submitSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -2569,10 +2578,12 @@ export default function Home() {
     );
     const visible = (id: string) => {
       const entity = group.book.entities.find((item) => item.id === id);
+      const canonical = entity ? canonicalEntityBySearchKey.get(`${entity.name.trim().toLowerCase()}|${schemaCategoryFor(entity.type)}`) : undefined;
       const nodeKey = `${group.book.key}-${id}`;
       return (
-        id === group.center.id ||
+        (id === group.center.id && visibleSchemaKeys.includes("textbook") && (!canonical || (graphFilters.filteredEntityIds.has(canonical.id) && perspectiveEntityIds.has(canonical.id)))) ||
         (!hiddenNodeKeys.includes(nodeKey) &&
+          (!canonical || (graphFilters.filteredEntityIds.has(canonical.id) && perspectiveEntityIds.has(canonical.id) && (!graphFilters.relationEndpointIds || graphFilters.relationEndpointIds.has(canonical.id)))) &&
           (graphMode === "focus" ||
             visibleNodeIdsByBook[group.book.key]?.has(id)) &&
           Boolean(
@@ -2647,6 +2658,7 @@ export default function Home() {
               ? " dragging"
               : "")
           }
+          style={{ display: visible(group.center.id) ? undefined : "none" }}
           transform={"translate(" + centerPoint.x + " " + centerPoint.y + ")"}
           onPointerDown={(event) =>
             beginDrag(event, group.center, group.book, centerPoint)
@@ -2765,7 +2777,58 @@ export default function Home() {
   const handleClearSigmaFocus = useCallback(() => {
     setHighlightedCanonicalIds([]);
     setHighlightedCanonicalRelationIds([]);
+    setInspectorOpen(false);
   }, []);
+
+  const resetExplorer = useCallback(() => {
+    resetGraphFilters(); setTypeFilter("全部"); setHiddenNodeKeys([]);
+    setHighlightedCanonicalIds([]); setHighlightedCanonicalRelationIds([]);
+    setGraphPerspective("comprehensive"); setFullGraphView("all");
+    setShowTextbookSources(false); setInspectorOpen(false);
+  }, [resetGraphFilters]);
+  const handlePerspective = useCallback((value: GraphPerspective) => {
+    setGraphPerspective(value); setHighlightedCanonicalIds([]); setHighlightedCanonicalRelationIds([]); setInspectorOpen(false);
+  }, []);
+  const graphActions = useGraphActions(canonicalGraph, {
+    begin: () => { resetExplorer(); setView("graph"); setGraphMode("all"); setFullGraphLayout("knowledge"); setPathFinderOpen(false); setContextMenu(null); },
+    focus: (ids, isolate) => {
+      if (isolate) graphFilters.setFocusedEntityIds(ids);
+      setHighlightedCanonicalIds(ids); setSelectedId(ids[0]); setInspectorOpen(true); setPanel("overview");
+      setFocusSelectionToken(value => value + 1);
+      if (ids.some(id => canonicalEntityById.get(id)?.type === "教材")) setShowTextbookSources(true);
+    },
+    entityTypes: types => setVisibleSchemaKeys(types as SchemaCategoryKey[]),
+    relations: types => {
+      setHiddenRelations([...new Set(canonicalGraph?.relationships.map(edge => edge.label ?? edge.predicate) ?? [])].filter(name => !types.includes(name)));
+      if (canonicalGraph?.relationships.some(edge => edge.provenance && types.includes(edge.label ?? edge.predicate))) setShowTextbookSources(true);
+    },
+    books: keys => graphFilters.setProperties(current => ({ ...current, books: keys })),
+    perspective: setGraphPerspective,
+    path: (source, target, path) => {
+      setPathFinderOpen(true); setPathStartId(source); setPathEndId(target); setActivePathIndex(0);
+      setHighlightedCanonicalIds(path?.nodeIds ?? []); setHighlightedCanonicalRelationIds(path?.edgeIds ?? []);
+      setSelectedId(source); setInspectorOpen(true); setPanel("relations");
+      if (path?.nodeIds.some(id => canonicalEntityById.get(id)?.type === "教材") || path?.edgeIds.some(id => canonicalBook?.triples.find(edge => edge.id === id)?.provenance)) setShowTextbookSources(true);
+      setFocusSelectionToken(value => value + 1);
+    },
+    expand: (ids, edges) => { setHighlightedCanonicalIds(ids); setHighlightedCanonicalRelationIds(edges); graphFilters.setFocusedEntityIds(current => current ? [...new Set([...current, ...ids])] : null); },
+    highlightNodes: setHighlightedCanonicalIds,
+    highlightEdges: setHighlightedCanonicalRelationIds,
+  });
+  const executeGraphActions = graphActions.execute;
+  const handleAnswerFocus = useCallback((result: AnswerResult) => {
+    const ids = [...new Set([...result.graphFocus.nodeIds, ...result.relatedEntities.map(entity => entity.id)])].slice(0, 500);
+    const edges = [...new Set([...result.graphFocus.relationshipIds, ...result.relatedRelationships.map(edge => edge.id)])].slice(0, 500);
+    const actions: GraphAction[] = ids.length ? [{ type: "focus_entities", entityIds: ids, isolate: true }] : [];
+    if (edges.length) actions.push({ type: "highlight_relationships", relationshipIds: edges });
+    if (actions.length) executeGraphActions(actions);
+  }, [executeGraphActions]);
+  const visibleRelationshipIds = useMemo(() => new Set(fullGraphRelationships.map(edge => edge.id)), [fullGraphRelationships]);
+  const openSchemaInstances = (types: SchemaCategoryKey[], relation?: string) => {
+    const actions: GraphAction[] = [{ type: "filter_entity_types", entityTypes: [...new Set(types)] }];
+    if (relation) actions.push({ type: "filter_relationship_types", relationshipTypes: [relation] });
+    graphActions.execute(actions);
+  };
 
   const fullGraphCanvasFallback =
     canonicalGroup && canonicalBook ? (
@@ -2773,7 +2836,7 @@ export default function Home() {
         nodes={canonicalGroup.nodes}
         relationships={fullGraphRelationships}
         visibleNodeIds={fullGraphVisibleIds}
-        selectedId={selected?.id}
+        selectedId={inspectorOpen ? selected?.id : null}
         highlightedNodeIds={highlightedCanonicalIds}
         highlightedRelationshipIds={highlightedCanonicalRelationIds}
         relationLabels={canonicalBook.relations}
@@ -2793,7 +2856,7 @@ export default function Home() {
       />
     ) : null;
   const fullGraphScene =
-    canonicalGroup && canonicalBook ? (
+    canonicalGroup && canonicalBook && fullGraphLayout === "schema" ? <SchemaExplorer entities={canonicalBook.entities} relationships={canonicalBook.triples} onInstances={openSchemaInstances} /> : canonicalGroup && canonicalBook ? (
       <GraphRendererBoundary
         fallback={fullGraphCanvasFallback}
         onFallback={() => setFullGraphRenderer("canvas")}
@@ -2801,9 +2864,10 @@ export default function Home() {
         {fullGraphRenderer === "sigma" ? (
           <SigmaGraphScene
             nodes={canonicalGroup.nodes}
-            relationships={fullGraphRelationships}
+            relationships={canonicalBook.triples}
             visibleNodeIds={fullGraphVisibleIds}
-            selectedId={selected?.id}
+            visibleRelationshipIds={visibleRelationshipIds}
+            selectedId={inspectorOpen ? selected?.id : null}
             highlightedNodeIds={highlightedCanonicalIds}
             highlightedRelationshipIds={highlightedCanonicalRelationIds}
             relationLabels={canonicalBook.relations}
@@ -2843,250 +2907,10 @@ export default function Home() {
         } as CSSProperties
       }
     >
-      <aside className="sidebar">
-        <div className="brand-lockup">
-          <div className="brand-mark">
-            <span />
-            <span />
-            <span />
-          </div>
-          <div>
-            <p className="eyebrow">MUSIC KNOWLEDGE GRAPH</p>
-            <p className="brand-name">芽谱</p>
-            <p className="brand-subtitle">
-              中小学音乐教育知识图谱
-            </p>
-          </div>
-        </div>
-        <div className="sidebar-section">
-          <p className="section-label">图谱空间</p>
-          <button
-            className={`nav-item ${view === "graph" ? "active" : ""}`}
-            onClick={() => setView("graph")}
-          >
-            <span>◉</span>图谱探索
-          </button>
-          <button className={`nav-item ${view === "assistant" ? "active" : ""}`} onClick={() => setView("assistant")}>智能问答</button>
-          <button
-            className={`nav-item ${view === "records" ? "active" : ""}`}
-            onClick={() => setView("records")}
-          >
-            <span>▦</span>作品档案
-          </button>
-          <button
-            className={`nav-item ${view === "research" ? "active" : ""}`}
-            onClick={() => setView("research")}
-          >
-            <span>▤</span>研究分析
-          </button>
-          <details className="admin-navigation"><summary>更多 / 管理</summary><button
-            className={`nav-item ${view === "import" ? "active" : ""}`}
-            onClick={() => setView("import")}
-          >
-            <span>⇧</span>数据导入
-          </button></details>
-        </div>
-        {view === "graph" && (
-          <button className="schema-collapse-toggle" onClick={() => setSchemaOpen(value => !value)}>{schemaOpen ? "收起筛选" : "实体 / 关系筛选"}</button>
-        )}
-        {view === "graph" && (
-          <section className="schema-panel" aria-label="图谱模式与图例">
-            <div className="schema-panel-head">
-              <div>
-                <p className="section-label">SCHEMA / 图例</p>
-                <strong>实体类型</strong>
-              </div>
-              <span>{displayedGraphStats.labels}</span>
-            </div>
-            <div className="graph-perspective-panel">
-              <span>GRAPH PERSPECTIVE</span>
-              {(
-                [
-                  ["comprehensive", "综合知识", "全部主要实体与关系"],
-                  ["textbook", "教材结构", "教材、单元、作品与知识点"],
-                  ["music", "音乐知识", "作品、人物、体裁与音乐要素"],
-                  ["progression", "学习进阶", "前置、复现、深化与应用"],
-                ] as Array<[GraphPerspective, string, string]>
-              ).map(([key, label, hint]) => (
-                <button
-                  type="button"
-                  key={key}
-                  className={graphPerspective === key ? "active" : ""}
-                  onClick={() => {
-                    setGraphPerspective(key);
-                    setHighlightedCanonicalIds([]);
-                    setHighlightedCanonicalRelationIds([]);
-                  }}
-                >
-                  <strong>{label}</strong>
-                  <small>{hint}</small>
-                </button>
-              ))}
-            </div>
-            <div className="schema-actions">
-              <button
-                type="button"
-                onClick={() => setVisibleSchemaKeys([...ALL_SCHEMA_KEYS])}
-              >
-                全部显示
-              </button>
-              <button type="button" onClick={() => setVisibleSchemaKeys([])}>
-                全部隐藏
-              </button>
-              <button
-                type="button"
-                onClick={() => setVisibleSchemaKeys([lastSchemaKey])}
-              >
-                只看当前
-              </button>
-            </div>
-            <div className="schema-types">
-              {SCHEMA_CATEGORIES.map((category) => {
-                const active = visibleSchemaKeys.includes(category.key);
-                return (
-                  <button
-                    type="button"
-                    key={category.key}
-                    className={active ? "active" : ""}
-                    aria-pressed={active}
-                    onClick={() => {
-                      setLastSchemaKey(category.key);
-                      setVisibleSchemaKeys((previous) =>
-                        previous.includes(category.key)
-                          ? previous.filter((key) => key !== category.key)
-                          : [...previous, category.key],
-                      );
-                    }}
-                  >
-                    <i style={{ background: category.color }} />
-                    <span>
-                      <strong>{category.label}</strong>
-                      <small>{category.neoLabel}</small>
-                    </span>
-                    <b>{fmt(schemaCounts[category.key])}</b>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="schema-relations-head">
-              <strong>关系类型</strong>
-              <small>点击隐藏 / 显示</small>
-            </div>
-            <div className="schema-relations">
-              {relationRows.slice(0, 10).map(([relation, count]) => {
-                const active = !hiddenRelations.includes(relation);
-                return (
-                  <button
-                    type="button"
-                    key={relation}
-                    className={active ? "active" : ""}
-                    onClick={() =>
-                      setHiddenRelations((previous) =>
-                        previous.includes(relation)
-                          ? previous.filter((item) => item !== relation)
-                          : [...previous, relation],
-                      )
-                    }
-                  >
-                    <i className={relationVisualKind(relation)} />
-                    <span>{relation}</span>
-                    <b>{fmt(count)}</b>
-                  </button>
-                );
-              })}
-            </div>
-            {canonicalGraph && (
-              <div className="graph-quality-summary">
-                <div>
-                  <strong>DATA QUALITY / CANONICAL</strong>
-                  <span>规范融合后</span>
-                </div>
-                <dl>
-                  <span>
-                    <dt>规范实体</dt>
-                    <dd>{fmt(canonicalGraph.quality.canonical.totalNodes)}</dd>
-                  </span>
-                  <span>
-                    <dt>跨册实体</dt>
-                    <dd>
-                      {fmt(canonicalGraph.quality.canonical.sharedEntityCount)}
-                    </dd>
-                  </span>
-                  <span>
-                    <dt>孤立节点</dt>
-                    <dd>
-                      {canonicalGraph.quality.canonical.isolatedNodeCount}
-                    </dd>
-                  </span>
-                  <span>
-                    <dt>悬空关系</dt>
-                    <dd>
-                      {
-                        canonicalGraph.quality.canonical
-                          .danglingRelationshipCount
-                      }
-                    </dd>
-                  </span>
-                  <span>
-                    <dt>连通分量</dt>
-                    <dd>
-                      {canonicalGraph.quality.canonical.connectedComponentCount}
-                    </dd>
-                  </span>
-                  <span>
-                    <dt>最大分量</dt>
-                    <dd>
-                      {fmt(
-                        canonicalGraph.quality.canonical
-                          .largestConnectedComponentNodeCount,
-                      )}
-                    </dd>
-                  </span>
-                </dl>
-              </div>
-            )}
-            <div className="schema-footer-stats">
-              <span>
-                Node Labels <b>{displayedGraphStats.labels}</b>
-              </span>
-              <span>
-                Relationship Types <b>{relationRows.length}</b>
-              </span>
-              <span>
-                Property Keys <b>{propertyKeyCount}</b>
-              </span>
-            </div>
-          </section>
-        )}
-        <div className="sidebar-section book-section">
-          <div className="section-label-row">
-            <p className="section-label">独立教材图谱</p>
-            <span className="count-badge">{dataset.books.length}</span>
-          </div>
-          <div className="book-list">
-            {dataset.books.map((book) => (
-              <button
-                key={book.key}
-                className={`book-item ${book.key === bookKey ? "selected" : ""}`}
-                onClick={() => chooseBook(book)}
-              >
-                <span className="book-dot" />
-                <span className="book-copy">
-                  <strong>
-                    {book.grade}年级{book.semester}
-                  </strong>
-                  <small>{fmt(book.tripleCount)} 条正式关系</small>
-                </span>
-                {book.key === bookKey && <span className="book-arrow">›</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="sidebar-footer">
-          <span className="status-dot" />
-          公开访问<span className="sync-label">{loaded ? "LIVE" : "LOAD"}</span>
-        </div>
-      </aside>
+      <GraphSidebar view={view} onView={value => { if (value === "assistant") setAssistantEntry(current => ({ question: "", token: current.token + 1 })); setView(value); }} graph={canonicalGraph} books={dataset.books} scopeBook={graphMode === "all" ? undefined : bookKey}
+        filters={graphFilters} perspective={graphPerspective} onPerspective={handlePerspective}
+        onSchema={() => { setGraphMode("all"); setFullGraphLayout("schema"); }} onSources={() => setShowTextbookSources(true)}
+        onReset={resetExplorer} execute={graphActions.execute} notice={graphActions.notice} assetUrl={publicAssetUrl} onGraphFocus={handleAnswerFocus} />
       <section className="workspace">
         <header className="topbar">
           <div>
@@ -3390,7 +3214,6 @@ export default function Home() {
                     </h3>
                   </div>
                   <div className="neo-actions">
-                    <select aria-label="知识视角" value={graphPerspective} onChange={event => { setGraphPerspective(event.target.value as GraphPerspective); setHighlightedCanonicalIds([]); setHighlightedCanonicalRelationIds([]); }}><option value="comprehensive">综合知识</option><option value="textbook">教材结构</option><option value="music">音乐知识</option><option value="progression">学习进阶</option></select>
                     <button
                       onClick={() => {
                         setZoom(graphMode === "all" ? 0.64 : 0.92);
@@ -3490,6 +3313,7 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => {
+                        resetExplorer();
                         setZoom(1);
                         setExpandedNodeIds({});
                         setHiddenNodeKeys([]);
@@ -3638,6 +3462,7 @@ export default function Home() {
                   {graphMode === "all" && canonicalGroup && canonicalBook ? (
                     <>
                       {fullGraphScene}
+                      {fullGraphLayout !== "schema" && graphPerspective !== "progression" && fullGraphVisibleIds.size === 0 && <p className="graph-empty-overlay" role="status">当前组合筛选没有匹配实体。可清除部分条件或恢复全部筛选；平台不会补造不存在的数据。</p>}
                       {graphPerspective === "progression" && fullGraphVisibleIds.size === 0 && (
                         <p className="graph-empty-overlay">当前数据没有经教材证据或人工确认的学习进阶关系。请切换其他视角；平台不会自动创建前置或深化关系。</p>
                       )}
@@ -3682,7 +3507,7 @@ export default function Home() {
                       </g>
                     </svg>
                   )}
-                  {graphMode === "all" && canonicalGroup && (
+                  {graphMode === "all" && canonicalGroup && fullGraphLayout !== "schema" && (
                     <div
                       className="graph-minimap"
                       aria-label="六册知识网络缩略图"
@@ -4179,6 +4004,7 @@ export default function Home() {
                         </p>
                       </section>
                     )}
+                    <NodeAIInterpretation name={selected?.name ?? "当前节点"} onAsk={question => { setAssistantEntry(current => ({ question, token: current.token + 1 })); setView("assistant"); }} />
                     <div className="inspector-actions-grid">
                       <button
                         onClick={() =>
@@ -4440,14 +4266,7 @@ export default function Home() {
           </div>
         )}
         {view === "assistant" && canonicalGraph && (
-          <AssistantPage graph={canonicalGraph} assetUrl={publicAssetUrl} onGraphFocus={(result: AnswerResult) => {
-            setView("graph"); setGraphMode("all"); setGraphPerspective("comprehensive"); setFullGraphView("all"); setTypeFilter("全部"); setVisibleSchemaKeys([...ALL_SCHEMA_KEYS]); setHiddenRelations([]);
-            setHiddenNodeKeys(previous => previous.filter(key => !result.graphFocus.nodeIds.some(id => key === `canonical-${id}`)));
-            setHighlightedCanonicalIds(result.graphFocus.nodeIds); setHighlightedCanonicalRelationIds(result.graphFocus.relationshipIds);
-            if (result.relatedEntities.some(entity => result.graphFocus.nodeIds.includes(entity.id) && entity.type === "教材")) setShowTextbookSources(true);
-            if (result.graphFocus.nodeIds[0]) { setSelectedId(result.graphFocus.nodeIds[0]); setFocusSelectionToken(value => value + 1); setInspectorOpen(true); }
-            setPanel("overview");
-          }} />
+          <AssistantPage key={assistantEntry.token} graph={canonicalGraph} assetUrl={publicAssetUrl} initialQuestion={assistantEntry.question} onGraphFocus={handleAnswerFocus} />
         )}
         {view === "research" && canonicalGraph && (
           <ResearchAnalysis

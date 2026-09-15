@@ -25,6 +25,7 @@
     "quality:v3": "node scripts/audit-v3-explorer.mjs",
     "quality:ai": "node scripts/audit-ai-retrieval.mjs",
     "quality:ai-candidate": "node scripts/audit-ai-candidate.mjs",
+    "quality:explorer": "node scripts/audit-graph-explorer.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
   },
   "dependencies": {
