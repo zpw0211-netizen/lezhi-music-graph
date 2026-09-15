@@ -42,6 +42,13 @@ function EntityPicker<E extends GraphEntity>({
           .toLowerCase()
           .includes(term),
       )
+      .sort((a, b) => {
+        const score = (entity: E) => {
+          const name = entity.name.toLowerCase();
+          return name === term ? 4 : entity.aliases?.some((alias) => alias.toLowerCase() === term) ? 3 : name.startsWith(term) ? 2 : name.includes(term) ? 1 : 0;
+        };
+        return score(b) - score(a);
+      })
       .slice(0, 8);
   }, [entities, query]);
   return (

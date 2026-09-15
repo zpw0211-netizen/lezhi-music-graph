@@ -820,9 +820,12 @@ type MiniMapProps = {
   visibleNodeIds: Set<string>;
   zoom: number;
   pan: { x: number; y: number };
+  viewport?: { minX: number; minY: number; maxX: number; maxY: number } | null;
+  draggedPositions?: Record<string, { x: number; y: number }>;
+  sceneKey?: string;
 };
 
-function MiniMap({ nodes, visibleNodeIds, zoom, pan }: MiniMapProps) {
+function MiniMap({ nodes, visibleNodeIds, zoom, pan, viewport, draggedPositions, sceneKey }: MiniMapProps) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = ref.current;
@@ -839,10 +842,11 @@ function MiniMap({ nodes, visibleNodeIds, zoom, pan }: MiniMapProps) {
     context.fillRect(0, 0, rect.width, rect.height);
     for (const node of nodes) {
       if (!visibleNodeIds.has(node.entity.id)) continue;
+      const fixed = sceneKey ? draggedPositions?.[`${sceneKey}-${node.entity.id}`] : undefined;
       context.beginPath();
       context.arc(
-        (node.x / 2400) * rect.width,
-        (node.y / 1500) * rect.height,
+        ((fixed?.x ?? node.x) / 2400) * rect.width,
+        ((fixed?.y ?? node.y) / 1500) * rect.height,
         node.entity.type === "教材" ? 2.4 : 0.8,
         0,
         Math.PI * 2,
@@ -858,12 +862,12 @@ function MiniMap({ nodes, visibleNodeIds, zoom, pan }: MiniMapProps) {
     context.strokeStyle = "#3e6b91";
     context.lineWidth = 1;
     context.strokeRect(
-      centerX - viewportWidth / 2,
-      centerY - viewportHeight / 2,
-      viewportWidth,
-      viewportHeight,
+      viewport ? (viewport.minX / 2400) * rect.width : centerX - viewportWidth / 2,
+      viewport ? (viewport.minY / 1500) * rect.height : centerY - viewportHeight / 2,
+      viewport ? ((viewport.maxX - viewport.minX) / 2400) * rect.width : viewportWidth,
+      viewport ? ((viewport.maxY - viewport.minY) / 1500) * rect.height : viewportHeight,
     );
-  }, [nodes, pan.x, pan.y, visibleNodeIds, zoom]);
+  }, [draggedPositions, nodes, pan.x, pan.y, sceneKey, viewport, visibleNodeIds, zoom]);
   return <canvas ref={ref} aria-hidden="true" />;
 }
 

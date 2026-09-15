@@ -658,6 +658,8 @@ export default function Home() {
   const [pathEndId, setPathEndId] = useState("");
   const [activePathIndex, setActivePathIndex] = useState(0);
   const [cameraResetToken, setCameraResetToken] = useState(0);
+  const [focusSelectionToken, setFocusSelectionToken] = useState(0);
+  const [sigmaViewport, setSigmaViewport] = useState<{ minX: number; minY: number; maxX: number; maxY: number } | null>(null);
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -1474,6 +1476,7 @@ export default function Home() {
     }
     return ids;
   }, [canonicalBook, graphPerspective]);
+  const filteredSelectedId = typeFilter === "全部" ? null : selectedId;
   const fullGraphVisibleIds = useMemo(() => {
     const ids = new Set<string>();
     if (!canonicalBook) return ids;
@@ -1481,6 +1484,7 @@ export default function Home() {
       const isTextbook = entity.type === "教材";
       const isShared = (entity.textbookCount ?? 1) >= 2;
       const sourceLayerVisible =
+        graphPerspective === "textbook" ||
         fullGraphLayout === "textbook" ||
         showTextbookSources ||
         fullGraphView === "ownership";
@@ -1497,7 +1501,7 @@ export default function Home() {
         !hiddenNodeKeys.includes(`${canonicalBook.key}-${entity.id}`) &&
         (typeFilter === "全部" ||
           entity.type === typeFilter ||
-          entity.id === selectedId)
+          entity.id === filteredSelectedId)
       )
         ids.add(entity.id);
     }
@@ -1506,9 +1510,10 @@ export default function Home() {
     canonicalBook,
     fullGraphLayout,
     fullGraphView,
+    graphPerspective,
     perspectiveEntityIds,
     hiddenNodeKeys,
-    selectedId,
+    filteredSelectedId,
     showTextbookSources,
     typeFilter,
     visibleSchemaKeys,
@@ -1531,6 +1536,7 @@ export default function Home() {
         return Boolean(relationship.provenance);
       if (
         fullGraphLayout === "knowledge" &&
+        graphPerspective !== "textbook" &&
         !showTextbookSources &&
         relationship.provenance
       )
@@ -1703,6 +1709,7 @@ export default function Home() {
     setPanel("overview");
     if (book.key === "canonical") {
       setGraphMode("all");
+      setFocusSelectionToken((value) => value + 1);
       if (focus) expandNode(entity, book, 1);
       return;
     }
@@ -1724,7 +1731,14 @@ export default function Home() {
     if (canonical && canonicalBook) {
       setView("graph");
       setGraphMode("all");
+      setGraphPerspective("comprehensive");
+      setFullGraphView("all");
+      setTypeFilter("全部");
+      setVisibleSchemaKeys((previous) => [...new Set([...previous, schemaCategoryFor(canonical.type)])]);
+      setHiddenNodeKeys((previous) => previous.filter((key) => key !== `canonical-${canonical.id}`));
+      if (canonical.type === "教材") setShowTextbookSources(true);
       setSelectedId(canonical.id);
+      setFocusSelectionToken((value) => value + 1);
       setPanel("overview");
       setShowLabels(true);
       setHighlightedCanonicalIds([]);
@@ -1754,6 +1768,8 @@ export default function Home() {
     setHighlightedCanonicalRelationIds([]);
     setFullGraphLayout("knowledge");
     setGraphPerspective("comprehensive");
+    setFocusSelectionToken(0);
+    setCameraResetToken((value) => value + 1);
     setShowTextbookSources(false);
     const core = canonicalBook?.entities
       .filter((entity) => entity.type !== "教材")
@@ -1770,7 +1786,12 @@ export default function Home() {
     setView("graph");
     setGraphMode("all");
     setPathFinderOpen(true);
-    if (entity) setPathStartId(entity.id);
+    if (entity) {
+      const canonical = canonicalEntityById.get(entity.id) ??
+        (entity.canonicalKey ? canonicalEntityBySearchKey.get(entity.canonicalKey) : undefined) ??
+        canonicalEntityBySearchKey.get(`${entity.name.trim().toLowerCase()}|${schemaCategoryFor(entity.type)}`);
+      setPathStartId(canonical?.id ?? "");
+    }
     if (entity) setPathEndId("");
     setActivePathIndex(0);
     setContextMenu(null);
@@ -1781,6 +1802,13 @@ export default function Home() {
     setGraphMode("all");
     setFullGraphView("all");
     setGraphPerspective("comprehensive");
+    setTypeFilter("全部");
+    setVisibleSchemaKeys([...ALL_SCHEMA_KEYS]);
+    setHiddenRelations([]);
+    setHiddenNodeKeys((previous) => previous.filter((key) => !activeGraphPath.nodeIds.some((id) => key === `canonical-${id}`)));
+    if (activeGraphPath.nodeIds.some((id) => canonicalEntityById.get(id)?.type === "教材") ||
+      activeGraphPath.edgeIds.some((id) => canonicalBook?.triples.find((edge) => edge.id === id)?.provenance))
+      setShowTextbookSources(true);
     setHighlightedCanonicalIds(activeGraphPath.nodeIds);
     setHighlightedCanonicalRelationIds(activeGraphPath.edgeIds);
     setSelectedId(activeGraphPath.nodeIds.at(-1) ?? activeGraphPath.nodeIds[0]);
@@ -2308,6 +2336,11 @@ export default function Home() {
       setDragPositions((previous) => {
         const next = { ...previous };
         delete next[key];
+        if (book.key === "canonical") {
+          for (const positionKey of Object.keys(next)) {
+            if (positionKey.startsWith("canonical:") && positionKey.endsWith(`-${entity.id}`)) delete next[positionKey];
+          }
+        }
         return next;
       });
     setContextMenu(null);
@@ -2687,8 +2720,9 @@ export default function Home() {
   const handleCanvasNodePosition = useCallback(
     (nodeKey: string, point: { x: number; y: number }) => {
       setDragPositions((previous) => ({ ...previous, [nodeKey]: point }));
+      const pinKey = nodeKey.startsWith("canonical:") ? nodeKey.replace(/^canonical:[^-]+-/, "canonical-") : nodeKey;
       setPinnedNodeKeys((previous) =>
-        previous.includes(nodeKey) ? previous : [...previous, nodeKey],
+        previous.includes(pinKey) ? previous : [...previous, pinKey],
       );
     },
     [],
@@ -2714,6 +2748,14 @@ export default function Home() {
     (value: { x: number; y: number }) => setCanvasPan(value),
     [],
   );
+  const handleSigmaViewport = useCallback(
+    (bounds: { minX: number; minY: number; maxX: number; maxY: number }) => setSigmaViewport(bounds),
+    [],
+  );
+  const handleClearSigmaFocus = useCallback(() => {
+    setHighlightedCanonicalIds([]);
+    setHighlightedCanonicalRelationIds([]);
+  }, []);
 
   const fullGraphCanvasFallback =
     canonicalGroup && canonicalBook ? (
@@ -2759,12 +2801,15 @@ export default function Home() {
             showLabels={showLabels}
             zoom={zoom}
             cameraResetToken={cameraResetToken}
+            focusSelectionToken={focusSelectionToken}
             draggedPositions={dragPositions}
             onSelect={handleCanvasSelect}
             onExpand={handleCanvasExpand}
             onContextMenu={handleCanvasContextMenu}
             onNodePosition={handleCanvasNodePosition}
             onMetrics={handleCanvasMetrics}
+            onViewportChange={handleSigmaViewport}
+            onClearFocus={handleClearSigmaFocus}
           />
         ) : (
           fullGraphCanvasFallback
@@ -3343,6 +3388,7 @@ export default function Home() {
                       onClick={() => {
                         if (!selected) return;
                         if (graphMode === "all" && canonicalGroup) {
+                          setFocusSelectionToken((value) => value + 1);
                           const target = canonicalGroup.nodes.find(
                             (node) => node.entity.id === selected.id,
                           );
@@ -3573,7 +3619,12 @@ export default function Home() {
                   }
                 >
                   {graphMode === "all" && canonicalGroup && canonicalBook ? (
-                    fullGraphScene
+                    <>
+                      {fullGraphScene}
+                      {graphPerspective === "progression" && fullGraphVisibleIds.size === 0 && (
+                        <p className="graph-empty-overlay">当前数据没有经教材证据或人工确认的学习进阶关系。请切换其他视角；平台不会自动创建前置或深化关系。</p>
+                      )}
+                    </>
                   ) : (
                     <svg
                       viewBox="0 0 2400 1500"
@@ -3625,6 +3676,7 @@ export default function Home() {
                           onClick={() => {
                             setCanvasPan({ x: 0, y: 0 });
                             setZoom(0.72);
+                            setCameraResetToken((value) => value + 1);
                           }}
                         >
                           复位
@@ -3635,6 +3687,9 @@ export default function Home() {
                         visibleNodeIds={fullGraphVisibleIds}
                         zoom={zoom}
                         pan={canvasPan}
+                        viewport={fullGraphRenderer === "sigma" ? sigmaViewport : null}
+                        draggedPositions={dragPositions}
+                        sceneKey={`canonical:${fullGraphLayout}`}
                       />
                     </div>
                   )}

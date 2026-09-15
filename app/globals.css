@@ -2100,6 +2100,8 @@ body:has(.neo-card.expanded) { overflow:hidden; }
 .graph-first .neo-canvas:before { opacity: .22; background-image: linear-gradient(#64748515 1px, transparent 1px), linear-gradient(90deg, #64748515 1px, transparent 1px); }
 .sigma-graph-scene,
 .sigma-graph-scene > .sigma-container { width: 100%; height: 100%; background: transparent; }
+.graph-first div.react-sigma.sigma-graph-scene { --sigma-background-color: transparent; background: transparent; }
+.graph-empty-overlay { position: absolute; top: 42%; left: 15%; right: 15%; padding: 18px; color: #bacbd9; background: #15212a; border: 1px solid #334552; line-height: 1.8; pointer-events: none; text-align: center; }
 .sigma-graph-scene canvas { cursor: crosshair; }
 .graph-first .canvas-hint { color: #71808c; font-size: 11px; }
 .graph-statusbar { border-color: #263343; background: rgba(13, 20, 29, .94); color: #8997a3; font-size: 11px; }
