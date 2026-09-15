@@ -47,6 +47,8 @@ import { ResearchAnalysis } from "./components/ResearchAnalysis";
 import { ResearchInfo } from "./components/ResearchInfo";
 import { designTokenCssVariables } from "./design-tokens";
 import { semanticPaletteCssVariables } from "./semantic-palette";
+import { AssistantPage } from "./components/assistant/AssistantPage";
+import type { AnswerResult } from "./lib/ai/graph-rag";
 
 const SigmaGraphScene = nextDynamic<SigmaGraphSceneProps<Entity>>(
   () =>
@@ -108,6 +110,7 @@ type Triple = {
   sources?: CanonicalSource[];
 };
 type Evidence = {
+  bookTitle?: string;
   tripleId: string;
   pdfPage?: number | null;
   textbookPage?: string;
@@ -569,7 +572,9 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState("demo-work");
   const [query, setQuery] = useState("");
   const scope = "all" as const;
-  const [view, setView] = useState<"graph" | "research" | "records" | "import">("graph");
+  const [view, setView] = useState<"graph" | "assistant" | "research" | "records" | "import">("graph");
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [schemaOpen, setSchemaOpen] = useState(false);
   const [graphMode, setGraphMode] = useState<"all" | "book" | "focus">("all");
   const [panel, setPanel] = useState<InspectorTab>("overview");
   const [loaded, setLoaded] = useState(false);
@@ -929,7 +934,7 @@ export default function Home() {
       .slice(0, 18);
   }, [directTriples, inspectionBook, inspectionRuntime.entityMap, relationText, selected]);
   useEffect(() => {
-    if (panel !== "evidence" || !selected) return;
+    if (!inspectorOpen || !selected) return;
     const keys =
       graphMode === "all"
         ? (selected.bookKeys ?? [])
@@ -958,6 +963,7 @@ export default function Home() {
     currentBook.key,
     evidencePayloads,
     graphMode,
+    inspectorOpen,
     panel,
     selected,
   ]);
@@ -966,17 +972,18 @@ export default function Home() {
       directTriples.flatMap((triple) => {
         const local = inspectionBook.evidenceByTriple[triple.id] ?? [];
         const lazyLocal = Object.values(evidencePayloads).flatMap(
-          (payload) => payload.evidenceByTriple[triple.id] ?? [],
+          (payload) => (payload.evidenceByTriple[triple.id] ?? []).map(item => ({ ...item, bookTitle: datasetBookMap.get(payload.bookKey)?.title ?? payload.bookKey })),
         );
         const lazyCanonical = Object.values(evidencePayloads).flatMap(
           (payload) =>
             (payload.relationshipEvidenceById[triple.id] ?? []).flatMap(
               (source) =>
                 source.evidence?.length
-                  ? source.evidence
+                  ? source.evidence.map(item => ({ ...item, bookTitle: source.bookTitle }))
                   : [
                       {
                         tripleId: triple.id,
+                        bookTitle: source.bookTitle,
                         pdfPage: source.pdfPage ?? triple.sourcePage ?? null,
                         summary: `${source.bookTitle}中的教材出现记录`,
                         confidence: triple.confidence ?? 1,
@@ -989,7 +996,7 @@ export default function Home() {
           triple,
         }));
       }),
-    [directTriples, evidencePayloads, inspectionBook.evidenceByTriple],
+    [directTriples, evidencePayloads, inspectionBook.evidenceByTriple, datasetBookMap],
   );
   const selectedOccurrences = useMemo(
     () => {
@@ -1701,6 +1708,7 @@ export default function Home() {
     setContextMenu(null);
   };
   const selectEntity = (entity: Entity, book = currentBook, focus = false) => {
+    setInspectorOpen(true);
     if (book.key !== "canonical" && book.key !== bookKey) setBookKey(book.key);
     setSelectedId(entity.id);
     setQuery("");
@@ -1721,6 +1729,7 @@ export default function Home() {
     }
   };
   const selectSearchResult = (entity: Entity, book: Book) => {
+    setInspectorOpen(true);
     const canonical =
       (entity.canonicalKey
         ? canonicalEntityBySearchKey.get(entity.canonicalKey)
@@ -2698,6 +2707,7 @@ export default function Home() {
     canonicalBookRef.current = canonicalBook;
   });
   const handleCanvasSelect = useCallback((entity: Entity) => {
+    setInspectorOpen(true);
     const book = canonicalBookRef.current;
     if (book) {
       setShowLabels(true);
@@ -2825,7 +2835,7 @@ export default function Home() {
     );
   return (
     <main
-      className={`app-shell ${view === "graph" || view === "research" ? "graph-first" : ""}`}
+      className={`app-shell theme-light ${inspectorOpen ? "inspector-open" : "inspector-closed"} ${schemaOpen ? "schema-open" : "schema-closed"} ${view === "assistant" ? "assistant-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""}`}
       style={
         {
           ...designTokenCssVariables,
@@ -2844,7 +2854,7 @@ export default function Home() {
             <p className="eyebrow">MUSIC KNOWLEDGE GRAPH</p>
             <p className="brand-name">芽谱</p>
             <p className="brand-subtitle">
-              中小学音乐教育知识图谱与智能分析平台
+              中小学音乐教育知识图谱
             </p>
           </div>
         </div>
@@ -2856,6 +2866,7 @@ export default function Home() {
           >
             <span>◉</span>图谱探索
           </button>
+          <button className={`nav-item ${view === "assistant" ? "active" : ""}`} onClick={() => setView("assistant")}>智能问答</button>
           <button
             className={`nav-item ${view === "records" ? "active" : ""}`}
             onClick={() => setView("records")}
@@ -2868,13 +2879,16 @@ export default function Home() {
           >
             <span>▤</span>研究分析
           </button>
-          <button
+          <details className="admin-navigation"><summary>更多 / 管理</summary><button
             className={`nav-item ${view === "import" ? "active" : ""}`}
             onClick={() => setView("import")}
           >
             <span>⇧</span>数据导入
-          </button>
+          </button></details>
         </div>
+        {view === "graph" && (
+          <button className="schema-collapse-toggle" onClick={() => setSchemaOpen(value => !value)}>{schemaOpen ? "收起筛选" : "实体 / 关系筛选"}</button>
+        )}
         {view === "graph" && (
           <section className="schema-panel" aria-label="图谱模式与图例">
             <div className="schema-panel-head">
@@ -3087,6 +3101,8 @@ export default function Home() {
             <h1>
               {view === "graph"
                 ? "教材知识图谱"
+                : view === "assistant"
+                  ? "智能问答"
                 : view === "research"
                   ? "研究分析"
                 : view === "records"
@@ -3374,6 +3390,7 @@ export default function Home() {
                     </h3>
                   </div>
                   <div className="neo-actions">
+                    <select aria-label="知识视角" value={graphPerspective} onChange={event => { setGraphPerspective(event.target.value as GraphPerspective); setHighlightedCanonicalIds([]); setHighlightedCanonicalRelationIds([]); }}><option value="comprehensive">综合知识</option><option value="textbook">教材结构</option><option value="music">音乐知识</option><option value="progression">学习进阶</option></select>
                     <button
                       onClick={() => {
                         setZoom(graphMode === "all" ? 0.64 : 0.92);
@@ -4021,6 +4038,7 @@ export default function Home() {
               </section>
             </div>
             <aside className="inspector" aria-label="节点检查器">
+              <button className="inspector-close" aria-label="关闭节点检查器" onClick={() => setInspectorOpen(false)}>关闭 ×</button>
               <section className="inspector-card">
                 <header className="inspector-header">
                   <div
@@ -4320,10 +4338,10 @@ export default function Home() {
                 {panel === "evidence" && (
                   <div className="evidence-list inspector-evidence">
                     {evidence.length ? (
-                      evidence.slice(0, 30).map((item) => (
+                      evidence.slice(0, 30).map((item, index) => (
                         <div
                           className="evidence-item"
-                          key={`${item.triple.id}-${item.pdfPage}`}
+                          key={`${item.triple.id}-${item.pdfPage}-${index}`}
                         >
                           <div className="evidence-page">
                             {item.pdfPage ?? "—"}
@@ -4336,7 +4354,7 @@ export default function Home() {
                             </strong>
                             <p>{item.summary || "教材关系证据记录"}</p>
                             <small>
-                              {inspectionBook.title} ·{" "}
+                              {item.bookTitle ?? inspectionBook.title} ·{" "}
                               {item.textbookPage
                                 ? `教材第${item.textbookPage}页`
                                 : "教材页码待对应"}
@@ -4420,6 +4438,16 @@ export default function Home() {
               </section>
             </aside>
           </div>
+        )}
+        {view === "assistant" && canonicalGraph && (
+          <AssistantPage graph={canonicalGraph} assetUrl={publicAssetUrl} onGraphFocus={(result: AnswerResult) => {
+            setView("graph"); setGraphMode("all"); setGraphPerspective("comprehensive"); setFullGraphView("all"); setTypeFilter("全部"); setVisibleSchemaKeys([...ALL_SCHEMA_KEYS]); setHiddenRelations([]);
+            setHiddenNodeKeys(previous => previous.filter(key => !result.graphFocus.nodeIds.some(id => key === `canonical-${id}`)));
+            setHighlightedCanonicalIds(result.graphFocus.nodeIds); setHighlightedCanonicalRelationIds(result.graphFocus.relationshipIds);
+            if (result.relatedEntities.some(entity => result.graphFocus.nodeIds.includes(entity.id) && entity.type === "教材")) setShowTextbookSources(true);
+            if (result.graphFocus.nodeIds[0]) { setSelectedId(result.graphFocus.nodeIds[0]); setFocusSelectionToken(value => value + 1); setInspectorOpen(true); }
+            setPanel("overview");
+          }} />
         )}
         {view === "research" && canonicalGraph && (
           <ResearchAnalysis

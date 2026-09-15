@@ -1,0 +1,12 @@
+{
+  "name": "yapu-ai-api",
+  "main": "ai-api.ts",
+  "compatibility_date": "2026-09-15",
+  "vars": {
+    "ALLOWED_ORIGIN": "https://zpw0211-netizen.github.io",
+    "GRAPH_DATA_URL": "https://zpw0211-netizen.github.io/lezhi-music-graph/data",
+    "OPENAI_MODEL": "gpt-5.6-terra",
+    "OPENAI_ANALYSIS_MODEL": "gpt-5.6-sol"
+  },
+  "ratelimits": [{ "name": "AI_RATE_LIMIT", "namespace_id": "14041", "simple": { "limit": 30, "period": 60 } }]
+}

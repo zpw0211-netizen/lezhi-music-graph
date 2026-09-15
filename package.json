@@ -23,6 +23,8 @@
     "quality:pages": "node scripts/audit-github-pages.mjs",
     "quality:performance": "node scripts/audit-performance.mjs",
     "quality:v3": "node scripts/audit-v3-explorer.mjs",
+    "quality:ai": "node scripts/audit-ai-retrieval.mjs",
+    "quality:ai-candidate": "node scripts/audit-ai-candidate.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
   },
   "dependencies": {

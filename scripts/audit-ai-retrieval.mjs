@@ -1,0 +1,52 @@
+import { build } from "esbuild";
+import { readFile, mkdir, writeFile } from "node:fs/promises";
+import assert from "node:assert/strict";
+const compile = async entry => {
+  const result = await build({ entryPoints: [entry], bundle: true, write: false, format: "esm", platform: "neutral" });
+  return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
+};
+const { enrichGraph, graphAnswer, recognizeIntent, linkEntities } = await compile("app/lib/ai/graph-rag.ts");
+const index = JSON.parse(await readFile("public/data/graph-index.json", "utf8"));
+const graph = index.canonicalGraph;
+const load = async key => JSON.parse(await readFile(`public/data/evidence/${key}.json`, "utf8"));
+const questions = ["《游击队歌》的音乐特点是什么？", "《游击队歌》为什么给人轻快机智的感觉？", "《保卫黄河》的作曲家是谁？", "《保卫黄河》和哪些音乐知识点相关？", "七至九年级关于节奏的知识如何递进？", "比较《保卫黄河》和《游击队歌》。", "教材里有哪些蒙古族音乐作品？", "贝多芬在六册教材中出现在哪里？", "什么是进行曲？教材有哪些相关作品？", "如果我是音乐教师，怎样用图谱讲“节奏”？"];
+const results = [], original = JSON.stringify(graph);
+for (const question of questions) {
+  const retrieval = await enrichGraph(graph, question, [], load), result = graphAnswer(retrieval, question);
+  assert(retrieval.centers.length, `No entity linked: ${question}`);
+  assert(result.evidence.length, `No evidence: ${question}`);
+  assert.equal(result.candidateKnowledge.length, 0);
+  assert(result.graphFocus.nodeIds.every(id => graph.entities.some(entity => entity.id === id)));
+  results.push({ question, intent: retrieval.intent, centers: retrieval.centers.map(entity => entity.name), relationshipCount: retrieval.relationships.length, evidenceCount: result.evidence.length, answer: result.answer, confidence: result.confidence, auxiliaryExplanation: result.auxiliaryExplanation });
+}
+assert.equal(JSON.stringify(graph), original, "Retrieval mutated research graph");
+assert(results[2].answer.includes("冼星海"));
+assert(!results[2].answer.includes("改编者"));
+assert.equal(results[1].confidence, "limited");
+assert(!results[3].answer.includes("收录作品："));
+assert(results[7].answer.includes("九年级下册"));
+assert(!results[7].answer.includes("游击队歌"));
+assert(results[4].answer.includes("不等同于学习递进"));
+assert.equal(recognizeIntent(questions[5]), "compare");
+const pathResult = graphAnswer(await enrichGraph(graph, "保卫黄河和冼星海的最短路径", [], load), "保卫黄河和冼星海的最短路径");
+assert(pathResult.answer.includes("1 跳"));
+const center = linkEntities(graph, "游击队歌为什么听起来很轻快？")[0];
+assert(center.name.includes("游击队歌"));
+assert.equal(linkEntities(graph, "它的作曲家是谁？", [{ question: "游击队歌", answer: "虚构历史答案", resolvedEntities: [center.id] }])[0].id, center.id);
+const worker = (await compile("worker/ai-api.ts")).default;
+const env = { ALLOWED_ORIGIN: "https://zpw0211-netizen.github.io", GRAPH_DATA_URL: "https://zpw0211-netizen.github.io/lezhi-music-graph/data", AI_RATE_LIMIT: { limit: async () => ({ success: true }) } };
+assert.equal((await worker.fetch(new Request("https://api.test/ask", { method: "POST", headers: { origin: "https://evil.example" } }), env)).status, 403);
+const options = await worker.fetch(new Request("https://api.test/ask", { method: "OPTIONS", headers: { origin: env.ALLOWED_ORIGIN } }), env);
+assert.equal(options.status, 204); assert.equal(options.headers.get("Access-Control-Allow-Origin"), env.ALLOWED_ORIGIN);
+assert.equal((await worker.fetch(new Request("https://api.test/ask", { method: "POST", headers: { origin: env.ALLOWED_ORIGIN } }), env)).status, 503);
+const { generateAnswer } = await compile("app/lib/ai/response-generation.ts");
+const retrieval = await enrichGraph(graph, questions[2], [], load);
+const mockModel = async (_url, options) => {
+  const request = JSON.parse(options.body);
+  assert.equal(request.model, "gpt-5.6-terra"); assert.equal(request.store, false); assert.equal(request.text.format.type, "json_schema");
+  return Response.json({ output: [{ content: [{ type: "output_text", text: JSON.stringify({ answer: "《保卫黄河》的作曲家是冼星海。", shortAnswer: "冼星海。", auxiliaryExplanation: "", usedEvidenceIds: [retrieval.evidence[0].id], confidence: "supported" }) }] }] });
+};
+assert.equal((await generateAnswer(retrieval, questions[2], [], { apiKey: "mock-key", model: "gpt-5.6-terra" }, mockModel)).poweredBy, "gpt");
+await mkdir("../../output/v4-local-acceptance", { recursive: true });
+await writeFile("../../output/v4-local-acceptance/retrieval-results.json", JSON.stringify({ mode: "local-rule-based-not-live-GPT", results }, null, 2));
+console.log(`AI_RETRIEVAL_AUDIT_PASSED questions=${results.length} canonical=${graph.entities.length}/${graph.relationships.length} readonly=true model=mock_only`);

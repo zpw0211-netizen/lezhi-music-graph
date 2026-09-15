@@ -1,4 +1,5 @@
 export const DESIGN_TOKENS = {
+  colors: { background: "#ffffff", secondary: "#f7f7f8", border: "#e5e7eb", text: "#18181b", muted: "#71717a" },
   spacing: {
     xs: 4,
     sm: 6,
