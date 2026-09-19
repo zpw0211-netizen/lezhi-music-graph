@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "node scripts/build-graph-index.mjs && vinext build",
+    "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && vinext build",
     "start": "vinext start",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern out --ignore-pattern .site-package-*",
     "db:generate": "drizzle-kit generate",
@@ -26,6 +26,7 @@
     "quality:ai": "node scripts/audit-ai-retrieval.mjs",
     "quality:ai-candidate": "node scripts/audit-ai-candidate.mjs",
     "quality:explorer": "node scripts/audit-graph-explorer.mjs",
+    "quality:constellation": "node scripts/audit-constellation.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
   },
   "dependencies": {

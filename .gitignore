@@ -36,3 +36,5 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+# Per-entity digital reading pages are derived from canonical-graph at build time.
+public/data/details/CAN_*.json

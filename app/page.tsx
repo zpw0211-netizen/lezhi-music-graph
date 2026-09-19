@@ -51,6 +51,7 @@ import { AssistantPage } from "./components/assistant/AssistantPage";
 import type { AnswerResult } from "./lib/ai/graph-rag";
 import { GraphSidebar } from "./components/graph/GraphSidebar";
 import { SchemaExplorer } from "./components/graph/SchemaExplorer";
+import { KnowledgeDetailDrawer } from "./components/graph/KnowledgeDetailDrawer";
 import { NodeAIInterpretation } from "./components/assistant/NodeAIInterpretation";
 import { useGraphFilters } from "./hooks/useGraphFilters";
 import { useGraphActions } from "./hooks/useGraphActions";
@@ -580,6 +581,7 @@ export default function Home() {
   const scope = "all" as const;
   const [view, setView] = useState<"graph" | "assistant" | "research" | "records" | "import">("graph");
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [knowledgeDetailOpen, setKnowledgeDetailOpen] = useState(false);
   const schemaOpen = true;
   const [assistantEntry, setAssistantEntry] = useState({ question: "", token: 0 });
   const [graphMode, setGraphMode] = useState<"all" | "book" | "focus">("all");
@@ -1762,6 +1764,7 @@ export default function Home() {
     selectEntity(entity, book, true);
   };
   const chooseBook = (book: Book) => {
+    setKnowledgeDetailOpen(false);
     setBookKey(book.key);
     const work =
       book.entities.find((e) => isWorkType(e.type)) ?? book.entities[0];
@@ -1772,6 +1775,7 @@ export default function Home() {
     setCanvasPan({ x: 0, y: 0 });
   };
   const chooseFullGraph = () => {
+    setKnowledgeDetailOpen(false);
     setGraphMode("all");
     setView("graph");
     setZoom(0.64);
@@ -2350,8 +2354,12 @@ export default function Home() {
     setPinnedNodeKeys((previous) =>
       pinned ? previous.filter((item) => item !== key) : [...previous, key],
     );
-    if (pinned)
-      setDragPositions((previous) => {
+    setContextMenu(null);
+  };
+  const restoreNodePosition = (entity: Entity, book: Book) => {
+    const key = `${book.key}-${entity.id}`;
+    setPinnedNodeKeys(previous => previous.filter(item => item !== key));
+    setDragPositions((previous) => {
         const next = { ...previous };
         delete next[key];
         if (book.key === "canonical") {
@@ -2360,7 +2368,7 @@ export default function Home() {
           }
         }
         return next;
-      });
+    });
     setContextMenu(null);
   };
   const renderNode = (node: PositionedNode, book: Book) => {
@@ -2396,7 +2404,7 @@ export default function Home() {
         onPointerMove={moveDrag}
         onPointerUp={endDrag}
         onPointerCancel={() => setDragging(null)}
-        onDoubleClick={() => expandNode(node.entity, book, 1)}
+        onDoubleClick={() => openKnowledge(node.entity, book)}
         onContextMenu={(event) => openContextMenu(event, node.entity, book)}
       >
         <title>{node.entity.name + " · " + node.entity.type}</title>
@@ -2530,7 +2538,7 @@ export default function Home() {
                 onPointerMove={moveDrag}
                 onPointerUp={endDrag}
                 onPointerCancel={() => setDragging(null)}
-                onDoubleClick={() => expandNode(node.entity, canonicalBook, 1)}
+                onDoubleClick={() => openKnowledge(node.entity, canonicalBook)}
                 onContextMenu={(event) =>
                   openContextMenu(event, node.entity, canonicalBook)
                 }
@@ -2679,7 +2687,7 @@ export default function Home() {
             }
           }}
           onPointerCancel={() => setDragging(null)}
-          onDoubleClick={() => expandNode(group.center, group.book, 1)}
+          onDoubleClick={() => openKnowledge(group.center, group.book)}
           onContextMenu={(event) =>
             openContextMenu(event, group.center, group.book)
           }
@@ -2730,7 +2738,12 @@ export default function Home() {
   }, []);
   const handleCanvasExpand = useCallback((entity: Entity) => {
     const book = canonicalBookRef.current;
-    if (book) expandNodeRef.current(entity, book, 1);
+    if (book) {
+      selectEntityRef.current(entity, book);
+      setKnowledgeDetailOpen(true);
+      setHighlightedCanonicalIds([]);
+      setHighlightedCanonicalRelationIds([]);
+    }
   }, []);
   const handleCanvasContextMenu = useCallback(
     (x: number, y: number, entity: Entity) => {
@@ -2775,18 +2788,21 @@ export default function Home() {
     [],
   );
   const handleClearSigmaFocus = useCallback(() => {
+    setKnowledgeDetailOpen(false);
     setHighlightedCanonicalIds([]);
     setHighlightedCanonicalRelationIds([]);
     setInspectorOpen(false);
   }, []);
 
   const resetExplorer = useCallback(() => {
+    setKnowledgeDetailOpen(false);
     resetGraphFilters(); setTypeFilter("全部"); setHiddenNodeKeys([]);
     setHighlightedCanonicalIds([]); setHighlightedCanonicalRelationIds([]);
     setGraphPerspective("comprehensive"); setFullGraphView("all");
     setShowTextbookSources(false); setInspectorOpen(false);
   }, [resetGraphFilters]);
   const handlePerspective = useCallback((value: GraphPerspective) => {
+    setKnowledgeDetailOpen(false);
     setGraphPerspective(value); setHighlightedCanonicalIds([]); setHighlightedCanonicalRelationIds([]); setInspectorOpen(false);
   }, []);
   const graphActions = useGraphActions(canonicalGraph, {
@@ -2824,6 +2840,12 @@ export default function Home() {
     if (actions.length) executeGraphActions(actions);
   }, [executeGraphActions]);
   const visibleRelationshipIds = useMemo(() => new Set(fullGraphRelationships.map(edge => edge.id)), [fullGraphRelationships]);
+  const pinnedNodeIds = useMemo(() => pinnedNodeKeys.filter(key => key.startsWith("canonical-")).map(key => key.slice("canonical-".length)), [pinnedNodeKeys]);
+  const openKnowledge = (entity: Entity, book: Book) => {
+    selectSearchResult(entity, book);
+    setKnowledgeDetailOpen(true);
+    setContextMenu(null);
+  };
   const openSchemaInstances = (types: SchemaCategoryKey[], relation?: string) => {
     const actions: GraphAction[] = [{ type: "filter_entity_types", entityTypes: [...new Set(types)] }];
     if (relation) actions.push({ type: "filter_relationship_types", relationshipTypes: [relation] });
@@ -2877,6 +2899,8 @@ export default function Home() {
             cameraResetToken={cameraResetToken}
             focusSelectionToken={focusSelectionToken}
             draggedPositions={dragPositions}
+            pinnedNodeIds={pinnedNodeIds}
+            detailOpen={knowledgeDetailOpen}
             onSelect={handleCanvasSelect}
             onExpand={handleCanvasExpand}
             onContextMenu={handleCanvasContextMenu}
@@ -2899,7 +2923,7 @@ export default function Home() {
     );
   return (
     <main
-      className={`app-shell theme-light ${inspectorOpen ? "inspector-open" : "inspector-closed"} ${schemaOpen ? "schema-open" : "schema-closed"} ${view === "assistant" ? "assistant-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""}`}
+      className={`app-shell theme-light ${knowledgeDetailOpen && view === "graph" ? "detail-open" : ""} ${inspectorOpen ? "inspector-open" : "inspector-closed"} ${schemaOpen ? "schema-open" : "schema-closed"} ${view === "assistant" ? "assistant-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""}`}
       style={
         {
           ...designTokenCssVariables,
@@ -3695,6 +3719,8 @@ export default function Home() {
                           ? "取消固定节点"
                           : "固定节点"}
                       </button>
+                      <button onClick={() => restoreNodePosition(contextMenu.entity, contextMenu.book)}>恢复布局位置</button>
+                      <button onClick={() => openKnowledge(contextMenu.entity, contextMenu.book)}>查看知识</button>
                       <button
                         onClick={() =>
                           selectEntity(
@@ -3885,6 +3911,7 @@ export default function Home() {
                     <small>{selected?.type ?? "实体"}</small>
                   </div>
                 </header>
+                <button className="knowledge-open-button" onClick={() => selected && openKnowledge(selected, inspectionBook)}>查看知识 ↗</button>
                 <div className="inspector-tabs">
                   {(
                     [
@@ -4263,6 +4290,13 @@ export default function Home() {
                 )}
               </section>
             </aside>
+            {knowledgeDetailOpen && selected && <KnowledgeDetailDrawer
+              entity={selected} entities={entityMap} relationships={directTriples}
+              occurrences={selectedOccurrences} books={dataset.books} basePath={PUBLIC_BASE_PATH}
+              onNavigate={entity => { const target = canonicalEntityById.get(entity.id); if (target && canonicalBook) selectSearchResult(target, canonicalBook); }}
+              onClose={() => { setKnowledgeDetailOpen(false); setFocusSelectionToken(value => value + 1); }}
+              onAsk={name => { setAssistantEntry(current => ({ question: `请介绍${name}的教材内容与相关知识`, token: current.token + 1 })); setView("assistant"); }}
+            />}
           </div>
         )}
         {view === "assistant" && canonicalGraph && (

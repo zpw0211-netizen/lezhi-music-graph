@@ -101,11 +101,13 @@ try {
   });
   await record("背景恢复与双击展开", async () => {
     await page.locator(".search-wrap input").fill("保卫黄河"); await page.locator(".search-result").first().click(); await page.waitForTimeout(500);
-    let b = await page.locator(".sigma-container").boundingBox(); await page.mouse.click(b.x + 6, b.y + 6);
+    let b = await page.locator(".sigma-container").boundingBox(); await page.mouse.click(b.x + b.width - 12, b.y + 12);
     assert((await page.locator("main").getAttribute("class")).includes("inspector-closed"));
     await page.locator(".search-wrap input").fill("保卫黄河"); await page.locator(".search-result").first().click(); await page.waitForTimeout(500);
     b = await page.locator(".sigma-container").boundingBox(); await page.mouse.dblclick(b.x + b.width / 2, b.y + b.height / 2); await page.waitForTimeout(350);
-    assert((await page.locator(".inspector-tabs button.active").textContent()).includes("关系")); await checkFull(); await reset();
+    assert(await page.locator(".knowledge-detail-drawer").isVisible());
+    assert((await page.locator(".knowledge-header h2").textContent()).includes("保卫黄河"));
+    await page.getByRole("button", { name: "关闭知识详情", exact: true }).click(); await checkFull(); await reset();
   });
   await record("Path Finder：保卫黄河到冼星海", async () => {
     await page.getByRole("button", { name: "路径查询", exact: true }).click(); const finder = page.locator(".graph-path-finder");
