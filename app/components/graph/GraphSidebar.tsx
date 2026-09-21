@@ -19,7 +19,9 @@ export function GraphSidebar({ view, onView, graph, books, scopeBook, filters, p
       <EntityTypeFilter categories={schema.categories} visible={filters.visibleSchemaKeys} onChange={filters.setVisibleSchemaKeys} />
       <RelationshipFilter relations={schema.relations} hidden={filters.hiddenRelations} onChange={filters.setHiddenRelations} onSources={onSources} />
       <PropertyFilter books={books} filters={filters} />
-      <button className="explorer-schema-button" onClick={onSchema}>查看图谱模式 <span>Schema ↗</span></button>
+      <details className="explorer-section explorer-schema-section"><summary>知识模式 <small>Schema</small></summary>
+        <button className="explorer-schema-button" onClick={onSchema}>查看实体与关系模式 <span>↗</span></button>
+      </details>
       <SmartGraphQuery graph={graph} execute={execute} assetUrl={assetUrl} onGraphFocus={onGraphFocus} notice={notice} />
       <button className="explorer-reset" onClick={onReset}>恢复全部筛选</button><p className="explorer-hint">规范实体 {graph?.entities.length ?? 0} · 规范关系 {graph?.relationships.length ?? 0}</p>
     </div>}

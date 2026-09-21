@@ -13,7 +13,7 @@ import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { CanvasPerformanceMetrics } from "../FullGraphCanvas";
 import { schemaCategoryFor, schemaCategoryMeta } from "../../graph-schema";
 import { SEMANTIC_PALETTE } from "../../semantic-palette";
-import { LABEL_BUDGETS, RELATION_STYLES, relationFamily, semanticZoomTier } from "../../lib/graph/constellation-style";
+import { LABEL_BUDGETS, RELATION_STYLES, RELATION_VISIBILITY, relationFamily, semanticZoomTier } from "../../lib/graph/constellation-style";
 import {
   buildGraphIndexes,
   focusNeighborhood,
@@ -206,7 +206,7 @@ function SigmaController<E extends GraphEntity>({
         const selected = node === selectedId && !focusSuppressed;
         const hovered = node === hoveredNode;
         const overviewCore = data.visualRank <= [70, 200, 550, 1337][zoomTier] || (data.entity.textbookCount ?? 1) >= 3;
-        const alpha = dimmed ? .05 : depth === 2 ? .25 : focus.depthByNode.size || overviewCore ? 1 : [.16, .28, .55, 1][zoomTier];
+        const alpha = dimmed ? .05 : depth === 2 ? .48 : focus.depthByNode.size || overviewCore ? 1 : [.16, .28, .55, 1][zoomTier];
         return {
           ...data,
           hidden: !visibleNodeIds.has(node),
@@ -234,12 +234,14 @@ function SigmaController<E extends GraphEntity>({
           ...data,
           hidden: !visibleRelationshipIds.has(edge) || !visibleNodeIds.has(data.relationship.subject) || !visibleNodeIds.has(data.relationship.objectId ?? ""),
           color: highlighted ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, 1)
-            : direct || hovered ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, .88)
-            : dimmed ? rgba(129, 146, 163, .025)
-            : secondary ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, structuralEdges.has(edge) ? .11 : .04)
-            : structuralEdges.has(edge) ? rgba(138, 151, 164, .19)
-            : rgba(138, 151, 164, zoomTier >= 2 ? .09 : .015),
-          size: highlighted ? 2.7 : direct || hovered ? 1.7 : secondary ? .8 : .55,
+            : direct || hovered ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.direct)
+            : dimmed ? rgba(129, 146, 163, RELATION_VISIBILITY.focus.unrelated)
+            : secondary ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.secondary)
+            : relationship.provenance ? rgba(138, 151, 164, RELATION_VISIBILITY.overview.provenance)
+            : relationship.crossBook ? rgba(110, 130, 151, RELATION_VISIBILITY.overview.crossBook)
+            : structuralEdges.has(edge) ? rgba(138, 151, 164, RELATION_VISIBILITY.overview.structural)
+            : rgba(138, 151, 164, zoomTier >= 2 ? .1 : RELATION_VISIBILITY.overview.ordinary),
+          size: highlighted ? 2.7 : direct || hovered ? 2.1 : secondary ? 1 : relationship.crossBook ? .85 : .6,
           label:
             edge === hoveredEdge || highlighted || (direct && labelIds.has(relationship.subject === selectedId ? relationship.objectId ?? "" : relationship.subject)) || (showLabels && zoomTier === 3 && secondary && labelIds.has(relationship.subject) && labelIds.has(relationship.objectId ?? ""))
               ? label

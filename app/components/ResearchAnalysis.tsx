@@ -108,7 +108,6 @@ export function ResearchAnalysis({
     <section className="research-analysis" aria-labelledby="research-analysis-title">
       <header className="research-analysis-header">
         <div>
-          <span className="eyebrow">RESEARCH ANALYSIS</span>
           <h2 id="research-analysis-title">六册教材知识结构研究分析</h2>
           <p>基于规范实体融合、教材出现记录与图谱审计结果进行关联查询。</p>
         </div>
@@ -202,4 +201,3 @@ export function ResearchAnalysis({
     </section>
   );
 }
-

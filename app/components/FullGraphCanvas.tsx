@@ -1,13 +1,14 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef } from "react";
-import type { MouseEvent, PointerEvent, WheelEvent } from "react";
+import type { MouseEvent, PointerEvent } from "react";
 import {
   schemaCategoryFor,
   schemaCategoryMeta,
 } from "../graph-schema";
 import { SEMANTIC_PALETTE } from "../semantic-palette";
 import { DESIGN_TOKENS } from "../design-tokens";
+import { RELATION_STYLES, RELATION_VISIBILITY, relationFamily } from "../lib/graph/constellation-style";
 
 type CanvasEntity = {
   id: string;
@@ -88,6 +89,9 @@ type ScreenEdge = {
   to: ScreenNode;
 };
 
+// Match Sigma's usable graph footprint without changing the toolbar zoom value.
+const CANVAS_GRAPH_SCALE = 1.2;
+
 const stableSeed = (value: string) => {
   let hash = 2166136261;
   for (const char of value) {
@@ -145,6 +149,7 @@ function FullGraphCanvasScene({
   const hoverEdgeRef = useRef<string | null>(null);
   const pointerRef = useRef<{ x: number; y: number } | null>(null);
   const localPanRef = useRef(pan);
+  const lastFocusedSelectionRef = useRef<string | null>(null);
   const drawRequestRef = useRef<() => void>(() => {});
   const geometryDirtyRef = useRef(false);
   const dragRef = useRef<
@@ -181,6 +186,15 @@ function FullGraphCanvasScene({
     () => new Set(highlightedRelationshipIds),
     [highlightedRelationshipIds],
   );
+  const structuralEdges = useMemo(() => {
+    const entityById = new Map(nodes.map(node => [node.entity.id, node.entity]));
+    const score = (edge: CanvasEdge) => (edge.crossBook ? 20 : 0)
+      + Math.log2((entityById.get(edge.subject)?.degree ?? 0) + 1)
+      + Math.log2((entityById.get(edge.objectId ?? "")?.degree ?? 0) + 1);
+    return new Set(relationships.filter(edge => edge.objectId && !edge.provenance)
+      .sort((a, b) => score(b) - score(a) || a.id.localeCompare(b.id))
+      .slice(0, 440).map(edge => edge.id));
+  }, [nodes, relationships]);
   const selectionFocus = useMemo(() => {
     const depthByNode = new Map<string, 0 | 1 | 2>();
     const directEdges = new Set<string>();
@@ -216,9 +230,42 @@ function FullGraphCanvasScene({
   }, [relationships, selectedId, visibleNodeIds]);
 
   useEffect(() => {
+    if (!selectedId) {
+      lastFocusedSelectionRef.current = null;
+      return;
+    }
+    const focusKey = `${book.key}:${selectedId}`;
+    if (lastFocusedSelectionRef.current === focusKey) return;
+    const target = positionById.get(selectedId);
+    if (!target || !visibleNodeIds.has(selectedId)) return;
+    const fixed = draggedPositions[`${book.key}-${selectedId}`];
+    const focusZoom = Math.max(zoom, 1.05);
+    const x = fixed?.x ?? target.x;
+    const y = fixed?.y ?? target.y;
+    lastFocusedSelectionRef.current = focusKey;
+    if (zoom < focusZoom) onZoomChange(focusZoom);
+    onPanChange({
+      x: -(x - DESIGN_TOKENS.graph.centerX) * focusZoom,
+      y: -(y - DESIGN_TOKENS.graph.centerY) * focusZoom,
+    });
+  }, [book.key, draggedPositions, onPanChange, onZoomChange, positionById, selectedId, visibleNodeIds, zoom]);
+
+  useEffect(() => {
     localPanRef.current = pan;
     drawRequestRef.current();
   }, [pan]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const handleWheel = (event: globalThis.WheelEvent) => {
+      event.preventDefault();
+      const factor = event.deltaY < 0 ? 1.11 : 0.9;
+      onZoomChange(Math.max(0.42, Math.min(2.8, zoom * factor)));
+    };
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
+    return () => canvas.removeEventListener("wheel", handleWheel);
+  }, [onZoomChange, zoom]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -263,6 +310,7 @@ function FullGraphCanvasScene({
       const hasExplicitHighlight =
         highlightedNodes.size > 0 || highlightedEdges.size > 0;
       const hasSelectionFocus = selectionFocus.depthByNode.size > 0;
+      const visualZoom = zoom * CANVAS_GRAPH_SCALE;
       const screenNodes: ScreenNode[] = [];
       const screenNodeById = new Map<string, ScreenNode>();
 
@@ -285,15 +333,11 @@ function FullGraphCanvasScene({
           graphY += Math.cos(phase * 0.83) * (1.8 + (seed % 2));
         }
         const x =
-          ((graphX - DESIGN_TOKENS.graph.centerX) * zoom +
-            DESIGN_TOKENS.graph.centerX +
-            activePan.x) *
-          scaleX;
+          (((graphX - DESIGN_TOKENS.graph.centerX) * zoom + activePan.x) *
+            CANVAS_GRAPH_SCALE + DESIGN_TOKENS.graph.centerX) * scaleX;
         const y =
-          ((graphY - DESIGN_TOKENS.graph.centerY) * zoom +
-            DESIGN_TOKENS.graph.centerY +
-            activePan.y) *
-          scaleY;
+          (((graphY - DESIGN_TOKENS.graph.centerY) * zoom + activePan.y) *
+            CANVAS_GRAPH_SCALE + DESIGN_TOKENS.graph.centerY) * scaleY;
         const isTextbook = node.entity.type === "教材";
         const isShared = (node.entity.textbookCount ?? 1) >= 2;
         const importance = Math.max(
@@ -306,7 +350,9 @@ function FullGraphCanvasScene({
             : isTextbook
               ? 11.5
               : 3.2 + Math.sqrt(importance) * 8.6 + (isShared ? 0.8 : 0);
-        const radius = Math.max(3, baseRadius * Math.min(1.45, zoom));
+        const overviewCore = isTextbook || (node.entity.visualRank ?? Infinity) <= 70 || (node.entity.textbookCount ?? 1) >= 3;
+        const peripheralOverview = !hasSelectionFocus && !overviewCore;
+        const radius = Math.max(1.5, baseRadius * (peripheralOverview ? .56 : .9) * Math.min(1.45, visualZoom));
         if (
           x < -radius - 50 ||
           y < -radius - 50 ||
@@ -345,33 +391,32 @@ function FullGraphCanvasScene({
           edgeContext.beginPath();
           edgeContext.moveTo(from.x, from.y);
           edgeContext.lineTo(to.x, to.y);
-          edgeContext.globalAlpha = dimmed
-            ? 0.045
-            : active || direct
-              ? 0.94
-              : secondary
-                ? 0.38
-                : edge.crossBook
-                  ? 0.4
-                  : edge.provenance
-                    ? 0.14
-                    : 0.16;
-          edgeContext.strokeStyle = active
-            ? "#315f86"
+          const overviewAlpha = edge.provenance
+            ? RELATION_VISIBILITY.canvasOverview.provenance
             : edge.crossBook
-              ? "#557fa5"
-              : edge.provenance
-                ? "#86929c"
-                : "#8292a3";
+              ? RELATION_VISIBILITY.canvasOverview.crossBook
+              : structuralEdges.has(edge.id)
+                ? RELATION_VISIBILITY.canvasOverview.structural
+                : RELATION_VISIBILITY.canvasOverview.ordinary;
+          edgeContext.globalAlpha = dimmed
+            ? RELATION_VISIBILITY.canvasFocus.unrelated
+            : active || direct
+              ? RELATION_VISIBILITY.canvasFocus.direct
+              : secondary
+                ? RELATION_VISIBILITY.canvasFocus.secondary
+                : overviewAlpha * (visualZoom >= 1.5 ? 1.35 : visualZoom >= .9 ? 1.15 : 1);
+          edgeContext.strokeStyle = active || direct || secondary
+            ? RELATION_STYLES[relationFamily(edge)].color
+            : edge.crossBook ? "#6e8297" : "#8a97a4";
           edgeContext.lineWidth = active
             ? 2.2
             : direct
-              ? 1.8
+              ? 2.1
               : secondary
-                ? 1.05
+                ? 1
                 : edge.crossBook
-                  ? 1.2
-                  : 0.68;
+                  ? 1
+                  : structuralEdges.has(edge.id) ? .9 : .6;
           if (edge.provenance) edgeContext.setLineDash([3, 3]);
           else edgeContext.setLineDash([]);
           edgeContext.stroke();
@@ -387,8 +432,8 @@ function FullGraphCanvasScene({
         0,
         edgeLayer.width,
         edgeLayer.height,
-        (activePan.x - pan.x) * scaleX,
-        (activePan.y - pan.y) * scaleY,
+        (activePan.x - pan.x) * CANVAS_GRAPH_SCALE * scaleX,
+        (activePan.y - pan.y) * CANVAS_GRAPH_SCALE * scaleY,
         width,
         height,
       );
@@ -409,7 +454,7 @@ function FullGraphCanvasScene({
       hoverNodeRef.current = hoveredNode?.entity.id ?? null;
 
       let hoveredEdge: ScreenEdge | undefined;
-      if (pointer && !hoveredNode && zoom >= 0.9) {
+      if (pointer && !hoveredNode && visualZoom >= 0.9) {
         let best = 5;
         for (const edge of screenEdges) {
           const distance = pointToSegmentDistance(
@@ -449,12 +494,21 @@ function FullGraphCanvasScene({
           : hasSelectionFocus && focusDepth == null;
         const hovered = node.entity.id === hoverNodeRef.current;
 
-        context.globalAlpha = dimmed ? 0.11 : focusDepth === 2 ? 0.5 : 1;
-        if (isShared) {
+        const overviewCore = isTextbook || (node.entity.visualRank ?? Infinity) <= 70 || (node.entity.textbookCount ?? 1) >= 3;
+        context.globalAlpha = selected || hovered ? 1 : dimmed ? 0.05 : focusDepth === 2 ? 0.32
+          : hasSelectionFocus || overviewCore ? 1 : 0.2;
+        if (isShared && (selected || focusDepth === 1 || overviewCore)) {
           context.beginPath();
           context.arc(node.x, node.y, node.radius + 3.5, 0, Math.PI * 2);
           context.strokeStyle = "rgba(49,93,135,.32)";
           context.lineWidth = 1;
+          context.stroke();
+        }
+        if (selected) {
+          context.beginPath();
+          context.arc(node.x, node.y, node.radius + 5, 0, Math.PI * 2);
+          context.strokeStyle = "#6684aa";
+          context.lineWidth = 1.8;
           context.stroke();
         }
         context.beginPath();
@@ -462,11 +516,11 @@ function FullGraphCanvasScene({
         context.fillStyle = colors.fill;
         context.fill();
         context.strokeStyle = selected || hovered ? "#ffffff" : colors.stroke;
-        context.lineWidth = selected ? 2.5 : hovered ? 2 : 1.2;
+        context.lineWidth = selected ? 2.5 : hovered ? 2 : .6;
         context.stroke();
 
         const rankLimit =
-          zoom < 0.78 ? 35 : zoom < 1.08 ? 100 : zoom < 1.52 ? 300 : Infinity;
+          visualZoom < 0.9 ? 18 : visualZoom < 1.3 ? 80 : visualZoom < 1.9 ? 230 : Infinity;
         const showNodeLabel =
           selected ||
           hovered ||
@@ -476,9 +530,9 @@ function FullGraphCanvasScene({
             ((focusDepth === 1 &&
               (node.entity.visualRank ?? Infinity) <= 160) ||
               (focusDepth === 2 &&
-                zoom >= 1.25 &&
+                visualZoom >= 1.5 &&
                 (node.entity.visualRank ?? Infinity) <= 300) ||
-              zoom >= 1.68));
+              visualZoom >= 2));
         if (showNodeLabel)
           nodeLabelCandidates.push({
             node,
@@ -495,20 +549,22 @@ function FullGraphCanvasScene({
         top: number;
         bottom: number;
       }> = [];
+      const labelLimit = hasSelectionFocus
+        ? visualZoom < 1.5 ? 24 : visualZoom < 2 ? 55 : 140
+        : visualZoom < .9 ? 22 : visualZoom < 1.3 ? 80 : visualZoom < 1.9 ? 230 : Infinity;
+      const labelPriority = (item: typeof nodeLabelCandidates[number]) =>
+        item.selected || item.hovered ? 0 : item.focusDepth === 1 ? 1
+          : item.isTextbook ? 2 : item.focusDepth === 2 ? 3 : 4;
       nodeLabelCandidates
-        .sort(
-          (a, b) =>
-            Number(b.selected || b.hovered) - Number(a.selected || a.hovered) ||
-            Number(b.isTextbook) - Number(a.isTextbook) ||
-            (a.node.entity.visualRank ?? Infinity) -
-              (b.node.entity.visualRank ?? Infinity),
-        )
+        .sort((a, b) => labelPriority(a) - labelPriority(b) ||
+          (a.node.entity.visualRank ?? Infinity) - (b.node.entity.visualRank ?? Infinity))
+        .slice(0, labelLimit)
         .forEach(({ node, selected, hovered, isTextbook, focusDepth }) => {
           const name =
             node.entity.name.length > 15
               ? `${node.entity.name.slice(0, 15)}…`
               : node.entity.name;
-          context.font = `${selected || isTextbook ? 600 : 500} ${Math.max(9, Math.min(12, 8.5 + zoom * 1.4))}px "Microsoft YaHei", sans-serif`;
+          context.font = `${selected || isTextbook ? 600 : 500} ${Math.max(9, Math.min(12, 8.5 + visualZoom * 1.4))}px "Microsoft YaHei", sans-serif`;
           const labelWidth = context.measureText(name).width + 8;
           const top = node.y + node.radius + 2;
           const box = {
@@ -543,10 +599,10 @@ function FullGraphCanvasScene({
         if (edge.subject === selectedId || edge.objectId === selectedId)
           return true;
         if (selectionFocus.directEdges.has(edge.id)) return true;
-        if (highlightedEdges.has(edge.id) && zoom >= 0.95) return true;
-        return zoom >= 2.15;
+        if (highlightedEdges.has(edge.id) && visualZoom >= 1.2) return true;
+        return visualZoom >= 2.6;
       });
-      const relationshipLabelLimit = zoom < 0.9 ? 18 : zoom < 1.55 ? 56 : 160;
+      const relationshipLabelLimit = visualZoom < 1.1 ? 10 : visualZoom < 1.8 ? 40 : 160;
       for (const { edge, from, to } of labelEdges.slice(
         0,
         relationshipLabelLimit,
@@ -611,6 +667,13 @@ function FullGraphCanvasScene({
         canvas.dataset.visibleNodes = String(metrics.visibleNodes);
         canvas.dataset.visibleEdges = String(metrics.visibleEdges);
         canvas.dataset.renderedLabels = String(metrics.renderedLabels);
+        canvas.dataset.selectedId = selectedId ?? "";
+        canvas.dataset.focusNodes = String(selectionFocus.depthByNode.size);
+        canvas.dataset.focusEdges = String(selectionFocus.directEdges.size + selectionFocus.secondaryEdges.size);
+        const selectedScreen = selectedId ? screenNodeById.get(selectedId) : null;
+        canvas.dataset.selectedViewport = selectedScreen
+          ? JSON.stringify({ x: selectedScreen.x, y: selectedScreen.y })
+          : "";
         canvas.dataset.domElements = String(metrics.domElementCount);
         canvas.dataset.renderMode = metrics.renderMode;
         if (metrics.memoryMb != null)
@@ -655,6 +718,7 @@ function FullGraphCanvasScene({
     selectedId,
     selectionFocus,
     showLabels,
+    structuralEdges,
     visibleNodeIds,
     zoom,
   ]);
@@ -673,10 +737,10 @@ function FullGraphCanvasScene({
     return {
       x:
         DESIGN_TOKENS.graph.centerX +
-        (rawX - DESIGN_TOKENS.graph.centerX - localPanRef.current.x) / zoom,
+        ((rawX - DESIGN_TOKENS.graph.centerX) / CANVAS_GRAPH_SCALE - localPanRef.current.x) / zoom,
       y:
         DESIGN_TOKENS.graph.centerY +
-        (rawY - DESIGN_TOKENS.graph.centerY - localPanRef.current.y) / zoom,
+        ((rawY - DESIGN_TOKENS.graph.centerY) / CANVAS_GRAPH_SCALE - localPanRef.current.y) / zoom,
     };
   };
 
@@ -734,11 +798,11 @@ function FullGraphCanvasScene({
         x:
           drag.originX +
           ((point.x - drag.startX) / rect.width) *
-            DESIGN_TOKENS.graph.width,
+            DESIGN_TOKENS.graph.width / CANVAS_GRAPH_SCALE,
         y:
           drag.originY +
           ((point.y - drag.startY) / rect.height) *
-            DESIGN_TOKENS.graph.height,
+            DESIGN_TOKENS.graph.height / CANVAS_GRAPH_SCALE,
       };
       drawRequestRef.current();
       return;
@@ -784,12 +848,6 @@ function FullGraphCanvasScene({
     if (node) onContextMenu(event.clientX - rect.left, event.clientY - rect.top, node.entity);
   };
 
-  const handleWheel = (event: WheelEvent<HTMLCanvasElement>) => {
-    event.preventDefault();
-    const factor = event.deltaY < 0 ? 1.11 : 0.9;
-    onZoomChange(Math.max(0.42, Math.min(2.8, zoom * factor)));
-  };
-
   return (
     <canvas
       ref={canvasRef}
@@ -808,7 +866,6 @@ function FullGraphCanvasScene({
       }}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
-      onWheel={handleWheel}
     />
   );
 }
@@ -855,10 +912,11 @@ function MiniMap({ nodes, visibleNodeIds, zoom, pan, viewport, draggedPositions,
         SEMANTIC_PALETTE[schemaCategoryFor(node.entity.type)].fill;
       context.fill();
     }
-    const viewportWidth = rect.width / Math.max(0.4, zoom);
-    const viewportHeight = rect.height / Math.max(0.4, zoom);
-    const centerX = rect.width / 2 - (pan.x / 2400) * rect.width;
-    const centerY = rect.height / 2 - (pan.y / 1500) * rect.height;
+    const canvasZoom = Math.max(0.4, zoom) * CANVAS_GRAPH_SCALE;
+    const viewportWidth = rect.width / canvasZoom;
+    const viewportHeight = rect.height / canvasZoom;
+    const centerX = rect.width / 2 - (pan.x / Math.max(0.4, zoom) / 2400) * rect.width;
+    const centerY = rect.height / 2 - (pan.y / Math.max(0.4, zoom) / 1500) * rect.height;
     context.strokeStyle = "#3e6b91";
     context.lineWidth = 1;
     context.strokeRect(

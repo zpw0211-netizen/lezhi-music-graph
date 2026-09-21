@@ -76,7 +76,7 @@ export function KnowledgeDetailDrawer({ entity, entities, relationships, occurre
       <div className="knowledge-navigation"><span>数字教材 · {category.label}</span><nav aria-label="知识浏览历史"><button disabled={cursor === 0} onClick={() => navigateHistory(-1)}>上一个</button><button disabled={cursor >= history.length - 1} onClick={() => navigateHistory(1)}>下一个</button><button ref={closeButton} aria-label="关闭知识详情" onClick={onClose}>关闭 ×</button></nav></div>
       <h2>{current.name}</h2>
       {!!current.aliases?.length && <p className="knowledge-aliases">{current.aliases.filter(alias => alias !== current.name).join(" · ")}</p>}
-      <div className="knowledge-tags"><span>{current.type}</span><span>覆盖 {entity.textbookCount ?? entity.bookKeys?.length ?? 1} 册</span><span>{edges.length} 条关联</span></div>
+      <dl className="knowledge-meta"><div><dt>实体类型</dt><dd>{current.type}</dd></div><div><dt>教材覆盖</dt><dd>{entity.textbookCount ?? entity.bookKeys?.length ?? 1} 册</dd></div><div><dt>知识关联</dt><dd>{edges.length} 条</dd></div></dl>
     </header>
     <div className="knowledge-body" ref={scrolling}>
       {loaded?.id !== entity.id && <p className="knowledge-load-status" role="status">正在读取完整资料，以下为已有图谱内容…</p>}

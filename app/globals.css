@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @import '@react-sigma/core/lib/style.css';
 
+/* Legacy visual baseline. The current Graph Explorer surface is namespaced by
+   .theme-light/.graph-first in theme-light.css and graph-explorer.css. Keep
+   older selectors for records/import/assistant until each is migrated and
+   covered by visual regression. */
+
 :root { --bg:#09101f; --panel:#101b31; --panel-2:#162544; --line:#243653; --text:#eef4ff; --muted:#8b9ab5; --violet:#8b7cff; --cyan:#55d6ff; --yellow:#f7c861; --green:#65e6b4; }
 * { box-sizing:border-box; }
 html, body { min-height:100%; }

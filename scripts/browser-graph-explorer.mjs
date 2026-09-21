@@ -65,7 +65,8 @@ try {
     await page.getByRole("button", { name: "展开左侧栏" }).click();
   });
   await record("Schema 聚合类别与返回实例", async () => {
-    await page.getByRole("button", { name: "查看图谱模式" }).click();
+    await section("知识模式").locator("summary").click();
+    await page.getByRole("button", { name: "查看实体与关系模式" }).click();
     assert.equal(await page.locator("[data-schema-category]").count(), 10); assert.equal(await page.locator(".sigma-scene-host").count(), 0);
     await page.locator("[data-schema-category=work]").click(); assert(Number((await stats()).visibleNodes) > 0); await reset();
   });
@@ -116,9 +117,11 @@ try {
     assert((await finder.textContent()).includes("1 跳")); await finder.getByRole("button", { name: "在图中突出此路径", exact: true }).click(); await checkFull(); await reset();
   });
   await record("Canvas 2D 兼容模式", async () => {
+    await page.locator(".graph-toolbar-menu summary").click();
     await page.getByRole("button", { name: "WebGL 图谱", exact: true }).click(); assert(await page.locator("canvas.full-graph-canvas").isVisible());
     assert.equal(await page.locator(".sigma-scene-host").count(), 0);
     await page.getByRole("button", { name: "Canvas 回退", exact: true }).click(); await page.locator(".sigma-scene-host canvas").first().waitFor();
+    await page.locator(".graph-toolbar-menu summary").click();
   });
   await record("单册、六册和小屏幕", async () => {
     await page.getByRole("button", { name: "7年级上册", exact: true }).click(); assert(await page.getByRole("img", { name: "教材知识图谱" }).isVisible());

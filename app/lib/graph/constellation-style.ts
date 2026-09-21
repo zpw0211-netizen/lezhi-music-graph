@@ -9,6 +9,17 @@ export const RELATION_STYLES = {
   semantic: { color: "#85809e", label: "知识关联" },
 } as const;
 
+// The full network keeps every relationship loaded. These levels distinguish
+// its main structure without turning the overview into a wall of dark lines.
+export const RELATION_VISIBILITY = {
+  overview: { ordinary: 0.06, structural: 0.24, crossBook: 0.32, provenance: 0.08 },
+  // Canvas accumulates translucent strokes more strongly than Sigma WebGL.
+  // Keep the same hierarchy, with only a small renderer-specific correction.
+  canvasOverview: { ordinary: 0.055, structural: 0.24, crossBook: 0.32, provenance: 0.08 },
+  focus: { direct: 0.96, secondary: 0.26, unrelated: 0.035 },
+  canvasFocus: { direct: 0.96, secondary: 0.16, unrelated: 0.025 },
+} as const;
+
 export function relationFamily(edge: GraphRelationship) {
   const text = `${edge.predicate} ${edge.label ?? ""}`;
   if (edge.provenance || /TEXTBOOK|OCCURRENCE|UNIT|教材|单元|收录/.test(text)) return "textbook";

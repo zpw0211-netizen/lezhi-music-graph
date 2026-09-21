@@ -3237,7 +3237,8 @@ export default function Home() {
                           : currentBook.title + " · 局部探索"}
                     </h3>
                   </div>
-                  <div className="neo-actions">
+                  <div className="neo-actions" role="toolbar" aria-label="图谱操作">
+                    <div className="graph-toolbar-core">
                     <button
                       onClick={() => {
                         setZoom(graphMode === "all" ? 0.64 : 0.92);
@@ -3249,36 +3250,60 @@ export default function Home() {
                       适配画布
                     </button>
                     <button
-                      onClick={() => {
-                        if (!selected) return;
-                        if (graphMode === "all" && canonicalGroup) {
-                          setFocusSelectionToken((value) => value + 1);
-                          const target = canonicalGroup.nodes.find(
-                            (node) => node.entity.id === selected.id,
-                          );
-                          if (target) {
-                            setCanvasPan({
-                              x: 1200 - target.x,
-                              y: 750 - target.y,
-                            });
-                            setZoom(1.55);
-                            setShowLabels(true);
-                          }
-                        } else selectEntity(selected, currentBook, true);
-                      }}
-                    >
-                      适配选中
-                    </button>
-                    <button onClick={() => setShowLabels((value) => !value)}>
-                      {showLabels ? "隐藏标签" : "显示标签"}
-                    </button>
-                    <button
                       className={pathFinderOpen ? "active" : ""}
                       onClick={() => openPathFinder(selected)}
                     >
                       路径查询
                     </button>
-                    {graphMode === "all" && (
+                    <button
+                      onClick={() => {
+                        resetExplorer();
+                        setZoom(1);
+                        setExpandedNodeIds({});
+                        setHiddenNodeKeys([]);
+                        setHiddenRelations([]);
+                        setVisibleSchemaKeys([...ALL_SCHEMA_KEYS]);
+                        setHighlightedCanonicalIds([]);
+                        setHighlightedCanonicalRelationIds([]);
+                        setViewHistory([]);
+                        setCanvasPan({ x: 0, y: 0 });
+                        setDragPositions({});
+                        setFullGraphLayout("knowledge");
+                        setFullGraphView("all");
+                        setShowTextbookSources(false);
+                        setZoom(0.64);
+                        setCameraResetToken((value) => value + 1);
+                      }}
+                    >
+                      重置视图
+                    </button>
+                    </div>
+                    <details className="graph-toolbar-menu">
+                      <summary>视图与显示</summary>
+                      <div className="graph-toolbar-menu-content">
+                      <button
+                        disabled={!selected}
+                        onClick={() => {
+                          if (!selected) return;
+                          if (graphMode === "all" && canonicalGroup) {
+                            setFocusSelectionToken((value) => value + 1);
+                            const target = canonicalGroup.nodes.find(
+                              (node) => node.entity.id === selected.id,
+                            );
+                            if (target) {
+                              setCanvasPan({ x: 1200 - target.x, y: 750 - target.y });
+                              setZoom(1.55);
+                              setShowLabels(true);
+                            }
+                          } else selectEntity(selected, currentBook, true);
+                        }}
+                      >
+                        适配选中
+                      </button>
+                      <button onClick={() => setShowLabels((value) => !value)}>
+                        {showLabels ? "隐藏标签" : "显示标签"}
+                      </button>
+                      {graphMode === "all" && (
                       <button
                         title="Sigma WebGL 为主渲染器，Canvas 2D 保留为兼容回退"
                         onClick={() =>
@@ -3291,7 +3316,7 @@ export default function Home() {
                           ? "WebGL 图谱"
                           : "Canvas 回退"}
                       </button>
-                    )}
+                      )}
                     <button onClick={() => setMotionEnabled((value) => !value)}>
                       {motionEnabled ? "停止动态" : "动态演示"}
                     </button>
@@ -3310,6 +3335,9 @@ export default function Home() {
                           ? "返回单册"
                           : "返回六册叠加"}
                     </button>
+                      </div>
+                    </details>
+                    <div className="graph-toolbar-tools" aria-label="画布缩放与全屏">
                     <button
                       aria-label="放大图谱"
                       onClick={() => setZoom(Math.min(3.2, zoom + 0.2))}
@@ -3335,31 +3363,10 @@ export default function Home() {
                     >
                       −
                     </button>
-                    <button
-                      onClick={() => {
-                        resetExplorer();
-                        setZoom(1);
-                        setExpandedNodeIds({});
-                        setHiddenNodeKeys([]);
-                        setHiddenRelations([]);
-                        setVisibleSchemaKeys([...ALL_SCHEMA_KEYS]);
-                        setHighlightedCanonicalIds([]);
-                        setHighlightedCanonicalRelationIds([]);
-                        setViewHistory([]);
-                        setCanvasPan({ x: 0, y: 0 });
-                        setDragPositions({});
-                        setFullGraphLayout("knowledge");
-                        setFullGraphView("all");
-                        setShowTextbookSources(false);
-                        setZoom(0.64);
-                        setCameraResetToken((value) => value + 1);
-                      }}
-                    >
-                      重置视图
+                    <button aria-label={expanded ? "退出全屏" : "全屏画布"} title={expanded ? "退出全屏" : "全屏画布"} onClick={() => setExpanded((value) => !value)}>
+                      {expanded ? "⤡" : "⛶"}
                     </button>
-                    <button onClick={() => setExpanded((value) => !value)}>
-                      {expanded ? "退出全屏" : "全屏画布"}
-                    </button>
+                    </div>
                   </div>
                 </div>
                 {graphMode === "all" && (
@@ -3804,7 +3811,6 @@ export default function Home() {
                 <div className="stats-panel">
                   <div className="stats-head">
                     <div>
-                      <span className="eyebrow muted">ENTITY DISTRIBUTION</span>
                       <h3>实体分布</h3>
                     </div>
                     <b>{fmt(networkEntities.length)}</b>
@@ -3834,7 +3840,6 @@ export default function Home() {
                 <div className="stats-panel">
                   <div className="stats-head">
                     <div>
-                      <span className="eyebrow muted">RELATION TYPES</span>
                       <h3>关系类型</h3>
                     </div>
                     <b>{fmt(networkTriples.length)}</b>
@@ -3856,7 +3861,6 @@ export default function Home() {
               <section className="triple-dock">
                 <div className="dock-head">
                   <div>
-                    <span className="eyebrow muted">TRIPLE INSPECTOR</span>
                     <h3>{selected?.name ?? "当前节点"} 的三元组</h3>
                   </div>
                   <span className="dock-count">{directTriples.length} 条</span>
