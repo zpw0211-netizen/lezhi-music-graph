@@ -4,6 +4,8 @@ import "./globals.css";
 import "./theme-light.css";
 import "./graph-explorer.css";
 import "./knowledge-detail.css";
+import "./workbench-v5.css";
+import "./home-portal.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

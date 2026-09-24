@@ -4,7 +4,10 @@ import { readFile, mkdir, writeFile } from "node:fs/promises";
 const { chromium } = createRequire("C:/Users/HONOR/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json")("playwright");
 const graph = JSON.parse(await readFile("public/data/graph-index.json", "utf8")).canonicalGraph;
 const output = "../../output/constellation-acceptance"; await mkdir(output, { recursive: true });
-const url = process.env.EXPLORER_URL ?? "http://127.0.0.1:4174/lezhi-music-graph/";
+// The site opens on the home portal; the explorer tests start directly in the graph view.
+const explorerUrl = new URL(process.env.EXPLORER_URL ?? "http://127.0.0.1:4174/lezhi-music-graph/");
+explorerUrl.searchParams.set("view", "graph");
+const url = explorerUrl.toString();
 const browser = await chromium.launch({ headless: true, executablePath: "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } }); page.setDefaultTimeout(7000);
 const errors = [], httpErrors = [], detailRequests = [], results = [];

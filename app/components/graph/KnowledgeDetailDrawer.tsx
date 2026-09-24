@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { WorkbenchIcon } from "../WorkbenchIcon";
 import { schemaCategoryMeta } from "../../graph-schema";
 import { loadKnowledgeDetail } from "../../lib/graph/knowledge-detail";
 import type { DetailEntity, DetailOccurrence, DetailRelationship, KnowledgeDetail } from "../../lib/graph/knowledge-detail";
@@ -68,12 +69,12 @@ export function KnowledgeDetailDrawer({ entity, entities, relationships, occurre
   }, [edges, locations]);
   const summary = [...new Set([current.description, ...(current.descriptions ?? [])].filter(Boolean))].join("\n");
   const renderFacts = (items: typeof facts) => items.length ? <ul className="knowledge-facts">{items.map(({ edge, outgoing, other, label, value }) => <li key={edge.id}>
-    <span>{outgoing ? label : `← ${label}`}</span>{other ? <button data-related-id={other.id} onClick={() => onNavigate(other)}>{value} <small>↗</small></button> : <strong>{value}</strong>}
+    <span>{outgoing ? label : `← ${label}`}</span>{other ? <button data-related-id={other.id} onClick={() => onNavigate(other)}>{value} <WorkbenchIcon name="arrow" width="14" height="14" /></button> : <strong>{value}</strong>}
   </li>)}</ul> : <p className="knowledge-empty">现有资料未单独记录此项。</p>;
   const navigateHistory = (offset: number) => { const index = cursor + offset; const target = entities.get(history[index]); if (target) { setCursor(index); onNavigate(target); } };
   return <aside className="knowledge-detail-drawer" aria-label="知识详情" role="region" data-entity-id={entity.id} data-detail-status={loaded?.id !== entity.id ? "loading" : detail ? "loaded" : "fallback"} style={{ "--detail-accent": category.color } as CSSProperties} onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); onClose(); } }}>
     <header className="knowledge-header">
-      <div className="knowledge-navigation"><span>数字教材 · {category.label}</span><nav aria-label="知识浏览历史"><button disabled={cursor === 0} onClick={() => navigateHistory(-1)}>上一个</button><button disabled={cursor >= history.length - 1} onClick={() => navigateHistory(1)}>下一个</button><button ref={closeButton} aria-label="关闭知识详情" onClick={onClose}>关闭 ×</button></nav></div>
+      <div className="knowledge-navigation"><span>数字教材 · {category.label}</span><nav aria-label="知识浏览历史"><button disabled={cursor === 0} onClick={() => navigateHistory(-1)}><WorkbenchIcon name="left" />上一个</button><button disabled={cursor >= history.length - 1} onClick={() => navigateHistory(1)}>下一个<WorkbenchIcon name="right" /></button><button ref={closeButton} aria-label="关闭知识详情" onClick={onClose}><WorkbenchIcon name="close" /></button></nav></div>
       <h2>{current.name}</h2>
       {!!current.aliases?.length && <p className="knowledge-aliases">{current.aliases.filter(alias => alias !== current.name).join(" · ")}</p>}
       <dl className="knowledge-meta"><div><dt>实体类型</dt><dd>{current.type}</dd></div><div><dt>教材覆盖</dt><dd>{entity.textbookCount ?? entity.bookKeys?.length ?? 1} 册</dd></div><div><dt>知识关联</dt><dd>{edges.length} 条</dd></div></dl>
@@ -89,7 +90,7 @@ export function KnowledgeDetailDrawer({ entity, entities, relationships, occurre
       <section><h3>跨册关联</h3><p>覆盖 {entity.textbookCount ?? entity.bookKeys?.length ?? 1} / 6 册 · 出现 {entity.occurrenceCount ?? locations.length} 次</p>{renderFacts(facts.filter(item => item.edge.crossBook))}</section>
       <section><h3>教学应用</h3>{renderFacts(facts.filter(item => /学习|教学|实践|任务|目标|前置|深化|扩展/.test(item.label)))}</section>
       {!!current.media?.filter(asset => safeMediaUrl(asset.url)).length && <section><h3>学习资源</h3>{current.media.filter(asset => safeMediaUrl(asset.url)).map((asset, index) => <figure key={index}><DetailMedia asset={asset} basePath={basePath} /><figcaption>{asset.title} {asset.source}</figcaption></figure>)}</section>}
-      <section><h3>AI 问答入口</h3><p className="knowledge-empty">带着当前知识进入已有问答页面。</p><button className="knowledge-ask" onClick={() => onAsk(entity.name)}>了解「{entity.name}」的教材内容 ↗</button></section>
+      <section><h3>AI 问答入口</h3><p className="knowledge-empty">带着当前知识进入已有问答页面。</p><button className="knowledge-ask" onClick={() => onAsk(entity.name)}>了解「{entity.name}」的教材内容 <WorkbenchIcon name="arrow" /></button></section>
     </div>
   </aside>;
 }

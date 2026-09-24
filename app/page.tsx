@@ -50,6 +50,8 @@ import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AssistantPage } from "./components/assistant/AssistantPage";
 import type { AnswerResult } from "./lib/ai/graph-rag";
 import { GraphSidebar } from "./components/graph/GraphSidebar";
+import { WorkbenchIcon } from "./components/WorkbenchIcon";
+import { HomePortal } from "./components/home/HomePortal";
 import { SchemaExplorer } from "./components/graph/SchemaExplorer";
 import { KnowledgeDetailDrawer } from "./components/graph/KnowledgeDetailDrawer";
 import { NodeAIInterpretation } from "./components/assistant/NodeAIInterpretation";
@@ -579,7 +581,11 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState("demo-work");
   const [query, setQuery] = useState("");
   const scope = "all" as const;
-  const [view, setView] = useState<"graph" | "assistant" | "research" | "records" | "import">("graph");
+  const [view, setView] = useState<"home" | "graph" | "assistant" | "research" | "records" | "import">(() => {
+    if (typeof window === "undefined") return "home";
+    const requested = new URLSearchParams(window.location.search).get("view");
+    return requested === "graph" || requested === "assistant" || requested === "research" || requested === "records" ? requested : "home";
+  });
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [knowledgeDetailOpen, setKnowledgeDetailOpen] = useState(false);
   const schemaOpen = true;
@@ -2923,7 +2929,7 @@ export default function Home() {
     );
   return (
     <main
-      className={`app-shell theme-light ${knowledgeDetailOpen && view === "graph" ? "detail-open" : ""} ${inspectorOpen ? "inspector-open" : "inspector-closed"} ${schemaOpen ? "schema-open" : "schema-closed"} ${view === "assistant" ? "assistant-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""}`}
+      className={`app-shell theme-light ${knowledgeDetailOpen && view === "graph" ? "detail-open" : ""} ${inspectorOpen ? "inspector-open" : "inspector-closed"} ${schemaOpen ? "schema-open" : "schema-closed"} ${view === "assistant" ? "assistant-mode" : ""} ${view === "home" ? "home-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""}`}
       style={
         {
           ...designTokenCssVariables,
@@ -2947,7 +2953,9 @@ export default function Home() {
                   : "单册展开"}
             </p>
             <h1>
-              {view === "graph"
+              {view === "home"
+                ? "首页"
+                : view === "graph"
                 ? "教材知识图谱"
                 : view === "assistant"
                   ? "智能问答"
@@ -2960,11 +2968,11 @@ export default function Home() {
           </div>
           <div className="search-zone">
             <form className="search-wrap" onSubmit={submitSearch}>
-              <span className="search-icon">⌕</span>
+              <span className="search-icon"><WorkbenchIcon name="search" /></span>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="搜索作品、人物、体裁、乐理概念…"
+                placeholder="搜索作品、人物、体裁、乐理概念……"
               />
               <button type="submit" className="search-submit">
                 定位
@@ -2986,7 +2994,7 @@ export default function Home() {
                           {relationCount} 条关系 · 命中{matchedBy}
                         </small>
                       </span>
-                      <b>→</b>
+                      <WorkbenchIcon name="arrow" />
                     </button>
                     ),
                   )}
@@ -3133,6 +3141,25 @@ export default function Home() {
             </button>
           </div>
         </header>
+        {view === "home" && (
+          <HomePortal
+            books={dataset.books}
+            graph={canonicalGraph}
+            query={query}
+            onQuery={setQuery}
+            results={searchResults}
+            onPickResult={selectSearchResult}
+            onSearch={submitSearch}
+            onOpenBook={chooseBook}
+            onOpenFullGraph={chooseFullGraph}
+            onView={(value) => { if (value === "assistant") setAssistantEntry(current => ({ question: "", token: current.token + 1 })); setView(value); }}
+            onPickEntityName={(name) => {
+              const entity = canonicalBook?.entities.find((item) => item.name === name);
+              if (entity && canonicalBook) selectSearchResult(entity, canonicalBook);
+            }}
+            onResearchInfo={() => setResearchInfoOpen(true)}
+          />
+        )}
         {view === "graph" && <div className="book-tabs">
           <button
             className={`book-tab ${graphMode === "all" ? "active" : ""}`}
@@ -3247,13 +3274,13 @@ export default function Home() {
                           setCameraResetToken((value) => value + 1);
                       }}
                     >
-                      适配画布
+                      <WorkbenchIcon name="fit" /> 适配画布
                     </button>
                     <button
                       className={pathFinderOpen ? "active" : ""}
                       onClick={() => openPathFinder(selected)}
                     >
-                      路径查询
+                      <WorkbenchIcon name="path" /> 路径查询
                     </button>
                     <button
                       onClick={() => {
@@ -3275,11 +3302,11 @@ export default function Home() {
                         setCameraResetToken((value) => value + 1);
                       }}
                     >
-                      重置视图
+                      <WorkbenchIcon name="reset" /> 重置视图
                     </button>
                     </div>
                     <details className="graph-toolbar-menu">
-                      <summary>视图与显示</summary>
+                      <summary><WorkbenchIcon name="tune" /> 视图与显示 <WorkbenchIcon name="down" /></summary>
                       <div className="graph-toolbar-menu-content">
                       <button
                         disabled={!selected}
@@ -3339,10 +3366,10 @@ export default function Home() {
                     </details>
                     <div className="graph-toolbar-tools" aria-label="画布缩放与全屏">
                     <button
-                      aria-label="放大图谱"
-                      onClick={() => setZoom(Math.min(3.2, zoom + 0.2))}
+                      aria-label="缩小图谱"
+                      onClick={() => setZoom(Math.max(0.3, zoom - 0.2))}
                     >
-                      ＋
+                      <WorkbenchIcon name="minus" />
                     </button>
                     <input
                       className="zoom-slider"
@@ -3358,13 +3385,13 @@ export default function Home() {
                       {Math.round(zoom * 100)}%
                     </span>
                     <button
-                      aria-label="缩小图谱"
-                      onClick={() => setZoom(Math.max(0.3, zoom - 0.2))}
+                      aria-label="放大图谱"
+                      onClick={() => setZoom(Math.min(3.2, zoom + 0.2))}
                     >
-                      −
+                      <WorkbenchIcon name="plus" />
                     </button>
                     <button aria-label={expanded ? "退出全屏" : "全屏画布"} title={expanded ? "退出全屏" : "全屏画布"} onClick={() => setExpanded((value) => !value)}>
-                      {expanded ? "⤡" : "⛶"}
+                      <WorkbenchIcon name={expanded ? "collapse" : "expand"} />
                     </button>
                     </div>
                   </div>
@@ -3893,16 +3920,13 @@ export default function Home() {
               </section>
             </div>
             <aside className="inspector" aria-label="节点检查器">
-              <button className="inspector-close" aria-label="关闭节点检查器" onClick={() => setInspectorOpen(false)}>关闭 ×</button>
+              <div className="inspector-titlebar"><span>知识档案</span><button className="inspector-close" aria-label="关闭节点检查器" onClick={() => setInspectorOpen(false)}><WorkbenchIcon name="close" /></button></div>
               <section className="inspector-card">
                 <header className="inspector-header">
                   <div
                     className={`inspector-icon schema-${schemaCategoryFor(selected?.type ?? "音乐概念")}`}
                   >
-                    {schemaCategoryFor(selected?.type ?? "音乐概念") ===
-                    "person"
-                      ? "✦"
-                      : "♫"}
+                    <WorkbenchIcon name={schemaCategoryFor(selected?.type ?? "音乐概念") === "person" ? "person" : "music"} />
                   </div>
                   <div>
                     <span>
@@ -3915,7 +3939,7 @@ export default function Home() {
                     <small>{selected?.type ?? "实体"}</small>
                   </div>
                 </header>
-                <button className="knowledge-open-button" onClick={() => selected && openKnowledge(selected, inspectionBook)}>查看知识 ↗</button>
+                <button className="knowledge-open-button" aria-label="查看知识 ↗" onClick={() => selected && openKnowledge(selected, inspectionBook)}>查看知识 <WorkbenchIcon name="arrow" /></button>
                 <div className="inspector-tabs">
                   {(
                     [

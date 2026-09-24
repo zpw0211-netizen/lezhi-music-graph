@@ -149,7 +149,7 @@ export function ResearchAnalysis({
                         <td key={right.key}>
                           <button
                             title={`${left.title} × ${right.title}：${cell.shared} 个共享规范实体`}
-                            style={{ backgroundColor: `rgba(47,107,255,${intensity})` }}
+                            style={{ backgroundColor: `rgba(53,107,90,${intensity})` }}
                             onClick={() => onSelectPair(left.key, right.key, cell.sharedIds)}
                           >
                             {metric === "shared" ? value : Number(value).toFixed(3)}

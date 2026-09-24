@@ -7,7 +7,10 @@ try { playwright = createRequire(import.meta.url)("playwright"); }
 catch { playwright = createRequire("C:/Users/HONOR/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/package.json")("playwright"); }
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ?? "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 await access(executablePath);
-const url = process.env.EXPLORER_URL ?? "http://127.0.0.1:4174/lezhi-music-graph/";
+// The site opens on the home portal; the explorer tests start directly in the graph view.
+const explorerUrl = new URL(process.env.EXPLORER_URL ?? "http://127.0.0.1:4174/lezhi-music-graph/");
+explorerUrl.searchParams.set("view", "graph");
+const url = explorerUrl.toString();
 const output = path.resolve("../../output/graph-explorer-acceptance");
 await mkdir(output, { recursive: true });
 const { canonicalGraph: graph } = JSON.parse(await readFile("public/data/graph-index.json", "utf8"));
