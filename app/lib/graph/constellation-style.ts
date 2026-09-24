@@ -12,11 +12,11 @@ export const RELATION_STYLES = {
 // The full network keeps every relationship loaded. These levels distinguish
 // its main structure without turning the overview into a wall of dark lines.
 export const RELATION_VISIBILITY = {
-  overview: { ordinary: 0.06, structural: 0.24, crossBook: 0.32, provenance: 0.08 },
+  overview: { ordinary: 0.045, structural: 0.16, crossBook: 0.22, provenance: 0.08 },
   // Canvas accumulates translucent strokes more strongly than Sigma WebGL.
   // Keep the same hierarchy, with only a small renderer-specific correction.
   canvasOverview: { ordinary: 0.055, structural: 0.24, crossBook: 0.32, provenance: 0.08 },
-  focus: { direct: 0.96, secondary: 0.26, unrelated: 0.035 },
+  focus: { direct: 0.96, secondary: 0.09, unrelated: 0.03 },
   canvasFocus: { direct: 0.96, secondary: 0.16, unrelated: 0.025 },
 } as const;
 

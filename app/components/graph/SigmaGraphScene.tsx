@@ -7,8 +7,9 @@ import {
   useSigma,
 } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
-import { EdgeArrowProgram, EdgeLineProgram, drawDiscNodeLabel } from "sigma/rendering";
+import { EdgeArrowProgram, EdgeLineProgram } from "sigma/rendering";
 import type { NodeHoverDrawingFunction } from "sigma/rendering";
+import { NodeRingProgram, drawLabelBelow } from "../../lib/graph/node-ring-program";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { CanvasPerformanceMetrics } from "../FullGraphCanvas";
 import { schemaCategoryFor, schemaCategoryMeta } from "../../graph-schema";
@@ -74,14 +75,14 @@ let graphBuildSequence = 0;
 const drawConstellationHalo: NodeHoverDrawingFunction = (context, data, settings) => {
   context.save();
   context.beginPath(); context.arc(data.x, data.y, data.size + 7, 0, Math.PI * 2);
-  context.strokeStyle = data.highlighted ? "#64748b" : "#cbd5e1";
-  context.lineWidth = data.highlighted ? 1.8 : 1; context.stroke();
+  context.strokeStyle = data.highlighted ? "#16834F" : "#9FCFB5";
+  context.lineWidth = data.highlighted ? 2 : 1.2; context.stroke();
   if (data.highlighted) {
-    context.beginPath(); context.arc(data.x, data.y, data.size + 11, 0, Math.PI * 2);
-    context.strokeStyle = "#cbd5e1"; context.lineWidth = 1; context.stroke();
+    context.beginPath(); context.arc(data.x, data.y, data.size + 12, 0, Math.PI * 2);
+    context.strokeStyle = "rgba(22, 131, 79, 0.25)"; context.lineWidth = 4; context.stroke();
   }
   context.restore();
-  drawDiscNodeLabel(context, data, settings);
+  drawLabelBelow(context, data, settings);
 };
 
 // Sigma's WebGL programs use ONE / ONE_MINUS_SRC_ALPHA blending: color
@@ -100,16 +101,16 @@ function nodeSize(entity: GraphEntity) {
   const category = schemaCategoryMeta(entity.type);
   const categoryBase =
     category.key === "textbook"
-      ? 9.5
+      ? 8
       : category.key === "work"
-        ? 7.2
+        ? 5.6
         : ["person", "instrument", "genre", "culture"].includes(category.key)
-          ? 5.7
-          : 4.4;
+          ? 4.2
+          : 3.4;
   const importance = Math.max(0, Math.min(1, entity.visualImportance ?? 0));
   const degreeBoost = Math.min(3.2, Math.log2((entity.degree ?? 0) + 1) * 0.72);
   const coverageBoost = Math.min(2.1, ((entity.textbookCount ?? 1) - 1) * 0.42);
-  return Math.min(14.5, categoryBase + importance * 3.4 + degreeBoost + coverageBoost);
+  return Math.min(12.5, categoryBase + importance * 3 + degreeBoost + coverageBoost);
 }
 
 function SigmaController<E extends GraphEntity>({
@@ -166,8 +167,11 @@ function SigmaController<E extends GraphEntity>({
     [highlightedRelationshipIds],
   );
   const hoverEdges = useMemo(() => new Set((indexes.adjacencyMap.get(hoveredNode ?? "") ?? []).map(item => item.edge.id)), [hoveredNode, indexes]);
+  // Hub concepts (旋律/节奏…) link to 100+ nodes across the whole map; their
+  // long spokes stay in the faint layer so local communities read first.
   const structuralEdges = useMemo(() => new Set([...indexes.edgeMap.values()]
     .filter(edge => !edge.provenance && edge.objectId)
+    .filter(edge => Math.max(indexes.entityMap.get(edge.subject)?.degree ?? 0, indexes.entityMap.get(edge.objectId ?? "")?.degree ?? 0) < 60)
     .sort((a, b) => {
       const score = (edge: GraphRelationship) => (edge.crossBook ? 20 : 0) + Math.log2((indexes.entityMap.get(edge.subject)?.degree ?? 0) + 1) + Math.log2((indexes.entityMap.get(edge.objectId ?? "")?.degree ?? 0) + 1);
       return score(b) - score(a) || a.id.localeCompare(b.id);
@@ -206,7 +210,7 @@ function SigmaController<E extends GraphEntity>({
         const selected = node === selectedId && !focusSuppressed;
         const hovered = node === hoveredNode;
         const overviewCore = data.visualRank <= [70, 200, 550, 1337][zoomTier] || (data.entity.textbookCount ?? 1) >= 3;
-        const alpha = dimmed ? .05 : depth === 2 ? .48 : focus.depthByNode.size || overviewCore ? 1 : [.16, .28, .55, 1][zoomTier];
+        const alpha = dimmed ? .05 : depth === 2 ? .3 : focus.depthByNode.size || overviewCore ? 1 : [.16, .28, .55, 1][zoomTier];
         return {
           ...data,
           hidden: !visibleNodeIds.has(node),
@@ -214,7 +218,8 @@ function SigmaController<E extends GraphEntity>({
           size: data.size * (selected ? 1.38 : hovered ? 1.12 : !focus.depthByNode.size && !overviewCore ? .55 : .9),
           label:
             selected || hovered || (!dimmed && labelIds.has(node)) ? data.label : "",
-          forceLabel: selected || hovered || (labelIds.has(node) && (depth === 1 || explicitNodes.has(node))),
+          // Only the selection is forced; neighbours go through Sigma's label grid so they never overlap.
+          forceLabel: selected || hovered || (labelIds.has(node) && explicitNodes.has(node) && explicitNodes.size <= 12),
           highlighted: selected,
           zIndex: selected ? 20 : depth === 1 ? 12 : depth === 2 ? 7 : 1,
         };
@@ -274,12 +279,19 @@ function SigmaController<E extends GraphEntity>({
   useEffect(() => {
     if (!focusSelectionToken || !selectedId || !sigma.getGraph().hasNode(selectedId)) return;
     const display = sigma.getNodeDisplayData(selectedId);
-    if (display)
-      sigma.getCamera().animate(
-        { x: display.x, y: display.y, ratio: Math.min(0.55, sigma.getCamera().getState().ratio) },
-        { duration: 320 },
-      );
-  }, [dataGraph, detailOpen, focusSelectionToken, selectedId, sigma]);
+    if (!display) return;
+    // Frame the selection with all of its visible 1-hop neighbours: works sit
+    // at the rim while their shared concepts sit near the core, so a fixed
+    // close-up would leave most related nodes off-screen.
+    const reach = (indexes.adjacencyMap.get(selectedId) ?? []).reduce((max, item) => {
+      const neighbour = sigma.getNodeDisplayData(item.neighborId);
+      return neighbour && !neighbour.hidden ? Math.max(max, Math.hypot(neighbour.x - display.x, neighbour.y - display.y)) : max;
+    }, 0);
+    sigma.getCamera().animate(
+      { x: display.x, y: display.y, ratio: Math.max(0.22, Math.min(0.9, reach * 2.4)) },
+      { duration: 320 },
+    );
+  }, [dataGraph, detailOpen, focusSelectionToken, indexes, selectedId, sigma]);
 
   useEffect(() => {
     const ratio = Math.max(0.08, Math.min(8, 0.64 / Math.max(0.01, zoom)));
@@ -522,6 +534,8 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
     () => ({
       allowInvalidContainer: true,
       defaultNodeType: "circle",
+      nodeProgramClasses: { circle: NodeRingProgram },
+      defaultDrawNodeLabel: drawLabelBelow,
       defaultEdgeType: "arrow",
       edgeProgramClasses: { arrow: EdgeArrowProgram, line: EdgeLineProgram },
       enableEdgeEvents: true,
@@ -529,12 +543,12 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
       hideLabelsOnMove: false,
       hideEdgesOnMove: false,
       labelFont: '"Microsoft YaHei", "PingFang SC", sans-serif',
-      labelSize: 13,
+      labelSize: 12,
       labelWeight: "600",
-      labelColor: { color: "#18181b" },
+      labelColor: { color: "#1b2420" },
       edgeLabelFont: '"Microsoft YaHei", "PingFang SC", sans-serif',
       edgeLabelSize: 11,
-      edgeLabelColor: { color: "#71717a" },
+      edgeLabelColor: { color: "#5e6a64" },
       labelDensity: 0.86,
       labelGridCellSize: 116,
       labelRenderedSizeThreshold: 7,

@@ -63,9 +63,10 @@ if (shapeRatio < 1.15 || shapeRatio > 1.85)
   failures.push(`knowledge cloud shape ratio out of range: ${shapeRatio}`);
 if (sectors.filter((count) => count >= 35).length < 10)
   failures.push(`knowledge cloud has sparse angular sectors: ${sectors.join(",")}`);
-if (graph.canonicalGraph.performance?.algorithm !== "ForceAtlas2-precomputed")
+// V3 layout: ForceAtlas2 on the shared skeleton, petal rings for single-relationship leaves.
+if (graph.canonicalGraph.performance?.algorithm !== "ForceAtlas2-skeleton+petals")
   failures.push("ForceAtlas2 build metadata missing");
-if (!layoutSource.includes("forceAtlas2.assign") || !layoutSource.includes("noverlap.assign"))
+if (!layoutSource.includes("forceAtlas2.assign") || !layoutSource.includes("spreadSkeleton("))
   failures.push("ForceAtlas2 / collision layout implementation missing");
 for (const label of [
   "知识网络",

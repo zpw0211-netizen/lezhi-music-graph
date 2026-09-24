@@ -1,6 +1,5 @@
 import { MultiUndirectedGraph } from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
-import noverlap from "graphology-layout-noverlap";
 
 const WIDTH = 2400;
 const HEIGHT = 1500;
@@ -102,86 +101,194 @@ const normalizePositions = (positions, paddingX = 100, paddingY = 90) => {
   return normalized;
 };
 
-function buildKnowledgeNetworkLayout(entities, relationships, importanceById) {
+// V3 "flower" layout. 851 of ~1290 knowledge nodes have exactly one
+// relationship, most of them attributes of a single work. Forcing them through
+// ForceAtlas2 together with a few hub concepts (旋律/节奏/音乐形象, 120+ edges
+// each) collapses everything into one disc. Instead: lay out only the shared
+// skeleton (degree >= 2) with hub edges weakened, then arrange each node's
+// single-relationship leaves as petals around it, opening away from the centre.
+const HUB_DEGREE = 30;
+const PETAL_GAP = 17;
+
+function buildFlowerNetworkLayout(entities, relationships, importanceById) {
   const entityMap = new Map(entities.map((entity) => [entity.id, entity]));
   const knowledgeEntities = entities.filter((entity) => entity.type !== "教材");
   const knowledgeRelationships = relationships.filter((relationship) =>
     knowledgeRelationship(relationship, entityMap),
   );
+  const neighbors = new Map(knowledgeEntities.map((entity) => [entity.id, new Set()]));
+  for (const relationship of knowledgeRelationships) {
+    neighbors.get(relationship.subject)?.add(relationship.objectId);
+    neighbors.get(relationship.objectId)?.add(relationship.subject);
+  }
+  const degree = (id) => neighbors.get(id)?.size ?? 0;
+  const petalsByParent = new Map();
+  const skeleton = [];
+  const isolated = [];
+  for (const entity of knowledgeEntities) {
+    const count = degree(entity.id);
+    if (count === 0) isolated.push(entity);
+    else if (count === 1) {
+      const parent = [...neighbors.get(entity.id)][0];
+      if (degree(parent) === 1) skeleton.push(entity); // two-node islands stay in the skeleton
+      else {
+        if (!petalsByParent.has(parent)) petalsByParent.set(parent, []);
+        petalsByParent.get(parent).push(entity);
+      }
+    } else skeleton.push(entity);
+  }
+  // Hub concepts keep their leaves close; ordinary nodes get a petal ring.
+  const petalRadius = (id) => {
+    const count = petalsByParent.get(id)?.length ?? 0;
+    return count ? 10 + Math.sqrt(count) * PETAL_GAP * 0.62 : 0;
+  };
+
   const graph = new MultiUndirectedGraph();
-  const ordered = [...knowledgeEntities].sort(
+  const ordered = [...skeleton].sort(
     (a, b) =>
-      (importanceById.get(b.id)?.value ?? 0) -
-        (importanceById.get(a.id)?.value ?? 0) ||
+      (importanceById.get(b.id)?.value ?? 0) - (importanceById.get(a.id)?.value ?? 0) ||
       stableSeed(a.id) - stableSeed(b.id),
   );
   ordered.forEach((entity, index) => {
-    const importance = importanceById.get(entity.id)?.value ?? 0;
-    const radius = 5 + Math.sqrt(index + 1) * (1.9 + (1 - importance) * 1.15);
+    const radius = 6 + Math.sqrt(index + 1) * 3.2;
     const angle = index * GOLDEN_ANGLE + (stableSeed(entity.id) % 997) / 997;
     graph.addNode(entity.id, {
       x: Math.cos(angle) * radius,
-      y: Math.sin(angle) * radius * 0.82,
-      size: 1.7 + importance * 5.1,
+      y: Math.sin(angle) * radius * 0.8,
+      size: 3 + petalRadius(entity.id) / 6,
     });
   });
   knowledgeRelationships.forEach((relationship, index) => {
-    if (!graph.hasNode(relationship.subject) || !graph.hasNode(relationship.objectId))
-      return;
-    graph.addUndirectedEdgeWithKey(
-      `${relationship.id}:${index}`,
-      relationship.subject,
-      relationship.objectId,
-      { weight: relationship.crossBook ? 1.35 : 1 },
-    );
+    const { subject, objectId } = relationship;
+    if (!graph.hasNode(subject) || !graph.hasNode(objectId) || subject === objectId) return;
+    const hub = Math.max(degree(subject), degree(objectId)) >= HUB_DEGREE;
+    graph.addUndirectedEdgeWithKey(`${relationship.id}:${index}`, subject, objectId, {
+      weight: hub ? 0.12 : relationship.crossBook ? 1.4 : 1,
+    });
   });
-
   const inferred = forceAtlas2.inferSettings(graph);
   forceAtlas2.assign(graph, {
-    iterations: 520,
+    iterations: 900,
     settings: {
       ...inferred,
-      adjustSizes: true,
+      adjustSizes: false,
       barnesHutOptimize: true,
-      barnesHutTheta: 0.62,
-      edgeWeightInfluence: 0.7,
-      gravity: 1.65,
+      barnesHutTheta: 0.6,
+      edgeWeightInfluence: 1,
+      gravity: 0.9,
       linLogMode: true,
-      scalingRatio: 12,
-      slowDown: 9,
+      outboundAttractionDistribution: true,
+      scalingRatio: 6,
+      slowDown: 6,
       strongGravityMode: false,
     },
   });
-  noverlap.assign(graph, {
-    maxIterations: 220,
-    settings: { gridSize: 38, margin: 3.5, expansion: 1.08, ratio: 1.2, speed: 3 },
-  });
 
+  // Normalise the skeleton first so petal sizes are expressed in final units.
   const raw = new Map();
-  graph.forEachNode((id, attributes) => {
-    raw.set(id, { x: attributes.x, y: attributes.y });
-  });
-  const normalized = resolveCollisions(
-    knowledgeEntities,
-    normalizePositions(raw),
-    52,
-  );
+  graph.forEachNode((id, attributes) => raw.set(id, { x: attributes.x, y: attributes.y }));
+  const positions = normalizePositions(raw, 190, 150);
+  const radiusOf = (entity) => 9 + petalRadius(entity.id);
+  spreadSkeleton(skeleton, positions, radiusOf);
 
-  // 教材只作为可选来源层，放在外围，不参与主知识网络的受力计算。
+  for (const [parentId, petals] of petalsByParent) {
+    const parent = positions.get(parentId);
+    if (!parent) continue;
+    const outward = Math.atan2(parent.y - CENTER.y, parent.x - CENTER.x);
+    const sorted = [...petals].sort(
+      (a, b) =>
+        (a.category ?? "").localeCompare(b.category ?? "") || stableSeed(a.id) - stableSeed(b.id),
+    );
+    let placed = 0;
+    let ring = 0;
+    while (placed < sorted.length) {
+      const radius = 30 + ring * PETAL_GAP;
+      const arc = sorted.length <= 5 && ring === 0 ? Math.PI * 1.1 : Math.PI * 2;
+      const capacity = Math.max(5, Math.floor((radius * arc) / PETAL_GAP));
+      const count = Math.min(capacity, sorted.length - placed);
+      for (let slot = 0; slot < count; slot += 1) {
+        const t = arc === Math.PI * 2 ? slot / count : count === 1 ? 0.5 : slot / (count - 1);
+        const angle = outward - arc / 2 + t * arc + (arc === Math.PI * 2 ? ring * 0.37 : 0);
+        positions.set(sorted[placed + slot].id, {
+          x: parent.x + Math.cos(angle) * radius,
+          y: parent.y + Math.sin(angle) * radius,
+        });
+      }
+      placed += count;
+      ring += 1;
+    }
+  }
+
+  isolated.forEach((entity, index) => {
+    const angle = -Math.PI / 2 + (index / Math.max(1, isolated.length)) * Math.PI * 2;
+    positions.set(entity.id, {
+      x: CENTER.x + Math.cos(angle) * 1120,
+      y: CENTER.y + Math.sin(angle) * 690,
+    });
+  });
   const textbookEntities = entities.filter((entity) => entity.type === "教材");
   textbookEntities.forEach((entity, index) => {
     const angle = -Math.PI / 2 + (index / Math.max(1, textbookEntities.length)) * Math.PI * 2;
-    normalized.set(entity.id, {
+    positions.set(entity.id, {
       x: CENTER.x + Math.cos(angle) * 1030,
       y: CENTER.y + Math.sin(angle) * 620,
     });
   });
-  resolveCollisions(entities, normalized, 38);
+  // Final pass over every node (petals, isolated, textbooks): at least 18 units apart.
+  spreadSkeleton(entities, positions, () => 0, 18, 60);
   return {
-    positions: normalized,
+    positions,
     knowledgeNodeCount: knowledgeEntities.length,
     knowledgeRelationshipCount: knowledgeRelationships.length,
+    skeletonNodeCount: skeleton.length,
+    petalNodeCount: knowledgeEntities.length - skeleton.length - isolated.length,
   };
+}
+
+// Push skeleton nodes apart until their petal discs no longer overlap.
+function spreadSkeleton(skeleton, positions, radiusOf, gap = 26, iterations = 80) {
+  const cellSize = 120;
+  for (let iteration = 0; iteration < iterations; iteration += 1) {
+    let moved = 0;
+    const grid = new Map();
+    for (const entity of skeleton) {
+      const point = positions.get(entity.id);
+      const key = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
+      if (!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(entity);
+    }
+    for (const entity of skeleton) {
+      const point = positions.get(entity.id);
+      const cellX = Math.floor(point.x / cellSize);
+      const cellY = Math.floor(point.y / cellSize);
+      for (let dx = -1; dx <= 1; dx += 1) {
+        for (let dy = -1; dy <= 1; dy += 1) {
+          for (const other of grid.get(`${cellX + dx}:${cellY + dy}`) ?? []) {
+            if (other.id <= entity.id) continue;
+            const otherPoint = positions.get(other.id);
+            let vx = point.x - otherPoint.x;
+            let vy = point.y - otherPoint.y;
+            let distance = Math.hypot(vx, vy);
+            const minimum = radiusOf(entity) + radiusOf(other) + gap;
+            if (distance >= minimum) continue;
+            if (distance < 0.01) {
+              const angle = (stableSeed(`${entity.id}:${other.id}`) % 6283) / 1000;
+              vx = Math.cos(angle);
+              vy = Math.sin(angle);
+              distance = 1;
+            }
+            const push = ((minimum - distance) / distance) * 0.5;
+            point.x += vx * push;
+            point.y += vy * push;
+            otherPoint.x -= vx * push;
+            otherPoint.y -= vy * push;
+            moved += 1;
+          }
+        }
+      }
+    }
+    if (!moved) break;
+  }
 }
 
 function nodeRadius(entity) {
@@ -371,7 +478,7 @@ export function buildFullGraphLayouts(entities, relationships) {
     );
   }
   const importanceById = normalizeImportance(entities, structuralDegree);
-  const knowledge = buildKnowledgeNetworkLayout(entities, relationships, importanceById);
+  const knowledge = buildFlowerNetworkLayout(entities, relationships, importanceById);
   const textbook = buildTextbookClusterLayout(entities);
   const schema = buildSchemaLayout(entities, importanceById);
   return {
@@ -388,8 +495,10 @@ export function buildFullGraphLayouts(entities, relationships) {
     })),
     performance: {
       layoutBuildMs: performance.now() - started,
-      algorithm: "ForceAtlas2-precomputed",
-      iterations: 520,
+      algorithm: "ForceAtlas2-skeleton+petals",
+      iterations: 900,
+      skeletonNodeCount: knowledge.skeletonNodeCount,
+      petalNodeCount: knowledge.petalNodeCount,
       knowledgeNodeCount: knowledge.knowledgeNodeCount,
       knowledgeRelationshipCount: knowledge.knowledgeRelationshipCount,
     },
