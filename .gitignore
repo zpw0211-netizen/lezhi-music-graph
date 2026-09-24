@@ -38,3 +38,10 @@ next-env.d.ts
 /work/
 # Per-entity digital reading pages are derived from canonical-graph at build time.
 public/data/details/CAN_*.json
+
+# local tooling and packaging leftovers
+/.site-package-*/
+*.tsbuildinfo
+/.agents/
+/.claude/
+/d/
