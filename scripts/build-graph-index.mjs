@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildFullGraphLayouts } from "./lib/full-graph-layout.mjs";
+import { buildBookLayout, buildFullGraphLayouts } from "./lib/full-graph-layout.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
@@ -84,7 +84,7 @@ for (const book of dataset.books) {
     book;
   compactBooks.push({
     ...metadata,
-    entities: entities.map(compactEntity),
+    entities: buildBookLayout(entities, triples).map(compactEntity),
     triples: triples.map(compactRelationship),
     evidenceByTriple: {},
   });

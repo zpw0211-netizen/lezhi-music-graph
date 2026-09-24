@@ -462,8 +462,7 @@ function buildSchemaLayout(entities, importanceById) {
   return resolveCollisions(entities, positioned, 36);
 }
 
-export function buildFullGraphLayouts(entities, relationships) {
-  const started = performance.now();
+function knowledgeDegrees(entities, relationships) {
   const entityMap = new Map(entities.map((entity) => [entity.id, entity]));
   const structuralDegree = new Map(entities.map((entity) => [entity.id, 0]));
   for (const relationship of relationships) {
@@ -477,6 +476,26 @@ export function buildFullGraphLayouts(entities, relationships) {
       (structuralDegree.get(relationship.objectId) ?? 0) + 1,
     );
   }
+  return structuralDegree;
+}
+
+/** Single-textbook view: the same flower layout computed on one book's own graph. */
+export function buildBookLayout(entities, relationships) {
+  const structuralDegree = knowledgeDegrees(entities, relationships);
+  const importanceById = normalizeImportance(entities, structuralDegree);
+  const { positions } = buildFlowerNetworkLayout(entities, relationships, importanceById);
+  return entities.map((entity) => ({
+    ...entity,
+    degree: structuralDegree.get(entity.id) ?? 0,
+    visualImportance: importanceById.get(entity.id)?.value ?? 0,
+    visualRank: importanceById.get(entity.id)?.rank ?? entities.length,
+    layout: positions.get(entity.id) ?? CENTER,
+  }));
+}
+
+export function buildFullGraphLayouts(entities, relationships) {
+  const started = performance.now();
+  const structuralDegree = knowledgeDegrees(entities, relationships);
   const importanceById = normalizeImportance(entities, structuralDegree);
   const knowledge = buildFlowerNetworkLayout(entities, relationships, importanceById);
   const textbook = buildTextbookClusterLayout(entities);

@@ -1583,6 +1583,23 @@ export default function Home() {
     relationText,
     showTextbookSources,
   ]);
+  const bookSceneVisibleIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const entity of currentBook.entities) {
+      if (entity.type === "教材" && !showTextbookSources) continue;
+      if (!visibleSchemaKeys.includes(schemaCategoryFor(entity.type))) continue;
+      if (hiddenNodeKeys.includes(`${currentBook.key}-${entity.id}`)) continue;
+      if (typeFilter !== "全部" && entity.type !== typeFilter && entity.id !== selectedId) continue;
+      const canonical = canonicalEntityBySearchKey.get(`${entity.name.trim().toLowerCase()}|${schemaCategoryFor(entity.type)}`);
+      if (canonical && (!graphFilters.filteredEntityIds.has(canonical.id) || !perspectiveEntityIds.has(canonical.id) || (graphFilters.relationEndpointIds && !graphFilters.relationEndpointIds.has(canonical.id)))) continue;
+      ids.add(entity.id);
+    }
+    return ids;
+  }, [canonicalEntityBySearchKey, currentBook, graphFilters.filteredEntityIds, graphFilters.relationEndpointIds, hiddenNodeKeys, perspectiveEntityIds, selectedId, showTextbookSources, typeFilter, visibleSchemaKeys]);
+  const bookSceneRelationshipIds = useMemo(
+    () => new Set(currentBook.triples.filter((triple) => triple.objectId && !hiddenRelations.includes(relationText(triple.predicate, currentBook))).map((triple) => triple.id)),
+    [currentBook, hiddenRelations, relationText],
+  );
   const displayedGraphStats = (() => {
     if (graphMode === "all" && canonicalBook) {
       return {
@@ -1595,6 +1612,17 @@ export default function Home() {
             .map((entity) => schemaCategoryFor(entity!.type)),
         ).size,
       };
+    }
+    if (graphMode !== "all" && fullGraphRenderer === "sigma") {
+      const relationships = currentBook.triples.filter((triple) =>
+        bookSceneRelationshipIds.has(triple.id) &&
+        bookSceneVisibleIds.has(triple.subject) &&
+        bookSceneVisibleIds.has(triple.objectId ?? ""),
+      ).length;
+      const labels = new Set(
+        currentBook.entities.filter((entity) => bookSceneVisibleIds.has(entity.id)).map((entity) => schemaCategoryFor(entity.type)),
+      ).size;
+      return { nodes: bookSceneVisibleIds.size, relationships, labels };
     }
     const books = graphMode === "all" ? dataset.books : [currentBook];
     let nodes = 0;
@@ -1737,6 +1765,7 @@ export default function Home() {
       setTypeFilter("全部");
       setShowLabels(true);
       setZoom(1.65);
+      setFocusSelectionToken((value) => value + 1);
     }
   };
   const selectSearchResult = (entity: Entity, book: Book) => {
@@ -1777,8 +1806,9 @@ export default function Home() {
     if (work) setSelectedId(work.id);
     setGraphMode("book");
     setView("graph");
-    setZoom(1);
+    setZoom(0.64);
     setCanvasPan({ x: 0, y: 0 });
+    setCameraResetToken((value) => value + 1);
   };
   const chooseFullGraph = () => {
     setKnowledgeDetailOpen(false);
@@ -2727,10 +2757,12 @@ export default function Home() {
   const selectEntityRef = useRef(selectEntity);
   const expandNodeRef = useRef(expandNode);
   const canonicalBookRef = useRef(canonicalBook);
+  const currentBookRef = useRef(currentBook);
   useEffect(() => {
     selectEntityRef.current = selectEntity;
     expandNodeRef.current = expandNode;
     canonicalBookRef.current = canonicalBook;
+    currentBookRef.current = currentBook;
   });
   const handleCanvasSelect = useCallback((entity: Entity) => {
     setInspectorOpen(true);
@@ -2857,6 +2889,96 @@ export default function Home() {
     if (relation) actions.push({ type: "filter_relationship_types", relationshipTypes: [relation] });
     graphActions.execute(actions);
   };
+
+  // Single-textbook view uses the same Sigma renderer as the six-book network,
+  // with a per-book flower layout precomputed in build-graph-index.mjs.
+  const handleBookSelect = useCallback((entity: Entity) => {
+    setShowLabels(true);
+    selectEntityRef.current(entity, currentBookRef.current);
+  }, []);
+  const handleBookExpand = useCallback((entity: Entity) => {
+    selectEntityRef.current(entity, currentBookRef.current);
+    setKnowledgeDetailOpen(true);
+  }, []);
+  const handleBookContextMenu = useCallback((x: number, y: number, entity: Entity) => {
+    setContextMenu({ x, y, entity, book: currentBookRef.current });
+  }, []);
+  const handleBookClearFocus = useCallback(() => {
+    setKnowledgeDetailOpen(false);
+    setInspectorOpen(false);
+  }, []);
+  const bookSceneNodes = useMemo(
+    () => currentBook.entities.flatMap((entity) => entity.layout ? [{ entity, x: entity.layout.x, y: entity.layout.y }] : []),
+    [currentBook],
+  );
+  const emptyHighlight = useMemo<string[]>(() => [], []);
+  const bookScene = (
+    <SigmaGraphScene
+      nodes={bookSceneNodes}
+      relationships={currentBook.triples}
+      visibleNodeIds={bookSceneVisibleIds}
+      visibleRelationshipIds={bookSceneRelationshipIds}
+      selectedId={inspectorOpen ? selectedId : null}
+      highlightedNodeIds={emptyHighlight}
+      highlightedRelationshipIds={emptyHighlight}
+      relationLabels={currentBook.relations}
+      sceneKey={`book:${currentBook.key}`}
+      showLabels={showLabels}
+      zoom={zoom}
+      cameraResetToken={cameraResetToken}
+      focusSelectionToken={focusSelectionToken}
+      draggedPositions={dragPositions}
+      detailOpen={knowledgeDetailOpen}
+      onSelect={handleBookSelect}
+      onExpand={handleBookExpand}
+      onContextMenu={handleBookContextMenu}
+      onNodePosition={handleCanvasNodePosition}
+      onMetrics={handleCanvasMetrics}
+      onViewportChange={handleSigmaViewport}
+      onClearFocus={handleBookClearFocus}
+    />
+  );
+
+  const bookSvgFallback = (
+                    <svg
+                      viewBox="0 0 2400 1500"
+                      role="img"
+                      aria-label="教材知识图谱"
+                    >
+                      <defs>
+                        <marker
+                          id="arrow"
+                          viewBox="0 0 10 10"
+                          refX="9"
+                          refY="5"
+                          markerWidth="7"
+                          markerHeight="7"
+                          orient="auto-start-reverse"
+                        >
+                          <path d="M 0 0 L 10 5 L 0 10 z" fill="#8295bd" />
+                        </marker>
+                      </defs>
+                      <rect
+                        className="graph-pan-surface"
+                        x="0"
+                        y="0"
+                        width="2400"
+                        height="1500"
+                        onPointerDown={beginCanvasPan}
+                        onPointerMove={moveCanvasPan}
+                        onPointerUp={endCanvasPan}
+                        onPointerCancel={() => setPanStart(null)}
+                      />
+                      <g
+                        className="svg-zoom"
+                        transform={`translate(${1200 + canvasPan.x} ${750 + canvasPan.y}) scale(${zoom}) translate(-1200 -750)`}
+                      >
+                        {(graphMode === "focus" ? [focusGroup] : [singleGroup]).map(
+                          renderGroup,
+                        )}
+                      </g>
+                    </svg>
+  );
 
   const fullGraphCanvasFallback =
     canonicalGroup && canonicalBook ? (
@@ -3268,9 +3390,10 @@ export default function Home() {
                     <div className="graph-toolbar-core">
                     <button
                       onClick={() => {
-                        setZoom(graphMode === "all" ? 0.64 : 0.92);
+                        const sigmaScene = graphMode === "all" || fullGraphRenderer === "sigma";
+                        setZoom(sigmaScene ? 0.64 : 0.92);
                         setCanvasPan({ x: 0, y: 0 });
-                        if (graphMode === "all")
+                        if (sigmaScene)
                           setCameraResetToken((value) => value + 1);
                       }}
                     >
@@ -3501,7 +3624,7 @@ export default function Home() {
                   className="neo-canvas"
                   onClick={() => setContextMenu(null)}
                   onWheel={
-                    graphMode === "all"
+                    graphMode === "all" || fullGraphRenderer === "sigma"
                       ? undefined
                       : (event) => {
                           event.preventDefault();
@@ -3526,44 +3649,12 @@ export default function Home() {
                       )}
                     </>
                   ) : (
-                    <svg
-                      viewBox="0 0 2400 1500"
-                      role="img"
-                      aria-label="教材知识图谱"
+                    <GraphRendererBoundary
+                      fallback={bookSvgFallback}
+                      onFallback={() => setFullGraphRenderer("canvas")}
                     >
-                      <defs>
-                        <marker
-                          id="arrow"
-                          viewBox="0 0 10 10"
-                          refX="9"
-                          refY="5"
-                          markerWidth="7"
-                          markerHeight="7"
-                          orient="auto-start-reverse"
-                        >
-                          <path d="M 0 0 L 10 5 L 0 10 z" fill="#8295bd" />
-                        </marker>
-                      </defs>
-                      <rect
-                        className="graph-pan-surface"
-                        x="0"
-                        y="0"
-                        width="2400"
-                        height="1500"
-                        onPointerDown={beginCanvasPan}
-                        onPointerMove={moveCanvasPan}
-                        onPointerUp={endCanvasPan}
-                        onPointerCancel={() => setPanStart(null)}
-                      />
-                      <g
-                        className="svg-zoom"
-                        transform={`translate(${1200 + canvasPan.x} ${750 + canvasPan.y}) scale(${zoom}) translate(-1200 -750)`}
-                      >
-                        {(graphMode === "focus" ? [focusGroup] : [singleGroup]).map(
-                          renderGroup,
-                        )}
-                      </g>
-                    </svg>
+                      {fullGraphRenderer === "sigma" ? bookScene : bookSvgFallback}
+                    </GraphRendererBoundary>
                   )}
                   {graphMode === "all" && canonicalGroup && fullGraphLayout !== "schema" && (
                     <div
