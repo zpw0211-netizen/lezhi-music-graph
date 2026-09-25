@@ -318,3 +318,24 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
   .theme-light .neo-actions button { font-size:11px; padding:6px; }
   .theme-light .graph-toolbar-core .workbench-icon { display:none; }
 }
+
+/* Give the network the viewport: keep primary graph modes in one compact row. */
+@media (min-width:1101px) {
+  .theme-light.graph-first .topbar { min-height:68px; height:68px; }
+  .theme-light.graph-first .neo-layout { height:calc(100dvh - 112px); }
+}
+.theme-light .full-graph-filterbar { display:flex; align-items:center; flex-wrap:nowrap; min-height:46px; gap:10px; padding:6px 12px; }
+.graph-filter-primary { display:flex; align-items:center; flex:1 1 auto; min-width:0; gap:12px; overflow-x:auto; scrollbar-width:thin; white-space:nowrap; }
+.graph-filter-primary .full-graph-layout-tabs,
+.graph-filter-primary .full-graph-view-tabs { display:flex; flex:none; align-items:center; flex-wrap:nowrap; }
+.theme-light .graph-filter-primary button { min-height:32px; padding:6px 10px; font-size:13px; white-space:nowrap; }
+.graph-filter-more { position:relative; flex:none; z-index:35; }
+.graph-filter-more summary { display:flex; align-items:center; gap:4px; min-height:32px; padding:6px 10px; border:1px solid var(--border); border-radius:var(--radius-xs); background:var(--surface); color:var(--text-secondary); font-size:13px; cursor:pointer; list-style:none; white-space:nowrap; }
+.graph-filter-more summary::-webkit-details-marker { display:none; }
+.graph-filter-more summary .workbench-icon { width:14px; height:14px; }
+.graph-filter-more[open] summary { color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
+.theme-light .graph-filter-more .full-graph-operations { position:absolute; top:calc(100% + 6px); right:0; z-index:36; display:flex; flex-direction:column; align-items:stretch; gap:4px; width:230px; padding:10px; border:1px solid var(--border); border-radius:12px; background:var(--surface); box-shadow:0 12px 30px #20252222; }
+.theme-light .graph-filter-more .full-graph-operations :is(button,label) { display:flex; align-items:center; justify-content:flex-start; min-height:34px; padding:7px 9px; font-size:13px; white-space:nowrap; }
+@media (max-width:1100px) {
+  .theme-light .neo-actions { flex-wrap:wrap; }
+}

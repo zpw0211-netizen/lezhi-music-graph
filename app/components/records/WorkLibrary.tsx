@@ -2,7 +2,9 @@
 import { useMemo, useState } from "react";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 
-type LibraryEntity = { id: string; name: string; type: string; firstPage?: number | null };
+type LibraryEntity = { id: string; name: string; type: string; firstPage?: number | null; media?: Array<{ title?: string }> };
+// Score titles carry the printed page ("教材第44页"); firstPage is the PDF page.
+const printedPage = (entity: LibraryEntity) => entity.media?.map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1]).find(Boolean);
 type LibraryTriple = { id: string; subject: string; predicate: string; objectId?: string | null; literal?: string | null };
 type LibraryBook = { key: string; title: string; grade: number; semester: string; workCount: number; entities: LibraryEntity[]; triples: LibraryTriple[] };
 
@@ -91,7 +93,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
     <header className="work-library-head">
       <div>
         <h2 id="work-library-title">作品档案</h2>
-        <p>按教材单元浏览收录作品，查看创作者、体裁与学习方式，点击卡片在图谱中打开。</p>
+        <p>按教材单元浏览收录作品，查看创作者、体裁与学习方式；点击卡片打开这首作品自己的知识图谱。</p>
       </div>
       <label className="work-library-search">
         <WorkbenchIcon name="search" />
@@ -109,7 +111,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
       <h3>{unit.name}<small>{unit.cards.length} 首</small></h3>
       <div className="work-grid">
         {unit.cards.map((card) => <button key={card.work.id} type="button" className={`work-card grade-${book.grade}`} onClick={() => onOpen(card.work, book)}>
-          <span className="work-card-top"><em>{card.work.type}</em><small>第 {card.work.firstPage ?? "—"} 页</small></span>
+          <span className="work-card-top"><em>{card.work.type}</em><small>{printedPage(card.work) ? `第 ${printedPage(card.work)} 页` : `PDF ${card.work.firstPage ?? "—"}`}</small></span>
           <strong>{card.work.name}</strong>
           <span className="work-card-creators">{card.creators.length ? card.creators.map((item) => <span key={item.name}><small>{item.role}</small>{item.name}</span>) : <span className="muted">作者信息待补充</span>}</span>
           <span className="work-card-facts">
@@ -117,7 +119,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
             {card.tempo && <i>{card.tempo}</i>}
             {card.activities.map((activity) => <i key={activity} className="is-activity">{activity}</i>)}
           </span>
-          <span className="work-card-foot"><span>{card.relationCount} 条关系</span><span>在图谱中打开<WorkbenchIcon name="right" /></span></span>
+          <span className="work-card-foot"><span>{card.relationCount} 条关系</span><span>作品图谱<WorkbenchIcon name="right" /></span></span>
         </button>)}
       </div>
     </section>)}

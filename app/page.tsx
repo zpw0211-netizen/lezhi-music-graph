@@ -53,6 +53,7 @@ import { GraphSidebar } from "./components/graph/GraphSidebar";
 import { WorkbenchIcon } from "./components/WorkbenchIcon";
 import { HomePortal } from "./components/home/HomePortal";
 import { WorkLibrary } from "./components/records/WorkLibrary";
+import { WorkGraph } from "./components/records/WorkGraph";
 import { SchemaExplorer } from "./components/graph/SchemaExplorer";
 import { KnowledgeDetailDrawer } from "./components/graph/KnowledgeDetailDrawer";
 import { NodeAIInterpretation } from "./components/assistant/NodeAIInterpretation";
@@ -583,11 +584,12 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState("demo-work");
   const [query, setQuery] = useState("");
   const scope = "all" as const;
-  const [view, setView] = useState<"home" | "graph" | "assistant" | "research" | "records" | "import">(() => {
+  const [view, setView] = useState<"home" | "graph" | "assistant" | "research" | "records" | "work" | "import">(() => {
     if (typeof window === "undefined") return "home";
     const requested = new URLSearchParams(window.location.search).get("view");
     return requested === "graph" || requested === "assistant" || requested === "research" || requested === "records" ? requested : "home";
   });
+  const [workGraphId, setWorkGraphId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [knowledgeDetailOpen, setKnowledgeDetailOpen] = useState(false);
   const schemaOpen = true;
@@ -1799,6 +1801,16 @@ export default function Home() {
       return;
     }
     selectEntity(entity, book, true);
+  };
+  // 作品档案 opens a focused graph of the work instead of the dense full map.
+  const openWorkGraph = (entity: Entity) => {
+    const canonical =
+      canonicalEntityById.get(entity.id) ??
+      (entity.canonicalKey ? canonicalEntityBySearchKey.get(entity.canonicalKey) : undefined) ??
+      canonicalEntityBySearchKey.get(`${entity.name.trim().toLowerCase()}|${schemaCategoryFor(entity.type)}`);
+    if (!canonical) return;
+    setWorkGraphId(canonical.id);
+    setView("work");
   };
   const chooseBook = (book: Book) => {
     setKnowledgeDetailOpen(false);
@@ -3087,6 +3099,8 @@ export default function Home() {
                   ? "研究分析"
                 : view === "records"
                   ? "作品档案"
+                : view === "work"
+                  ? "作品知识图谱"
                   : "教材数据导入"}
             </h1>
           </div>
@@ -3526,6 +3540,7 @@ export default function Home() {
                     className="full-graph-filterbar"
                     aria-label="六册关系视图"
                   >
+                    <div className="graph-filter-primary">
                     <div className="full-graph-layout-tabs" aria-label="全景布局模式">
                       {(
                         [
@@ -3574,7 +3589,10 @@ export default function Home() {
                         </button>
                       ))}
                     </div>
-                    <div className="full-graph-operations">
+                    </div>
+                    <details className="graph-filter-more">
+                      <summary>更多选项 <WorkbenchIcon name="down" /></summary>
+                      <div className="full-graph-operations">
                       <label className="source-layer-toggle">
                         <input
                           type="checkbox"
@@ -3600,7 +3618,8 @@ export default function Home() {
                             0,
                         )}
                       </span>
-                    </div>
+                      </div>
+                    </details>
                   </div>
                 )}
                 <GraphPathFinder
@@ -4197,7 +4216,9 @@ export default function Home() {
                       <button onClick={() => setPanel("evidence")}>
                         查看证据
                       </button>
-                      <button onClick={() => setView("records")}>作品档案</button>
+                      {selected && isWorkType(selected.type)
+                        ? <button onClick={() => openWorkGraph(selected)}>作品图谱</button>
+                        : <button onClick={() => setView("records")}>作品档案</button>}
                     </div>
                   </div>
                 )}
@@ -4453,7 +4474,19 @@ export default function Home() {
             bookKey={currentBook.key}
             isWork={isWorkType}
             onBook={(book) => setBookKey(book.key)}
-            onOpen={(work, book) => selectSearchResult(work, book)}
+            onOpen={(work: Entity) => openWorkGraph(work)}
+          />
+        )}
+        {view === "work" && canonicalGraph && workGraphId && (
+          <WorkGraph
+            workId={workGraphId}
+            entities={canonicalGraph.entities}
+            relationships={canonicalGraph.relationships}
+            books={dataset.books}
+            assetUrl={publicAssetUrl}
+            onBack={() => setView("records")}
+            onOpenWork={(id) => setWorkGraphId(id)}
+            onLocate={(id) => { const target = canonicalEntityById.get(id); if (target && canonicalBook) selectSearchResult(target, canonicalBook); }}
           />
         )}
         {view === "import" && (

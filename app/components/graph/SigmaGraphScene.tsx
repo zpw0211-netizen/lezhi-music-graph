@@ -8,6 +8,7 @@ import {
 } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
 import { EdgeArrowProgram, EdgeLineProgram } from "sigma/rendering";
+import { animateNodes } from "sigma/utils";
 import type { NodeHoverDrawingFunction } from "sigma/rendering";
 import { NodeRingProgram, drawLabelBelow } from "../../lib/graph/node-ring-program";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
@@ -192,6 +193,59 @@ function SigmaController<E extends GraphEntity>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataGraph, explicitNodes, focus, hoveredNode, indexes, selectedId, showLabels, sigma, visibleNodeIds, viewportTick, zoomTier]);
 
+  // Selecting a knowledge point pulls its direct neighbours into an orbit around
+  // it (and releases them when the focus clears), so relations read at a glance
+  // and the map visibly responds. Hubs with dozens of links keep their layout.
+  const orbitOrigins = useRef<{ graph: unknown; points: Map<string, { x: number; y: number }> }>({ graph: null, points: new Map() });
+  const cancelOrbit = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (orbitOrigins.current.graph !== dataGraph) orbitOrigins.current = { graph: dataGraph, points: new Map() };
+    cancelOrbit.current?.();
+    const previous = orbitOrigins.current.points;
+    const center = selectedId && !focusSuppressed && dataGraph.hasNode(selectedId) && visibleNodeIds.has(selectedId) ? selectedId : null;
+    const neighbours = center
+      ? [...new Set((indexes.adjacencyMap.get(center) ?? []).map((item) => item.neighborId))].filter((id) => id !== center && dataGraph.hasNode(id) && visibleNodeIds.has(id))
+      : [];
+    const orbit = center != null && neighbours.length >= 2 && neighbours.length <= 36;
+    const original = (id: string) => previous.get(id) ?? { x: dataGraph.getNodeAttribute(id, "x"), y: dataGraph.getNodeAttribute(id, "y") };
+    const targets: Record<string, { x: number; y: number }> = {};
+    const next = new Map<string, { x: number; y: number }>();
+    for (const [id, point] of previous) {
+      if (!dataGraph.hasNode(id)) continue;
+      if (orbit && (neighbours.includes(id) || id === center)) next.set(id, point);
+      else targets[id] = point;
+    }
+    if (orbit && center) {
+      const c = original(center);
+      if (previous.has(center)) targets[center] = c;
+      const ordered = neighbours
+        .map((id) => ({ id, point: original(id) }))
+        .sort((a, b) => Math.atan2(a.point.y - c.y, a.point.x - c.x) - Math.atan2(b.point.y - c.y, b.point.x - c.x));
+      const radius = 150 + 40 * Math.pow(ordered.length, 0.6);
+      ordered.forEach(({ id, point }, index) => {
+        if (!next.has(id)) next.set(id, point);
+        const angle = (index / ordered.length) * Math.PI * 2 + Math.atan2(ordered[0].point.y - c.y, ordered[0].point.x - c.x);
+        const ring = ordered.length > 18 && index % 2 ? 1.32 : 1;
+        targets[id] = { x: c.x + Math.cos(angle) * radius * ring, y: c.y + Math.sin(angle) * radius * ring };
+      });
+    }
+    orbitOrigins.current.points = next;
+    if (!Object.keys(targets).length) return;
+    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    cancelOrbit.current = animateNodes(dataGraph, targets, { duration: reduced ? 1 : 620, easing: "cubicInOut" }, () => {
+      if (!orbit || !center) return;
+      // Frame the finished orbit.
+      const display = sigma.getNodeDisplayData(center);
+      if (!display) return;
+      const reach = neighbours.reduce((max, id) => {
+        const point = sigma.getNodeDisplayData(id);
+        return point ? Math.max(max, Math.hypot(point.x - display.x, point.y - display.y)) : max;
+      }, 0);
+      sigma.getCamera().animate({ x: display.x, y: display.y, ratio: Math.max(0.14, Math.min(0.9, reach * 2.6)) }, { duration: 280 });
+    });
+  }, [dataGraph, focusSuppressed, indexes, selectedId, sigma, visibleNodeIds]);
+  useEffect(() => () => cancelOrbit.current?.(), []);
+
   // Keep the WebGL renderer/context alive when filters change. Replacing the
   // SigmaContainer graph prop kills its previous instance before child effects
   // receive the new context, so a selection update can target disposed programs.
@@ -217,9 +271,10 @@ function SigmaController<E extends GraphEntity>({
           color: alpha < 1 ? withAlpha(data.color, alpha) : data.color,
           size: data.size * (selected ? 1.38 : hovered ? 1.12 : !focus.depthByNode.size && !overviewCore ? .55 : .9),
           label:
-            selected || hovered || (!dimmed && labelIds.has(node)) ? data.label : "",
+            selected || hovered || (!dimmed && (labelIds.has(node) || (depth === 1 && focus.depthByNode.size <= 40))) ? data.label : "",
           // Only the selection is forced; neighbours go through Sigma's label grid so they never overlap.
-          forceLabel: selected || hovered || (labelIds.has(node) && explicitNodes.has(node) && explicitNodes.size <= 12),
+          // A small focused neighbourhood (the orbit) always shows its names.
+          forceLabel: selected || hovered || (depth === 1 && !dimmed && focus.depthByNode.size <= 40) || (labelIds.has(node) && explicitNodes.has(node) && explicitNodes.size <= 12),
           highlighted: selected,
           zIndex: selected ? 20 : depth === 1 ? 12 : depth === 2 ? 7 : 1,
         };
@@ -427,6 +482,7 @@ function SigmaController<E extends GraphEntity>({
             host.dataset.selectedViewport = JSON.stringify(sigma.graphToViewport(point));
           }
           host.dataset.pinnedCount = String(pinnedNodeIds?.length ?? 0);
+          host.dataset.orbitCount = String(orbitOrigins.current.points.size);
           host.dataset.edgeLabelCount = String([...sigma.getEdgeDisplayedLabels()].filter(id => sigma.getEdgeDisplayData(id)?.label).length);
           host.dataset.labelBudget = String(LABEL_BUDGETS[semanticZoomTier(sigma.getCamera().getState().ratio)]);
         }

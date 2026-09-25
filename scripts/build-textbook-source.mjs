@@ -34,6 +34,8 @@ const stableHash = (value) => {
   for (const char of String(value)) hash = Math.imul(hash ^ char.codePointAt(0), 16777619) >>> 0;
   return hash.toString(36);
 };
+const SENTENCE_TYPES = new Set(["学习活动", "主题与情感", "学习目标"]);
+const ATTRIBUTE_PREDICATES = new Set(["学习方式"]);
 const MODES = { 演唱: "学习活动", 欣赏: "学习活动", 视唱: "学习活动", 背唱: "学习活动", 演奏: "学习活动", 选听选唱: "学习活动" };
 
 const requested = process.argv.slice(2);
@@ -77,8 +79,12 @@ for (const key of keys) {
   const evidenceByTriple = {};
   const seen = new Set();
   let duplicates = 0;
-  const add = (subject, predicate, value, valueType, layer = "明", page) => {
+  const add = (subject, predicate, value, declaredType, layer = "明", page) => {
     const spec = LAYERS[layer];
+    // Descriptive sentences and learning-mode tags stay as attributes: as graph
+    // nodes they are one-off leaves (or 200-edge hubs) with no structural meaning.
+    const asAttribute = (SENTENCE_TYPES.has(declaredType) && String(value).length > 10) || ATTRIBUTE_PREDICATES.has(predicate);
+    const valueType = asAttribute ? null : declaredType;
     if (!spec) throw new Error(`${key}: 未知层级 ${layer}（${subject.name} ${predicate}）`);
     const object = valueType ? entity(value, valueType) : null;
     const literal = valueType ? null : String(value);
@@ -153,18 +159,20 @@ for (const key of keys) {
     const created = entity(person.name, person.type ?? "人物");
     addFacts(created, person.facts, person.page ?? { pdf: 1 });
   }
+  // Classroom tasks (实践与创造) restate the works' own learning activities; as
+  // separate nodes they doubled every work link. Keep them as unit attributes.
   for (const task of source.tasks ?? []) {
-    const created = entity(task.name, "课堂任务");
-    note(created, task.page);
     const unit = unitByNo.get(task.unit);
-    if (unit) add(unit, "包含任务", task.name, "课堂任务", "明", task.page);
-    addFacts(created, task.facts, task.page);
+    const works = (task.facts ?? []).filter(([predicate]) => predicate === "涉及作品").map(([, value]) => `《${String(value).replace(/^《|》$/g, "")}》`);
+    const focus = (task.facts ?? []).filter(([predicate]) => predicate === "练习重点").map(([, value]) => value);
+    const detail = [works.length ? `涉及${works.join("")}` : "", focus.length ? `练习重点：${focus.join("、")}` : ""].filter(Boolean).join("；");
+    if (unit) add(unit, "课堂任务", detail ? `${task.name}（${detail}）` : task.name, null, "明", task.page);
   }
   for (const item of entities) if (item.firstPage == null) item.firstPage = textbook.firstPage;
 
   const relations = Object.fromEntries([...new Set(triples.map((triple) => triple.predicate))].map((predicate) => [predicate, predicate]));
   const works = entities.filter((item) => WORK_TYPES.has(item.type));
-  const structural = triples.filter((triple) => ["包含单元", "单元顺序", "包含作品", "包含任务"].includes(triple.predicate)).length;
+  const structural = triples.filter((triple) => ["包含单元", "单元顺序", "包含作品", "课堂任务"].includes(triple.predicate)).length;
   const book = {
     key, title: source.title, source: "逐页重读", grade: previous.grade, semester: previous.semester, pages: previous.pages,
     entityCount: entities.length, tripleCount: triples.length, evidenceCount: triples.length,
