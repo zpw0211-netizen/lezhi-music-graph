@@ -11,8 +11,8 @@ type PortalView = "graph" | "assistant" | "research" | "records";
 const GRADE_NAMES: Record<number, string> = { 7: "七年级", 8: "八年级", 9: "九年级" };
 const HOT_SEARCHES = ["游击队歌", "黄河", "京剧", "旋律", "民歌", "冼星海"];
 const FEATURES: Array<{ view: PortalView; icon: "graph" | "book" | "message" | "research"; title: string; text: string }> = [
+  { view: "records", icon: "book", title: "按课学习", text: "一首作品一课：看谱听旋律、知识要点、课堂活动与小练习，老师可一键进入上课模式。" },
   { view: "graph", icon: "graph", title: "图谱探索", text: "拖拽、聚焦、路径查询，看清作品、人物与乐理之间的联系。" },
-  { view: "records", icon: "book", title: "作品档案", text: "逐首浏览教材作品，查看创作背景、音乐要素与教材出处。" },
   { view: "assistant", icon: "message", title: "智能问答", text: "用自然语言提问，回答附带可追溯的教材证据。" },
   { view: "research", icon: "research", title: "研究分析", text: "六册关联矩阵、跨册核心知识与图谱质量指标。" },
 ];
@@ -55,7 +55,11 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook>({
       <div className="home-hero-copy">
         <p className="home-eyebrow"><WorkbenchIcon name="sprout" />人音版 · 七至九年级 · 音乐数字教材知识网络</p>
         <h1>让每一节音乐课，<br />都长在<span>知识的网络</span>上</h1>
-        <p className="home-lead">芽谱把六册初中音乐教材中的作品、人物、体裁与乐理概念连接成一张可检索、可追溯、可用于课堂的知识图谱。</p>
+        <p className="home-lead">芽谱把六册初中音乐教材做成可以听、可以练、可以直接上课的数字教材：一首作品一课，知识点都能追溯到教材页码。</p>
+        <div className="home-cta">
+          <button type="button" className="home-cta-primary" onClick={() => onView("records")}><WorkbenchIcon name="book" />开始按课学习</button>
+          <button type="button" className="home-cta-secondary" onClick={onOpenFullGraph}><WorkbenchIcon name="graph" />浏览知识图谱</button>
+        </div>
         <form className="home-search" onSubmit={onSearch} role="search">
           <WorkbenchIcon name="search" />
           <input value={query} onChange={event => onQuery(event.target.value)} placeholder="搜索作品、人物、体裁、乐理概念，例如《游击队歌》" aria-label="搜索知识点" />
@@ -81,7 +85,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook>({
 
     <section className="home-section">
       <header className="home-section-head">
-        <div><h2>教材书架</h2><p>选择一册教材，进入这一册的知识图谱</p></div>
+        <div><h2>教材书架</h2><p>选择一册教材，按单元一课一课地学习</p></div>
         <button type="button" className="home-link" onClick={onOpenFullGraph}><WorkbenchIcon name="layers" />六册叠加总览</button>
       </header>
       <div className="home-shelf">
@@ -96,7 +100,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook>({
             <span><b>{fmt(book.entityCount)}</b>知识点</span>
             <span><b>{fmt(book.tripleCount)}</b>关系</span>
           </span>
-          <span className="home-book-open">打开图谱<WorkbenchIcon name="right" /></span>
+          <span className="home-book-open">开始学习<WorkbenchIcon name="right" /></span>
         </button>)}
       </div>
     </section>
@@ -128,7 +132,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook>({
     </section>
 
     <footer className="home-footer">
-      <p>教材内容依据人民音乐出版社新版七至九年级音乐教材整理；AI 补充的知识已单独标注为“待核查”，以教材原文为准。</p>
+      <p>教材内容依据人民音乐出版社新版七至九年级音乐教材逐页整理，每条知识标注教材页码；教材之外的补充单独标注为“拓展知识”，已逐条审阅。</p>
       <button type="button" onClick={onResearchInfo}>研究信息</button>
     </footer>
   </div>;

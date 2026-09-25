@@ -320,12 +320,12 @@ export function WorkGraph({
   const valueOf = (relation: WorkGraphRelation) => relation.literal ?? entityMap.get(relation.objectId ?? "")?.name ?? "";
   const counts = FACETS.map((facet) => ({ ...facet, count: nodes.filter((node) => node.depth === 1 && node.facet === facet.key).length })).filter((facet) => facet.count);
 
-  if (!work) return <section className="work-graph-empty"><p>没有找到这首作品。</p><button type="button" onClick={onBack}>返回作品档案</button></section>;
+  if (!work) return <section className="work-graph-empty"><p>没有找到这首作品。</p><button type="button" onClick={onBack}>返回</button></section>;
 
   return <section className="work-graph" aria-label={`${work.name}作品知识图谱`}>
     <div className="work-graph-stage" ref={stageRef}>
       <header className="work-graph-toolbar">
-        <button type="button" className="work-graph-back" onClick={onBack}><WorkbenchIcon name="left" />作品档案</button>
+        <button type="button" className="work-graph-back" onClick={onBack}><WorkbenchIcon name="left" />返回学习页</button>
         <div className="work-graph-actions">
           <label><input type="checkbox" checked={showSecond} onChange={(event) => setShowSecond(event.target.checked)} />显示延伸作品</label>
           <button type="button" onClick={() => { for (const s of sim.current.values()) { s.x = (Math.random() - 0.5) * 30; s.y = (Math.random() - 0.5) * 30; } alpha.current = 1; }}><WorkbenchIcon name="reset" />重新排布</button>

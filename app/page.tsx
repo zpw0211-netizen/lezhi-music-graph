@@ -54,6 +54,7 @@ import { WorkbenchIcon } from "./components/WorkbenchIcon";
 import { HomePortal } from "./components/home/HomePortal";
 import { WorkLibrary } from "./components/records/WorkLibrary";
 import { WorkGraph } from "./components/records/WorkGraph";
+import { LessonPage } from "./components/lesson/LessonPage";
 import { SchemaExplorer } from "./components/graph/SchemaExplorer";
 import { KnowledgeDetailDrawer } from "./components/graph/KnowledgeDetailDrawer";
 import { NodeAIInterpretation } from "./components/assistant/NodeAIInterpretation";
@@ -584,12 +585,13 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState("demo-work");
   const [query, setQuery] = useState("");
   const scope = "all" as const;
-  const [view, setView] = useState<"home" | "graph" | "assistant" | "research" | "records" | "work" | "import">(() => {
+  const [view, setView] = useState<"home" | "graph" | "assistant" | "research" | "records" | "work" | "lesson" | "import">(() => {
     if (typeof window === "undefined") return "home";
     const requested = new URLSearchParams(window.location.search).get("view");
-    return requested === "graph" || requested === "assistant" || requested === "research" || requested === "records" ? requested : "home";
+    return requested === "graph" || requested === "assistant" || requested === "research" || requested === "records" || requested === "lesson" ? requested : "home";
   });
   const [workGraphId, setWorkGraphId] = useState<string | null>(null);
+  const [lessonWorkId, setLessonWorkId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [knowledgeDetailOpen, setKnowledgeDetailOpen] = useState(false);
   const schemaOpen = true;
@@ -1802,7 +1804,7 @@ export default function Home() {
     }
     selectEntity(entity, book, true);
   };
-  // 作品档案 opens a focused graph of the work instead of the dense full map.
+  // A focused graph of one work (from its lesson page) instead of the dense full map.
   const openWorkGraph = (entity: Entity) => {
     const canonical =
       canonicalEntityById.get(entity.id) ??
@@ -1812,6 +1814,25 @@ export default function Home() {
     setWorkGraphId(canonical.id);
     setView("work");
   };
+  // 按课学习: a work card opens its lesson page (score, points, practice).
+  const openLesson = (entity: Entity) => {
+    const canonical =
+      canonicalEntityById.get(entity.id) ??
+      (entity.canonicalKey ? canonicalEntityBySearchKey.get(entity.canonicalKey) : undefined) ??
+      canonicalEntityBySearchKey.get(`${entity.name.trim().toLowerCase()}|${schemaCategoryFor(entity.type)}`);
+    if (!canonical) return;
+    setLessonWorkId(canonical.id);
+    setView("lesson");
+  };
+  // Shareable lesson links: ?view=lesson&work=歌唱祖国
+  useEffect(() => {
+    if (!canonicalGraph || lessonWorkId) return;
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("work");
+    if (params.get("view") !== "lesson" || !name) return;
+    const target = canonicalGraph.entities.find((entity) => entity.name === `《${name.replace(/^《|》$/g, "")}》`);
+    if (target) setLessonWorkId(target.id);
+  }, [canonicalGraph, lessonWorkId]);
   const chooseBook = (book: Book) => {
     setKnowledgeDetailOpen(false);
     setBookKey(book.key);
@@ -3098,9 +3119,11 @@ export default function Home() {
                 : view === "research"
                   ? "研究分析"
                 : view === "records"
-                  ? "作品档案"
+                  ? "按课学习"
                 : view === "work"
                   ? "作品知识图谱"
+                : view === "lesson"
+                  ? "按课学习"
                   : "教材数据导入"}
             </h1>
           </div>
@@ -3288,7 +3311,7 @@ export default function Home() {
             results={searchResults}
             onPickResult={selectSearchResult}
             onSearch={submitSearch}
-            onOpenBook={chooseBook}
+            onOpenBook={(book) => { setBookKey(book.key); setView("records"); }}
             onOpenFullGraph={chooseFullGraph}
             onView={(value) => { if (value === "assistant") setAssistantEntry(current => ({ question: "", token: current.token + 1 })); setView(value); }}
             onPickEntityName={(name) => {
@@ -4217,8 +4240,8 @@ export default function Home() {
                         查看证据
                       </button>
                       {selected && isWorkType(selected.type)
-                        ? <button onClick={() => openWorkGraph(selected)}>作品图谱</button>
-                        : <button onClick={() => setView("records")}>作品档案</button>}
+                        ? <button onClick={() => openLesson(selected)}>学习这一课</button>
+                        : <button onClick={() => setView("records")}>按课学习</button>}
                     </div>
                   </div>
                 )}
@@ -4474,7 +4497,19 @@ export default function Home() {
             bookKey={currentBook.key}
             isWork={isWorkType}
             onBook={(book) => setBookKey(book.key)}
-            onOpen={(work: Entity) => openWorkGraph(work)}
+            onOpen={(work: Entity) => openLesson(work)}
+          />
+        )}
+        {view === "lesson" && canonicalGraph && lessonWorkId && (
+          <LessonPage
+            key={lessonWorkId}
+            workId={lessonWorkId}
+            entities={canonicalGraph.entities}
+            relationships={canonicalGraph.relationships}
+            assetUrl={publicAssetUrl}
+            onBack={() => setView("records")}
+            onOpenLesson={(id) => setLessonWorkId(id)}
+            onWorkGraph={(id) => { setWorkGraphId(id); setView("work"); }}
           />
         )}
         {view === "work" && canonicalGraph && workGraphId && (
@@ -4484,7 +4519,7 @@ export default function Home() {
             relationships={canonicalGraph.relationships}
             books={dataset.books}
             assetUrl={publicAssetUrl}
-            onBack={() => setView("records")}
+            onBack={() => setView(lessonWorkId ? "lesson" : "records")}
             onOpenWork={(id) => setWorkGraphId(id)}
             onLocate={(id) => { const target = canonicalEntityById.get(id); if (target && canonicalBook) selectSearchResult(target, canonicalBook); }}
           />

@@ -49,7 +49,7 @@ for (const token of [
   '"relations"',
   '"evidence"',
   '"teaching"',
-  "作品档案",
+  "按课学习",
   "课堂路径",
   "音频 · 视频 · 乐谱",
 ]) {

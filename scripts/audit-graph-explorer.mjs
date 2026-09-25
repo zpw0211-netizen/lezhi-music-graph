@@ -61,5 +61,6 @@ assert.equal(pendingCandidates([{ subject: "虚构" }]).length, 0);
 assert.equal(pendingCandidates([{ subject: "节奏", predicate: "相关", object: "节拍", source: "测试来源", evidence: "测试证据", page: 2, confidence: .8, reason: "仅校验展示合同", status: "pending" }]).length, 1);
 assert.equal(JSON.stringify(graph), original, "Canonical graph was mutated");
 const sigma = await readFile("app/components/graph/SigmaGraphScene.tsx", "utf8");
-assert(sigma.includes("}, [nodes, relationships])")); assert(sigma.includes("hidden: !visibleNodeIds.has(node)")); assert(sigma.includes("hidden: !visibleRelationshipIds.has(edge)"));
+assert(sigma.includes("}, [nodes, relationships])")); // Skeleton-first overview: filters still gate visibility, zoom tier adds progressive disclosure.
+assert(sigma.includes("hidden: !shownNodeIds.has(node)") && sigma.includes("for (const id of visibleNodeIds)")); assert(sigma.includes("hidden: !visibleRelationshipIds.has(edge)"));
 console.log(`GRAPH_EXPLORER_AUDIT_PASSED canonical=${NODES}/${EDGES} categories=10 schemaEdges=${schema.edges.length} literalAttributes=${schema.literalCount} combined=${combined.size} examples=7 dataUnchanged=true`);

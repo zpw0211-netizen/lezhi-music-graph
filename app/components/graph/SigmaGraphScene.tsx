@@ -177,9 +177,24 @@ function SigmaController<E extends GraphEntity>({
       const score = (edge: GraphRelationship) => (edge.crossBook ? 20 : 0) + Math.log2((indexes.entityMap.get(edge.subject)?.degree ?? 0) + 1) + Math.log2((indexes.entityMap.get(edge.objectId ?? "")?.degree ?? 0) + 1);
       return score(b) - score(a) || a.id.localeCompare(b.id);
     }).slice(0, 440).map(edge => edge.id)), [indexes]);
+  // Skeleton first: the overview shows only the core knowledge points (shared
+  // across books, highly connected); zooming in reveals more, and a selected
+  // point always brings its own neighbourhood. Everything else stays hidden
+  // rather than faint, so the map reads as a structure instead of a hairball.
+  const shownNodeIds = useMemo(() => {
+    const limit = [90, 240, 640, Number.POSITIVE_INFINITY][zoomTier];
+    const shown = new Set<string>();
+    for (const id of visibleNodeIds) {
+      if (!dataGraph.hasNode(id)) continue;
+      const attributes = dataGraph.getNodeAttributes(id);
+      const core = attributes.visualRank <= limit || (attributes.entity.textbookCount ?? 1) >= 3;
+      if (core || focus.depthByNode.has(id) || explicitNodes.has(id) || id === hoveredNode) shown.add(id);
+    }
+    return shown;
+  }, [dataGraph, explicitNodes, focus, hoveredNode, visibleNodeIds, zoomTier]);
   const labelIds = useMemo(() => {
     const { width, height } = sigma.getDimensions();
-    const candidates = [...visibleNodeIds].filter(id => {
+    const candidates = [...shownNodeIds].filter(id => {
       if (!dataGraph.hasNode(id)) return false;
       if (id === selectedId || id === hoveredNode) return true;
       const p = sigma.graphToViewport(dataGraph.getNodeAttributes(id));
@@ -191,7 +206,7 @@ function SigmaController<E extends GraphEntity>({
     return new Set(candidates.sort((a, b) => score(b) - score(a)).slice(0, showLabels ? LABEL_BUDGETS[zoomTier] : Math.round(LABEL_BUDGETS[zoomTier] * .8)));
     // Camera movement changes the viewport without changing graph coordinates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataGraph, explicitNodes, focus, hoveredNode, indexes, selectedId, showLabels, sigma, visibleNodeIds, viewportTick, zoomTier]);
+  }, [dataGraph, explicitNodes, focus, hoveredNode, indexes, selectedId, showLabels, shownNodeIds, sigma, viewportTick, zoomTier]);
 
   // Selecting a knowledge point pulls its direct neighbours into an orbit around
   // it (and releases them when the focus clears), so relations read at a glance
@@ -267,7 +282,7 @@ function SigmaController<E extends GraphEntity>({
         const alpha = dimmed ? .05 : depth === 2 ? .3 : focus.depthByNode.size || overviewCore ? 1 : [.16, .28, .55, 1][zoomTier];
         return {
           ...data,
-          hidden: !visibleNodeIds.has(node),
+          hidden: !shownNodeIds.has(node),
           color: alpha < 1 ? withAlpha(data.color, alpha) : data.color,
           size: data.size * (selected ? 1.38 : hovered ? 1.12 : !focus.depthByNode.size && !overviewCore ? .55 : .9),
           label:
@@ -292,7 +307,7 @@ function SigmaController<E extends GraphEntity>({
         const label = relationLabels[relationship.predicate] ?? relationship.label ?? relationship.predicate;
         return {
           ...data,
-          hidden: !visibleRelationshipIds.has(edge) || !visibleNodeIds.has(data.relationship.subject) || !visibleNodeIds.has(data.relationship.objectId ?? ""),
+          hidden: !visibleRelationshipIds.has(edge) || !shownNodeIds.has(data.relationship.subject) || !shownNodeIds.has(data.relationship.objectId ?? ""),
           color: highlighted ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, 1)
             : direct || hovered ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.direct)
             : dimmed ? rgba(129, 146, 163, RELATION_VISIBILITY.focus.unrelated)
@@ -327,6 +342,7 @@ function SigmaController<E extends GraphEntity>({
     setSettings,
     showLabels,
     sigma,
+    shownNodeIds,
     visibleNodeIds,
     visibleRelationshipIds,
   ]);
