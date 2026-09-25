@@ -22,6 +22,16 @@ type WorkCard<E> = {
   starred: boolean;
 };
 
+function playbackBadge(name: string) {
+  const melodies = MELODIES[name];
+  if (!melodies?.length) return null;
+  const draft = melodies.every((melody) => melody.quality === "draft");
+  const rhythm = melodies.every((melody) => melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9)));
+  return <b className="work-card-audio" title={draft ? "自动识谱草稿，待人工核对" : rhythm ? "可播放节奏示范" : "可播放旋律示范"}>
+    ♪ {draft ? "识谱草稿" : rhythm ? "节奏" : "旋律"}
+  </b>;
+}
+
 /** 按课学习 directory: works grouped by textbook unit; each card opens that lesson. */
 export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
   books, bookKey, isWork, onBook, onOpen,
@@ -114,7 +124,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
       <h3>{unit.name}<small>{unit.cards.length} 首</small></h3>
       <div className="work-grid">
         {unit.cards.map((card) => <button key={card.work.id} type="button" className={`work-card grade-${book.grade}`} onClick={() => onOpen(card.work, book)}>
-          <span className="work-card-top"><em>{card.work.type}</em>{card.starred && <b className="work-card-star" title="教材标注的重点学习曲目">☆ 重点</b>}{MELODIES[card.work.name] && <b className="work-card-audio" title={MELODIES[card.work.name].every((item) => item.quality === "draft") ? "自动识谱草稿，待人工核对" : "可播放旋律示范"}>{MELODIES[card.work.name].every((item) => item.quality === "draft") ? "♪ 识谱草稿" : "♪ 旋律"}</b>}<small>{printedPage(card.work) ? `第 ${printedPage(card.work)} 页` : `PDF ${card.work.firstPage ?? "—"}`}</small></span>
+          <span className="work-card-top"><em>{card.work.type}</em>{card.starred && <b className="work-card-star" title="教材标注的重点学习曲目">☆ 重点</b>}{playbackBadge(card.work.name)}<small>{printedPage(card.work) ? `第 ${printedPage(card.work)} 页` : `PDF ${card.work.firstPage ?? "—"}`}</small></span>
           <strong>{card.work.name}</strong>
           <span className="work-card-creators">{card.creators.length ? card.creators.map((item) => <span key={item.name}><small>{item.role}</small>{item.name}</span>) : <span className="muted">作者信息待补充</span>}</span>
           <span className="work-card-facts">
