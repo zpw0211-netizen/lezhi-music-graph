@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { MELODIES, midiOf, notation } from "../../lib/lesson/melodies";
+import { MELODIES } from "../../lib/lesson/melodies";
+import { MelodySet } from "./MelodyPlayer";
 import type { Melody } from "../../lib/lesson/melodies";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 
@@ -172,7 +173,7 @@ export function LessonPage({
 
         <section className="lesson-block">
           <h2><em>1</em>看谱 · 听旋律</h2>
-          {melody ? <MelodyPlayer melody={melody} /> : <p className="lesson-note">这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。</p>}
+          {melody ? <MelodySet melodies={melody} /> : <p className="lesson-note">这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。</p>}
           {(work.media?.length ?? 0) > 0 && <details className="lesson-scores" open={!melody}>
             <summary>教材谱例原图（{work.media!.length} 张）</summary>
             <div>{work.media!.map((asset) => <a key={asset.url} href={assetUrl(asset.url)} target="_blank" rel="noreferrer">
@@ -281,109 +282,16 @@ function Quiz({ questions }: { questions: Question[] }) {
   </div>;
 }
 
-/** Plays a jianpu melody with WebAudio and highlights the sounding note. */
-export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolean }) {
-  const [playing, setPlaying] = useState(false);
-  const [current, setCurrent] = useState(-1);
-  const [tempo, setTempo] = useState(melody.bpm);
-  const context = useRef<AudioContext | null>(null);
-  const stopRef = useRef<() => void>(() => {});
-  const flat = useMemo(() => melody.bars.flatMap((bar, barIndex) => bar.map((note, noteIndex) => ({ ...note, barIndex, noteIndex }))), [melody]);
-
-  const stop = useCallback(() => { stopRef.current(); stopRef.current = () => {}; setPlaying(false); setCurrent(-1); }, []);
-  useEffect(() => stop, [stop]);
-
-  const play = () => {
-    if (playing) { stop(); return; }
-    const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtor) return;
-    const ctx = context.current ?? new AudioCtor();
-    context.current = ctx;
-    void ctx.resume();
-    const beat = 60 / tempo;
-    const start = ctx.currentTime + 0.12;
-    const master = ctx.createGain();
-    master.gain.value = 0.22;
-    master.connect(ctx.destination);
-    const times: number[] = [];
-    let t = start;
-    flat.forEach((note, index) => {
-      times.push(t);
-      const duration = note.b * beat;
-      // A tied note extends the previous tone instead of re-attacking.
-      if (note.d && !note.tie) {
-        let length = duration;
-        for (let k = index + 1; k < flat.length && flat[k].tie; k += 1) length += flat[k].b * beat;
-        const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
-        for (const [type, level] of [["triangle", 1], ["sine", 0.5]] as const) {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = type; osc.frequency.value = frequency * (type === "sine" ? 2 : 1);
-          gain.gain.setValueAtTime(0, t);
-          gain.gain.linearRampToValueAtTime(level, t + 0.02);
-          gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
-          gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
-          osc.connect(gain).connect(master);
-          osc.start(t); osc.stop(t + length);
-        }
-      }
-      t += duration;
-    });
-    const end = t;
-    let raf = 0;
-    const tick = () => {
-      const now = ctx.currentTime;
-      if (now >= end) { stop(); return; }
-      let index = times.length - 1;
-      while (index > 0 && times[index] > now) index -= 1;
-      setCurrent(now < start ? -1 : index);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    stopRef.current = () => { cancelAnimationFrame(raf); master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setValueAtTime(0, ctx.currentTime); setTimeout(() => master.disconnect(), 60); };
-    setPlaying(true);
-  };
-
-  const barOffsets = useMemo(() => melody.bars.reduce<number[]>((offsets, bar, index) => [...offsets, index ? offsets[index - 1] + melody.bars[index - 1].length : 0], []), [melody]);
-  return <div className={`melody-player ${large ? "is-large" : ""}`}>
-    <div className="melody-controls">
-      <button type="button" className="melody-play" onClick={play} aria-label={playing ? "停止" : "播放旋律"}>
-        {playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>}
-        {playing ? "停止" : "播放旋律"}
-      </button>
-      <span className="melody-key">{melody.key} · {melody.meter}</span>
-      <label className="melody-tempo">速度
-        <input type="range" min={60} max={140} step={4} value={tempo} disabled={playing} onChange={(event) => setTempo(Number(event.target.value))} />
-        <b>♩={tempo}</b>
-      </label>
-    </div>
-    <div className="melody-score" aria-label="简谱旋律">
-      {melody.bars.map((bar, barIndex) => <span key={barIndex} className="melody-bar">
-        {bar.map((note, noteIndex) => {
-          const active = barOffsets[barIndex] + noteIndex === current;
-          const { lines, dotted, dashes } = notation(note);
-          return <span key={noteIndex} className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
-            <span className={`melody-digit lines-${lines} ${note.o === 1 ? "is-high" : ""} ${note.o === -1 ? "is-low" : ""}`}>{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
-            {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash">–</span>)}
-            <span className="melody-lyric">{note.lyric || " "}</span>
-          </span>;
-        })}
-      </span>)}
-    </div>
-    <p className="melody-source">{melody.source}。电子音色示范，仅供视唱参考。</p>
-  </div>;
-}
-
 type Slide = { key: string; steps: number; render: (step: number) => ReactNode };
 
 function PresentMode({ work, melody, groups, tasks, questions, valueOf, assetUrl, unitName, onClose }: {
-  work: LessonEntity; melody?: Melody; groups: Array<{ key: string; title: string; facts: LessonRelation[] }>; tasks: string[];
+  work: LessonEntity; melody?: Melody[]; groups: Array<{ key: string; title: string; facts: LessonRelation[] }>; tasks: string[];
   questions: Question[]; valueOf: (relation: LessonRelation) => string; assetUrl: (path: string) => string; unitName: string; onClose: () => void;
 }) {
   const points = groups.filter((group) => group.key !== "practice").flatMap((group) => group.facts.map((relation) => ({ id: relation.id, label: relation.label ?? relation.predicate, value: valueOf(relation) }))).slice(0, 8);
   const slides: Slide[] = [
     { key: "cover", steps: 1, render: () => <div className="present-cover"><small>{unitName}</small><h1>{work.name}</h1><p>{work.type}</p></div> },
-    { key: "score", steps: 1, render: () => <div className="present-score"><h2>看谱 · 听旋律</h2>{melody ? <MelodyPlayer melody={melody} large /> : work.media?.[0] && (
+    { key: "score", steps: 1, render: () => <div className="present-score"><h2>看谱 · 听旋律</h2>{melody ? <MelodySet melodies={melody} large /> : work.media?.[0] && (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={assetUrl(work.media[0].url)} alt="教材谱例" />)}</div> },
     { key: "points", steps: points.length + 1, render: (step) => <div className="present-points"><h2>知识要点</h2><ul>{points.map((point, index) => <li key={point.id} className={index < step ? "is-shown" : ""}><b>{point.label}</b>{point.value}</li>)}</ul></div> },

@@ -210,3 +210,22 @@
 .melody-digit.lines-3 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -6px 0 #FAFCFB, inset 0 -8px 0 #3C4742, inset 0 -12px 0 #FAFCFB, inset 0 -14px 0 #3C4742; padding-bottom:15px; }
 .melody-digit.lines-3.is-low::after { bottom:-9px; }
 .melody-note.is-active .melody-digit.lines-2, .melody-note.is-active .melody-digit.lines-3 { box-shadow:none; }
+
+/* 多声部 / 多片段谱例 */
+.melody-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+.melody-tabs button { height:32px; padding:0 14px; border:1px solid var(--border); border-radius:999px; background:var(--surface-soft); color:var(--text-secondary); font-size:13px; font-weight:600; }
+.melody-tabs button.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.melody-title { margin:0 0 8px; font-size:14px; font-weight:700; color:var(--text-primary); }
+.melody-voices { display:inline-flex; gap:8px; }
+.melody-voices label { display:inline-flex; align-items:center; gap:5px; height:30px; padding:0 10px; border-radius:999px; border:1px solid var(--border); font-size:12px; font-weight:600; cursor:pointer; }
+.melody-voices label.voice-0 { color:#16834F; background:#EEF8F2; }
+.melody-voices label.voice-1 { color:#2466B8; background:#EEF4FC; }
+.melody-voices label.voice-2 { color:#7A5AB8; background:#F3EFFB; }
+.melody-voices input { accent-color:currentColor; }
+.melody-bar { flex-direction:column; align-items:stretch; }
+.melody-voice { display:flex; align-items:flex-start; }
+.melody-player.is-choral .melody-voice + .melody-voice { margin-top:6px; padding-top:6px; border-top:1px dashed #D5DED9; }
+.melody-player.is-choral .melody-voice.voice-1 .melody-digit { color:#2466B8; }
+.melody-player.is-choral .melody-voice.voice-1 .melody-lyric:empty, .melody-player.is-choral .melody-voice.voice-1 .melody-lyric { font-size:12px; }
+.melody-note.is-active .melody-digit { color:#fff !important; }
+.melody-player.is-choral .melody-voice.voice-1 .melody-note.is-active .melody-digit { background:#2466B8; }
