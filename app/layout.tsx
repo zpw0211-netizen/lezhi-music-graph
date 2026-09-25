@@ -6,6 +6,7 @@ import "./graph-explorer.css";
 import "./knowledge-detail.css";
 import "./workbench-v5.css";
 import "./home-portal.css";
+import "./pages-v5.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -4,7 +4,12 @@ import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type Tur
 import { PendingKnowledge } from "./PendingKnowledge";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 
-const questions = ["《游击队歌》的音乐特点是什么？", "七至九年级关于节奏的知识是怎样逐步发展的？", "教材中有哪些蒙古族音乐作品？", "《保卫黄河》和哪些音乐知识点有关？"];
+const questions = [
+  { q: "《游击队歌》的音乐特点是什么？", tag: "作品解读", icon: "music" },
+  { q: "七至九年级关于节奏的知识是怎样逐步发展的？", tag: "知识进阶", icon: "layers" },
+  { q: "教材中有哪些蒙古族音乐作品？", tag: "民族音乐", icon: "book" },
+  { q: "《保卫黄河》和哪些音乐知识点有关？", tag: "知识关联", icon: "graph" },
+] as const;
 type Message = { question: string; result: AnswerResult };
 export function AssistantPage({ graph, assetUrl, initialQuestion = "", onGraphFocus }: { graph: RagGraph; assetUrl: (path: string) => string; initialQuestion?: string; onGraphFocus: (result: AnswerResult) => void }) {
   const [question, setQuestion] = useState("");
@@ -52,7 +57,7 @@ export function AssistantPage({ graph, assetUrl, initialQuestion = "", onGraphFo
   return <section className="assistant-page" aria-label="智能问答">
     <header className="assistant-page-header"><span><WorkbenchIcon name="book" /> 教材知识问答</span><button onClick={() => setMessages([])} disabled={busy}>新对话</button></header>
     <div className="assistant-scroll" aria-live="polite">
-      {!messages.length && <div className="assistant-welcome"><h1>今天想从音乐教材里了解什么？</h1><p>探索作品、音乐知识与六册教材中的关联。</p><div className="assistant-suggestions">{questions.map(q => <button key={q} onClick={() => submit(q)} disabled={busy}>{q}</button>)}</div></div>}
+      {!messages.length && <div className="assistant-welcome"><span className="assistant-welcome-badge"><WorkbenchIcon name="sprout" /></span><h1>今天想从音乐教材里了解什么？</h1><p>回答来自六册教材知识图谱，每条结论都附教材页码，可在图谱中追溯。</p><div className="assistant-suggestions">{questions.map(item => <button key={item.q} onClick={() => submit(item.q)} disabled={busy}><span className="assistant-suggestion-tag"><WorkbenchIcon name={item.icon} />{item.tag}</span>{item.q}</button>)}</div></div>}
       {messages.map((message, index) => <article className="assistant-turn" key={index}><h2>{message.question}</h2><small>{message.result.poweredBy === "gpt" ? "AI 辅助回答" : "本地图谱回答"} · {message.result.confidence === "supported" ? "有教材依据" : "证据有限"}</small><p className="assistant-answer">{message.result.answer}</p>{message.result.auxiliaryExplanation && <section><h3>【AI辅助解释】</h3><p>{message.result.auxiliaryExplanation}</p></section>}<details className="assistant-evidence"><summary>【图谱事实】 · 教材依据（{message.result.evidence.length}）</summary>{message.result.evidence.slice(0, 30).map(e => <p key={e.id}><strong>{e.bookTitle} · PDF 第 {e.pdfPage ?? "—"} 页{e.textbookPage ? ` · 教材第 ${e.textbookPage} 页` : ""}</strong><small>{e.sourceType === "textbook_explicit" ? "教材明确知识" : "教材归纳 / 图谱关系记录"}</small>{e.summary}</p>)}</details><div className="assistant-related">{message.result.relatedEntities.slice(0, 12).map(entity => <button key={entity.id} onClick={() => onGraphFocus({ ...message.result, relatedEntities: [entity], relatedRelationships: [], graphFocus: { nodeIds: [entity.id], relationshipIds: [] } })}>{entity.name}</button>)}</div><button className="assistant-graph-link" onClick={() => onGraphFocus(message.result)} disabled={!message.result.graphFocus.nodeIds.length}>在图谱中查看 →</button><div className="assistant-followups">{message.result.suggestedQuestions.map(q => <button key={q} disabled={busy} onClick={() => submit(q)}>{q}</button>)}</div><PendingKnowledge candidates={message.result.candidateKnowledge} /><small className="assistant-service-notice">{message.result.serviceNotice}</small></article>)}
       {busy && <p className="assistant-busy">正在检索教材关系与证据…</p>}{error && <p role="alert">{error}</p>}
     </div>

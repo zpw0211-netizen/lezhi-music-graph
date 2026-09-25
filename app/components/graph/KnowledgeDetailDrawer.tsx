@@ -26,7 +26,7 @@ function DetailMedia({ asset, basePath }: { asset: NonNullable<DetailEntity["med
   if (asset.kind === "video") return <video controls preload="none" src={url} />;
   // Existing optional assets have no required image service or preset dimensions.
   // eslint-disable-next-line @next/next/no-img-element
-  if (asset.kind === "image") return <img loading="lazy" src={url} alt={asset.title ?? "学习资料"} />;
+  if (asset.kind === "image" || asset.kind === "score") return <a href={url} target="_blank" rel="noreferrer"><img loading="lazy" src={url} alt={asset.title ?? "学习资料"} /></a>;
   return <a href={url} target="_blank" rel="noreferrer">{asset.title ?? "查看资料"}</a>;
 }
 
@@ -85,7 +85,7 @@ export function KnowledgeDetailDrawer({ entity, entities, relationships, occurre
       <section><h3>基本信息 · {category.key === "work" ? "作品简介" : category.key === "person" ? "人物简介" : category.key === "culture" ? "地域 / 民族介绍" : "知识概览"}</h3><p>{current.name} · {current.type}</p><h4>摘要</h4><p className="knowledge-summary">{summary || `该知识收录于${locations.map(item => item.textbookTitle).filter((v, i, a) => a.indexOf(v) === i).join("、") || "当前教材图谱"}。可从下方关系与教材证据继续阅读。`}</p></section>
       <section><h3>核心属性</h3>{(templates[category.key] ?? [["知识属性", /./]]).map(([title, pattern]) => <div className="knowledge-property" key={title}><h4>{title}</h4>{renderFacts(facts.filter(item => pattern.test(item.label) || (/相关作品|相关音乐/.test(title) && item.other && schemaCategoryMeta(item.other.type).key === "work")))}</div>)}</section>
       <section><h3>教材位置</h3><ul className="knowledge-locations">{locations.map(item => <li key={item.id}><strong>{item.textbookTitle}</strong><span>{item.unit || item.lesson || "教材收录"} · {item.page != null ? `PDF 第 ${item.page} 页` : "页码未记录"}</span></li>)}</ul>{!locations.length && <p className="knowledge-empty">当前节点未记录教材位置。</p>}</section>
-      <section><h3>教材证据</h3>{evidence.length ? evidence.map((item, index) => <article className="knowledge-evidence" key={index}><small>{item.bookTitle} · {item.pdfPage != null ? `PDF 第 ${item.pdfPage} 页` : "页码未记录"}{item.textbookPage ? ` · 教材页码 ${item.textbookPage}` : ""}</small><p>{item.summary || "教材来源记录"}</p><span>{item.region || item.relation}</span></article>) : <p className="knowledge-empty">暂无独立证据摘录，已保留上方教材位置；不能将关联关系当作原文引述。</p>}</section>
+      <section><h3>教材证据</h3>{evidence.length ? evidence.map((item, index) => <article className="knowledge-evidence" key={index}><small>{item.bookTitle} · {item.pdfPage != null ? `PDF 第 ${item.pdfPage} 页` : "页码未记录"}{item.textbookPage ? ` · 教材页码 ${item.textbookPage}` : ""}</small><p>{item.summary || "教材来源记录"}</p><span className={/拓展|补充/.test(item.region ?? "") ? "is-extended" : ""} title={item.region ?? undefined}>{item.region ? (/拓展|补充/.test(item.region) ? "拓展知识" : "教材内容") : item.relation}</span></article>) : <p className="knowledge-empty">暂无独立证据摘录，已保留上方教材位置；不能将关联关系当作原文引述。</p>}</section>
       <section><h3>知识关系</h3>{renderFacts(facts)}</section>
       <section><h3>跨册关联</h3><p>覆盖 {entity.textbookCount ?? entity.bookKeys?.length ?? 1} / 6 册 · 出现 {entity.occurrenceCount ?? locations.length} 次</p>{renderFacts(facts.filter(item => item.edge.crossBook))}</section>
       <section><h3>教学应用</h3>{renderFacts(facts.filter(item => /学习|教学|实践|任务|目标|前置|深化|扩展/.test(item.label)))}</section>

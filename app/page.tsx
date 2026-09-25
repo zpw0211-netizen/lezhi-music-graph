@@ -52,6 +52,7 @@ import type { AnswerResult } from "./lib/ai/graph-rag";
 import { GraphSidebar } from "./components/graph/GraphSidebar";
 import { WorkbenchIcon } from "./components/WorkbenchIcon";
 import { HomePortal } from "./components/home/HomePortal";
+import { WorkLibrary } from "./components/records/WorkLibrary";
 import { SchemaExplorer } from "./components/graph/SchemaExplorer";
 import { KnowledgeDetailDrawer } from "./components/graph/KnowledgeDetailDrawer";
 import { NodeAIInterpretation } from "./components/assistant/NodeAIInterpretation";
@@ -106,6 +107,7 @@ type Triple = {
   id: string;
   subject: string;
   predicate: string;
+  extended?: boolean;
   objectId?: string | null;
   literal?: string | null;
   objectKind?: string;
@@ -3084,7 +3086,7 @@ export default function Home() {
                 : view === "research"
                   ? "研究分析"
                 : view === "records"
-                  ? "逐作品档案"
+                  ? "作品档案"
                   : "教材数据导入"}
             </h1>
           </div>
@@ -4059,6 +4061,19 @@ export default function Home() {
                       {selected?.description ||
                         "该节点来自教材知识图谱，可继续查看关系、来源证据与教学应用。"}
                     </p>
+                    {!!selected?.media?.some((asset) => asset.kind === "score") && (
+                      <section className="inspector-scores" aria-label="教材谱例">
+                        <h3>教材谱例</h3>
+                        {selected.media.filter((asset) => asset.kind === "score").map((asset) => (
+                          <a key={asset.url} href={publicAssetUrl(asset.url)} target="_blank" rel="noreferrer" title="打开原尺寸谱例">
+                            {/* Score crops are static WebP files; no image optimizer on GitHub Pages. */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img loading="lazy" src={publicAssetUrl(asset.url)} alt={asset.title ?? "教材谱例"} />
+                            <small>{asset.source}</small>
+                          </a>
+                        ))}
+                      </section>
+                    )}
                     <dl>
                       <div>
                         <dt>语义标签</dt>
@@ -4105,7 +4120,7 @@ export default function Home() {
                               disabled={!target}
                               onClick={() => target && selectEntity(target, inspectionBook)}
                             >
-                              <span>{label}</span>
+                              <span>{label}{triple.extended && <em className="fact-extended" title="教材之外的拓展知识（已审阅）">拓展</em>}</span>
                               <strong>{value}</strong>
                             </button>
                           ))}
@@ -4388,11 +4403,12 @@ export default function Home() {
                               )}
                               {asset.kind === "score" && (
                                 <a
-                                  href={asset.url}
+                                  href={publicAssetUrl(asset.url)}
                                   target="_blank"
                                   rel="noreferrer"
                                 >
-                                  打开乐谱 ↗
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img loading="lazy" src={publicAssetUrl(asset.url)} alt={asset.title ?? "教材谱例"} />
                                 </a>
                               )}
                               <small>{asset.source ?? "外部资源链接"}</small>
@@ -4432,43 +4448,13 @@ export default function Home() {
           />
         )}
         {view === "records" && (
-          <section className="records-view">
-            <div className="records-intro">
-              <span className="tag violet">WORK LIBRARY</span>
-              <h2>{currentBook.title} · 逐作品档案</h2>
-              <p>从作品出发，查看创作者、音乐要素、教材页码与多模态证据。</p>
-            </div>
-            <div className="record-grid">
-              {currentBook.entities
-                .filter((e) => isWorkType(e.type))
-                .slice(0, 60)
-                .map((work) => (
-                  <button
-                    className="record-card"
-                    key={work.id}
-                    onClick={() => selectEntity(work)}
-                  >
-                    <span className="record-number">
-                      第 {work.firstPage ?? "—"} 页
-                    </span>
-                    <span className="eyebrow muted">{work.type}</span>
-                    <h3>{work.name}</h3>
-                    <p>{work.description || "点击回到图谱查看作品关系。"}</p>
-                    <div className="record-footer">
-                      <span>
-                        {
-                          currentBook.triples.filter(
-                            (t) => t.subject === work.id,
-                          ).length
-                        }{" "}
-                        条关系
-                      </span>
-                      <span>打开图谱 →</span>
-                    </div>
-                  </button>
-                ))}
-            </div>
-          </section>
+          <WorkLibrary
+            books={dataset.books}
+            bookKey={currentBook.key}
+            isWork={isWorkType}
+            onBook={(book) => setBookKey(book.key)}
+            onOpen={(work, book) => selectSearchResult(work, book)}
+          />
         )}
         {view === "import" && (
           <section className="import-view">

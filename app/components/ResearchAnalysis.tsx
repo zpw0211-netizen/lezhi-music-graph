@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { schemaCategoryMeta } from "../graph-schema";
-import { QualityPanel, type QualityMetrics } from "./QualityPanel";
+import { QualityPanel, SourceLayerPanel, type QualityMetrics } from "./QualityPanel";
 
 type ResearchBook = {
   key: string;
@@ -38,6 +38,10 @@ type Props = {
 };
 
 const shortBook = (book: ResearchBook) => `${book.grade}${book.semester === "上册" ? "上" : "下"}`;
+
+// Sequential ramp (one hue, light -> dark) in the sprout-green brand family.
+// Steps 0-4 carry dark ink; only the darkest step switches to white text.
+const MATRIX_RAMP = ["#EEF7F1", "#CDEBD8", "#9BD5B2", "#5DB887", "#2E9A62", "#16834F"] as const;
 
 export function ResearchAnalysis({
   books,
@@ -84,6 +88,11 @@ export function ResearchAnalysis({
         }),
       ),
     [books, entityByBook],
+  );
+
+  const maxOffDiagonal = useMemo(
+    () => Math.max(1e-9, ...matrix.flatMap((row, i) => row.filter((_, j) => i !== j).map((cell) => (metric === "shared" ? cell.shared : cell.jaccard)))),
+    [matrix, metric],
   );
 
   const topKnowledge = useMemo(
@@ -144,12 +153,14 @@ export function ResearchAnalysis({
                     {books.map((right, column) => {
                       const cell = matrix[row]?.[column];
                       const value = metric === "shared" ? cell.shared : Math.round(cell.jaccard * 1000) / 1000;
-                      const intensity = row === column ? 0.08 : Math.min(0.72, 0.08 + cell.jaccard * 1.8);
+                      const diagonal = row === column;
+                      const step = Math.min(MATRIX_RAMP.length - 1, Math.round(((metric === "shared" ? cell.shared : cell.jaccard) / maxOffDiagonal) * (MATRIX_RAMP.length - 1)));
                       return (
                         <td key={right.key}>
                           <button
-                            title={`${left.title} × ${right.title}：${cell.shared} 个共享规范实体`}
-                            style={{ backgroundColor: `rgba(53,107,90,${intensity})` }}
+                            className={diagonal ? "is-diagonal" : ""}
+                            title={diagonal ? `${left.title}：本册共 ${cell.shared} 个规范实体` : `${left.title} × ${right.title}：${cell.shared} 个共享规范实体，Jaccard ${cell.jaccard.toFixed(3)}`}
+                            style={diagonal ? undefined : { backgroundColor: MATRIX_RAMP[step], color: step === MATRIX_RAMP.length - 1 ? "#FFFFFF" : undefined }}
                             onClick={() => onSelectPair(left.key, right.key, cell.sharedIds)}
                           >
                             {metric === "shared" ? value : Number(value).toFixed(3)}
@@ -161,6 +172,12 @@ export function ResearchAnalysis({
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="matrix-legend" aria-label="颜色图例">
+            <span>关联弱</span>
+            <span className="matrix-legend-ramp">{MATRIX_RAMP.map((color) => <i key={color} style={{ background: color }} />)}</span>
+            <span>关联强</span>
+            <span className="matrix-legend-diagonal"><i />对角线：本册实体总数</span>
           </div>
           <p>点击任一单元格，进入两册教材共享知识子图。</p>
         </section>
@@ -197,6 +214,7 @@ export function ResearchAnalysis({
         </section>
 
         <QualityPanel quality={quality} />
+        <SourceLayerPanel quality={quality} />
       </div>
     </section>
   );

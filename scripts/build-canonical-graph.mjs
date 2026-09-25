@@ -198,10 +198,13 @@ for (const book of dataset.books) {
         firstPageByBook: {},
         occurrenceIds: [],
         confidenceValues: [],
+        media: [],
       };
       canonicalByKey.set(key, canonical);
     }
     for (const alias of entity.aliases ?? []) canonical.aliases.add(alias);
+    for (const asset of entity.media ?? [])
+      if (!canonical.media.some((item) => item.url === asset.url)) canonical.media.push(asset);
     canonical.rawTypes.add(entity.type);
     if (entity.description) canonical.descriptions.add(entity.description);
     canonical.bookKeys.add(book.key);
@@ -376,6 +379,7 @@ const canonicalEntities = [...canonicalByKey.values()].map((entity) => ({
   textbookCount: entity.bookKeys.size,
   occurrenceCount: entity.occurrenceIds.length,
   occurrenceIds: entity.occurrenceIds,
+  ...(entity.media.length ? { media: entity.media } : {}),
   firstPageByBook: entity.firstPageByBook,
   firstPage:
     Object.values(entity.firstPageByBook)

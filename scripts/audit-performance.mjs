@@ -12,11 +12,13 @@ const legacyBytes =
 const indexBytes = (await stat(path.join(dataRoot, "graph-index.json"))).size;
 
 assert(index.dataset.books.length === 6, "graph-index 未包含六册教材");
-assert(index.canonicalGraph.entities.length === 1337, "规范实体数量发生回归");
-assert(
-  index.canonicalGraph.relationships.length === 4661,
-  "规范关系数量发生回归",
-);
+// Data may grow (textbook re-reading) but must never shrink below the last release,
+// and the page index must stay in sync with canonical-graph.json.
+const canonicalSource = JSON.parse(await readFile(path.join(dataRoot, "canonical-graph.json"), "utf8"));
+const nodeCount = index.canonicalGraph.entities.length;
+const edgeCount = index.canonicalGraph.relationships.length;
+assert(nodeCount === canonicalSource.entities.length && nodeCount >= 1337, "规范实体数量发生回归");
+assert(edgeCount === canonicalSource.relationships.length && edgeCount >= 4661, "规范关系数量发生回归");
 assert(indexBytes / legacyBytes < 0.3, "首屏图索引没有缩减到原数据的 30% 以下");
 for (const book of index.dataset.books) {
   await access(path.join(dataRoot, "details", `${book.key}.json`));
@@ -47,7 +49,7 @@ console.log(
   `PERFORMANCE_AUDIT_PASSED index=${indexBytes} legacy=${legacyBytes} ratio=${(
     (indexBytes / legacyBytes) *
     100
-  ).toFixed(1)}% nodes=1337 edges=4661`,
+  ).toFixed(1)}% nodes=${nodeCount} edges=${edgeCount}`,
 );
 
 function assert(condition, message) {

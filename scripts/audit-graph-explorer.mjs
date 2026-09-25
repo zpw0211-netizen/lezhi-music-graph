@@ -9,7 +9,12 @@ const { filterGraphEntities, DEFAULT_PROPERTIES } = await compile("app/hooks/use
 const { buildGraphIndexes, shortestPaths, focusNeighborhood } = await compile("app/lib/graph/graph-algorithms.ts");
 const { canonicalGraph: graph } = JSON.parse(await readFile("public/data/graph-index.json", "utf8"));
 const original = JSON.stringify(graph);
-assert.equal(graph.entities.length, 1337); assert.equal(graph.relationships.length, 4661);
+// Data may grow (textbook re-reading) but must never shrink below the last release,
+// and the page index must stay in sync with canonical-graph.json.
+const canonicalSource = JSON.parse(await readFile("public/data/canonical-graph.json", "utf8"));
+const NODES = canonicalSource.entities.length, EDGES = canonicalSource.relationships.length;
+assert.equal(graph.entities.length, NODES); assert.equal(graph.relationships.length, EDGES);
+assert(NODES >= 1337 && EDGES >= 4661, "canonical graph shrank below the last release");
 const examples = ["只看音乐人物", "只看作曲关系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的关系", "查找进行曲相关作品", "显示节奏相关知识"];
 const required = ["filter_entity_types", "filter_relationship_types", "filter_books", "focus_entities", "find_path", "focus_entities", "focus_entities"];
 for (let i = 0; i < examples.length; i++) {
@@ -34,9 +39,9 @@ assert(validateGraphActions([
   { type: "highlight_entities", entityIds: [graph.entities[0].id] },
   { type: "highlight_relationships", relationshipIds: [graph.relationships[0].id] },
 ], graph).valid);
-assert.equal(schema.categories.reduce((sum, c) => sum + c.count, 0), 1337);
-assert.equal(schema.relations.reduce((sum, r) => sum + r.count, 0), 4661);
-assert.equal(schema.edges.reduce((sum, r) => sum + r.count, 0) + schema.literalCount, 4661);
+assert.equal(schema.categories.reduce((sum, c) => sum + c.count, 0), NODES);
+assert.equal(schema.relations.reduce((sum, r) => sum + r.count, 0), EDGES);
+assert.equal(schema.edges.reduce((sum, r) => sum + r.count, 0) + schema.literalCount, EDGES);
 assert.equal(schema.categories.length, 10);
 assert(schema.relations.every((r, i) => !i || schema.relations[i - 1].count >= r.count));
 const combined = filterGraphEntities(graph.entities, graph.relationships, graph.books, { ...DEFAULT_PROPERTIES, grades: ["8"], entityType: "work", keyword: "蒙古族" }, null, null);
@@ -57,4 +62,4 @@ assert.equal(pendingCandidates([{ subject: "节奏", predicate: "相关", object
 assert.equal(JSON.stringify(graph), original, "Canonical graph was mutated");
 const sigma = await readFile("app/components/graph/SigmaGraphScene.tsx", "utf8");
 assert(sigma.includes("}, [nodes, relationships])")); assert(sigma.includes("hidden: !visibleNodeIds.has(node)")); assert(sigma.includes("hidden: !visibleRelationshipIds.has(edge)"));
-console.log(`GRAPH_EXPLORER_AUDIT_PASSED canonical=1337/4661 categories=10 schemaEdges=${schema.edges.length} literalAttributes=${schema.literalCount} combined=${combined.size} examples=7 dataUnchanged=true`);
+console.log(`GRAPH_EXPLORER_AUDIT_PASSED canonical=${NODES}/${EDGES} categories=10 schemaEdges=${schema.edges.length} literalAttributes=${schema.literalCount} combined=${combined.size} examples=7 dataUnchanged=true`);

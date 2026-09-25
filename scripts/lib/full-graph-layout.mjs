@@ -94,7 +94,7 @@ const normalizePositions = (positions, paddingX = 100, paddingY = 90) => {
     const baseX = offsetX + (point.x - minX) * scale;
     const baseY = offsetY + (point.y - minY) * scale;
     normalized.set(id, {
-      x: CENTER.x + (baseX - CENTER.x) * 1.36,
+      x: CENTER.x + (baseX - CENTER.x) * 1.5,
       y: baseY,
     });
   }
@@ -175,7 +175,7 @@ function buildFlowerNetworkLayout(entities, relationships, importanceById) {
       barnesHutOptimize: true,
       barnesHutTheta: 0.6,
       edgeWeightInfluence: 1,
-      gravity: 0.9,
+      gravity: 2.0,
       linLogMode: true,
       outboundAttractionDistribution: true,
       scalingRatio: 6,
@@ -188,8 +188,19 @@ function buildFlowerNetworkLayout(entities, relationships, importanceById) {
   const raw = new Map();
   graph.forEachNode((id, attributes) => raw.set(id, { x: attributes.x, y: attributes.y }));
   const positions = normalizePositions(raw, 190, 150);
+  // Keep the structural core central as the graph grows: pull skeleton nodes
+  // toward the centre in proportion to their importance rank, angles unchanged.
+  const rankShare = new Map(ordered.map((entity, index) => [entity.id, Math.sqrt(index / Math.max(1, ordered.length - 1))]));
+  ordered.forEach((entity) => {
+    const point = positions.get(entity.id);
+    const factor = 0.5 + 0.5 * rankShare.get(entity.id);
+    positions.set(entity.id, {
+      x: CENTER.x + (point.x - CENTER.x) * factor,
+      y: CENTER.y + (point.y - CENTER.y) * factor,
+    });
+  });
   const radiusOf = (entity) => 9 + petalRadius(entity.id);
-  spreadSkeleton(skeleton, positions, radiusOf);
+  spreadSkeleton(skeleton, positions, radiusOf, 26, 80, (entity) => 1 + 6 * (1 - (rankShare.get(entity.id) ?? 1)));
 
   for (const [parentId, petals] of petalsByParent) {
     const parent = positions.get(parentId);
@@ -219,6 +230,14 @@ function buildFlowerNetworkLayout(entities, relationships, importanceById) {
     }
   }
 
+  // Keep a landscape canvas as the graph grows: stretch horizontally when the
+  // placed knowledge cloud gets taller than ~1.45:1.
+  const placed = knowledgeEntities.map((entity) => positions.get(entity.id)).filter(Boolean);
+  const spanX = Math.max(...placed.map((point) => point.x)) - Math.min(...placed.map((point) => point.x));
+  const spanY = Math.max(...placed.map((point) => point.y)) - Math.min(...placed.map((point) => point.y));
+  const stretch = spanY > 0 ? Math.max(1, (1.45 * spanY) / Math.max(1, spanX)) : 1;
+  if (stretch > 1) for (const point of placed) point.x = CENTER.x + (point.x - CENTER.x) * stretch;
+
   isolated.forEach((entity, index) => {
     const angle = -Math.PI / 2 + (index / Math.max(1, isolated.length)) * Math.PI * 2;
     positions.set(entity.id, {
@@ -246,7 +265,8 @@ function buildFlowerNetworkLayout(entities, relationships, importanceById) {
 }
 
 // Push skeleton nodes apart until their petal discs no longer overlap.
-function spreadSkeleton(skeleton, positions, radiusOf, gap = 26, iterations = 80) {
+// Optional massOf: heavier (more important) nodes give way less.
+function spreadSkeleton(skeleton, positions, radiusOf, gap = 26, iterations = 80, massOf = () => 1) {
   const cellSize = 120;
   for (let iteration = 0; iteration < iterations; iteration += 1) {
     let moved = 0;
@@ -277,11 +297,12 @@ function spreadSkeleton(skeleton, positions, radiusOf, gap = 26, iterations = 80
               vy = Math.sin(angle);
               distance = 1;
             }
-            const push = ((minimum - distance) / distance) * 0.5;
-            point.x += vx * push;
-            point.y += vy * push;
-            otherPoint.x -= vx * push;
-            otherPoint.y -= vy * push;
+            const push = (minimum - distance) / distance;
+            const own = massOf(other) / (massOf(entity) + massOf(other));
+            point.x += vx * push * own;
+            point.y += vy * push * own;
+            otherPoint.x -= vx * push * (1 - own);
+            otherPoint.y -= vy * push * (1 - own);
             moved += 1;
           }
         }

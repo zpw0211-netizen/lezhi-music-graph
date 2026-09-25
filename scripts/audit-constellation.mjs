@@ -16,6 +16,7 @@ for (const entity of canonical.entities) {
   assert.deepEqual(detail.relationships, canonical.relationships.filter(edge => edge.subject === entity.id || edge.objectId === entity.id));
   assert.deepEqual(detail.occurrences, canonical.occurrences.filter(item => item.canonicalId === entity.id));
 }
-assert.equal(canonical.entities.length, 1337); assert.equal(canonical.relationships.length, 4661);
+// Data may grow with textbook re-reading but must not shrink below the last release.
+assert(canonical.entities.length >= 1337 && canonical.relationships.length >= 4661, "canonical graph shrank");
 assert.equal(canonical.quality.canonical.isolatedNodeCount, 0); assert.equal(canonical.quality.canonical.danglingRelationshipCount, 0);
-console.log("CONSTELLATION_AUDIT_PASSED details=1337 all_facts_identical=true nodes=1337 relationships=4661 isolated=0 dangling=0 tiers=4");
+console.log(`CONSTELLATION_AUDIT_PASSED details=${canonical.entities.length} all_facts_identical=true nodes=${canonical.entities.length} relationships=${canonical.relationships.length} isolated=0 dangling=0 tiers=4`);

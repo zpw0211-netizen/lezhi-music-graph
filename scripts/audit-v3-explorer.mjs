@@ -45,8 +45,9 @@ const canonicalNodes = graphIndex.canonicalGraph?.entities?.length ?? 0;
 const canonicalEdges = graphIndex.canonicalGraph?.relationships?.length ?? 0;
 const books = graphIndex.dataset?.books?.length ?? 0;
 if (books !== 6) failures.push(`expected 6 textbooks, found ${books}`);
-if (canonicalNodes !== 1337) failures.push(`canonical node regression: ${canonicalNodes}`);
-if (canonicalEdges !== 4661) failures.push(`canonical relationship regression: ${canonicalEdges}`);
+// Data may grow with textbook re-reading but must not shrink below the last release.
+if (canonicalNodes < 1337) failures.push(`canonical node regression: ${canonicalNodes}`);
+if (canonicalEdges < 4661) failures.push(`canonical relationship regression: ${canonicalEdges}`);
 
 if (failures.length) {
   console.error(`V3_EXPLORER_AUDIT_FAILED ${failures.length}`);
