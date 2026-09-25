@@ -216,6 +216,7 @@
 .melody-tabs button { height:32px; padding:0 14px; border:1px solid var(--border); border-radius:999px; background:var(--surface-soft); color:var(--text-secondary); font-size:13px; font-weight:600; }
 .melody-tabs button.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 .melody-title { margin:0 0 8px; font-size:14px; font-weight:700; color:var(--text-primary); }
+.melody-draft { margin:0 0 10px; padding:9px 12px; border:1px solid #E8C87E; border-radius:9px; background:#FFF8E8; color:#76530F; font-size:12px; line-height:1.5; }
 .melody-voices { display:inline-flex; gap:8px; }
 .melody-voices label { display:inline-flex; align-items:center; gap:5px; height:30px; padding:0 10px; border-radius:999px; border:1px solid var(--border); font-size:12px; font-weight:600; cursor:pointer; }
 .melody-voices label.voice-0 { color:#16834F; background:#EEF8F2; }

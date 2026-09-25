@@ -1,5 +1,5 @@
 // Hand-transcribed main melodies for lesson playback, read from the textbook
-// score. Degrees are jianpu digits (0 = rest); octave -1 is a dot below, +1 a
+// score. Degrees are jianpu digits (0 = rest, 9 = unpitched rhythm X); octave -1 is a dot below, +1 a
 // dot above; beats count quarter notes. `tie` continues the previous note;
 // `a` is an accidental (1 = ♯, -1 = ♭).
 export type MelodyNote = { d: number; o?: -1 | 0 | 1; b: number; lyric?: string; tie?: boolean; a?: -1 | 1; tri?: boolean };
@@ -12,6 +12,8 @@ export type Melody = {
   meter: string;
   bpm: number;
   source: string;
+  /** Machine-read score excerpt awaiting a human comparison with the linked image. */
+  quality?: "draft";
   bars: MelodyNote[][];
   /** Label of the main line when further voices exist, e.g. "高声部". */
   label?: string;
@@ -34,7 +36,7 @@ export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
     for (const token of bar.split(/\s+/)) {
       if (token === "-") { notes[notes.length - 1].b += 1; continue; }
       // Dot and slashes may come in either order ("5./" or "5/.").
-      const m = token.match(/^(~?)([#b]?)([0-7])([',]?)(\.?)(\/{0,3})(\.?)(t?)$/);
+      const m = token.match(/^(~?)([#b]?)([0-79])([',]?)(\.?)(\/{0,3})(\.?)(t?)$/);
       if (!m) throw new Error(`jianpu: cannot read "${token}"`);
       const [, tie, acc, digit, octave, dotBefore, slashes, dotAfter, triplet] = m;
       const dot = dotBefore || dotAfter;
@@ -88,7 +90,7 @@ export function notation(note: MelodyNote) {
 
 const SEMITONES = [0, 0, 2, 4, 5, 7, 9, 11];
 export const midiOf = (melody: Melody, note: MelodyNote) =>
-  melody.tonicMidi + SEMITONES[note.d] + 12 * (note.o ?? 0) + (note.a ?? 0);
+  note.d === 9 ? 48 : melody.tonicMidi + SEMITONES[note.d] + 12 * (note.o ?? 0) + (note.a ?? 0);
 
 const TONIC_MIDI: Record<string, number> = { C: 60, D: 62, E: 64, F: 65, G: 67, A: 57, B: 59 };
 /** Key signature text ("1=♭E") → MIDI note of the tonic, kept around the middle of the range. */
@@ -98,7 +100,7 @@ export function tonicMidiOf(key: string) {
   return TONIC_MIDI[m[2]] + (m[1] === "♭" || m[1] === "b" ? -1 : m[1] ? 1 : 0);
 }
 
-type SegmentOptions = { title?: string; label?: string; voices?: Array<{ label: string; notes: string; lyrics?: string }>; note?: string; octave?: number };
+type SegmentOptions = { title?: string; label?: string; voices?: Array<{ label: string; notes: string; lyrics?: string }>; note?: string; octave?: number; quality?: "draft" };
 /**
  * One excerpt of a work: key text, meter, tempo, textbook source, jianpu notes and lyrics.
  * `octave` shifts playback (e.g. -1 for scores written an octave high).
@@ -108,10 +110,13 @@ export function segment(book: string, page: number | string, key: string, meter:
     title: options.title,
     key,
     tonic: key.replace(/^1=/, ""),
-    tonicMidi: tonicMidiOf(key) + 12 * (options.octave ?? 0),
+    tonicMidi: (key === "节奏" ? 60 : tonicMidiOf(key)) + 12 * (options.octave ?? 0),
     meter,
     bpm,
-    source: `据人音版${book}第 ${page} 页谱例转写${options.note ? `（${options.note}）` : ""}`,
+    source: options.quality === "draft"
+      ? `人音版${book}第 ${page} 页谱例自动识别草稿${options.note ? `（${options.note}）` : ""}`
+      : `据人音版${book}第 ${page} 页谱例转写${options.note ? `（${options.note}）` : ""}`,
+    quality: options.quality,
     bars: jianpu(notes, lyrics),
     label: options.label ?? (options.voices?.length ? "第一声部" : undefined),
     voices: options.voices?.map((voice) => ({ label: voice.label, bars: jianpu(voice.notes, voice.lyrics ?? "") })),

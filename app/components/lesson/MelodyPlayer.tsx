@@ -30,6 +30,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const [current, setCurrent] = useState<number[]>([]);
   const [tempo, setTempo] = useState(melody.bpm);
   const [enabled, setEnabled] = useState<boolean[]>(() => lines.map(() => true));
+  const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
   const context = useRef<AudioContext | null>(null);
   const stopRef = useRef<() => void>(() => {});
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
@@ -61,8 +62,9 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
         if (enabled[voice] && note.d && !note.tie) {
           let length = duration;
           for (let k = index + 1; k < notes.length && notes[k].tie; k += 1) length += notes[k].b * beat;
-          const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
-          const timbre = TIMBRES[voice] ?? TIMBRES[2];
+          const frequency = note.d === 9 ? 160 : 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
+          const timbre = note.d === 9 ? { wave: "triangle" as OscillatorType, overtone: 0.15, level: 0.8 } : TIMBRES[voice] ?? TIMBRES[2];
+          if (note.d === 9) length = Math.min(length, 0.12);
           for (const [wave, level, multiple] of [[timbre.wave, timbre.level, 1], ["sine" as OscillatorType, timbre.level * timbre.overtone, 2]] as const) {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -100,7 +102,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const renderNote = (note: MelodyNote, key: number, active: boolean) => {
     const { lines: underlines, dotted, dashes } = notation(note);
     return <span key={key} className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
-      <span className={`melody-digit lines-${underlines} ${note.o === 1 ? "is-high" : ""} ${note.o === -1 ? "is-low" : ""}`}>{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
+      <span className={`melody-digit lines-${underlines} ${note.o === 1 ? "is-high" : ""} ${note.o === -1 ? "is-low" : ""}`}>{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d === 9 ? "×" : note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
       {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash">–</span>)}
       <span className="melody-lyric">{note.lyric || " "}</span>
     </span>;
@@ -108,10 +110,11 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
 
   return <div className={`melody-player ${large ? "is-large" : ""} ${lines.length > 1 ? "is-choral" : ""}`}>
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
+    {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className="melody-play" onClick={play} aria-label={playing ? "停止" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+      <button type="button" className="melody-play" onClick={play} aria-label={playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
         {playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>}
-        {playing ? "停止" : lines.length > 1 ? "播放合唱" : "播放旋律"}
+        {playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>
       <span className="melody-key">{melody.key} · {melody.meter}</span>
       {lines.length > 1 && <span className="melody-voices" role="group" aria-label="选择声部">

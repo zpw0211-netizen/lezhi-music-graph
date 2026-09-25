@@ -172,9 +172,13 @@ export function LessonPage({
         </header>
 
         <section className="lesson-block">
-          <h2><em>1</em>看谱 · 听旋律</h2>
-          {melody ? <MelodySet melodies={melody} /> : <p className="lesson-note">这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。</p>}
-          {(work.media?.length ?? 0) > 0 && <details className="lesson-scores" open={!melody}>
+          <h2><em>1</em>{work.type === "朗诵作品" ? "阅读 · 聆听" : "看谱 · 听旋律"}</h2>
+          {melody ? <MelodySet melodies={melody} /> : <p className="lesson-note">{work.type === "朗诵作品"
+            ? "这是朗诵作品，没有固定的歌曲旋律。请结合教材原文体会语言节奏。"
+            : (work.media?.length ?? 0) === 0
+              ? "教材此页未附乐谱，暂时无法从教材核对并生成旋律示范。"
+              : "这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。"}</p>}
+          {(work.media?.length ?? 0) > 0 && <details className="lesson-scores" open={!melody || melody.every((item) => item.quality === "draft")}>
             <summary>教材谱例原图（{work.media!.length} 张）</summary>
             <div>{work.media!.map((asset) => <a key={asset.url} href={assetUrl(asset.url)} target="_blank" rel="noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -291,9 +295,9 @@ function PresentMode({ work, melody, groups, tasks, questions, valueOf, assetUrl
   const points = groups.filter((group) => group.key !== "practice").flatMap((group) => group.facts.map((relation) => ({ id: relation.id, label: relation.label ?? relation.predicate, value: valueOf(relation) }))).slice(0, 8);
   const slides: Slide[] = [
     { key: "cover", steps: 1, render: () => <div className="present-cover"><small>{unitName}</small><h1>{work.name}</h1><p>{work.type}</p></div> },
-    { key: "score", steps: 1, render: () => <div className="present-score"><h2>看谱 · 听旋律</h2>{melody ? <MelodySet melodies={melody} large /> : work.media?.[0] && (
+    { key: "score", steps: 1, render: () => <div className="present-score"><h2>看谱 · 听旋律</h2>{melody ? <MelodySet melodies={melody} large /> : work.media?.[0] ? (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={assetUrl(work.media[0].url)} alt="教材谱例" />)}</div> },
+      <img src={assetUrl(work.media[0].url)} alt="教材谱例" />) : <p>{work.type === "朗诵作品" ? "朗诵作品没有固定的歌曲旋律。" : "教材未附谱例，旋律资料有待补充。"}</p>}</div> },
     { key: "points", steps: points.length + 1, render: (step) => <div className="present-points"><h2>知识要点</h2><ul>{points.map((point, index) => <li key={point.id} className={index < step ? "is-shown" : ""}><b>{point.label}</b>{point.value}</li>)}</ul></div> },
     ...questions.map((question, index): Slide => ({ key: question.id, steps: 2, render: (step) => <div className="present-question"><small>小练习 {index + 1} / {questions.length}</small><h2>{question.prompt}</h2>
       <div>{question.options.map((option, k) => <span key={option} className={step >= 1 && option === question.answer ? "is-answer" : step >= 1 ? "is-other" : ""}><em>{"ABCD"[k]}</em>{option}</span>)}</div></div> })),
