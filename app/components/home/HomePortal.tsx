@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useRef, type FormEvent } from "react";
 import { WorkbenchIcon } from "../WorkbenchIcon";
+import { AppTopNav } from "../AppTopNav";
 
 type PortalEntity = { id: string; name: string; type: string; category?: string; textbookCount?: number; degree?: number };
 type PortalRelationship = { subject: string; objectId?: string | null; predicate: string; label?: string };
@@ -55,23 +56,12 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook>({
   const focusSearch = () => { searchInput.current?.focus(); searchInput.current?.scrollIntoView({ block: "center", behavior: "smooth" }); };
 
   return <div className="home-portal">
-    <nav className="home-nav" aria-label="主导航">
-      <div className="home-nav-inner">
-        <span className="home-brand"><WorkbenchIcon name="sprout" /><b>芽谱</b><small>中小学音乐教育知识图谱平台</small></span>
-        <div className="home-nav-links">
-          <button type="button" className="is-active" aria-current="page">首页</button>
-          <button type="button" onClick={() => onView("records")}>按课学习</button>
-          <button type="button" onClick={onOpenFullGraph}>知识图谱</button>
-          <button type="button" onClick={() => onView("assistant")}>智能问答</button>
-          <button type="button" onClick={() => onView("research")}>研究分析</button>
-          <button type="button" onClick={onResearchInfo}>关于芽谱</button>
-        </div>
-        <div className="home-nav-actions">
-          <button type="button" className="home-nav-icon" onClick={focusSearch} aria-label="搜索"><WorkbenchIcon name="search" /></button>
-          <button type="button" className="home-nav-cta" onClick={() => onView("records")}>开始上课</button>
-        </div>
-      </div>
-    </nav>
+    <AppTopNav active="home" onAbout={onResearchInfo}
+      onNavigate={view => { if (view === "graph") onOpenFullGraph(); else if (view !== "home") onView(view); }}
+      trailing={<>
+        <button type="button" className="home-nav-icon" onClick={focusSearch} aria-label="搜索"><WorkbenchIcon name="search" /></button>
+        <button type="button" className="home-nav-cta" onClick={() => onView("records")}>开始上课</button>
+      </>} />
 
     <section className="home-hero">
       <InkLandscape />

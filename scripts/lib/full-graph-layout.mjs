@@ -1,5 +1,6 @@
 import { MultiUndirectedGraph } from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
+import { buildIslandLayout } from "./island-layout.mjs";
 
 const WIDTH = 2400;
 const HEIGHT = 1500;
@@ -514,11 +515,37 @@ export function buildBookLayout(entities, relationships) {
   }));
 }
 
+/** The six-book network: communities as islands, fitted into the shared canvas. */
+function buildKnowledgeIslands(entities, relationships, importanceById) {
+  const entityMap = new Map(entities.map((entity) => [entity.id, entity]));
+  const links = relationships.filter((relationship) => knowledgeRelationship(relationship, entityMap));
+  const islands = buildIslandLayout(entities, links, (id) => importanceById.get(id)?.value ?? 0);
+  const values = [...islands.positions.values()];
+  const minX = Math.min(...values.map((p) => p.x));
+  const maxX = Math.max(...values.map((p) => p.x));
+  const minY = Math.min(...values.map((p) => p.y));
+  const maxY = Math.max(...values.map((p) => p.y));
+  const scale = Math.min((WIDTH - 160) / Math.max(1, maxX - minX), (HEIGHT - 140) / Math.max(1, maxY - minY));
+  const positions = new Map();
+  for (const [id, p] of islands.positions) {
+    positions.set(id, { x: CENTER.x + (p.x - (minX + maxX) / 2) * scale, y: CENTER.y + (p.y - (minY + maxY) / 2) * scale });
+  }
+  return {
+    positions,
+    community: islands.community,
+    islandCount: islands.islandCount,
+    knowledgeNodeCount: entities.filter((entity) => entity.type !== "教材").length,
+    knowledgeRelationshipCount: links.length,
+    skeletonNodeCount: islands.hubCount,
+    petalNodeCount: islands.memberCount,
+  };
+}
+
 export function buildFullGraphLayouts(entities, relationships) {
   const started = performance.now();
   const structuralDegree = knowledgeDegrees(entities, relationships);
   const importanceById = normalizeImportance(entities, structuralDegree);
-  const knowledge = buildFlowerNetworkLayout(entities, relationships, importanceById);
+  const knowledge = buildKnowledgeIslands(entities, relationships, importanceById);
   const textbook = buildTextbookClusterLayout(entities);
   const schema = buildSchemaLayout(entities, importanceById);
   return {
@@ -527,6 +554,7 @@ export function buildFullGraphLayouts(entities, relationships) {
       visualImportance: importanceById.get(entity.id)?.value ?? 0,
       visualRank: importanceById.get(entity.id)?.rank ?? entities.length,
       layout: knowledge.positions.get(entity.id) ?? CENTER,
+      community: knowledge.community.get(entity.id) ?? "core",
       layouts: {
         knowledge: knowledge.positions.get(entity.id) ?? CENTER,
         textbook: textbook.get(entity.id) ?? CENTER,
@@ -535,7 +563,8 @@ export function buildFullGraphLayouts(entities, relationships) {
     })),
     performance: {
       layoutBuildMs: performance.now() - started,
-      algorithm: "ForceAtlas2-skeleton+petals",
+      algorithm: "Louvain-islands+ForceAtlas2",
+      islandCount: knowledge.islandCount,
       iterations: 900,
       skeletonNodeCount: knowledge.skeletonNodeCount,
       petalNodeCount: knowledge.petalNodeCount,

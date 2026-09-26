@@ -31,4 +31,4 @@ export function relationFamily(edge: GraphRelationship) {
 }
 
 export const semanticZoomTier = (ratio: number): 0 | 1 | 2 | 3 => ratio > .72 ? 0 : ratio > .38 ? 1 : ratio > .18 ? 2 : 3;
-export const LABEL_BUDGETS = [28, 80, 160, 260] as const;
+export const LABEL_BUDGETS = [40, 90, 170, 260] as const;

@@ -49,6 +49,7 @@ const compactEntity = (entity) => ({
     : {}),
   ...(entity.visualRank != null ? { visualRank: entity.visualRank } : {}),
   ...(entity.layout ? { layout: roundPoint(entity.layout) } : {}),
+  ...(entity.community ? { community: entity.community } : {}),
   ...(entity.media?.length ? { media: entity.media } : {}),
   ...(entity.layouts
     ? { layouts: Object.fromEntries(Object.entries(entity.layouts).map(([key, point]) => [key, roundPoint(point)])) }

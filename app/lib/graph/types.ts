@@ -11,6 +11,8 @@ export type GraphEntity = {
   relationCount?: number;
   visualImportance?: number;
   visualRank?: number;
+  /** Island (community) of the six-book layout; "core" for textbooks and hub concepts. */
+  community?: string;
 };
 
 export type GraphRelationship = {

@@ -1,0 +1,57 @@
+/* 芽谱水墨主题：让应用内页与首页共用同一套纸色、墨绿与宋体标题。 */
+.ink-app {
+  --paper:#F7F5EF; --paper-deep:#EFEBE1; --ink:#1F3B31; --ink-soft:#56655D; --pine:#1F5C47; --pine-hover:#17493A;
+  --seal:#B5463A; --gold:#D39A4B; --line:#E4DFD3;
+  --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+  --brush:"STKaiti","KaiTi","Kaiti SC","楷体",var(--serif);
+  --app-bg:var(--paper); --bg:var(--paper);
+  --surface-soft:#F3F0E8; --surface-hover:#EFEBE1;
+  --text-primary:var(--ink); --text-secondary:var(--ink-soft); --text-tertiary:#8C958F;
+  --accent:var(--pine); --accent-hover:var(--pine-hover); --accent-bright:#3E8C72; --accent-soft:#E5EEE8;
+  --border:#E6E1D5; --border-strong:#D4CDBD;
+  --shadow-sm:0 1px 2px #1F3B310D,0 2px 6px #1F3B310A; --shadow-md:0 6px 18px #1F3B3114; --shadow-lg:0 18px 44px #1F3B311F;
+}
+body:has(.ink-app),.ink-app,.ink-app .workspace { background:var(--paper); }
+
+/* Shared top navigation (also used on the home page) */
+.home-nav-links button,.home-nav-cta { white-space:nowrap; }
+.ink-app.network-mode .home-nav-inner { gap:16px; padding:0 16px; }
+.ink-app.network-mode .home-brand small { display:none; }
+.ink-app.network-mode .home-nav-links button { padding:8px 10px; }
+.home-nav .home-brand { padding:0; border:0; background:transparent; cursor:pointer; }
+.app-nav-search { position:relative; display:flex; align-items:center; gap:8px; width:260px; height:38px; padding:0 14px; border:1px solid var(--line); border-radius:999px; background:#fff; }
+.app-nav-search:focus-within { border-color:var(--pine); box-shadow:0 0 0 3px #1F5C471A; }
+.app-nav-search svg { width:17px; height:17px; color:var(--ink-soft); }
+.app-nav-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--ink); font-size:14px; }
+.app-nav-results { position:absolute; z-index:60; top:calc(100% + 8px); right:0; width:340px; max-height:380px; overflow:auto; padding:6px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:var(--shadow-lg); }
+.app-nav-results button { display:block; width:100%; padding:10px 12px; border:0; border-radius:10px; background:transparent; text-align:left; color:var(--ink); }
+.app-nav-results button:hover { background:var(--surface-soft); }
+.app-nav-results strong { display:block; font-size:14px; }
+.app-nav-results small { display:block; margin-top:2px; color:var(--ink-soft); font-size:12px; }
+
+/* App pages without the graph sidebar: full-width column under the top nav */
+.ink-app.nav-mode:not(.home-mode) .workspace { height:100dvh; overflow-y:auto; padding:0; }
+.ink-app:not(.home-mode) .topbar { display:none; }
+.ink-app.nav-mode:not(.home-mode) .workspace > :not(.home-nav):not(.research-info-backdrop) { width:auto; max-width:1320px; margin-left:auto; margin-right:auto; padding-left:32px; padding-right:32px; box-sizing:border-box; }
+.ink-app.network-mode .workspace { height:100dvh; overflow-y:auto; padding:0 20px 20px; }
+.ink-app.network-mode .home-nav { margin:0 -20px 12px; }
+.ink-app .explorer-brand,.ink-app .explorer-nav { display:none; }
+.ink-app .explorer-sidebar { background:#F1EEE5; }
+
+/* Typography of the app pages */
+.ink-app :is(.work-library,.lesson,.assistant-page,.research-analysis,.work-graph) :is(h1,h2) { font-family:var(--serif); letter-spacing:.06em; color:var(--ink); }
+.ink-app :is(.work-library,.assistant-page,.research-analysis,.work-graph) { padding-top:28px; padding-bottom:40px; }
+.ink-app .lesson { padding-top:20px; padding-bottom:40px; }
+
+/* Cards: white on paper, softer borders */
+.ink-app :is(.work-card,.lesson-card,.lesson-section,.research-card,.assistant-card) { border-color:var(--line); box-shadow:var(--shadow-sm); }
+
+@media (max-width:1100px) {
+  .app-nav-search { width:200px; }
+}
+@media (max-width:760px) {
+  .ink-app.nav-mode:not(.home-mode) .workspace { height:auto; overflow:visible; }
+  .ink-app.nav-mode:not(.home-mode) .workspace > :not(.home-nav):not(.research-info-backdrop) { padding-left:16px; padding-right:16px; }
+  .app-nav-search { width:150px; }
+  .app-nav-results { width:280px; }
+}

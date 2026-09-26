@@ -52,6 +52,7 @@ import type { AnswerResult } from "./lib/ai/graph-rag";
 import { GraphSidebar } from "./components/graph/GraphSidebar";
 import { WorkbenchIcon } from "./components/WorkbenchIcon";
 import { HomePortal } from "./components/home/HomePortal";
+import { AppTopNav } from "./components/AppTopNav";
 import { WorkLibrary } from "./components/records/WorkLibrary";
 import { WorkGraph } from "./components/records/WorkGraph";
 import { LessonPage } from "./components/lesson/LessonPage";
@@ -1908,7 +1909,7 @@ export default function Home() {
   const openResearchPair = useCallback(
     (leftBookKey: string, rightBookKey: string, entityIds: string[]) => {
       if (!canonicalBook || !entityIds.length) return;
-      resetGraphFilters(); setGraphPerspective("comprehensive"); setTypeFilter("全部"); setInspectorOpen(false);
+        resetGraphFilters(); setGraphPerspective("comprehensive"); setTypeFilter("全部"); setInspectorOpen(false);
       const idSet = new Set(entityIds);
       const relatedRelationships = canonicalBook.triples
         .filter(
@@ -1956,7 +1957,7 @@ export default function Home() {
     (entity: { id: string }) => {
       const target = canonicalEntityById.get(entity.id);
       if (!target || !canonicalBook) return;
-      resetGraphFilters(); setGraphPerspective("comprehensive"); setTypeFilter("全部"); setInspectorOpen(true);
+        resetGraphFilters(); setGraphPerspective("comprehensive"); setTypeFilter("全部"); setInspectorOpen(true);
       setFullGraphView("all"); setFocusSelectionToken(value => value + 1);
       setView("graph");
       setGraphMode("all");
@@ -3086,7 +3087,7 @@ export default function Home() {
     );
   return (
     <main
-      className={`app-shell theme-light ${knowledgeDetailOpen && view === "graph" ? "detail-open" : ""} ${inspectorOpen ? "inspector-open" : "inspector-closed"} ${schemaOpen ? "schema-open" : "schema-closed"} ${view === "assistant" ? "assistant-mode" : ""} ${view === "home" ? "home-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""}`}
+      className={`app-shell theme-light ${knowledgeDetailOpen && view === "graph" ? "detail-open" : ""} ${inspectorOpen ? "inspector-open" : "inspector-closed"} ${schemaOpen ? "schema-open" : "schema-closed"} ${view === "assistant" ? "assistant-mode" : ""} ${view === "home" ? "home-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""} ${view === "graph" ? "network-mode" : "nav-mode"} ink-app`}
       style={
         {
           ...designTokenCssVariables,
@@ -3094,11 +3095,31 @@ export default function Home() {
         } as CSSProperties
       }
     >
-      <GraphSidebar view={view} onView={value => { if (value === "assistant") setAssistantEntry(current => ({ question: "", token: current.token + 1 })); setView(value); }} graph={canonicalGraph} books={dataset.books} scopeBook={graphMode === "all" ? undefined : bookKey}
+      {view === "graph" && <GraphSidebar view={view} onView={value => { if (value === "assistant") setAssistantEntry(current => ({ question: "", token: current.token + 1 })); setView(value); }} graph={canonicalGraph} books={dataset.books} scopeBook={graphMode === "all" ? undefined : bookKey}
         filters={graphFilters} perspective={graphPerspective} onPerspective={handlePerspective}
         onSchema={() => { setGraphMode("all"); setFullGraphLayout("schema"); }} onSources={() => setShowTextbookSources(true)}
-        onReset={resetExplorer} execute={graphActions.execute} notice={graphActions.notice} assetUrl={publicAssetUrl} onGraphFocus={handleAnswerFocus} />
+        onReset={resetExplorer} execute={graphActions.execute} notice={graphActions.notice} assetUrl={publicAssetUrl} onGraphFocus={handleAnswerFocus} />}
       <section className="workspace">
+        {view !== "home" && <AppTopNav
+          active={view === "lesson" || view === "work" ? "records" : view === "import" ? null : view}
+          onNavigate={(target) => {
+            if (target === "graph") { chooseFullGraph(); return; }
+            if (target === "assistant") setAssistantEntry(current => ({ question: "", token: current.token + 1 }));
+            setView(target);
+          }}
+          onAbout={() => setResearchInfoOpen(true)}
+          search={{
+            query,
+            onQuery: setQuery,
+            onSubmit: submitSearch,
+            hits: searchResults.slice(0, 8).map(({ entity, book, relationCount }) => ({
+              key: `${book.key}-${entity.id}`,
+              title: entity.name,
+              meta: `${book.grade}年级${book.semester} · ${entity.type} · ${relationCount} 条关系`,
+              onPick: () => selectSearchResult(entity, book),
+            })),
+          }}
+        />}
         <header className="topbar">
           <div>
             <p className="eyebrow muted">

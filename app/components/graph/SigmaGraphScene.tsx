@@ -11,7 +11,7 @@ import { EdgeArrowProgram, EdgeLineProgram } from "sigma/rendering";
 import { animateNodes } from "sigma/utils";
 import type { NodeHoverDrawingFunction } from "sigma/rendering";
 import { NodeRingProgram, drawLabelBelow } from "../../lib/graph/node-ring-program";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CanvasPerformanceMetrics } from "../FullGraphCanvas";
 import { schemaCategoryFor, schemaCategoryMeta } from "../../graph-schema";
 import { SEMANTIC_PALETTE } from "../../semantic-palette";
@@ -177,21 +177,34 @@ function SigmaController<E extends GraphEntity>({
       const score = (edge: GraphRelationship) => (edge.crossBook ? 20 : 0) + Math.log2((indexes.entityMap.get(edge.subject)?.degree ?? 0) + 1) + Math.log2((indexes.entityMap.get(edge.objectId ?? "")?.degree ?? 0) + 1);
       return score(b) - score(a) || a.id.localeCompare(b.id);
     }).slice(0, 440).map(edge => edge.id)), [indexes]);
-  // Skeleton first: the overview shows only the core knowledge points (shared
-  // across books, highly connected); zooming in reveals more, and a selected
-  // point always brings its own neighbourhood. Everything else stays hidden
-  // rather than faint, so the map reads as a structure instead of a hairball.
+  // The layout groups tightly linked knowledge into islands, so every node can
+  // stay on screen: the islands read as structure, not as a hairball.
   const shownNodeIds = useMemo(() => {
-    const limit = [90, 240, 640, Number.POSITIVE_INFINITY][zoomTier];
     const shown = new Set<string>();
-    for (const id of visibleNodeIds) {
-      if (!dataGraph.hasNode(id)) continue;
-      const attributes = dataGraph.getNodeAttributes(id);
-      const core = attributes.visualRank <= limit || (attributes.entity.textbookCount ?? 1) >= 3;
-      if (core || focus.depthByNode.has(id) || explicitNodes.has(id) || id === hoveredNode) shown.add(id);
-    }
+    for (const id of visibleNodeIds) if (dataGraph.hasNode(id)) shown.add(id);
     return shown;
-  }, [dataGraph, explicitNodes, focus, hoveredNode, visibleNodeIds, zoomTier]);
+  }, [dataGraph, visibleNodeIds]);
+  // Each island is named in the overview by its most important work or person
+  // (never by a key or meter signature, which every island shares).
+  const islandLeaders = useMemo(() => {
+    const rank = (entity: GraphEntity) => {
+      const category = schemaCategoryFor(entity.type);
+      const tier = category === "work" ? 3 : category === "person" ? 2 : ["genre", "instrument", "culture"].includes(category) ? 1 : 0;
+      return tier * 10 + (entity.visualImportance ?? 0);
+    };
+    const best = new Map<string, GraphEntity>();
+    for (const entity of indexes.entityMap.values()) {
+      const island = entity.community;
+      if (!island || island === "core" || island === "isolated") continue;
+      const current = best.get(island);
+      if (!current || rank(entity) > rank(current)) best.set(island, entity);
+    }
+    return new Set([...best.values()].map(entity => entity.id));
+  }, [indexes]);
+  const sameIsland = useCallback((relationship: GraphRelationship) => {
+    const a = indexes.entityMap.get(relationship.subject)?.community;
+    return !!a && a !== "core" && a === indexes.entityMap.get(relationship.objectId ?? "")?.community;
+  }, [indexes]);
   const labelIds = useMemo(() => {
     const { width, height } = sigma.getDimensions();
     const candidates = [...shownNodeIds].filter(id => {
@@ -201,12 +214,12 @@ function SigmaController<E extends GraphEntity>({
       return p.x > -30 && p.y > -30 && p.x < width + 30 && p.y < height + 30;
     });
     const score = (id: string) => id === selectedId ? 1e9 : id === hoveredNode ? 9e8 :
-      (focus.depthByNode.get(id) === 1 ? 1e7 : 0) + (explicitNodes.has(id) ? 1e6 : 0) +
+      (focus.depthByNode.get(id) === 1 ? 1e7 : 0) + (explicitNodes.has(id) ? 1e6 : 0) + (zoomTier <= 1 && islandLeaders.has(id) ? 5e5 : 0) +
       (indexes.entityMap.get(id)?.visualImportance ?? 0) * 1e4 + (indexes.entityMap.get(id)?.textbookCount ?? 1) * 100 - (indexes.entityMap.get(id)?.visualRank ?? 1337);
     return new Set(candidates.sort((a, b) => score(b) - score(a)).slice(0, showLabels ? LABEL_BUDGETS[zoomTier] : Math.round(LABEL_BUDGETS[zoomTier] * .8)));
     // Camera movement changes the viewport without changing graph coordinates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataGraph, explicitNodes, focus, hoveredNode, indexes, selectedId, showLabels, shownNodeIds, sigma, viewportTick, zoomTier]);
+  }, [dataGraph, explicitNodes, focus, hoveredNode, indexes, islandLeaders, selectedId, showLabels, shownNodeIds, sigma, viewportTick, zoomTier]);
 
   // Selecting a knowledge point pulls its direct neighbours into an orbit around
   // it (and releases them when the focus clears), so relations read at a glance
@@ -279,12 +292,12 @@ function SigmaController<E extends GraphEntity>({
         const selected = node === selectedId && !focusSuppressed;
         const hovered = node === hoveredNode;
         const overviewCore = data.visualRank <= [70, 200, 550, 1337][zoomTier] || (data.entity.textbookCount ?? 1) >= 3;
-        const alpha = dimmed ? .05 : depth === 2 ? .3 : focus.depthByNode.size || overviewCore ? 1 : [.16, .28, .55, 1][zoomTier];
+        const alpha = dimmed ? .05 : depth === 2 ? .3 : focus.depthByNode.size || overviewCore ? 1 : [.62, .74, .86, 1][zoomTier];
         return {
           ...data,
           hidden: !shownNodeIds.has(node),
           color: alpha < 1 ? withAlpha(data.color, alpha) : data.color,
-          size: data.size * (selected ? 1.38 : hovered ? 1.12 : !focus.depthByNode.size && !overviewCore ? .55 : .9),
+          size: data.size * (selected ? 1.38 : hovered ? 1.12 : !focus.depthByNode.size && !overviewCore ? .62 : .9),
           label:
             selected || hovered || (!dimmed && (labelIds.has(node) || (depth === 1 && focus.depthByNode.size <= 40))) ? data.label : "",
           // Only the selection is forced; neighbours go through Sigma's label grid so they never overlap.
@@ -314,6 +327,7 @@ function SigmaController<E extends GraphEntity>({
             : secondary ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.secondary)
             : relationship.provenance ? rgba(138, 151, 164, RELATION_VISIBILITY.overview.provenance)
             : relationship.crossBook ? rgba(110, 130, 151, RELATION_VISIBILITY.overview.crossBook)
+            : sameIsland(relationship) ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, zoomTier >= 2 ? .42 : .3)
             : structuralEdges.has(edge) ? rgba(138, 151, 164, RELATION_VISIBILITY.overview.structural)
             : rgba(138, 151, 164, zoomTier >= 2 ? .1 : RELATION_VISIBILITY.overview.ordinary),
           size: highlighted ? 2.7 : direct || hovered ? 2.1 : secondary ? 1 : relationship.crossBook ? .85 : .6,
@@ -335,6 +349,7 @@ function SigmaController<E extends GraphEntity>({
     hoveredNode,
     hoverEdges,
     labelIds,
+    sameIsland,
     structuralEdges,
     zoomTier,
     relationLabels,
