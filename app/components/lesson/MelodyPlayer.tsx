@@ -102,7 +102,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const renderNote = (note: MelodyNote, key: number, active: boolean) => {
     const { lines: underlines, dotted, dashes } = notation(note);
     return <span key={key} className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
-      <span className={`melody-digit lines-${underlines} ${note.o === 1 ? "is-high" : ""} ${note.o === -1 ? "is-low" : ""}`}>{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d === 9 ? "×" : note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
+      <span className={`melody-digit lines-${underlines} ${(note.o ?? 0) > 0 ? "is-high" : ""} ${(note.o ?? 0) < 0 ? "is-low" : ""} ${Math.abs(note.o ?? 0) === 2 ? "is-double" : ""}`}>{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d === 9 ? "×" : note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
       {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash">–</span>)}
       <span className="melody-lyric">{note.lyric || " "}</span>
     </span>;

@@ -2,7 +2,7 @@
 // score. Degrees are jianpu digits (0 = rest, 9 = unpitched rhythm X); octave -1 is a dot below, +1 a
 // dot above; beats count quarter notes. `tie` continues the previous note;
 // `a` is an accidental (1 = ♯, -1 = ♭).
-export type MelodyNote = { d: number; o?: -1 | 0 | 1; b: number; lyric?: string; tie?: boolean; a?: -1 | 1; tri?: boolean };
+export type MelodyNote = { d: number; /** octave dots: +1/+2 above, -1/-2 below */ o?: number; b: number; lyric?: string; tie?: boolean; a?: -1 | 1; tri?: boolean };
 export type Melody = {
   /** Heading when a work has several excerpts (主题一, 引子…). */
   title?: string;
@@ -24,7 +24,7 @@ export type Melody = {
 
 /**
  * Compact jianpu text → bars. Bars split on "|", notes on spaces.
- *   5  quarter · 5/ eighth · 5// sixteenth · 5/// thirty-second · 5. / 5/. dotted · "-" adds a beat to the previous note
+ *   5  quarter · 5/ eighth · 5// sixteenth · 5/// thirty-second · 5//// sixty-fourth · 5. / 5/. dotted · "-" adds a beat to the previous note
  *   5' dot above · 5, dot below · #4 sharp · b7 flat · 0 rest · ~5 tied continuation · 5//t triplet
  * Lyrics: one item per sung note (not rests or ties); "~" = melisma (no syllable).
  */
@@ -36,12 +36,12 @@ export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
     for (const token of bar.split(/\s+/)) {
       if (token === "-") { notes[notes.length - 1].b += 1; continue; }
       // Dot and slashes may come in either order ("5./" or "5/.").
-      const m = token.match(/^(~?)([#b]?)([0-79])([',]?)(\.?)(\/{0,3})(\.?)(t?)$/);
+      const m = token.match(/^(~?)([#b]?)([0-79])('{0,2}|,{0,2})(\.?)(\/{0,4})(\.?)(t?)$/);
       if (!m) throw new Error(`jianpu: cannot read "${token}"`);
       const [, tie, acc, digit, octave, dotBefore, slashes, dotAfter, triplet] = m;
       const dot = dotBefore || dotAfter;
       const b = 2 ** -slashes.length * (dot ? 1.5 : 1) * (triplet ? 2 / 3 : 1);
-      const note: MelodyNote = { d: Number(digit), b, o: octave === "'" ? 1 : octave === "," ? -1 : 0 };
+      const note: MelodyNote = { d: Number(digit), b, o: octave.startsWith("'") ? octave.length : -octave.length };
       if (acc) note.a = acc === "#" ? 1 : -1;
       if (triplet) note.tri = true;
       if (tie) note.tie = true;
@@ -69,6 +69,8 @@ export function checkMelody(melody: Melody) {
 }
 
 function checkBars(melody: Melody, bars: MelodyNote[][]) {
+  // Free-rhythm passages (散板) are written phrase by phrase; nothing to measure.
+  if (melody.meter.includes("散")) return [];
   // Mixed meters are written "2/4、4/4"; a bar may match any of them.
   const allowed = melody.meter.split("、").map((meter) => { const [top, bottom] = meter.split("/").map(Number); return top * (4 / bottom); });
   return bars
