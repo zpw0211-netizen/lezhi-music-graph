@@ -57,6 +57,7 @@ type EgoNode = {
 };
 type EgoLink = { id: string; source: string; target: string; labels: string[]; depth: 1 | 2 };
 type SimNode = { x: number; y: number; vx: number; vy: number; r: number; w: number; h: number; fx?: number; fy?: number; phase: number };
+type RenderNode = { x: number; y: number; r: number };
 // Rendered label length drives the collision box, so neighbours never overprint.
 const labelText = (name: string, depth: number) => name.length > (depth === 2 ? 9 : 14) ? `${name.slice(0, depth === 2 ? 8 : 13)}…` : name;
 
@@ -132,10 +133,17 @@ export function WorkGraph({
   const links = useMemo(() => ego.links.filter((link) => showSecond || link.depth < 2), [ego, showSecond]);
   const work = entityMap.get(workId);
   const attributes = useMemo(() => relationships.filter((relation) => relation.subject === workId && relation.literal && !relation.provenance), [relationships, workId]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<{ workId: string; id: string | null }>(() => ({ workId, id: null }));
+  if (selection.workId !== workId) setSelection({ workId, id: null });
+  const selectedId = selection.id;
+  const setSelectedId = (id: string | null) => setSelection({ workId, id });
+  const toggleSelectedId = (id: string) => setSelection((current) => ({
+    workId,
+    id: current.workId === workId && current.id === id ? null : id,
+  }));
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [size, setSize] = useState({ width: 900, height: 620 });
-  const [, setFrame] = useState(0);
+  const [renderNodes, setRenderNodes] = useState<Map<string, RenderNode>>(() => new Map());
   const stageRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const sim = useRef(new Map<string, SimNode>());
@@ -143,7 +151,6 @@ export function WorkGraph({
   const drag = useRef<{ id: string; moved: boolean; x: number; y: number } | null>(null);
   const reducedMotion = useRef(false);
 
-  useEffect(() => { setSelectedId(null); }, [workId]);
   useEffect(() => {
     reducedMotion.current = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     const element = stageRef.current;
@@ -157,11 +164,12 @@ export function WorkGraph({
   const facetAngles = useMemo(() => {
     const present = FACETS.map((facet) => ({ facet, count: nodes.filter((node) => node.depth === 1 && node.facet === facet.key).length })).filter((item) => item.count);
     const total = present.reduce((sum, item) => sum + Math.max(1.6, item.count), 0);
-    let cursor = -Math.PI / 2 - (Math.max(1.6, present[0]?.count ?? 1) / Math.max(1, total)) * Math.PI;
-    return new Map(present.map((item) => {
+    const start = -Math.PI / 2 - (Math.max(1.6, present[0]?.count ?? 1) / Math.max(1, total)) * Math.PI;
+    return new Map(present.map((item, index) => {
+      const previousWeight = present.slice(0, index).reduce((sum, previous) => sum + Math.max(1.6, previous.count), 0);
+      const cursor = start + (previousWeight / Math.max(1, total)) * Math.PI * 2;
       const span = (Math.max(1.6, item.count) / Math.max(1, total)) * Math.PI * 2;
       const sector = { start: cursor, span, mid: cursor + span / 2 };
-      cursor += span;
       return [item.facet.key, sector] as const;
     }));
   }, [nodes]);
@@ -186,6 +194,7 @@ export function WorkGraph({
   useEffect(() => { alpha.current = Math.max(alpha.current, 0.3); }, [size]);
   useEffect(() => {
     let raf = 0;
+    let wasMoving = true;
     const byFacet = new Map<string, EgoNode[]>();
     for (const node of nodes) if (node.depth === 1) byFacet.set(node.facet, [...(byFacet.get(node.facet) ?? []), node]);
     const childrenOf = new Map<string, EgoNode[]>();
@@ -193,6 +202,7 @@ export function WorkGraph({
     const step = () => {
       const a = alpha.current;
       let moving = a > 0.004 || Boolean(drag.current);
+      const hadMotion = wasMoving;
       {
         const list = nodes.map((node) => ({ node, s: sim.current.get(node.id)! })).filter((item) => item.s);
         // Anchors: each first-hop node gets a slot inside its facet's sector.
@@ -245,23 +255,30 @@ export function WorkGraph({
           s.y = Math.max(-halfH + 58 + s.r, Math.min(halfH - 70 - s.r - 22, s.y + s.vy));
         }
         if (a > 0.004) alpha.current = a * 0.985;
+        const now = typeof performance === "undefined" ? 0 : performance.now();
+        const nextRenderNodes = new Map<string, RenderNode>();
+        for (const { node, s } of list) {
+          const frozen = reducedMotion.current || node.id === workId || s.fx != null || drag.current?.id === node.id;
+          const amplitude = frozen ? 0 : 3.2 * (1 - Math.min(1, alpha.current * 3));
+          nextRenderNodes.set(node.id, {
+            x: s.x + (frozen ? 0 : Math.sin(now / 1700 + s.phase) * amplitude),
+            y: s.y + (frozen ? 0 : Math.cos(now / 2100 + s.phase * 1.3) * amplitude),
+            r: s.r,
+          });
+        }
+        if (!reducedMotion.current || moving || hadMotion) setRenderNodes(nextRenderNodes);
       }
       // With reduced motion there is nothing to repaint once the layout settles.
-      if (!reducedMotion.current || moving) setFrame((value) => (value + 1) % 1e6);
+      wasMoving = moving;
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [facetAngles, firstRadius, nodes, ringX, ringY, size]);
+  }, [facetAngles, firstRadius, nodes, ringX, ringY, size, workId]);
 
-  // Settled nodes keep a slow drift so the map reads as alive, not frozen.
-  const now = typeof performance === "undefined" ? 0 : performance.now();
   const position = (id: string) => {
-    const s = sim.current.get(id);
-    if (!s) return { x: 0, y: 0 };
-    if (reducedMotion.current || id === workId || s.fx != null || drag.current?.id === id) return { x: s.x, y: s.y };
-    const amplitude = 3.2 * (1 - Math.min(1, alpha.current * 3));
-    return { x: s.x + Math.sin(now / 1700 + s.phase) * amplitude, y: s.y + Math.cos(now / 2100 + s.phase * 1.3) * amplitude };
+    const node = renderNodes.get(id);
+    return node ? { x: node.x, y: node.y } : { x: 0, y: 0 };
   };
 
   const toGraph = (event: ReactPointerEvent) => {
@@ -295,7 +312,7 @@ export function WorkGraph({
     if (s) { s.fx = undefined; s.fy = undefined; }
     // Released nodes spring back into their facet slot.
     alpha.current = Math.max(alpha.current, 0.5);
-    if (!current.moved) setSelectedId((value) => (value === current.id ? null : current.id));
+    if (!current.moved) toggleSelectedId(current.id);
     drag.current = null;
   };
 
@@ -355,7 +372,7 @@ export function WorkGraph({
         })}
         {nodes.map((node) => {
           const p = position(node.id);
-          const s = sim.current.get(node.id);
+          const s = renderNodes.get(node.id);
           const palette = SEMANTIC_PALETTE[node.category];
           const dim = Boolean(activeSet) && !activeSet!.has(node.id);
           const isSelected = node.id === selectedId;
