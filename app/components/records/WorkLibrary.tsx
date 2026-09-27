@@ -124,7 +124,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
       <h3>{unit.name}<small>{unit.cards.length} 首</small></h3>
       <div className="work-grid">
         {unit.cards.map((card) => <button key={card.work.id} type="button" className={`work-card grade-${book.grade}`} onClick={() => onOpen(card.work, book)}>
-          <span className="work-card-top"><em>{card.work.type}</em>{card.starred && <b className="work-card-star" title="教材标注的重点学习曲目">☆ 重点</b>}{playbackBadge(card.work.name)}<small>{printedPage(card.work) ? `第 ${printedPage(card.work)} 页` : `PDF ${card.work.firstPage ?? "—"}`}</small></span>
+          <span className="work-card-top"><em>{card.work.type}</em>{card.starred && <b className="work-card-star" title="教材标注的重点学习曲目">☆ 重点</b>}{playbackBadge(card.work.name)}<small>{printedPage(card.work) ? `教材第 ${printedPage(card.work)} 页` : `PDF 第 ${card.work.firstPage ?? "—"} 页`}</small></span>
           <strong>{card.work.name}</strong>
           <span className="work-card-creators">{card.creators.length ? card.creators.map((item) => <span key={item.name}><small>{item.role}</small>{item.name}</span>) : <span className="muted">作者信息待补充</span>}</span>
           <span className="work-card-facts">
