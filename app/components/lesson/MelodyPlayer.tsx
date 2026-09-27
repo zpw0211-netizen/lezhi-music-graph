@@ -2,13 +2,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { midiOf, notation } from "../../lib/lesson/melodies";
 import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
+import { loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
+import type { PianoSampler } from "../../lib/lesson/piano-sampler";
 
 type Line = { label: string; bars: MelodyNote[][] };
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
 const TIMBRES = [
   { wave: "triangle" as OscillatorType, overtone: 0.5, level: 1 },
-  { wave: "sine" as OscillatorType, overtone: 0.3, level: 0.85 },
-  { wave: "sine" as OscillatorType, overtone: 0.2, level: 0.75 },
+  { wave: "sine" as OscillatorType, overtone: 0.3, level: 0.65 },
+  { wave: "sine" as OscillatorType, overtone: 0.2, level: 0.55 },
 ];
 
 /** Excerpts of one work: tabs when there are several themes, one player each. */
@@ -27,11 +29,14 @@ export function MelodySet({ melodies, large }: { melodies: Melody[]; large?: boo
 export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolean }) {
   const lines = useMemo<Line[]>(() => [{ label: melody.label ?? "旋律", bars: melody.bars }, ...(melody.voices ?? [])], [melody]);
   const [playing, setPlaying] = useState(false);
+  const [loadingPiano, setLoadingPiano] = useState(false);
+  const [audioMode, setAudioMode] = useState<"unknown" | "piano" | "synth">("unknown");
   const [current, setCurrent] = useState<number[]>([]);
   const [tempo, setTempo] = useState(melody.bpm);
   const [enabled, setEnabled] = useState<boolean[]>(() => lines.map(() => true));
   const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
   const context = useRef<AudioContext | null>(null);
+  const pianoSampler = useRef<PianoSampler | null>(null);
   const stopRef = useRef<() => void>(() => {});
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
   const offsets = useMemo(() => lines.map((line) => line.bars.reduce<number[]>((acc, bar, i) => [...acc, i ? acc[i - 1] + line.bars[i - 1].length : 0], [])), [lines]);
@@ -39,17 +44,34 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const stop = useCallback(() => { stopRef.current(); stopRef.current = () => {}; setPlaying(false); setCurrent([]); }, []);
   useEffect(() => stop, [stop]);
 
-  const play = () => {
+  const play = async () => {
     if (playing) { stop(); return; }
     const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtor) return;
+    if (!AudioCtor) { setAudioMode("synth"); return; }
     const ctx = context.current ?? new AudioCtor();
     context.current = ctx;
-    void ctx.resume();
+
+    let sampler = pianoSampler.current;
+    if (!rhythmOnly && audioMode !== "synth" && !sampler) {
+      setLoadingPiano(true);
+      try {
+        await ctx.resume();
+        sampler = await loadPianoSampler(ctx);
+        pianoSampler.current = sampler;
+        setAudioMode("piano");
+      } catch {
+        setAudioMode("synth");
+      } finally {
+        setLoadingPiano(false);
+      }
+    } else {
+      await ctx.resume().catch(() => undefined);
+    }
+
     const beat = 60 / tempo;
     const start = ctx.currentTime + 0.12;
     const master = ctx.createGain();
-    master.gain.value = lines.length > 1 ? 0.16 : 0.22;
+    master.gain.value = lines.length > 1 ? 0.24 : 0.34;
     master.connect(ctx.destination);
     let end = start;
     const timeline = flats.map((notes, voice) => {
@@ -62,19 +84,37 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
         if (enabled[voice] && note.d && !note.tie) {
           let length = duration;
           for (let k = index + 1; k < notes.length && notes[k].tie; k += 1) length += notes[k].b * beat;
-          const frequency = note.d === 9 ? 160 : 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
-          const timbre = note.d === 9 ? { wave: "triangle" as OscillatorType, overtone: 0.15, level: 0.8 } : TIMBRES[voice] ?? TIMBRES[2];
-          if (note.d === 9) length = Math.min(length, 0.12);
-          for (const [wave, level, multiple] of [[timbre.wave, timbre.level, 1], ["sine" as OscillatorType, timbre.level * timbre.overtone, 2]] as const) {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = wave; osc.frequency.value = frequency * multiple;
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(level, t + 0.02);
-            gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
-            gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
-            osc.connect(gain).connect(master);
-            osc.start(t); osc.stop(t + length);
+          if (note.d === 9) {
+            const percussion = { wave: "triangle" as OscillatorType, overtone: 0.15, level: 0.8 };
+            length = Math.min(length, 0.12);
+            for (const [wave, level, multiple] of [[percussion.wave, percussion.level, 1], ["sine" as OscillatorType, percussion.level * percussion.overtone, 2]] as const) {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = wave; osc.frequency.value = 160 * multiple;
+              gain.gain.setValueAtTime(0, t);
+              gain.gain.linearRampToValueAtTime(level, t + 0.02);
+              gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
+              gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
+              osc.connect(gain).connect(master);
+              osc.start(t); osc.stop(t + length);
+            }
+          } else if (sampler) {
+            const level = voice === 0 ? 1 : voice === 1 ? 0.7 : 0.58;
+            playPianoSample(ctx, sampler, midiOf(melody, note), t, length, master, level);
+          } else {
+            const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
+            const timbre = TIMBRES[voice] ?? TIMBRES[2];
+            for (const [wave, level, multiple] of [[timbre.wave, timbre.level, 1], ["sine" as OscillatorType, timbre.level * timbre.overtone, 2]] as const) {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = wave; osc.frequency.value = frequency * multiple;
+              gain.gain.setValueAtTime(0, t);
+              gain.gain.linearRampToValueAtTime(level, t + 0.02);
+              gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
+              gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
+              osc.connect(gain).connect(master);
+              osc.start(t); osc.stop(t + length);
+            }
           }
         }
         t += duration;
@@ -95,7 +135,12 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    stopRef.current = () => { cancelAnimationFrame(raf); master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setValueAtTime(0, ctx.currentTime); setTimeout(() => master.disconnect(), 60); };
+    stopRef.current = () => {
+      cancelAnimationFrame(raf);
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
+      setTimeout(() => master.disconnect(), 100);
+    };
     setPlaying(true);
   };
 
@@ -112,19 +157,19 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className="melody-play" onClick={play} aria-label={playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
-        {playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>}
-        {playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
+      <button type="button" className="melody-play" onClick={play} disabled={loadingPiano} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+        {!loadingPiano && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
+        {loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>
       <span className="melody-key">{melody.key} · {melody.meter}</span>
       {lines.length > 1 && <span className="melody-voices" role="group" aria-label="选择声部">
         {lines.map((line, k) => <label key={line.label} className={`voice-${k}`}>
-          <input type="checkbox" checked={enabled[k]} disabled={playing} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
+          <input type="checkbox" checked={enabled[k]} disabled={playing || loadingPiano} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
           {line.label}
         </label>)}
       </span>}
       <label className="melody-tempo">速度
-        <input type="range" min={40} max={160} step={4} value={tempo} disabled={playing} onChange={(event) => setTempo(Number(event.target.value))} />
+        <input type="range" min={40} max={160} step={4} value={tempo} disabled={playing || loadingPiano} onChange={(event) => setTempo(Number(event.target.value))} />
         <b>♩={tempo}</b>
       </label>
     </div>
@@ -135,6 +180,6 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
         </span>)}
       </span>)}
     </div>
-    <p className="melody-source">{melody.source}。电子音色示范，仅供视唱参考。</p>
+    <p className="melody-source">{melody.source}。{audioMode === "synth" ? "电子音色示范，仅供视唱参考。" : <>钢琴音色示范，仅供视唱参考。钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）。</>}</p>
   </div>;
 }
