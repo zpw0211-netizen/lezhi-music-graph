@@ -83,9 +83,9 @@ try {
     });
   }
   await record("回答联动与 Inspector AI 自动提问", async () => {
-    await smart.getByRole("button", { name: "在图谱中查看", exact: true }).click(); assert(await page.locator(".node-ai-interpretation").isVisible());
+    await smart.getByRole("button", { name: "查看相关知识", exact: true }).click(); assert(await page.locator(".node-ai-interpretation").isVisible());
     await page.locator(".node-ai-interpretation button").first().click(); await page.locator(".assistant-turn").first().waitFor();
-    assert((await page.locator(".assistant-service-notice").first().textContent()).includes("未调用 GPT"));
+    assert((await page.locator(".assistant-service-notice").first().textContent()).includes("尚未接入 AI 大模型"));
     await page.locator(".assistant-graph-link").first().click(); await checkFull(); await reset();
   });
   await record("节点搜索、悬停、右键、拖拽和二跳", async () => {

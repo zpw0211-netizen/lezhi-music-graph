@@ -77,7 +77,7 @@ for (const key of [
 ])
   if (!paletteSource.includes(`${key}:`)) failures.push(`palette key missing: ${key}`);
 if (!pageSource.includes("ResearchAnalysis")) failures.push("research analysis missing");
-if (!pageSource.includes("【图谱事实】") || !pageSource.includes("【AI辅助解释】"))
+if (!pageSource.includes("【教材明确内容与知识归纳】") || !pageSource.includes("【AI辅助解释】"))
   failures.push("assistant evidence boundary missing");
 
 if (failures.length) {
