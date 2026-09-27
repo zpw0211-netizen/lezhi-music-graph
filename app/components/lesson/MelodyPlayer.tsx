@@ -6,6 +6,10 @@ import { loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sample
 import type { PianoSampler } from "../../lib/lesson/piano-sampler";
 
 type Line = { label: string; bars: MelodyNote[][] };
+// One audio context and one decoded piano bank for the whole session, so
+// switching excerpts or lessons never re-decodes the samples.
+let sharedContext: AudioContext | null = null;
+let sharedSampler: PianoSampler | null = null;
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
 const TIMBRES = [
   { wave: "triangle" as OscillatorType, overtone: 0.5, level: 1 },
@@ -35,38 +39,42 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const [tempo, setTempo] = useState(melody.bpm);
   const [enabled, setEnabled] = useState<boolean[]>(() => lines.map(() => true));
   const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
-  const context = useRef<AudioContext | null>(null);
-  const pianoSampler = useRef<PianoSampler | null>(null);
+  const mounted = useRef(true);
   const stopRef = useRef<() => void>(() => {});
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
   const offsets = useMemo(() => lines.map((line) => line.bars.reduce<number[]>((acc, bar, i) => [...acc, i ? acc[i - 1] + line.bars[i - 1].length : 0], [])), [lines]);
 
   const stop = useCallback(() => { stopRef.current(); stopRef.current = () => {}; setPlaying(false); setCurrent([]); }, []);
-  useEffect(() => stop, [stop]);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; stop(); };
+  }, [stop]);
 
   const play = async () => {
     if (playing) { stop(); return; }
     const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor) { setAudioMode("synth"); return; }
-    const ctx = context.current ?? new AudioCtor();
-    context.current = ctx;
+    const ctx = sharedContext ?? new AudioCtor();
+    sharedContext = ctx;
 
-    let sampler = pianoSampler.current;
+    let sampler = sharedSampler;
     if (!rhythmOnly && audioMode !== "synth" && !sampler) {
       setLoadingPiano(true);
       try {
         await ctx.resume();
         sampler = await loadPianoSampler(ctx);
-        pianoSampler.current = sampler;
-        setAudioMode("piano");
+        sharedSampler = sampler;
+        if (mounted.current) setAudioMode("piano");
       } catch {
-        setAudioMode("synth");
+        if (mounted.current) setAudioMode("synth");
       } finally {
-        setLoadingPiano(false);
+        if (mounted.current) setLoadingPiano(false);
       }
     } else {
       await ctx.resume().catch(() => undefined);
     }
+    // The reader may have left the lesson while the samples were loading.
+    if (!mounted.current) return;
 
     const beat = 60 / tempo;
     const start = ctx.currentTime + 0.12;
@@ -180,6 +188,6 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
         </span>)}
       </span>)}
     </div>
-    <p className="melody-source">{melody.source}。{audioMode === "synth" ? "电子音色示范，仅供视唱参考。" : <>钢琴音色示范，仅供视唱参考。钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）。</>}</p>
+    <p className="melody-source">{melody.source}。{rhythmOnly ? "节奏示范，仅供练习参考。" : audioMode === "synth" ? "电子音色示范，仅供视唱参考。" : <>钢琴音色示范，仅供视唱参考。钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）。</>}</p>
   </div>;
 }
