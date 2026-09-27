@@ -29,6 +29,7 @@ jobs:
         run: npm ci
       - name: Quality check
         run: |
+          npm run lint
           npm run quality:audit
           npm run quality:p0
           npm run quality:v21
