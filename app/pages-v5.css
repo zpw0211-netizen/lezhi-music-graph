@@ -110,3 +110,9 @@
 .source-layer-panel tbody th small { margin-left:8px; font-size:11px; font-weight:500; color:var(--text-tertiary); }
 .source-layer-panel thead th:first-child { text-align:left; }
 .source-layer-panel tbody tr:last-child :is(th,td) { border-bottom:0; }
+
+/* ---------- 数据载入 / 找不到页面 ---------- */
+.app-view-status { max-width:560px; margin:72px auto; padding:28px 24px; border:1px solid var(--border); border-radius:16px; background:var(--surface); color:var(--text-secondary); font-size:15px; line-height:1.7; text-align:center; }
+.app-view-status p { margin:0 0 14px; color:var(--text-primary); }
+.app-view-status button { height:38px; padding:0 18px; border:0; border-radius:10px; background:var(--accent); color:#fff; font-size:14px; cursor:pointer; }
+.app-view-status button:hover { background:var(--accent-hover); }

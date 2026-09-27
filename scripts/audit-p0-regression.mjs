@@ -1,12 +1,11 @@
 import { readFile } from "node:fs/promises";
+import { readAppSource } from "./lib/app-source.mjs";
 
 const root = new URL("../", import.meta.url);
 const data = JSON.parse(
   await readFile(new URL("public/data/music-graph.json", root), "utf8"),
 );
-const pageSource = (await readFile(new URL("app/page.tsx", root), "utf8")) + "\n" +
-  (await readFile(new URL("app/components/graph/GraphSidebar.tsx", root), "utf8")) +
-  (await readFile(new URL("app/components/graph/EntityTypeFilter.tsx", root), "utf8"));
+const pageSource = await readAppSource();
 const schemaSource = await readFile(new URL("app/graph-schema.ts", root), "utf8");
 const failures = [];
 

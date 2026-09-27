@@ -1,12 +1,13 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readAppSource } from "./lib/app-source.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const graph = JSON.parse(
   await readFile(path.join(root, "public", "data", "graph-index.json"), "utf8"),
 );
-const pageSource = await readFile(path.join(root, "app", "page.tsx"), "utf8");
+const pageSource = await readAppSource();
 const canvasSource = await readFile(
   path.join(root, "app", "components", "FullGraphCanvas.tsx"),
   "utf8",

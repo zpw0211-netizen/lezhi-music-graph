@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { readAppSource } from "./lib/app-source.mjs";
 
 const graph = JSON.parse(
   await readFile(
@@ -12,10 +13,7 @@ const quality = JSON.parse(
     "utf8",
   ),
 );
-const page = await readFile(
-  new URL("../app/page.tsx", import.meta.url),
-  "utf8",
-);
+const page = await readAppSource();
 const schema = await readFile(
   new URL("../app/graph-schema.ts", import.meta.url),
   "utf8",

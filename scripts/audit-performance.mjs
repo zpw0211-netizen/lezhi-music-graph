@@ -1,5 +1,6 @@
 import { access, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { readAppSource } from "./lib/app-source.mjs";
 
 const root = path.resolve(".");
 const dataRoot = path.join(root, "public", "data");
@@ -25,7 +26,7 @@ for (const book of index.dataset.books) {
   await access(path.join(dataRoot, "evidence", `${book.key}.json`));
 }
 
-const page = await readFile(path.join(root, "app", "page.tsx"), "utf8");
+const page = await readAppSource();
 const canvas = await readFile(
   path.join(root, "app", "components", "FullGraphCanvas.tsx"),
   "utf8",
