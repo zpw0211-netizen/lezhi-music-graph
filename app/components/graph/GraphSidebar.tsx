@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { EntityTypeFilter } from "./EntityTypeFilter";
 import { RelationshipFilter } from "./RelationshipFilter";
@@ -12,11 +12,36 @@ import type { AnswerResult, RagGraph } from "../../lib/ai/graph-rag";
 type View = "home" | "graph" | "assistant" | "research" | "records" | "work" | "lesson" | "import";
 export function GraphSidebar({ view, onView, graph, books, scopeBook, filters, perspective, onPerspective, onSchema, onSources, onReset, execute, notice, assetUrl, onGraphFocus }: { view: View; onView: (view: View) => void; graph: RagGraph | null; books: FilterBook[]; scopeBook?: string; filters: GraphFilters; perspective: GraphPerspective; onPerspective: (value: GraphPerspective) => void; onSchema: () => void; onSources: () => void; onReset: () => void; execute: (input: unknown) => boolean; notice: string; assetUrl: (path: string) => string; onGraphFocus: (answer: AnswerResult) => void }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const mobileFilterPanelRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const openFilters = () => setMobileFiltersOpen(true);
+    const closeFilters = () => setMobileFiltersOpen(false);
+    window.addEventListener("yapu:graph-filters-open", openFilters);
+    window.addEventListener("yapu:graph-filters-closed", closeFilters);
+    return () => {
+      window.removeEventListener("yapu:graph-filters-open", openFilters);
+      window.removeEventListener("yapu:graph-filters-closed", closeFilters);
+    };
+  }, []);
+  useEffect(() => {
+    if (mobileFiltersOpen) mobileFilterPanelRef.current?.focus();
+  }, [mobileFiltersOpen]);
+  const closeMobileFilters = () => {
+    setMobileFiltersOpen(false);
+    window.dispatchEvent(new Event("yapu:graph-filters-closed"));
+  };
   const schema = useMemo(() => analyzeGraphSchema(scopeBook ? graph?.entities.filter(entity => entity.bookKeys?.includes(scopeBook)) ?? [] : graph?.entities ?? [], scopeBook ? graph?.relationships.filter(edge => edge.bookKeys?.includes(scopeBook)) ?? [] : graph?.relationships ?? []), [graph, scopeBook]);
-  return <aside className={`sidebar explorer-sidebar ${collapsed ? "is-collapsed" : ""}`} aria-label="图谱导航与控制">
+  return <aside ref={mobileFilterPanelRef} id="mobile-graph-filter-drawer" tabIndex={mobileFiltersOpen ? -1 : undefined} role={mobileFiltersOpen ? "dialog" : undefined} aria-modal={mobileFiltersOpen || undefined} className={`sidebar explorer-sidebar ${collapsed ? "is-collapsed" : ""} ${mobileFiltersOpen ? "mobile-filters-open" : ""}`} aria-label="图谱导航与控制" onKeyDown={event => {
+    if (event.key === "Escape" && mobileFiltersOpen) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMobileFilters();
+    }
+  }}>
     <div className="explorer-brand"><span className="explorer-brand-mark"><WorkbenchIcon name="sprout" /></span>{!collapsed && <div><strong>芽谱</strong><span className="explorer-brand-english">Music Education Knowledge Atlas</span><small>中小学音乐教育知识图谱</small></div>}<button aria-label={collapsed ? "展开左侧栏" : "折叠左侧栏"} onClick={() => setCollapsed(!collapsed)}><WorkbenchIcon name={collapsed ? "right" : "left"} /></button></div>
     <nav className="explorer-nav">{([["home", "首页", "home"], ["records", "按课学习", "book"], ["graph", "图谱探索", "graph"], ["assistant", "智能问答", "message"], ["research", "研究分析", "research"]] as const).map(([key, label, icon]) => <button key={key} title={label} aria-label={label} className={view === key || (key === "records" && (view === "work" || view === "lesson")) ? "active" : ""} onClick={() => onView(key)}><WorkbenchIcon name={icon} />{!collapsed && label}</button>)}</nav>
-    {!collapsed && view === "graph" && <div className="explorer-controls"><section className="explorer-perspective"><h3>图谱观察方式</h3><div>{([["comprehensive", "综合知识"], ["textbook", "教材结构"], ["music", "音乐知识"], ["progression", "学习进阶"]] as const).map(([key, label]) => <button key={key} aria-pressed={perspective === key} onClick={() => onPerspective(key)}>{label}</button>)}</div></section>
+    {!collapsed && view === "graph" && <div className="explorer-controls"><div className="mobile-filter-panel-heading"><strong>筛选</strong><button type="button" onClick={closeMobileFilters}>关闭</button></div><section className="explorer-perspective"><h3>图谱观察方式</h3><div>{([["comprehensive", "综合知识"], ["textbook", "教材结构"], ["music", "音乐知识"], ["progression", "学习进阶"]] as const).map(([key, label]) => <button key={key} aria-pressed={perspective === key} onClick={() => onPerspective(key)}>{label}</button>)}</div></section>
       <EntityTypeFilter categories={schema.categories} visible={filters.visibleSchemaKeys} onChange={filters.setVisibleSchemaKeys} />
       <RelationshipFilter relations={schema.relations} hidden={filters.hiddenRelations} onChange={filters.setHiddenRelations} onSources={onSources} />
       <PropertyFilter books={books} filters={filters} />

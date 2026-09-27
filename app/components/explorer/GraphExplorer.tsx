@@ -202,13 +202,24 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
   const [dragging, setDragging] = useState<DragState | null>(null);
   const [panStart, setPanStart] = useState<{ pointerId: number; clientX: number; clientY: number; originX: number; originY: number } | null>(null);
   const [motionPhase, setMotionPhase] = useState(0);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sigmaViewport, setSigmaViewport] = useState<{ minX: number; minY: number; maxX: number; maxY: number } | null>(null);
   const [evidencePayloads, setEvidencePayloads] = useState<Record<string, EvidencePayload>>({});
   const evidenceRequestCache = useRef(new Map<string, Promise<EvidencePayload>>());
   const explorerRef = useRef(explorer);
+  const mobileFilterTriggerRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     explorerRef.current = explorer;
   });
+
+  useEffect(() => {
+    const closeFilters = () => {
+      setMobileFiltersOpen(false);
+      mobileFilterTriggerRef.current?.focus();
+    };
+    window.addEventListener("yapu:graph-filters-closed", closeFilters);
+    return () => window.removeEventListener("yapu:graph-filters-closed", closeFilters);
+  }, []);
 
   useEffect(() => {
     if (!motionEnabled || graphMode === "all" || graphMode === "focus" || dragging) return;
@@ -1034,6 +1045,19 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                 <div className="graph-toolbar-core">
                   <button onClick={fitCanvas}>
                     <WorkbenchIcon name="fit" /> 适配画布
+                  </button>
+                  <button
+                    ref={mobileFilterTriggerRef}
+                    type="button"
+                    className="graph-mobile-filter-trigger"
+                    aria-controls="mobile-graph-filter-drawer"
+                    aria-expanded={mobileFiltersOpen}
+                    onClick={() => {
+                      setMobileFiltersOpen(true);
+                      window.dispatchEvent(new Event("yapu:graph-filters-open"));
+                    }}
+                  >
+                    <WorkbenchIcon name="tune" /> 筛选
                   </button>
                   <button className={explorer.pathFinderOpen ? "active" : ""} onClick={() => explorer.openPathFinder(selected)}>
                     <WorkbenchIcon name="path" /> 路径查询
