@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { preload } from "react-dom";
 import "./globals.css";
 import "./theme-light.css";
 import "./graph-explorer.css";
@@ -53,6 +54,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Every page needs the graph index; start downloading it with the scripts
+  // instead of after hydration. Matches the fetch() in useGraphIndex.
+  preload(`${publicBasePath}/data/graph-index.json`, { as: "fetch", crossOrigin: "anonymous" });
   return (
     <html lang="zh-CN">
       <body

@@ -45,12 +45,17 @@ const chunkRoot = path.join(root, "_next", "static", "chunks");
 const chunkFiles = (await walk(chunkRoot)).filter((file) =>
   file.endsWith(".js"),
 );
-const pageChunks = chunkFiles.filter((file) =>
-  /^page-[^/\\]+\.js$/.test(path.basename(file)),
+// The app is split into a small page chunk plus lazily loaded page chunks, so
+// check all application chunks. Framework/runtime chunks are excluded: vinext's
+// router entry (index-*) lists every route, including the Sites-only API routes.
+const RUNTIME_CHUNK = /^(framework|index|rolldown-runtime|layout-segment-context)-[^/\\]+\.js$/;
+assert(
+  chunkFiles.some((file) => /^page-[^/\\]+\.js$/.test(path.basename(file))),
+  "未找到页面客户端脚本",
 );
-assert(pageChunks.length > 0, "未找到页面客户端脚本");
+const appChunks = chunkFiles.filter((file) => !RUNTIME_CHUNK.test(path.basename(file)));
 const pageBundle = (
-  await Promise.all(pageChunks.map((file) => readFile(file, "utf8")))
+  await Promise.all(appChunks.map((file) => readFile(file, "utf8")))
 ).join("\n");
 
 for (const forbidden of [

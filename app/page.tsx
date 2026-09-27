@@ -4,18 +4,21 @@ export const dynamic = "force-static";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { CSSProperties, FormEvent } from "react";
+import nextDynamic from "next/dynamic";
 import { designTokenCssVariables } from "./design-tokens";
 import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AppTopNav, type NavView } from "./components/AppTopNav";
-import { AssistantPage } from "./components/assistant/AssistantPage";
-import { ExplorerSidebar, GraphExplorer } from "./components/explorer/GraphExplorer";
+import type { AssistantPage as AssistantPageComponent } from "./components/assistant/AssistantPage";
+import type {
+  ExplorerSidebar as ExplorerSidebarComponent,
+  GraphExplorer as GraphExplorerComponent,
+} from "./components/explorer/GraphExplorer";
 import { useGraphExplorer } from "./components/explorer/useGraphExplorer";
 import { HomePortal } from "./components/home/HomePortal";
-import { ImportView } from "./components/import/ImportView";
-import { LessonPage } from "./components/lesson/LessonPage";
-import { WorkGraph } from "./components/records/WorkGraph";
-import { WorkLibrary } from "./components/records/WorkLibrary";
-import { ResearchAnalysis } from "./components/ResearchAnalysis";
+import type { LessonPage as LessonPageComponent } from "./components/lesson/LessonPage";
+import type { WorkGraph as WorkGraphComponent } from "./components/records/WorkGraph";
+import type { WorkLibrary as WorkLibraryComponent } from "./components/records/WorkLibrary";
+import type { ResearchAnalysis as ResearchAnalysisComponent } from "./components/ResearchAnalysis";
 import { ResearchInfo } from "./components/ResearchInfo";
 import { useAppRoute } from "./hooks/useAppRoute";
 import { useGraphIndex } from "./hooks/useGraphIndex";
@@ -23,6 +26,55 @@ import { useKnowledgeSearch, type SearchResult } from "./hooks/useKnowledgeSearc
 import { publicAssetUrl } from "./lib/app/assets";
 import type { AppView } from "./lib/app/routing";
 import { bareWorkName, DEFAULT_BOOK_KEY, isWorkType, type Book, type Entity } from "./lib/app/types";
+
+// Only the home page ships in the first script. Every other page is its own
+// chunk, loaded when opened and prefetched in the background once the data is in.
+type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
+const viewLoading = () => (
+  <div className="app-view-status" role="status">
+    正在载入…
+  </div>
+);
+const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
+  () => import("./components/explorer/GraphExplorer").then((module) => module.GraphExplorer),
+  { loading: viewLoading },
+);
+const ExplorerSidebar = nextDynamic<PropsOf<typeof ExplorerSidebarComponent>>(
+  () => import("./components/explorer/GraphExplorer").then((module) => module.ExplorerSidebar),
+);
+const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent<Entity, Book>>>(
+  () => import("./components/records/WorkLibrary").then((module) => module.WorkLibrary),
+  { loading: viewLoading },
+);
+const LessonPage = nextDynamic<PropsOf<typeof LessonPageComponent>>(
+  () => import("./components/lesson/LessonPage").then((module) => module.LessonPage),
+  { loading: viewLoading },
+);
+const WorkGraph = nextDynamic<PropsOf<typeof WorkGraphComponent>>(
+  () => import("./components/records/WorkGraph").then((module) => module.WorkGraph),
+  { loading: viewLoading },
+);
+const AssistantPage = nextDynamic<PropsOf<typeof AssistantPageComponent>>(
+  () => import("./components/assistant/AssistantPage").then((module) => module.AssistantPage),
+  { loading: viewLoading },
+);
+const ResearchAnalysis = nextDynamic<PropsOf<typeof ResearchAnalysisComponent>>(
+  () => import("./components/ResearchAnalysis").then((module) => module.ResearchAnalysis),
+  { loading: viewLoading },
+);
+const ImportView = nextDynamic(
+  () => import("./components/import/ImportView").then((module) => module.ImportView),
+  { loading: viewLoading },
+);
+/** Warm the page chunks so the first switch to a page is instant. */
+const prefetchPages = () => {
+  void import("./components/records/WorkLibrary");
+  void import("./components/lesson/LessonPage");
+  void import("./components/explorer/GraphExplorer");
+  void import("./components/records/WorkGraph");
+  void import("./components/assistant/AssistantPage");
+  void import("./components/ResearchAnalysis");
+};
 
 const EMPTY_BOOKS: Book[] = [];
 const SITE_TITLE = "芽谱——中小学音乐教育知识图谱与智能分析平台";
@@ -93,6 +145,13 @@ export default function Home() {
   useEffect(() => {
     if (index.status === "ready" && view === "graph") replaceQuietly({ view: "graph", node: graphNode });
   }, [graphNode, index.status, replaceQuietly, view]);
+  useEffect(() => {
+    if (index.status !== "ready") return;
+    const idle = window.requestIdleCallback ?? ((callback: () => void) => window.setTimeout(callback, 1500));
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout;
+    const handle = idle(prefetchPages);
+    return () => cancel(handle);
+  }, [index.status]);
   useEffect(() => {
     const page = view === "lesson" || view === "work" ? (route.work ? `《${route.work}》 · ${VIEW_TITLES[view]}` : "") : VIEW_TITLES[view];
     document.title = page ? `${page} · 芽谱` : SITE_TITLE;
