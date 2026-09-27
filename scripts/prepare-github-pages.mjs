@@ -1,9 +1,13 @@
-import { access, cp, mkdir, copyFile, writeFile } from "node:fs/promises";
+import { access, cp, mkdir, copyFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 
 const root = path.resolve("dist/client");
 const siteRoot = path.join(root, "lezhi-music-graph");
 const publicRoot = path.resolve("public");
+const excludedGraphFiles = new Set([
+  "data/canonical-graph.json",
+  "data/music-graph.json",
+]);
 
 await mkdir(siteRoot, { recursive: true });
 await writeFile(path.join(siteRoot, ".nojekyll"), "");
@@ -22,12 +26,28 @@ if (await exists(path.join(root, "_next"))) {
 if (await exists(path.join(root, "data"))) {
   await cp(path.join(root, "data"), path.join(siteRoot, "data"), {
     recursive: true,
+    filter: (source) =>
+      !new Set(["canonical-graph.json", "music-graph.json"]).has(
+        path.relative(path.join(root, "data"), source)
+          .split(path.sep)
+          .join("/"),
+      ),
   });
 }
 
-// Preserve every public asset (data, favicon, social card and future media)
-// without maintaining a separate public frontend.
-await cp(publicRoot, siteRoot, { recursive: true });
+// Preserve runtime public assets while omitting build-time graph inputs.
+await cp(publicRoot, siteRoot, {
+  recursive: true,
+  filter: (source) =>
+    !excludedGraphFiles.has(
+      path.relative(publicRoot, source).split(path.sep).join("/"),
+    ),
+});
+
+// Remove exact stale copies if this script is rerun over an older artifact.
+for (const relativePath of excludedGraphFiles) {
+  await rm(path.join(siteRoot, relativePath), { force: true });
+}
 
 const root404 = path.join(root, "404.html");
 if (await exists(root404)) {
