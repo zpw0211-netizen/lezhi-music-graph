@@ -39,13 +39,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
     description: "探索六册教材共同构成的中小学音乐知识网络与跨册关联。",
-    images: [`${publicBasePath}/og.png`],
+    images: [`${publicBasePath}/og.jpg`],
   },
   twitter: {
     card: "summary_large_image",
     title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
     description: "探索六册教材共同构成的中小学音乐知识网络与跨册关联。",
-    images: [`${publicBasePath}/og.png`],
+    images: [`${publicBasePath}/og.jpg`],
   },
 };
 
