@@ -16,15 +16,21 @@ A marching band's snare drum and a mongolian horse-head fiddle resting on a fold
 
 ## 七下 `g7s2.webp`
 
-- 生成日期：2026-09-28
-- 工具：由 OpenAI Codex 内置图像生成工具生成（`image_gen`）
+- 生成日期：2026-09-29（重画：修正乐器形制，取 T007 候选 2）
+- 工具：由 OpenAI Codex 内置图像生成工具生成（`image_gen`），以 T006 选定图为构图参考
 - 模型：工具未披露具体名称或版本
-- 导出：1200×750 WebP，156,160 B
 - 使用条款：[OpenAI Terms of Use](https://openai.com/policies/terms-of-use/)
-
-```text
-A Peking opera painted face mask beside a xinjiang dutar lute, an overture conductor's baton lying across an open score, a stage curtain edge. Chinese woodblock print and screen-print style, hand-carved lines, visible paper grain and slight ink misregistration, limited palette of 4 spot colors only: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C, amber #E9A83A, printed on warm off-white paper #F7F3EA. Flat shapes, no gradients, no glow, no neon, no 3D render, no photorealism, no text, no letters, no watermark, no logo. Calm, editorial composition with generous empty space for layout. Landscape composition, target aspect ratio 8:5 (1200×750). Negative prompt: glowing nodes, network lines, sci-fi, holographic, neon, bokeh, lens flare, 3D, CGI, glossy, gradient mesh, generic ink-wash mountains, clip art, emoji, cartoon mascot, text, watermark.
-```
+- 原始 PNG：E:/Projects/.tmp/codex3/T007-raw/g7s2-2.png（1586×992，2,641,719 B）
+- 导出：1200×750，140,296 B
+- 特征核对：可见 2 根弦、2 个弦轴；细长琴颈约占全长三分之二，缠线清楚；小瓢形琴箱与琵琶的大梨形琴箱有明显区别。
+- 完整提示词：
+<pre>Use case: illustration-story
+Asset type: candidate 2 for a 1200×750 educational textbook unit artwork
+Input images: Image 1 is the selected g7s2 artwork and is a composition/style reference only; retain its scene arrangement and woodblock print language while correcting the lute.
+Primary request: A Peking opera painted face mask beside a Xinjiang dutar lute, an overture conductor's baton lying across an open score, and a stage curtain edge. The dutar must be unmistakable: a very long thin neck about two-thirds of the total instrument length, exactly two strings, exactly two tuning pegs, silk thread frets wound around the neck, and a small gourd-shaped body much smaller than a pipa body. Not a pipa.
+Composition: Follow Image 1: face mask at lower left, slender dutar neck rising near center-left, open score and baton at lower right, curtain edges framing the sides, generous blank warm paper across the upper center/right. Keep these scene elements and relative placement. Make the two strings and two tuning pegs visibly countable.
+Chinese woodblock print and screen-print style, hand-carved lines, visible paper grain and slight ink misregistration, limited palette of 4 spot colors only: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C, amber #E9A83A, printed on warm off-white paper #F7F3EA. Flat shapes, no gradients, no glow, no neon, no 3D render, no photorealism, no text, no letters, no watermark, no logo. Calm, editorial composition with generous empty space for layout. Landscape composition, target aspect ratio 8:5 (1200×750).
+Negative prompt: glowing nodes, network lines, sci-fi, holographic, neon, bokeh, lens flare, 3D, CGI, glossy, gradient mesh, generic ink-wash mountains, clip art, emoji, cartoon mascot, text, watermark. pipa, four strings, four tuning pegs, large pear-shaped lute body.</pre>
 
 ## 八上 `g8s1.webp`
 
@@ -52,15 +58,23 @@ An open book of classical Chinese poetry with a bamboo flute, a symphony orchest
 
 ## 九上 `g9s1.webp`
 
-- 生成日期：2026-09-29
-- 工具：由 OpenAI Codex 内置图像生成工具生成（`image_gen`）
+- 生成日期：2026-09-29（重画：修正乐器形制，取 T007 候选 2）
+- 工具：由 OpenAI Codex 内置图像生成工具生成（`image_gen`），以 T006 选定图为构图参考
 - 模型：工具未披露具体名称或版本
-- 导出：1200×750 WebP，152,176 B
 - 使用条款：[OpenAI Terms of Use](https://openai.com/policies/terms-of-use/)
-
-```text
-A landscape painting scroll unrolling into sound waves drawn as carved lines, a lusheng reed pipe from southwest China, opera water sleeves. Chinese woodblock print and screen-print style, hand-carved lines, visible paper grain and slight ink misregistration, limited palette of 4 spot colors only: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C, amber #E9A83A, printed on warm off-white paper #F7F3EA. Flat shapes, no gradients, no glow, no neon, no 3D render, no photorealism, no text, no letters, no watermark, no logo. Calm, editorial composition with generous empty space for layout. Landscape composition, target aspect ratio 8:5 (1200×750). Negative prompt: glowing nodes, network lines, sci-fi, holographic, neon, bokeh, lens flare, 3D, CGI, glossy, gradient mesh, generic ink-wash mountains, clip art, emoji, cartoon mascot, text, watermark.
-```
+- 编辑输入 PNG：E:/Projects/.tmp/codex3/T007-raw/g9s1-2.png（首轮错误候选，2,505,446 B）
+- 原始输出 PNG：E:/Projects/.tmp/codex3/T007-raw/g9s1-attempt-5.png（1586×992，2,352,342 B）
+- 导出：1200×750，153,374 B
+- 特征核对：可数清 6 根高低错落的管；人物双手握住笙斗并含吹口。其余卷轴、声波、水袖未被重画。
+- 完整编辑提示词：
+<pre>Use case: illustration-story
+Asset type: edit a 1200×750 educational textbook unit artwork
+Input images: Image 1 is the edit target. Image 2 is the selected g9s1 composition reference.
+Primary request: Change only the lusheng held by the musician in Image 1. It currently shows five bamboo pipes; add exactly one distinct pipe so the finished lusheng has exactly six bamboo pipes total. Make six separate, countable vertical pipes of different lengths with six visible staggered tops, rising from one long wooden wind chest. The musician must keep both hands holding the wind chest and keep the mouthpiece at the lips.
+Constraints: Preserve every other part of Image 1 unchanged: the landscape painting scroll on the left, its carved-line sound waves through the center, the opera water-sleeve dancer at the right, the performer, clothing, colors, print texture, and overall composition. Keep the lusheng placement. The added sixth pipe must be visibly separate, not hidden behind another pipe. Do not produce five or seven pipes.
+Style: Chinese woodblock print and screen-print style, hand-carved lines, visible paper grain and slight ink misregistration; limited spot colors pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C, amber #E9A83A on warm off-white #F7F3EA; flat shapes, no gradients, glow, neon, 3D, text, watermark, or logo.
+Negative prompt: single flute, single pipe, one bamboo tube, five pipes, seven pipes, fewer or more than six pipes, glowing nodes, network lines, sci-fi, holographic, neon, bokeh, lens flare, 3D, CGI, glossy, generic ink-wash mountains, clip art, emoji, text, watermark.</pre>
+- 构图参考输入：E:/Projects/yapu-collab/codex3/outbox/T006-art/g9s1-3.webp（Image 2）
 
 ## 九下 `g9s2.webp`
 
