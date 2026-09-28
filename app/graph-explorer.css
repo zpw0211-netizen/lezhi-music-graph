@@ -10,5 +10,79 @@
 .node-ai-interpretation{border-top:1px solid #e4e4e7;margin-top:16px;padding-top:14px}.node-ai-interpretation h3{font-size:13px}.node-ai-interpretation p{font-size:11px;color:#71717a}.node-ai-interpretation button{display:block;width:100%;text-align:left;background:#fafafa;color:#52525b;border:1px solid #eee;border-radius:4px;padding:8px;margin:6px 0;font-size:11px}
 .sigma-scene-host{position:absolute;inset:0;width:100%;height:100%}
 .pending-knowledge{border:1px dashed #d4d4d8;padding:14px;font-size:12px;margin:14px 0}.pending-knowledge dl{display:grid;grid-template-columns:60px 1fr;gap:8px}.pending-knowledge dd{margin:0}.pending-knowledge p{color:#71717a}
+
+/* Keep the graph page's shared navigation brand aligned with the other app pages. */
+.ink-app.network-mode .home-nav .home-nav-inner{padding:0 32px}
+.ink-app.network-mode .home-nav .home-brand{align-self:center;flex:0 0 auto;margin:0;padding:0;transform:none}
+.ink-app.network-mode .home-nav .home-brand img{display:block;width:142px;height:auto;max-height:52px;object-fit:contain}
+
+/* Graph category colors come from the shared semantic palette. */
+.ink-app.network-mode .neo-canvas .svg-node.schema-textbook circle{fill:var(--semantic-textbook);stroke:var(--semantic-textbook-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-work circle{fill:var(--semantic-work);stroke:var(--semantic-work-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-person circle{fill:var(--semantic-person);stroke:var(--semantic-person-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-instrument circle{fill:var(--semantic-instrument);stroke:var(--semantic-instrument-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-genre circle{fill:var(--semantic-genre);stroke:var(--semantic-genre-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-element circle{fill:var(--semantic-element);stroke:var(--semantic-element-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-theory circle{fill:var(--semantic-theory);stroke:var(--semantic-theory-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-culture circle{fill:var(--semantic-culture);stroke:var(--semantic-culture-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-activity circle{fill:var(--semantic-activity);stroke:var(--semantic-activity-stroke)}
+.ink-app.network-mode .neo-canvas .svg-node.schema-goal circle{fill:var(--semantic-goal);stroke:var(--semantic-goal-stroke)}
+.ink-app.network-mode .inspector-icon.schema-textbook{background:var(--semantic-textbook);border-color:var(--semantic-textbook-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-work{background:var(--semantic-work);border-color:var(--semantic-work-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-person{background:var(--semantic-person);border-color:var(--semantic-person-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-instrument{background:var(--semantic-instrument);border-color:var(--semantic-instrument-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-genre{background:var(--semantic-genre);border-color:var(--semantic-genre-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-element{background:var(--semantic-element);border-color:var(--semantic-element-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-theory{background:var(--semantic-theory);border-color:var(--semantic-theory-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-culture{background:var(--semantic-culture);border-color:var(--semantic-culture-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-activity{background:var(--semantic-activity);border-color:var(--semantic-activity-stroke);color:#fff}
+.ink-app.network-mode .inspector-icon.schema-goal{background:var(--semantic-goal);border-color:var(--semantic-goal-stroke);color:#fff}
+.ink-app.network-mode .inspector-header .inspector-category-label{display:inline-flex;align-items:center;width:max-content;border:1px solid;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:650;line-height:1.35}
+
+/* Two compact graph-control rows leave the canvas as the page's main area. */
+.ink-app.network-mode .graph-rangebar{display:flex;align-items:center;gap:10px;min-height:48px;padding:4px 16px;border-bottom:1px solid var(--line);background:var(--paper);box-sizing:border-box}
+.ink-app.network-mode .graph-rangebar .book-tabs{position:relative;display:flex;align-items:center;flex:1 1 auto;min-width:0;margin:0;padding:5px 0;overflow-x:auto;scrollbar-width:thin;white-space:nowrap}
+.ink-app.network-mode .graph-rangebar .book-tab{flex:0 0 auto;min-height:32px;padding:6px 10px;font-size:12px;white-space:nowrap}
+.ink-app.network-mode .graph-rangebar .graph-toolbar-tools{display:flex;width:auto;align-items:center;justify-content:flex-end;flex:0 0 auto;gap:4px}
+.ink-app.network-mode .graph-rangebar .graph-toolbar-tools button{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;padding:5px;border:1px solid var(--line);border-radius:var(--radius-xs);background:var(--surface);color:var(--text-primary)}
+.ink-app.network-mode .graph-rangebar .graph-toolbar-tools button:hover{background:var(--surface-hover);color:var(--accent)}
+.ink-app.network-mode .graph-rangebar .zoom-slider{width:70px;accent-color:var(--accent)}
+.ink-app.network-mode .graph-rangebar .zoom-value{min-width:36px;color:var(--text-secondary);font-size:11px;font-variant-numeric:tabular-nums;text-align:center}
+.ink-app.network-mode .neo-card .full-graph-filterbar{display:flex;align-items:center;flex-wrap:nowrap;gap:8px;min-height:42px;padding:5px 12px}
+.ink-app.network-mode .neo-card .graph-filter-primary{display:flex;align-items:center;flex:1 1 auto;min-width:0;gap:14px;overflow-x:auto;scrollbar-width:thin;white-space:nowrap}
+.ink-app.network-mode .neo-card .graph-filter-group{display:flex;align-items:center;flex:0 0 auto;gap:6px}
+.ink-app.network-mode .neo-card .graph-filter-group-label{flex:0 0 auto;color:var(--text-secondary);font-size:11px;font-weight:600}
+.ink-app.network-mode .neo-card .full-graph-layout-tabs,.ink-app.network-mode .neo-card .full-graph-view-tabs{display:flex;align-items:center;flex:0 0 auto;flex-wrap:nowrap}
+.ink-app.network-mode .neo-card .full-graph-layout-tabs button,.ink-app.network-mode .neo-card .full-graph-view-tabs button{flex:0 0 auto;min-height:31px;padding:5px 9px;font-size:12px;white-space:nowrap}
+.ink-app.network-mode .neo-card .full-graph-layout-tabs button strong{font-size:12px;font-weight:550}
+.ink-app.network-mode .neo-card .full-graph-layout-tabs button small{display:none}
+.ink-app.network-mode .neo-card .graph-filter-more{align-self:center;flex:0 0 auto}
+.ink-app.network-mode .neo-card .graph-filter-more summary{min-height:31px;padding:5px 9px;font-size:12px}
+.ink-app.network-mode .neo-card .graph-filter-more .full-graph-operations{max-height:calc(100dvh - 150px);overflow-y:auto}
+.ink-app.network-mode .graph-statusbar{font-family:var(--font-ui);font-size:11px;letter-spacing:0}
+.ink-app.network-mode .explorer-dataset-summary{padding-top:12px}
+.ink-app.network-mode .explorer-dataset-summary h3{margin:0 0 6px;color:var(--text-secondary);font-size:12px}
+.ink-app.network-mode .explorer-dataset-summary p{margin:0;color:var(--text-secondary);font-size:11px;line-height:1.6}
+
+@media(max-width:760px){
+  .ink-app.network-mode .home-nav .home-nav-inner{padding:8px 12px}
+  .ink-app.network-mode .graph-rangebar{gap:4px;min-width:0;padding:4px 8px}
+  .ink-app.network-mode .graph-rangebar .book-tabs{flex:1 1 0;width:0;min-width:0;padding:5px 8px 7px}
+  .ink-app.network-mode .graph-rangebar .book-tab{padding:5px 8px}
+  .ink-app.network-mode .graph-rangebar .graph-toolbar-tools{gap:2px}
+  .ink-app.network-mode .graph-rangebar .graph-toolbar-tools button{min-width:30px;width:30px;min-height:30px}
+  .ink-app.network-mode .graph-rangebar .zoom-slider{width:54px}
+  .ink-app.network-mode .graph-rangebar .zoom-value{display:none}
+  .ink-app.network-mode .neo-card .full-graph-filterbar{display:flex;flex-direction:row;align-items:center;gap:5px;min-height:38px;padding:4px 7px}
+  .ink-app.network-mode .neo-card .graph-filter-primary{display:flex;min-width:0;flex:1 1 auto;flex-direction:row;align-items:center;gap:10px;overflow-x:auto;white-space:nowrap}
+  .ink-app.network-mode .neo-card .graph-filter-group{gap:4px}
+  .ink-app.network-mode .neo-card .full-graph-layout-tabs button,.ink-app.network-mode .neo-card .full-graph-view-tabs button{flex:0 0 auto;min-height:30px;padding:4px 7px;font-size:11px}
+  .ink-app.network-mode .neo-card .graph-filter-more summary{min-height:30px;padding:4px 7px;font-size:11px}
+  .ink-app.network-mode .neo-card .graph-filter-more .full-graph-operations{width:min(230px,calc(100vw - 24px))}
+}
+@media(max-width:480px){
+  .ink-app.network-mode .neo-card .graph-filter-group-label{display:none}
+  .ink-app.network-mode .graph-rangebar .zoom-slider{width:46px}
+}
 @media(max-width:800px){.theme-light .explorer-sidebar{width:250px;flex-basis:250px}.explorer-brand small{font-size:10px}}
 @media(max-width:760px){.theme-light .explorer-sidebar,.theme-light .explorer-sidebar.is-collapsed{width:100%;flex-basis:auto;min-height:0;max-height:230px}.explorer-sidebar .explorer-brand{min-height:58px;padding:10px 12px}.explorer-sidebar .explorer-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px;gap:3px}.explorer-sidebar .explorer-nav button{font-size:10px;padding:7px 2px;gap:4px;justify-content:center}.explorer-sidebar.is-collapsed{max-height:110px!important}.is-collapsed .explorer-brand{flex-wrap:nowrap;justify-content:space-between}.explorer-brand strong{font-size:18px}}

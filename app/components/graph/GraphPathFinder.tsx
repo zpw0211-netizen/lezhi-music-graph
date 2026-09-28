@@ -105,7 +105,6 @@ export function GraphPathFinder<E extends GraphEntity>({
     <aside className="graph-path-finder" aria-label="图谱路径查询">
       <header>
         <div>
-          <span>GRAPH PATH FINDER</span>
           <h3>最短路径查询</h3>
         </div>
         <button type="button" onClick={onClose} aria-label="关闭路径查询">
