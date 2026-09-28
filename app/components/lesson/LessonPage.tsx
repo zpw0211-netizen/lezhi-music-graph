@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { MELODIES } from "../../lib/lesson/melodies";
+import { VocalDemo } from "./VocalDemo";
 import { MelodySet } from "./MelodyPlayer";
 import type { Melody } from "../../lib/lesson/melodies";
 import { WorkbenchIcon } from "../WorkbenchIcon";
@@ -178,6 +179,7 @@ export function LessonPage({
             : (work.media?.length ?? 0) === 0
               ? "教材此页未附乐谱，暂时无法从教材核对并生成旋律示范。"
               : "这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。"}</p>}
+          <VocalDemo workName={work.name} assetUrl={assetUrl} />
           {(work.media?.length ?? 0) > 0 && <details className="lesson-scores" open={!melody || melody.every((item) => item.quality === "draft")}>
             <summary>教材谱例原图（{work.media!.length} 张）</summary>
             <div>{work.media!.map((asset) => <a key={asset.url} href={assetUrl(asset.url)} target="_blank" rel="noreferrer">
