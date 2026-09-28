@@ -208,7 +208,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className="melody-play" onClick={play} disabled={loadingPiano} aria-pressed={playing} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+      <button type="button" className="melody-play" onClick={play} disabled={loadingPiano} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
         {!loadingPiano && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
         {loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>
@@ -221,11 +221,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
         </label>)}
       </span>}
       <label className="melody-tempo">速度
-        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingPiano} onKeyDown={(event) => {
-          if (event.code !== "Space" || event.repeat) return;
-          event.preventDefault();
-          setTempo((value) => Math.min(160, value + 4));
-        }} onChange={(event) => setTempo(Number(event.target.value))} />
+        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingPiano} onChange={(event) => setTempo(Number(event.target.value))} />
         <b>♩={tempo}</b>
       </label>
     </div>
