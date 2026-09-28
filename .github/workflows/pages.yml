@@ -36,6 +36,10 @@ jobs:
           npm run quality:v22
           npm run quality:v23
           npm run quality:performance
+          node scripts/audit-ai-worker.mjs
+          npm run quality:ai
+          npm run quality:ai-candidate
+          node scripts/check-melodies.mjs
       - name: Build static export
         run: npm run build
         env:
