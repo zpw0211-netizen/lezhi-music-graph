@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { MELODIES } from "../../lib/lesson/melodies";
+import { SlidingIndicator } from "../graph/SlidingIndicator";
 
 type LibraryEntity = { id: string; name: string; type: string; firstPage?: number | null; media?: Array<{ title?: string }> };
 // Score titles carry the printed page ("教材第44页"); firstPage is the PDF page.
@@ -118,7 +119,8 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirect
         <input value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="筛选作品、作者、体裁" aria-label="筛选作品" />
       </label>
     </header>
-    <nav className="work-library-books" aria-label="选择教材">
+    <nav className="work-library-books motion-tabs" aria-label="选择教材">
+      <SlidingIndicator activeKey={directory.key} />
       {books.map((item) => <button key={item.key} type="button" className={`grade-${item.grade} ${item.key === directory.key ? "active" : ""}`} aria-pressed={item.key === directory.key} onClick={() => onBook(item)}>
         <b>{GRADE_NAMES[item.grade] ?? `${item.grade}年级`}{item.semester}</b>
         <small>{item.workCount} 首作品</small>
@@ -130,10 +132,10 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirect
       <p>这一册数据加载失败，请检查网络后重试。</p>
       <button type="button" onClick={onRetryBookData}>重试</button>
     </div>}
-    {book && visibleUnits.map((unit) => <section key={unit.id} className="work-unit">
+    {book && visibleUnits.map((unit) => <section key={unit.id} className="work-unit" data-reveal>
       <h3>{unit.name}<small>{unit.cards.length} 首</small></h3>
-      <div className="work-grid">
-        {unit.cards.map((card) => <button key={card.work.id} type="button" className={`work-card grade-${book.grade}`} onClick={() => onOpen(card.work, book)}>
+      <div className="work-grid" data-reveal-group>
+        {unit.cards.map((card) => <button key={card.work.id} type="button" className={`work-card grade-${book.grade}`} data-reveal onClick={() => onOpen(card.work, book)}>
           <span className="work-card-top"><em>{card.work.type}</em>{card.starred && <b className="work-card-star" title="教材标注的重点学习曲目">☆ 重点</b>}{playbackBadge(card.work.name)}<small>{printedPage(card.work) ? `教材第 ${printedPage(card.work)} 页` : `PDF 第 ${card.work.firstPage ?? "—"} 页`}</small></span>
           <strong>{card.work.name}</strong>
           <span className="work-card-creators">{card.creators.length ? card.creators.map((item) => <span key={item.name}><small>{item.role}</small>{item.name}</span>) : <span className="muted">作者信息待补充</span>}</span>

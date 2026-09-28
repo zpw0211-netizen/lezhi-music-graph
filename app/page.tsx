@@ -2,7 +2,7 @@
 
 export const dynamic = "force-static";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { CSSProperties, FormEvent } from "react";
 import nextDynamic from "next/dynamic";
 import { designTokenCssVariables } from "./design-tokens";
@@ -23,6 +23,7 @@ import { ResearchInfo } from "./components/ResearchInfo";
 import { useAppRoute } from "./hooks/useAppRoute";
 import { useBookData, useGraphIndex } from "./hooks/useGraphIndex";
 import { useKnowledgeSearch, type SearchResult } from "./hooks/useKnowledgeSearch";
+import { useScrollReveal } from "./hooks/useScrollReveal";
 import { publicAssetUrl } from "./lib/app/assets";
 import type { AppView } from "./lib/app/routing";
 import { bareWorkName, DEFAULT_BOOK_KEY, isWorkType, type BookDirectory, type Entity } from "./lib/app/types";
@@ -96,8 +97,12 @@ export default function Home() {
     () => false,
   );
   const workspaceRef = useRef<HTMLElement>(null);
+  const viewContainerRef = useRef<HTMLDivElement>(null);
   const { route, routeRef, navigate, back, replaceQuietly } = useAppRoute(() => workspaceRef.current);
+  useScrollReveal();
   const view = route.view;
+  const routeTransitionKey = `${route.view}:${route.work ?? ""}`;
+  const previousRouteTransitionKey = useRef<string | null>(null);
   const [query, setQuery] = useState("");
   const [assistantEntry, setAssistantEntry] = useState({ question: "", token: 0 });
   const [researchInfoOpen, setResearchInfoOpen] = useState(false);
@@ -159,6 +164,30 @@ export default function Home() {
     const page = view === "lesson" || view === "work" ? (route.work ? `《${route.work}》 · ${VIEW_TITLES[view]}` : "") : VIEW_TITLES[view];
     document.title = page ? `${page} · 芽谱` : SITE_TITLE;
   }, [route.work, view]);
+  useLayoutEffect(() => {
+    const previous = previousRouteTransitionKey.current;
+    previousRouteTransitionKey.current = routeTransitionKey;
+    const element = viewContainerRef.current;
+    if (!previous || previous === routeTransitionKey || !element) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotion.matches) return;
+
+    const animation = element.animate(
+      [
+        { opacity: 0, transform: "translateY(8px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" },
+    );
+    const stopForReducedMotion = (event: MediaQueryListEvent) => {
+      if (event.matches) animation.cancel();
+    };
+    reducedMotion.addEventListener("change", stopForReducedMotion);
+    return () => {
+      reducedMotion.removeEventListener("change", stopForReducedMotion);
+      animation.cancel();
+    };
+  }, [routeTransitionKey]);
 
   const pickSearchResult = (entity: Entity) => {
     setQuery("");
@@ -229,10 +258,11 @@ export default function Home() {
             }}
           />
         )}
-        {dataStatus}
-        {missingWork}
-        {view === "home" && (
-          <HomePortal
+        <div className="route-view" ref={viewContainerRef}>
+          {dataStatus}
+          {missingWork}
+          {view === "home" && (
+            <HomePortal
             books={books}
             graph={canonicalGraph}
             query={query}
@@ -248,42 +278,42 @@ export default function Home() {
               if (entity) pickSearchResult(entity);
             }}
             onResearchInfo={() => setResearchInfoOpen(true)}
-          />
-        )}
-        {view === "graph" && canonicalGraph && <GraphExplorer explorer={explorer} />}
-        {view === "assistant" && canonicalGraph && (
-          <AssistantPage
-            key={assistantEntry.token}
-            graph={canonicalGraph}
-            assetUrl={publicAssetUrl}
-            initialQuestion={assistantEntry.question}
-            onGraphFocus={explorer.focusAnswer}
-          />
-        )}
-        {view === "research" && canonicalGraph && (
-          <ResearchAnalysis
-            books={canonicalGraph.books}
-            entities={canonicalGraph.entities}
-            relationships={canonicalGraph.relationships}
-            quality={canonicalGraph.quality}
-            onSelectPair={(_left, _right, entityIds) => explorer.openResearchPair(entityIds)}
-            onSelectEntity={explorer.openResearchEntity}
-          />
-        )}
-        {view === "records" && dataset && (
-          <WorkLibrary
-            books={books}
-            bookKey={selectedRecordsKey}
-            bookData={recordsBookData.book}
-            bookDataStatus={recordsBookData.status}
-            onRetryBookData={recordsBookData.retry}
-            isWork={isWorkType}
-            onBook={(book) => openRecordsBook(book.key, true)}
-            onOpen={(work: Entity) => explorer.openLesson(work)}
-          />
-        )}
-        {view === "lesson" && canonicalGraph && routeWork && (
-          <LessonPage
+            />
+          )}
+          {view === "graph" && canonicalGraph && <GraphExplorer explorer={explorer} />}
+          {view === "assistant" && canonicalGraph && (
+            <AssistantPage
+              key={assistantEntry.token}
+              graph={canonicalGraph}
+              assetUrl={publicAssetUrl}
+              initialQuestion={assistantEntry.question}
+              onGraphFocus={explorer.focusAnswer}
+            />
+          )}
+          {view === "research" && canonicalGraph && (
+            <ResearchAnalysis
+              books={canonicalGraph.books}
+              entities={canonicalGraph.entities}
+              relationships={canonicalGraph.relationships}
+              quality={canonicalGraph.quality}
+              onSelectPair={(_left, _right, entityIds) => explorer.openResearchPair(entityIds)}
+              onSelectEntity={explorer.openResearchEntity}
+            />
+          )}
+          {view === "records" && dataset && (
+            <WorkLibrary
+              books={books}
+              bookKey={selectedRecordsKey}
+              bookData={recordsBookData.book}
+              bookDataStatus={recordsBookData.status}
+              onRetryBookData={recordsBookData.retry}
+              isWork={isWorkType}
+              onBook={(book) => openRecordsBook(book.key, true)}
+              onOpen={(work: Entity) => explorer.openLesson(work)}
+            />
+          )}
+          {view === "lesson" && canonicalGraph && routeWork && (
+            <LessonPage
             key={routeWork.id}
             workId={routeWork.id}
             entities={canonicalGraph.entities}
@@ -298,10 +328,10 @@ export default function Home() {
               const work = entityById(id);
               if (work) navigate({ view: "work", work: bareWorkName(work.name) });
             }}
-          />
-        )}
-        {view === "work" && canonicalGraph && routeWork && (
-          <WorkGraph
+            />
+          )}
+          {view === "work" && canonicalGraph && routeWork && (
+            <WorkGraph
             workId={routeWork.id}
             entities={canonicalGraph.entities}
             relationships={canonicalGraph.relationships}
@@ -313,9 +343,10 @@ export default function Home() {
               if (work) navigate({ view: "work", work: bareWorkName(work.name) });
             }}
             onLocate={explorer.locateCanonical}
-          />
-        )}
-        {view === "import" && <ImportView />}
+            />
+          )}
+          {view === "import" && <ImportView />}
+        </div>
       </section>
       <ResearchInfo
         open={researchInfoOpen}

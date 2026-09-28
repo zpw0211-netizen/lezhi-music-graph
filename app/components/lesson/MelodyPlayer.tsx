@@ -5,6 +5,7 @@ import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
 import { loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
 import type { PianoSampler } from "../../lib/lesson/piano-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
+import { SlidingIndicator } from "../graph/SlidingIndicator";
 
 type Line = { label: string; bars: MelodyNote[][] };
 // One audio context and one decoded piano bank for the whole session, so
@@ -34,7 +35,8 @@ export function MelodySet({ melodies, large }: { melodies: Melody[]; large?: boo
   const [index, setIndex] = useState(0);
   const melody = melodies[Math.min(index, melodies.length - 1)];
   return <div className="melody-set">
-    {melodies.length > 1 && <div className="melody-tabs" role="tablist" aria-label="谱例片段">
+    {melodies.length > 1 && <div className="melody-tabs motion-tabs" role="tablist" aria-label="谱例片段">
+      <SlidingIndicator activeKey={index} />
       {melodies.map((item, k) => <button key={k} type="button" role="tab" aria-selected={k === index} className={k === index ? "active" : ""} onClick={() => setIndex(k)}>{item.title ?? `片段 ${k + 1}`}</button>)}
     </div>}
     <MelodyPlayer key={index} melody={melody} large={large} />
@@ -198,7 +200,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const renderNote = (note: MelodyNote, key: number, active: boolean) => {
     const { lines: underlines, dotted, dashes } = notation(note);
     return <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
-      <span className={`melody-digit lines-${underlines} ${(note.o ?? 0) > 0 ? "is-high" : ""} ${(note.o ?? 0) < 0 ? "is-low" : ""} ${Math.abs(note.o ?? 0) === 2 ? "is-double" : ""}`}>{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d === 9 ? "×" : note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
+      <span className={`melody-digit lines-${underlines} ${(note.o ?? 0) > 0 ? "is-high" : ""} ${(note.o ?? 0) < 0 ? "is-low" : ""} ${Math.abs(note.o ?? 0) === 2 ? "is-double" : ""}`}><span className="melody-digit-highlight" />{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d === 9 ? "×" : note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
       {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash">–</span>)}
       <span className="melody-lyric">{note.lyric || " "}</span>
     </span>;
@@ -208,7 +210,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className="melody-play" onClick={play} disabled={loadingPiano} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+      <button type="button" className={`melody-play ${playing ? "is-playing" : ""}`} onClick={play} disabled={loadingPiano} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
         {!loadingPiano && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
         {loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>

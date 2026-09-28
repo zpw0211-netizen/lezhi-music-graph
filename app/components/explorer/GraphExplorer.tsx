@@ -25,6 +25,7 @@ import { FullGraphCanvas, FullGraphMiniMap } from "../FullGraphCanvas";
 import { GraphPathFinder } from "../graph/GraphPathFinder";
 import { GraphRendererBoundary } from "../graph/GraphRendererBoundary";
 import { GraphSidebar } from "../graph/GraphSidebar";
+import { SlidingIndicator } from "../graph/SlidingIndicator";
 import { KnowledgeDetailDrawer } from "../graph/KnowledgeDetailDrawer";
 import { SchemaExplorer } from "../graph/SchemaExplorer";
 import type { SigmaGraphSceneProps } from "../graph/SigmaGraphScene";
@@ -1017,7 +1018,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
   if (graphMode !== "all" && explorer.bookDataStatus !== "ready") {
     return (
       <>
-        <div className="book-tabs">
+        <div className="book-tabs motion-tabs">
+          <SlidingIndicator activeKey={explorer.bookKey ?? "all"} />
           <button className="book-tab" onClick={explorer.chooseFullGraph}>六册叠加</button>
           {books.map((book) => (
             <button
@@ -1043,7 +1045,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
 
   return (
     <>
-      <div className="book-tabs">
+      <div className="book-tabs motion-tabs">
+        <SlidingIndicator activeKey={graphMode === "all" ? "all" : explorer.bookKey ?? "all"} />
         <button className={`book-tab ${graphMode === "all" ? "active" : ""}`} onClick={explorer.chooseFullGraph}>
           六册叠加
         </button>
@@ -1163,7 +1166,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
             {graphMode === "all" && (
               <div className="full-graph-filterbar" aria-label="六册关系视图">
                 <div className="graph-filter-primary">
-                  <div className="full-graph-layout-tabs" aria-label="全景布局模式">
+                  <div className="full-graph-layout-tabs motion-tabs" aria-label="全景布局模式">
+                    <SlidingIndicator activeKey={fullGraphLayout} />
                     {LAYOUT_TABS.map(([key, label, english]) => (
                       <button
                         key={key}
@@ -1182,7 +1186,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                       </button>
                     ))}
                   </div>
-                  <div className="full-graph-view-tabs">
+                  <div className="full-graph-view-tabs motion-tabs">
+                    <SlidingIndicator activeKey={fullGraphView} />
                     {VIEW_TABS.map(([key, label]) => (
                       <button
                         key={key}
