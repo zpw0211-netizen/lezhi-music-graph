@@ -225,7 +225,7 @@
     overscroll-behavior: contain;
   }
 
-  .ink-app.nav-mode:not(.home-mode) .workspace > :not(.home-nav):not(.research-info-backdrop) {
+  .ink-app.nav-mode:not(.home-mode) :where(.workspace, .workspace > .route-view) > :not(.home-nav):not(.research-info-backdrop):not(.route-view) {
     padding-right: 16px;
     padding-left: 16px;
   }

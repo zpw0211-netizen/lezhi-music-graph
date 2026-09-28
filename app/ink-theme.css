@@ -20,7 +20,8 @@ body:has(.ink-app),.ink-app,.ink-app .workspace { background:var(--paper); }
 /* App pages without the graph sidebar: full-width column under the top nav */
 .ink-app.nav-mode:not(.home-mode) .workspace { height:100dvh; overflow-y:auto; padding:0; }
 .ink-app:not(.home-mode) .topbar { display:none; }
-.ink-app.nav-mode:not(.home-mode) .workspace > :not(.home-nav):not(.research-info-backdrop) { width:auto; max-width:1320px; margin-left:auto; margin-right:auto; padding-left:32px; padding-right:32px; box-sizing:border-box; }
+/* Pages sit inside .route-view (the route transition wrapper); :where keeps the original specificity. */
+.ink-app.nav-mode:not(.home-mode) :where(.workspace, .workspace > .route-view) > :not(.home-nav):not(.research-info-backdrop):not(.route-view) { width:auto; max-width:1320px; margin-left:auto; margin-right:auto; padding-left:32px; padding-right:32px; box-sizing:border-box; }
 .ink-app.network-mode .workspace { height:100dvh; overflow-y:auto; padding:0 20px 20px; }
 .ink-app.network-mode .home-nav { margin:0 -20px 12px; }
 .ink-app .explorer-brand,.ink-app .explorer-nav { display:none; }
@@ -39,7 +40,7 @@ body:has(.ink-app),.ink-app,.ink-app .workspace { background:var(--paper); }
 }
 @media (max-width:760px) {
   .ink-app.nav-mode:not(.home-mode) .workspace { height:auto; overflow:visible; }
-  .ink-app.nav-mode:not(.home-mode) .workspace > :not(.home-nav):not(.research-info-backdrop) { padding-left:16px; padding-right:16px; }
+  .ink-app.nav-mode:not(.home-mode) :where(.workspace, .workspace > .route-view) > :not(.home-nav):not(.research-info-backdrop):not(.route-view) { padding-left:16px; padding-right:16px; }
   .app-nav-search { width:150px; }
   .app-nav-results { width:280px; }
 }
