@@ -9,6 +9,7 @@
     "dev": "vinext dev",
     "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && vinext build",
     "start": "vinext start",
+    "smoke": "node scripts/smoke-pages.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern out --ignore-pattern .site-package-*",
     "db:generate": "drizzle-kit generate",
     "quality:check": "node scripts/audit-quality.mjs",
