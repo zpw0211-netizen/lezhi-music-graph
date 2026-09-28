@@ -1,0 +1,558 @@
+/* Research analysis: let the six-book matrix carry the page. */
+.research-analysis {
+  height: auto;
+  overflow: visible;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 34px 0 64px;
+  background: transparent;
+  color: var(--brand-ink);
+}
+
+.research-analysis-header {
+  display: block;
+  margin: 0 0 28px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid var(--brand-paper-deep);
+}
+
+.research-analysis-header h2 {
+  margin: 0 0 8px;
+  color: var(--brand-ink);
+  font-family: var(--serif);
+  font-size: clamp(32px, 3.2vw, 44px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.research-analysis-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.research-method-note {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  max-width: none;
+  margin-top: 4px !important;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.research-method-note b {
+  color: var(--brand-indigo);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.research-method-note span {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.research-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  align-items: start;
+  gap: 42px 56px;
+  max-width: none;
+  margin: 0;
+}
+
+.matrix-panel,
+.core-ranking-panel,
+.quality-panel,
+.source-layer-panel {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.matrix-panel {
+  grid-row: auto;
+  padding: 0;
+}
+
+.matrix-panel > header,
+.core-ranking-panel > header,
+.quality-panel > header,
+.source-layer-panel > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--brand-paper-deep);
+}
+
+.matrix-panel > header {
+  margin: 0 0 14px;
+}
+
+.matrix-panel h3,
+.core-ranking-panel h3,
+.quality-panel h3,
+.source-layer-panel h3 {
+  margin: 0;
+  color: var(--brand-ink);
+}
+
+.matrix-panel h3 {
+  font-family: var(--serif);
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.matrix-metric-toggle {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.research-analysis .matrix-metric-toggle .motion-tab-indicator {
+  background: var(--brand-indigo);
+}
+
+.matrix-metric-toggle button {
+  min-height: 34px;
+  padding: 5px 11px;
+  border: 1px solid var(--brand-paper-deep);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.matrix-metric-toggle button.active {
+  border-color: var(--brand-indigo);
+  background: var(--brand-indigo);
+  color: #fff;
+}
+
+.matrix-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.matrix-panel table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 5px 6px;
+  table-layout: fixed;
+}
+
+.matrix-panel th {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 650;
+  text-align: center;
+}
+
+.matrix-panel thead th:first-child {
+  width: 66px;
+}
+
+.matrix-panel tbody th {
+  padding-right: 8px;
+  text-align: right;
+}
+
+.matrix-panel td button {
+  width: 100%;
+  min-height: 58px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 5px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+.matrix-panel td button:not(.is-diagonal):hover {
+  transform: scale(1.035);
+  outline: 2px solid var(--brand-indigo);
+  outline-offset: 1px;
+}
+
+.matrix-panel td button:focus-visible,
+.matrix-metric-toggle button:focus-visible,
+.core-ranking-panel li button:focus-visible {
+  outline: 3px solid var(--brand-vermilion);
+  outline-offset: 2px;
+}
+
+.matrix-panel td button.is-diagonal {
+  background: var(--brand-paper-deep);
+  color: var(--brand-ink);
+}
+
+.matrix-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.matrix-legend-ramp {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.matrix-legend-ramp i {
+  width: 20px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.matrix-legend-diagonal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.matrix-legend-diagonal i {
+  width: 14px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--brand-paper-deep);
+}
+
+.matrix-panel > p {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.core-ranking-panel {
+  padding-top: 7px;
+}
+
+.core-ranking-panel h3 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.core-ranking-panel > header small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.core-ranking-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(4, 34px);
+  gap: 5px;
+  padding: 10px 4px 8px;
+  border-bottom: 1px solid var(--brand-paper-deep);
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-align: center;
+}
+
+.core-ranking-head span:first-child {
+  text-align: left;
+}
+
+.core-ranking-panel ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.core-ranking-panel li button {
+  display: grid;
+  grid-template-columns: 22px 7px minmax(0, 1fr) repeat(4, 34px);
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 9px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--brand-paper-deep);
+  background: transparent;
+  color: var(--brand-ink);
+  text-align: left;
+}
+
+.core-ranking-panel li button:hover {
+  background: #F3F5F9;
+}
+
+.core-ranking-panel li button > b {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.core-ranking-panel li i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.core-ranking-panel li span strong,
+.core-ranking-panel li span small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.core-ranking-panel li span strong {
+  color: var(--brand-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.core-ranking-panel li span small {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.core-ranking-panel li em {
+  color: var(--brand-ink);
+  font-size: 11px;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.quality-panel,
+.source-layer-panel {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--brand-paper-deep);
+  padding-top: 20px;
+}
+
+.quality-panel > header,
+.source-layer-panel > header {
+  align-items: center;
+  padding-bottom: 12px;
+}
+
+.quality-panel header > div > span,
+.source-layer-panel header > div > span {
+  display: none;
+}
+
+.quality-panel h3,
+.source-layer-panel h3 {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.quality-panel header > b {
+  color: var(--brand-indigo);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.quality-panel dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 20px;
+  margin: 0;
+}
+
+.quality-panel dl div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--brand-paper-deep);
+}
+
+.quality-panel dt {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.quality-panel dd {
+  margin: 0;
+  color: var(--brand-ink);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
+.quality-panel > p {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.source-layer-panel {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.source-layer-panel > header small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.source-layer-panel table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  color: var(--brand-ink);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.source-layer-panel :is(th, td) {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--brand-paper-deep);
+  text-align: right;
+}
+
+.source-layer-panel thead th {
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.source-layer-panel tbody th {
+  color: var(--brand-ink);
+  font-weight: 600;
+  text-align: left;
+}
+
+.source-layer-panel tbody th small {
+  margin-left: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.source-layer-panel thead th:first-child {
+  text-align: left;
+}
+
+.source-layer-panel tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .research-grid {
+    grid-template-columns: minmax(0, 1.65fr) minmax(250px, 1fr);
+    gap: 34px 28px;
+  }
+}
+
+@media (max-width: 760px) {
+  .research-analysis {
+    padding: 26px 0 44px;
+  }
+
+  .research-analysis-header {
+    margin-bottom: 22px;
+  }
+
+  .research-analysis-header h2 {
+    font-size: 32px;
+  }
+
+  .research-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .matrix-panel > header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .matrix-panel h3 {
+    font-size: 27px;
+  }
+
+  .matrix-panel thead th:first-child {
+    width: 30px;
+  }
+
+  .matrix-panel th {
+    font-size: 10px;
+  }
+
+  .matrix-panel td button {
+    min-height: 40px;
+    padding: 0 2px;
+    font-size: 10px;
+  }
+
+  .matrix-legend-diagonal {
+    margin-left: 0;
+  }
+
+  .core-ranking-head {
+    grid-template-columns: minmax(0, 1fr) repeat(4, 28px);
+    font-size: 10px;
+  }
+
+  .core-ranking-panel li button {
+    grid-template-columns: 20px 7px minmax(0, 1fr) repeat(4, 28px);
+    gap: 4px;
+    padding: 9px 2px;
+  }
+
+  .core-ranking-panel li span strong {
+    font-size: 11px;
+  }
+
+  .core-ranking-panel li em {
+    font-size: 10px;
+  }
+
+  .quality-panel dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 14px;
+  }
+
+  .quality-panel dt {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .research-analysis-header h2 {
+    font-size: 29px;
+  }
+
+  .ink-app.nav-mode .matrix-scroll table {
+    min-width: 0;
+  }
+
+  .matrix-panel table {
+    border-spacing: 0 4px;
+  }
+
+  .matrix-panel td button {
+    min-height: 36px;
+    font-size: 9px;
+  }
+
+  .quality-panel dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

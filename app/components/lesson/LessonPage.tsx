@@ -159,9 +159,10 @@ export function LessonPage({
       <div className="lesson-main" data-reveal-group>
         <header className="lesson-hero" data-reveal>
           <div>
-            <span className="lesson-type">{work.type}</span>{starred && <span className="lesson-star" title="教材标注的重点学习曲目">☆ 重点曲目</span>}
-            <h1 id="lesson-title">{work.name}</h1>
+            <h1 id="lesson-title" data-grade={lesson.book?.name.match(/([七八九])年级/)?.[1] ?? ""}>{work.name}</h1>
             <p className="lesson-meta">
+              <span className="lesson-type">{work.type}</span>
+              {starred && <span className="lesson-star" title="教材标注的重点学习曲目">☆ 重点曲目</span>}
               {creators.map((relation) => <span key={relation.id}><small>{relation.predicate}</small>{valueOf(relation)}</span>)}
               {scorePage && <span><small>教材</small>第 {scorePage} 页</span>}
             </p>

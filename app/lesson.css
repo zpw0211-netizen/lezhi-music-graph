@@ -7,18 +7,22 @@
 .lesson-crumbs b { color:var(--text-primary); }
 .lesson-layout { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:22px; margin-top:16px; align-items:start; }
 
-.lesson-hero { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding:26px 28px; border-radius:22px;
-  background:linear-gradient(135deg,#EAF7F0 0%,#F4FBF7 55%,#FFF7EC 100%); border:1px solid #D6EDE0; }
-.lesson-type { display:inline-block; padding:3px 12px; border-radius:999px; background:#fff; color:var(--accent); font-size:12px; font-weight:650; }
-.lesson-star { display:inline-block; margin-left:8px; padding:3px 10px; border-radius:999px; background:#FFF1DC; color:#A2560E; font-size:12px; font-weight:650; }
-.lesson-hero h1 { margin:10px 0 8px; font-size:34px; font-weight:800; letter-spacing:.01em; }
-.lesson-meta { display:flex; flex-wrap:wrap; gap:6px 18px; margin:0; font-size:14px; }
-.lesson-meta small { margin-right:6px; color:var(--text-tertiary); font-size:12px; }
+.lesson-hero { display:flex; align-items:center; justify-content:space-between; gap:28px; padding:30px 0 24px; border-bottom:1px solid var(--brand-paper-deep); background:transparent; }
+.lesson-type { display:inline-block; color:var(--text-secondary); font-size:13px; font-weight:600; }
+.lesson-star { display:inline-block; color:var(--brand-vermilion); font-size:13px; font-weight:650; }
+.lesson-hero h1 { margin:0 0 12px; font-family:var(--serif); font-size:clamp(40px,4vw,56px); font-weight:600; line-height:1.2; letter-spacing:0; }
+.lesson-hero h1::after { content:""; display:block; width:54px; height:4px; margin-top:14px; background:var(--brand-sprout); }
+.lesson-hero h1[data-grade="八"]::after { background:var(--grade-8); }
+.lesson-hero h1[data-grade="九"]::after { background:var(--grade-9); }
+.lesson-meta { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 16px; margin:0; color:var(--text-secondary); font-size:13px; }
+.lesson-meta > span { display:inline-flex; align-items:baseline; gap:5px; }
+.lesson-meta small { color:var(--text-tertiary); font-size:12px; }
 .lesson-hero-actions { display:flex; flex-direction:column; gap:8px; flex:none; }
-.lesson-hero-actions button { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 16px; border:1px solid var(--border); border-radius:12px; background:#fff; color:var(--text-primary); font-size:14px; font-weight:600; }
-.lesson-hero-actions button:hover { border-color:var(--accent); color:var(--accent); }
-.lesson-hero-actions .lesson-present { border:0; background:linear-gradient(135deg,#2DB36F,#16834F); color:#fff; box-shadow:0 8px 18px #16834F33; }
-.lesson-hero-actions .lesson-present:hover { color:#fff; filter:brightness(1.05); }
+.lesson-hero-actions button { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding:0 16px; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--text-primary); font-size:14px; font-weight:600; transition:transform var(--motion-fast) var(--ease-out); }
+.lesson-hero-actions button:hover { border-color:var(--brand-sprout-deep); color:var(--brand-sprout-deep); transform:translateY(-1px); }
+.lesson-hero-actions button:active { transform:scale(.97); }
+.lesson-hero-actions .lesson-present { border:1px solid var(--brand-sprout-deep); background:var(--brand-sprout-deep); color:#fff; }
+.lesson-hero-actions .lesson-present:hover { color:#fff; }
 .lesson-hero-actions svg { width:16px; height:16px; }
 
 .lesson-block { margin-top:18px; padding:22px 24px; border:1px solid var(--border); border-radius:20px; background:var(--surface); box-shadow:var(--shadow-sm); }
@@ -183,9 +187,9 @@
   .lesson-quiz fieldset>div { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:640px) {
-  .lesson-hero { flex-direction:column; align-items:stretch; padding:20px; }
-  .lesson-hero h1 { font-size:26px; }
+  .lesson-hero { flex-direction:column; align-items:stretch; gap:20px; padding:24px 0 20px; }
   .lesson-hero-actions { flex-direction:row; }
+  .lesson-hero-actions button { flex:1 1 0; padding:0 10px; }
   .lesson-block { padding:18px 16px; }
   .melody-tempo { margin-left:0; }
 }
