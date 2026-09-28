@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useMemo, useRef, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { KEY_MELODIES } from "../../lib/lesson/melodies-key";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { publicAssetUrl } from "../../lib/app/assets";
@@ -39,6 +39,14 @@ type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
 const GRADE_NAMES: Record<number, string> = { 7: "七年级", 8: "八年级", 9: "九年级" };
 const HOT_SEARCHES = ["游击队歌", "黄河", "京剧", "民歌", "冼星海"];
 const HERO_WORK = "《游击队歌》";
+const BOOK_ART: Record<string, { file: string; alt: string }> = {
+  g7s1: { file: "art/g7s1.webp", alt: "套色木刻风格插画：军鼓与马头琴放在红旗上，远处是草原" },
+  g7s2: { file: "art/g7s2.webp", alt: "套色木刻风格插画：京剧脸谱、新疆都塔尔和乐谱" },
+  g8s1: { file: "art/g8s1.webp", alt: "套色木刻风格插画：胶片、古琴、非洲鼓和小提琴协奏曲乐谱" },
+  g8s2: { file: "art/g8s2.webp", alt: "套色木刻风格插画：古诗书页、竹笛、交响乐定音鼓和军号" },
+  g9s1: { file: "art/g9s1.webp", alt: "套色木刻风格插画：展开的山水画卷、西南芦笙与戏曲水袖" },
+  g9s2: { file: "art/g9s2.webp", alt: "套色木刻风格插画：藏族扎木聂、飘动的经幡、戏楼与快板" },
+};
 const SOURCE_MELODY = KEY_MELODIES[HERO_WORK];
 const HERO_MELODY: Melody = { ...SOURCE_MELODY, bars: SOURCE_MELODY.bars.slice(0, 4) };
 const UNIT_ORDER: Record<string, number> = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
@@ -94,12 +102,9 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
 
     <section className="home-hero" aria-label="从一首歌开始探索音乐知识">
       <div className="home-hero-inner">
-        <div className="home-brand-story" data-reveal>
-          <h1 className="home-brand-title home-title" aria-label="芽谱">
-            <span className="home-title-accessible">芽谱</span>
-            <Image src={publicAssetUrl("brand/logo.svg")} alt="" aria-hidden="true" width={310} height={112} priority unoptimized />
-          </h1>
-          <p className="home-slogan">让音乐知识彼此连接</p>
+        <div className="home-brand-story">
+          <Image className="home-brand-mark" src={publicAssetUrl("brand/mark.svg")} alt="" aria-hidden="true" width={56} height={56} priority unoptimized />
+          <h1 className="home-slogan home-title" aria-label="芽谱，让音乐知识彼此连接"><span className="home-title-accessible">芽谱</span>让音乐知识<br />彼此连接</h1>
           <p className="home-lead">按课听谱、查知识，发现六册教材里的音乐关联。</p>
           <form className="home-search" onSubmit={onSearch} role="search">
             <WorkbenchIcon name="search" />
@@ -116,7 +121,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           {graph && <p className="home-proof"><strong>{fmt(knowledgeCount)}</strong><span>个知识节点，连接六册教材</span></p>}
         </div>
 
-        <section className="home-song-stage" aria-labelledby="home-song-title" data-reveal>
+        <section className="home-song-stage" aria-labelledby="home-song-title">
           <header className="home-song-heading">
             <div>
               <p className="home-song-overline">从真实旋律读懂音乐</p>
@@ -150,7 +155,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             return <section className={`home-grade-group grade-${grade}`} key={grade} aria-label={GRADE_NAMES[grade]} data-reveal-group>
               <header className="home-grade-heading"><h3>{GRADE_NAMES[grade]}</h3><span>{gradeBooks.length} 册</span></header>
               <div className="home-book-list">
-                {gradeBooks.map((book) => <BookCover key={book.key} book={book} units={unitsByBook.get(book.key) ?? []} onOpen={() => onOpenBook(book)} />)}
+                {gradeBooks.map((book) => <BookCover key={book.key} book={book} units={unitsByBook.get(book.key) ?? []} onOpen={() => onOpenBook(book)} art={BOOK_ART[book.key]} />)}
               </div>
             </section>;
           })}
@@ -162,8 +167,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           <div><h2 id="home-rank-title">从这里继续探索</h2><p>核心乐理与作品，按图谱关联数量排列</p></div>
           <button type="button" className="home-more" onClick={onOpenFullGraph}>打开完整图谱<WorkbenchIcon name="right" /></button>
         </header>
-        <ol className="home-rank">
-          {featured.map((entity, index) => <li key={entity.id}>
+        <ol className="home-rank" data-reveal-group>
+          {featured.map((entity, index) => <li key={entity.id} data-reveal>
             <button type="button" onClick={() => onPickEntityName(entity.name)}>
               <b>{String(index + 1).padStart(2, "0")}</b>
               <span>{entity.name.replace(/[《》]/g, "")}</span>
@@ -182,6 +187,14 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
         <button type="button" onClick={() => onView("research")}>研究分析</button>
       </nav>
 
+      <section className="home-closing" aria-label="开始走进音乐教材" data-reveal>
+        <div className="home-closing-copy">
+          <p>从一首歌出发，走进六册教材</p>
+          <button type="button" onClick={() => onView("records")}>开始上课</button>
+        </div>
+        <ClosingArtwork />
+      </section>
+
       <footer className="home-footer">
         <p>教材内容依据人民音乐出版社新版七至九年级音乐教材逐页整理，每条知识标注教材页码；教材之外的补充单独标注为“拓展知识”，已逐条审阅。</p>
         <button type="button" onClick={onResearchInfo}>研究信息</button>
@@ -194,10 +207,13 @@ function BookCover<B extends PortalBook>({ book, units, onOpen, art }: {
   book: B;
   units: string[];
   onOpen: () => void;
-  art?: string;
+  art?: { file: string; alt: string };
 }) {
+  const { ref, activated } = useArtworkActivation<HTMLSpanElement>();
   return <button type="button" className="home-book" onClick={onOpen}>
-    <span className={`home-book-cover ${art ? "has-art" : ""}`} style={art ? { backgroundImage: `url("${art}")` } : undefined} aria-hidden="true">
+    <span ref={ref} className={`home-book-cover ${art ? "has-art" : ""}`}>
+      {art && activated && <Image className="home-book-art" src={publicAssetUrl(art.file)} alt={art.alt} width={1200} height={750} loading="lazy" decoding="async" unoptimized />}
+      {art && !activated && <span className="home-book-art-placeholder" aria-hidden="true" />}
       {!art && <><b>{GRADE_NAMES[book.grade]?.slice(0, 1) ?? book.grade}</b><small>年级音乐</small></>}
       <i>{book.semester}</i>
     </span>
@@ -206,6 +222,48 @@ function BookCover<B extends PortalBook>({ book, units, onOpen, art }: {
       <span className="home-book-units">{units.length ? units.join("　·　") : "单元目录载入中"}</span>
     </span>
   </button>;
+}
+
+function ClosingArtwork() {
+  const { ref, activated } = useArtworkActivation<HTMLDivElement>();
+  return <div ref={ref} className="home-closing-art-frame">
+    {activated
+      ? <Image className="home-closing-art" src={publicAssetUrl("art/hero.webp")} alt="套色木刻风格插画：嫩芽从弯曲的五线谱中生长，学生沿着谱线携带乐器前行" width={2000} height={1000} loading="lazy" decoding="async" unoptimized />
+      : <span className="home-closing-art-placeholder" aria-hidden="true" />}
+  </div>;
+}
+
+function useArtworkActivation<T extends Element>() {
+  const ref = useRef<T | null>(null);
+  const [activated, setActivated] = useState(false);
+
+  useEffect(() => {
+    const target = ref.current;
+    if (!target || activated) return;
+    const workspace = target.closest(".workspace") as HTMLElement | null;
+    const workspaceStyle = workspace ? getComputedStyle(workspace) : null;
+    const scrollContainer = workspace && workspaceStyle && /auto|scroll/.test(workspaceStyle.overflowY) && workspace.scrollHeight > workspace.clientHeight + 1
+      ? workspace
+      : null;
+    const scrollTarget: EventTarget = scrollContainer ?? window;
+    const hasScrolled = () => scrollContainer ? scrollContainer.scrollTop > 0 : window.scrollY > 0;
+    let isNearViewport = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      isNearViewport = entry.isIntersecting;
+      if (isNearViewport && hasScrolled()) setActivated(true);
+    }, { rootMargin: "120px 0px" });
+    const onScroll = () => {
+      if (isNearViewport && hasScrolled()) setActivated(true);
+    };
+    observer.observe(target);
+    scrollTarget.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      scrollTarget.removeEventListener("scroll", onScroll);
+    };
+  }, [activated]);
+
+  return { ref, activated };
 }
 
 type HeroNode = { name: string; relation: string; category: string };
