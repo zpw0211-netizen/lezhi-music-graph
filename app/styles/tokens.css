@@ -1,5 +1,16 @@
 /* 基础界面令牌。保留样式导入顺序中的最终生效值。 */
 :root {
+    --brand-ink: #1C2B26;
+    --brand-paper: #F7F3EA;
+    --brand-paper-deep: #EDE6D6;
+    --brand-sprout: #3E9B4F;
+    --brand-sprout-deep: #1F5C47;
+    --brand-vermilion: #D2462C;
+    --brand-amber: #E9A83A;
+    --brand-indigo: #2E4A7D;
+    --grade-7: #3E9B4F;
+    --grade-8: #2E4A7D;
+    --grade-9: #D2462C;
     --violet: #356f68;
     --cyan: #2f7185;
     --yellow: #aa7a31;

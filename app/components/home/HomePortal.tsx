@@ -1,24 +1,60 @@
 "use client";
-import { useMemo, useRef, type FormEvent } from "react";
+
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { KEY_MELODIES } from "../../lib/lesson/melodies-key";
+import type { Melody } from "../../lib/lesson/jianpu";
+import { publicAssetUrl } from "../../lib/app/assets";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { AppTopNav } from "../AppTopNav";
+import type { MelodyPlayer as MelodyPlayerComponent } from "../lesson/MelodyPlayer";
 
-type PortalEntity = { id: string; name: string; type: string; category?: string; textbookCount?: number; degree?: number };
+type PortalEntity = {
+  id: string;
+  name: string;
+  type: string;
+  category?: string;
+  textbookCount?: number;
+  degree?: number;
+  bookKeys?: string[];
+};
 type PortalRelationship = { subject: string; objectId?: string | null; predicate: string; label?: string };
-type PortalBook = { key: string; title: string; grade: number; semester: string; entityCount: number; tripleCount: number; workCount: number; pages: number };
+type PortalBook = {
+  key: string;
+  title: string;
+  grade: number;
+  semester: string;
+  entityCount: number;
+  tripleCount: number;
+  workCount: number;
+  pages: number;
+};
 type PortalGraph = { entities: PortalEntity[]; relationships: PortalRelationship[] };
 type PortalSearchBook = Pick<PortalBook, "key" | "title" | "grade" | "semester">;
 type PortalSearchResult<E, B extends PortalSearchBook> = { entity: E; book: B; relationCount: number; matchedBy: string };
 type PortalView = "graph" | "assistant" | "research" | "records";
+type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
 
 const GRADE_NAMES: Record<number, string> = { 7: "七年级", 8: "八年级", 9: "九年级" };
 const HOT_SEARCHES = ["游击队歌", "黄河", "京剧", "民歌", "冼星海"];
-/** The hero illustration is drawn from this work's real neighbours in the knowledge graph. */
 const HERO_WORK = "《游击队歌》";
-const HERO_SLOTS: Array<[number, number]> = [[-150, -128], [150, -128], [-218, 20], [218, 20], [-120, 150], [120, 150]];
-const CATEGORY_ICON: Record<string, "person" | "book" | "music" | "graph" | "spark" | "layers"> = {
-  person: "person", textbook: "book", work: "music", element: "music", theory: "spark", culture: "layers",
+const BOOK_ART: Record<string, { file: string; alt: string }> = {
+  g7s1: { file: "art/g7s1.webp", alt: "套色木刻风格插画：军鼓与马头琴放在红旗上，远处是草原" },
+  g7s2: { file: "art/g7s2.webp", alt: "套色木刻风格插画：京剧脸谱、新疆都塔尔和乐谱" },
+  g8s1: { file: "art/g8s1.webp", alt: "套色木刻风格插画：胶片、古琴、非洲鼓和小提琴协奏曲乐谱" },
+  g8s2: { file: "art/g8s2.webp", alt: "套色木刻风格插画：古诗书页、竹笛、交响乐定音鼓和军号" },
+  g9s1: { file: "art/g9s1.webp", alt: "套色木刻风格插画：展开的山水画卷、西南芦笙与戏曲水袖" },
+  g9s2: { file: "art/g9s2.webp", alt: "套色木刻风格插画：藏族扎木聂、飘动的经幡、戏楼与快板" },
 };
+const SOURCE_MELODY = KEY_MELODIES[HERO_WORK];
+const HERO_MELODY: Melody = { ...SOURCE_MELODY, bars: SOURCE_MELODY.bars.slice(0, 4) };
+const UNIT_ORDER: Record<string, number> = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
+
+const MelodyPlayer = dynamic<PropsOf<typeof MelodyPlayerComponent>>(
+  () => import("../lesson/MelodyPlayer").then((module) => module.MelodyPlayer),
+  { loading: () => <div className="home-song-loading" role="status">正在准备简谱播放器…</div> },
+);
 
 export function HomePortal<E extends PortalEntity, B extends PortalBook, R extends PortalSearchBook = B>({
   books, graph, query, onQuery, results, onPickResult, onSearch, onOpenBook, onOpenFullGraph, onView, onPickEntityName, onResearchInfo,
@@ -37,43 +73,42 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   onResearchInfo: () => void;
 }) {
   const searchInput = useRef<HTMLInputElement>(null);
-  const stats = useMemo(() => {
-    const entities = graph?.entities ?? [];
-    return {
-      entities: entities.length,
-      relations: graph?.relationships.length ?? 0,
-      shared: entities.filter(entity => (entity.textbookCount ?? 0) >= 2).length,
-    };
-  }, [graph]);
   const hero = useMemo(() => heroNeighbours(graph), [graph]);
+  const unitsByBook = useMemo(() => textbookUnits(graph), [graph]);
+  const knowledgeCount = graph?.entities.length ?? 0;
   const coreConcepts = useMemo(() => (graph?.entities ?? [])
-    .filter(entity => entity.category === "theory" && (entity.textbookCount ?? 0) >= 6)
+    .filter((entity) => entity.category === "theory" && (entity.textbookCount ?? 0) >= 6)
     .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0)).slice(0, 12), [graph]);
   const richWorks = useMemo(() => (graph?.entities ?? [])
-    .filter(entity => entity.category === "work")
+    .filter((entity) => entity.category === "work")
     .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0)).slice(0, 8), [graph]);
-  const maxWorkDegree = richWorks[0]?.degree ?? 1;
-  const fmt = (value: number) => value.toLocaleString("en-US");
-  const focusSearch = () => { searchInput.current?.focus(); searchInput.current?.scrollIntoView({ block: "center", behavior: "smooth" }); };
+  const featured = useMemo(() => [
+    ...coreConcepts.map((entity) => ({ ...entity, kind: "核心乐理" })),
+    ...richWorks.map((entity) => ({ ...entity, kind: "作品" })),
+  ].sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0) || a.name.localeCompare(b.name, "zh-CN")).slice(0, 10), [coreConcepts, richWorks]);
+  const fmt = (value: number) => value.toLocaleString("zh-CN");
+  const focusSearch = () => {
+    searchInput.current?.focus();
+    searchInput.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  };
 
   return <div className="home-portal">
     <AppTopNav active="home" onAbout={onResearchInfo}
-      onNavigate={view => { if (view === "graph") onOpenFullGraph(); else if (view !== "home") onView(view); }}
+      onNavigate={(view) => { if (view === "graph") onOpenFullGraph(); else if (view !== "home") onView(view); }}
       trailing={<>
         <button type="button" className="home-nav-icon" onClick={focusSearch} aria-label="搜索"><WorkbenchIcon name="search" /></button>
         <button type="button" className="home-nav-cta" onClick={() => onView("records")}>开始上课</button>
       </>} />
 
-    <section className="home-hero">
-      <InkLandscape />
+    <section className="home-hero" aria-label="从一首歌开始探索音乐知识">
       <div className="home-hero-inner">
-        <div className="home-hero-copy">
-          <h1 className="home-title"><span>芽谱</span><i aria-hidden="true">音乐教育</i></h1>
-          <p className="home-slogan">让音乐知识彼此连接</p>
-          <p className="home-lead">从一首作品出发，探索作品、人物、乐理与文化之间的联系，<br />在音乐中看见更大的世界。</p>
+        <div className="home-brand-story">
+          <Image className="home-brand-mark" src={publicAssetUrl("brand/mark.svg")} alt="" aria-hidden="true" width={56} height={56} priority unoptimized />
+          <h1 className="home-slogan home-title" aria-label="芽谱，让音乐知识彼此连接"><span className="home-title-accessible">芽谱</span>让音乐知识<br />彼此连接</h1>
+          <p className="home-lead">按课听谱、查知识，发现六册教材里的音乐关联。</p>
           <form className="home-search" onSubmit={onSearch} role="search">
             <WorkbenchIcon name="search" />
-            <input ref={searchInput} value={query} onChange={event => onQuery(event.target.value)} placeholder="搜索作品、人物、知识点或教材内容……" aria-label="搜索知识点" />
+            <input ref={searchInput} value={query} onChange={(event) => onQuery(event.target.value)} placeholder="搜索作品、人物、知识点或教材内容……" aria-label="搜索知识点" />
             <button type="submit">搜索</button>
             {query && results.length > 0 && <div className="home-search-results">
               {results.map(({ entity, book, relationCount }) => <button type="button" key={`${book.key}-${entity.id}`} onClick={() => onPickResult(entity, book)}>
@@ -82,69 +117,82 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
               </button>)}
             </div>}
           </form>
-          <div className="home-hot"><span>热门搜索：</span>{HOT_SEARCHES.map(term => <button key={term} type="button" onClick={() => onQuery(term)}>{term}</button>)}</div>
+          <div className="home-hot"><span>热门搜索</span>{HOT_SEARCHES.map((term) => <button key={term} type="button" onClick={() => onQuery(term)}>{term}</button>)}</div>
+          {graph && <p className="home-proof"><strong>{fmt(knowledgeCount)}</strong><span>个知识节点，连接六册教材</span></p>}
         </div>
-        <HeroGraph hero={hero} onPick={onPickEntityName} />
+
+        <section className="home-song-stage" aria-labelledby="home-song-title">
+          <header className="home-song-heading">
+            <div>
+              <p className="home-song-overline">从真实旋律读懂音乐</p>
+              <h2 id="home-song-title">《游击队歌》</h2>
+            </div>
+            <p className="home-song-meta">开头四小节<br />1=G · 4/4</p>
+          </header>
+          <div className="home-song-player">
+            <MelodyPlayer melody={HERO_MELODY} large />
+            <p className="home-song-scroll-hint">左右滑动查看完整简谱</p>
+          </div>
+          <div className="home-song-links" aria-label="《游击队歌》关联知识点" data-reveal-group>
+            {hero?.nodes.map((node) => <button type="button" key={node.name} onClick={() => onPickEntityName(node.name)}>
+              <strong>{node.name}</strong><small>{node.relation}</small>
+            </button>)}
+            {!hero && <p>关联知识正在载入…</p>}
+          </div>
+        </section>
       </div>
     </section>
 
     <div className="home-body">
-      <section className="home-entries" aria-label="主要功能">
-        <button type="button" className="home-entry is-learn" onClick={() => onView("records")}>
-          <span className="home-entry-icon"><WorkbenchIcon name="book" /></span>
-          <span className="home-entry-text"><strong>开始学习<WorkbenchIcon name="right" /></strong><small>按教材单元学习音乐作品</small><small>看谱、听旋律、学知识、做练习</small></span>
-          <span className="home-entry-go"><WorkbenchIcon name="right" /></span>
-        </button>
-        <button type="button" className="home-entry is-graph" onClick={onOpenFullGraph}>
-          <span className="home-entry-icon"><WorkbenchIcon name="graph" /></span>
-          <span className="home-entry-text"><strong>探索知识图谱<WorkbenchIcon name="right" /></strong><small>在音乐知识网络中发现关联</small><small>从作品、人物、乐理到文化的多维探索</small></span>
-          <span className="home-entry-go"><WorkbenchIcon name="right" /></span>
-        </button>
-        <button type="button" className="home-entry is-ask" onClick={() => onView("assistant")}>
-          <span className="home-entry-icon"><WorkbenchIcon name="message" /></span>
-          <span className="home-entry-text"><strong>问芽谱 AI<WorkbenchIcon name="right" /></strong><small>基于教材知识的智能问答</small><small>每条回答都附有教材出处</small></span>
-          <span className="home-entry-go"><WorkbenchIcon name="right" /></span>
-        </button>
-      </section>
-
-      <section className="home-section">
+      <section className="home-section home-books" aria-labelledby="home-books-title" data-reveal>
         <header className="home-section-head">
-          <div><h2>教材导航</h2><p>人音版初中音乐教材 · 六册完整知识体系</p></div>
-          <button type="button" className="home-more" onClick={onOpenFullGraph}>六册叠加总览<WorkbenchIcon name="right" /></button>
+          <div><h2 id="home-books-title">按年级进入教材</h2><p>人音版七至九年级 · 六册单元目录</p></div>
+          <button type="button" className="home-more" onClick={onOpenFullGraph}>查看六册知识图谱<WorkbenchIcon name="right" /></button>
         </header>
-        <div className="home-shelf">
-          {books.map((book, index) => <button type="button" key={book.key} className="home-book" onClick={() => onOpenBook(book)}>
-            <BookScene variant={index % 6} />
-            <span className="home-book-body">
-              <span className="home-book-text">
-                <strong>{GRADE_NAMES[book.grade] ?? `${book.grade}年级`}{book.semester}</strong>
-                <small><span>{book.workCount} 首作品</span><span>{fmt(book.entityCount)} 个知识点</span></small>
-              </span>
-              <span className="home-book-go"><WorkbenchIcon name="right" /></span>
-            </span>
-          </button>)}
+        <div className="home-grade-groups">
+          {[7, 8, 9].map((grade) => {
+            const gradeBooks = books.filter((book) => book.grade === grade);
+            return <section className={`home-grade-group grade-${grade}`} key={grade} aria-label={GRADE_NAMES[grade]} data-reveal-group>
+              <header className="home-grade-heading"><h3>{GRADE_NAMES[grade]}</h3><span>{gradeBooks.length} 册</span></header>
+              <div className="home-book-list">
+                {gradeBooks.map((book) => <BookCover key={book.key} book={book} units={unitsByBook.get(book.key) ?? []} onOpen={() => onOpenBook(book)} art={BOOK_ART[book.key]} />)}
+              </div>
+            </section>;
+          })}
         </div>
       </section>
 
-      <section className="home-stats" aria-label="数据规模">
-        <div><span className="home-stat-icon is-green"><WorkbenchIcon name="book" /></span><p><strong>{books.length}</strong><b>册教材</b><small>七至九年级，完整覆盖</small></p></div>
-        <div><span className="home-stat-icon is-amber"><WorkbenchIcon name="graph" /></span><p><strong>{fmt(stats.entities)}</strong><b>知识实体</b><small>作品、人物、概念、知识点等</small></p></div>
-        <div><span className="home-stat-icon is-rose"><WorkbenchIcon name="path" /></span><p><strong>{fmt(stats.relations)}</strong><b>知识关系</b><small>构建多维知识网络</small></p></div>
-        <div><span className="home-stat-icon is-green"><WorkbenchIcon name="research" /></span><p><strong>{fmt(stats.shared)}</strong><b>跨册共享知识</b><small>连接不同年级的核心概念</small></p></div>
+      <section className="home-section home-knowledge" aria-labelledby="home-rank-title" data-reveal>
+        <header className="home-section-head">
+          <div><h2 id="home-rank-title">从这里继续探索</h2><p>核心乐理与作品，按图谱关联数量排列</p></div>
+          <button type="button" className="home-more" onClick={onOpenFullGraph}>打开完整图谱<WorkbenchIcon name="right" /></button>
+        </header>
+        <ol className="home-rank" data-reveal-group>
+          {featured.map((entity, index) => <li key={entity.id} data-reveal>
+            <button type="button" onClick={() => onPickEntityName(entity.name)}>
+              <b>{String(index + 1).padStart(2, "0")}</b>
+              <span>{entity.name.replace(/[《》]/g, "")}</span>
+              <small>{entity.kind}</small>
+              <em>{fmt(entity.degree ?? 0)} 条关联</em>
+            </button>
+          </li>)}
+        </ol>
       </section>
 
-      <section className="home-section home-knowledge">
-        <div className="home-panel">
-          <header><h2>贯穿六册的核心乐理</h2><p>在全部六册教材中都出现的音乐概念</p></header>
-          <div className="home-chips">{coreConcepts.map(entity => <button type="button" key={entity.id} onClick={() => onPickEntityName(entity.name)}>{entity.name}<small>{entity.degree}</small></button>)}</div>
+      <nav className="home-shortcuts" aria-label="继续使用芽谱">
+        <span>继续探索</span>
+        <button type="button" onClick={() => onView("records")}>按课学习</button>
+        <button type="button" onClick={onOpenFullGraph}>知识图谱</button>
+        <button type="button" onClick={() => onView("assistant")}>智能问答</button>
+        <button type="button" onClick={() => onView("research")}>研究分析</button>
+      </nav>
+
+      <section className="home-closing" aria-label="开始走进音乐教材" data-reveal>
+        <div className="home-closing-copy">
+          <p>从一首歌出发，走进六册教材</p>
+          <button type="button" onClick={() => onView("records")}>开始上课</button>
         </div>
-        <div className="home-panel">
-          <header><h2>知识最丰富的作品</h2><p>按图谱中的关联数量排序</p></header>
-          <ol className="home-rank">{richWorks.map((entity, index) => <li key={entity.id}><button type="button" onClick={() => onPickEntityName(entity.name)}>
-            <b>{index + 1}</b><span>{entity.name}</span>
-            <i style={{ width: `${Math.round(((entity.degree ?? 0) / maxWorkDegree) * 100)}%` }} /><em>{entity.degree}</em>
-          </button></li>)}</ol>
-        </div>
+        <ClosingArtwork />
       </section>
 
       <footer className="home-footer">
@@ -155,14 +203,98 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   </div>;
 }
 
+function BookCover<B extends PortalBook>({ book, units, onOpen, art }: {
+  book: B;
+  units: string[];
+  onOpen: () => void;
+  art?: { file: string; alt: string };
+}) {
+  const { ref, activated } = useArtworkActivation<HTMLSpanElement>();
+  return <button type="button" className="home-book" onClick={onOpen}>
+    <span ref={ref} className={`home-book-cover ${art ? "has-art" : ""}`}>
+      {art && activated && <Image className="home-book-art" src={publicAssetUrl(art.file)} alt={art.alt} width={1200} height={750} loading="lazy" decoding="async" unoptimized />}
+      {art && !activated && <span className="home-book-art-placeholder" aria-hidden="true" />}
+      {!art && <><b>{GRADE_NAMES[book.grade]?.slice(0, 1) ?? book.grade}</b><small>年级音乐</small></>}
+      <i>{book.semester}</i>
+    </span>
+    <span className="home-book-copy">
+      <strong>{book.title.replace("人音版", "")}</strong>
+      <span className="home-book-units">{units.length ? units.join("　·　") : "单元目录载入中"}</span>
+    </span>
+  </button>;
+}
+
+function ClosingArtwork() {
+  const { ref, activated } = useArtworkActivation<HTMLDivElement>();
+  return <div ref={ref} className="home-closing-art-frame">
+    {activated
+      ? <Image className="home-closing-art" src={publicAssetUrl("art/hero.webp")} alt="套色木刻风格插画：嫩芽从弯曲的五线谱中生长，学生沿着谱线携带乐器前行" width={2000} height={1000} loading="lazy" decoding="async" unoptimized />
+      : <span className="home-closing-art-placeholder" aria-hidden="true" />}
+  </div>;
+}
+
+function useArtworkActivation<T extends Element>() {
+  const ref = useRef<T | null>(null);
+  const [activated, setActivated] = useState(false);
+
+  useEffect(() => {
+    const target = ref.current;
+    if (!target || activated) return;
+    const workspace = target.closest(".workspace") as HTMLElement | null;
+    const workspaceStyle = workspace ? getComputedStyle(workspace) : null;
+    const scrollContainer = workspace && workspaceStyle && /auto|scroll/.test(workspaceStyle.overflowY) && workspace.scrollHeight > workspace.clientHeight + 1
+      ? workspace
+      : null;
+    const scrollTarget: EventTarget = scrollContainer ?? window;
+    const hasScrolled = () => scrollContainer ? scrollContainer.scrollTop > 0 : window.scrollY > 0;
+    let isNearViewport = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      isNearViewport = entry.isIntersecting;
+      if (isNearViewport && hasScrolled()) setActivated(true);
+    }, { rootMargin: "120px 0px" });
+    const onScroll = () => {
+      if (isNearViewport && hasScrolled()) setActivated(true);
+    };
+    observer.observe(target);
+    scrollTarget.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      scrollTarget.removeEventListener("scroll", onScroll);
+    };
+  }, [activated]);
+
+  return { ref, activated };
+}
+
 type HeroNode = { name: string; relation: string; category: string };
+
+/** Collect each unit from the canonical graph, keeping textbook order. */
+function textbookUnits(graph: PortalGraph | null) {
+  const units = new Map<string, string[]>();
+  for (const entity of graph?.entities ?? []) {
+    if (entity.type !== "单元") continue;
+    const match = entity.name.match(/^第([一二三四五六七八九十]+)单元/);
+    if (!match) continue;
+    const order = UNIT_ORDER[match[1]] ?? 99;
+    for (const bookKey of entity.bookKeys ?? []) {
+      const current = units.get(bookKey) ?? [];
+      current.push(`${order}:${entity.name}`);
+      units.set(bookKey, current);
+    }
+  }
+  return new Map([...units].map(([bookKey, names]) => [
+    bookKey,
+    names.sort((a, b) => Number(a.slice(0, a.indexOf(":"))) - Number(b.slice(0, b.indexOf(":"))) || a.localeCompare(b, "zh-CN"))
+      .map((item) => item.slice(item.indexOf(":") + 1)),
+  ]));
+}
 
 /** Up to six direct neighbours of the hero work, one per entity, ordered by category. */
 function heroNeighbours(graph: PortalGraph | null) {
   if (!graph) return null;
-  const work = graph.entities.find(entity => entity.name === HERO_WORK);
+  const work = graph.entities.find((entity) => entity.name === HERO_WORK);
   if (!work) return null;
-  const byId = new Map(graph.entities.map(entity => [entity.id, entity]));
+  const byId = new Map(graph.entities.map((entity) => [entity.id, entity]));
   const picked = new Map<string, HeroNode & { type: string }>();
   for (const relationship of graph.relationships) {
     if (relationship.subject !== work.id || !relationship.objectId) continue;
@@ -173,102 +305,9 @@ function heroNeighbours(graph: PortalGraph | null) {
     if (existing) { if (!existing.relation.includes(relation)) existing.relation += `、${relation}`; continue; }
     picked.set(other.name, { name: other.name, relation, category: other.category ?? "theory", type: other.type });
   }
-  // Keep the broad, story-telling links (people, history, rhythm, tempo) ahead of key/meter signatures.
   const order = ["person", "textbook", "culture", "element", "theory", "work"];
   const late = new Set(["拍号", "调性"]);
   const nodes = [...picked.values()].sort((a, b) =>
     Number(late.has(a.type)) - Number(late.has(b.type)) || order.indexOf(a.category) - order.indexOf(b.category));
-  return { name: work.name, type: work.type, nodes: nodes.slice(0, HERO_SLOTS.length) };
-}
-
-function HeroGraph({ hero, onPick }: { hero: ReturnType<typeof heroNeighbours>; onPick: (name: string) => void }) {
-  if (!hero) return <div className="home-hero-graph" aria-hidden="true" />;
-  return <div className="home-hero-graph">
-    <svg className="home-hero-links" viewBox="-300 -230 600 460" aria-hidden="true">
-      <circle r="176" className="home-hero-orbit" />
-      {hero.nodes.map((node, index) => {
-        const [x, y] = HERO_SLOTS[index];
-        return <g key={node.name}>
-          <line x1={0} y1={0} x2={x} y2={y} />
-          <circle cx={x * 0.58} cy={y * 0.58} r="5" className={`home-hero-dot ${index % 2 ? "is-green" : "is-amber"}`} />
-        </g>;
-      })}
-    </svg>
-    <button type="button" className="home-hero-center" onClick={() => onPick(hero.name)}>
-      <WorkbenchIcon name="music" /><strong>{hero.name.replace(/[《》]/g, "")}</strong><small>{hero.type}</small>
-    </button>
-    {hero.nodes.map((node, index) => {
-      const [x, y] = HERO_SLOTS[index];
-      return <button type="button" key={node.name} className={`home-hero-node cat-${node.category}`} style={{ left: `${50 + (x / 600) * 100}%`, top: `${50 + (y / 460) * 100}%` }} onClick={() => onPick(node.name)}>
-        <span className="home-hero-bubble"><WorkbenchIcon name={CATEGORY_ICON[node.category] ?? "spark"} /></span>
-        <strong>{node.name}</strong><small>{node.relation}</small>
-      </button>;
-    })}
-  </div>;
-}
-
-/** Soft ink-wash mountains, mist and floating notes behind the hero. */
-function InkLandscape() {
-  return <svg className="home-ink" viewBox="0 0 1600 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <defs>
-      <linearGradient id="ink-far" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#9FB4A9" stopOpacity=".55" /><stop offset="1" stopColor="#DCE5DF" stopOpacity="0" /></linearGradient>
-      <linearGradient id="ink-near" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6F8C7E" stopOpacity=".6" /><stop offset="1" stopColor="#E8EEE9" stopOpacity="0" /></linearGradient>
-      <radialGradient id="ink-sun" cx=".5" cy=".5" r=".5"><stop offset="0" stopColor="#F2E3C6" stopOpacity=".9" /><stop offset="1" stopColor="#F2E3C6" stopOpacity="0" /></radialGradient>
-    </defs>
-    <circle cx="1180" cy="120" r="170" fill="url(#ink-sun)" />
-    <path d="M0 330 C90 250 150 270 220 210 C280 160 330 220 380 250 C440 285 500 240 560 300 L560 520 L0 520Z" fill="url(#ink-far)" />
-    <path d="M0 420 C70 350 130 360 190 310 C240 270 290 330 350 360 C420 395 470 360 520 410 L520 520 L0 520Z" fill="url(#ink-near)" />
-    <path d="M1040 360 C1120 290 1180 300 1250 240 C1320 180 1380 250 1440 270 C1500 290 1560 250 1600 270 L1600 520 L1040 520Z" fill="url(#ink-far)" />
-    <path d="M1180 440 C1250 390 1310 400 1370 360 C1430 320 1490 380 1540 390 C1570 396 1590 380 1600 385 L1600 520 L1180 520Z" fill="url(#ink-near)" />
-    <g className="home-ink-staff" fill="none">
-      <path d="M-20 250 C200 190 420 330 700 250" /><path d="M-20 262 C200 202 420 342 700 262" /><path d="M-20 274 C200 214 420 354 700 274" />
-    </g>
-    <g className="home-ink-notes">
-      <text x="70" y="220">♪</text><text x="760" y="270">♫</text><text x="820" y="200">♪</text><text x="1500" y="140">♪</text><text x="1540" y="330">♫</text>
-    </g>
-  </svg>;
-}
-
-const SCENES: Array<{ sky: [string, string]; far: string; near: string; ground: string; motif: "boat" | "trees" | "wall" | "blossom" | "dome" | "stage" }> = [
-  { sky: ["#DCE8E3", "#F4F1E8"], far: "#9DB5AC", near: "#5E8474", ground: "#B9CFC6", motif: "boat" },
-  { sky: ["#F3E2C4", "#FBF4E6"], far: "#D9B27A", near: "#B98A4B", ground: "#E7D3AE", motif: "trees" },
-  { sky: ["#D6E4EA", "#F2F4EE"], far: "#9FB3B8", near: "#6E8B7E", ground: "#C7D4C2", motif: "wall" },
-  { sky: ["#F6E1E1", "#FBF3EE"], far: "#D8B7B3", near: "#9C7A6C", ground: "#EAD5CF", motif: "blossom" },
-  { sky: ["#D7E3F1", "#F4F3EE"], far: "#A9B8CB", near: "#7B8DA6", ground: "#D2D9E2", motif: "dome" },
-  { sky: ["#5B3A24", "#8A5A33"], far: "#A06A3C", near: "#6B4226", ground: "#3E2616", motif: "stage" },
-];
-
-/** A small illustrated header per textbook; purely decorative. */
-function BookScene({ variant }: { variant: number }) {
-  const scene = SCENES[variant];
-  const id = `scene-${variant}`;
-  return <svg className="home-book-scene" viewBox="0 0 240 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-    <defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={scene.sky[0]} /><stop offset="1" stopColor={scene.sky[1]} /></linearGradient></defs>
-    <rect width="240" height="110" fill={`url(#${id})`} />
-    {scene.motif === "stage" ? <>
-      {[30, 80, 130, 180, 230].map(x => <path key={x} d={`M${x - 22} 110 V40 Q${x} 18 ${x + 22} 40 V110`} fill="#00000026" />)}
-      <rect y="78" width="240" height="32" fill={scene.ground} />
-      {Array.from({ length: 14 }, (_, i) => <circle key={i} cx={14 + i * 16} cy={i % 2 ? 80 : 84} r="4" fill="#1A0F08" />)}
-      {[40, 120, 200].map(x => <circle key={x} cx={x} cy="22" r="6" fill="#F7C873" opacity=".85" />)}
-    </> : <>
-      <path d="M0 70 C30 40 55 48 80 32 C105 18 130 44 160 40 C190 36 215 22 240 34 V110 H0Z" fill={scene.far} opacity=".7" />
-      <path d="M0 86 C40 64 70 72 100 60 C130 50 170 70 200 62 C220 58 232 64 240 66 V110 H0Z" fill={scene.near} opacity=".75" />
-      <rect y="92" width="240" height="18" fill={scene.ground} />
-      {scene.motif === "boat" && <path d="M150 95 h26 l-5 5 h-16Z M162 95 V82 l8 10Z" fill="#3E5A4F" />}
-      {scene.motif === "trees" && <>
-        {[34, 60, 196, 218].map((x, i) => <g key={x}><rect x={x - 1.5} y="72" width="3" height="20" fill="#7A5634" /><circle cx={x} cy="66" r={i % 2 ? 11 : 14} fill={i % 2 ? "#E0A53F" : "#D98E2E"} /></g>)}
-        {[100, 130].map(x => <g key={x}><rect x={x} y="78" width="22" height="14" fill="#FBF7EE" /><path d={`M${x - 3} 79 L${x + 11} 70 L${x + 25} 79Z`} fill="#4B4640" /></g>)}
-      </>}
-      {scene.motif === "wall" && <path d="M20 88 L60 64 L96 72 L130 50 L170 58 L210 40 L236 46" fill="none" stroke="#8B6B4A" strokeWidth="4" strokeDasharray="6 2" />}
-      {scene.motif === "blossom" && <>
-        <path d="M170 92 V64 M162 64 h16 l-3 -5 h-10Z M160 72 h20 M164 72 V92 M176 72 V92" stroke="#7A3E32" strokeWidth="2.4" fill="#B5503E" />
-        {Array.from({ length: 16 }, (_, i) => <circle key={i} cx={10 + (i * 37) % 90} cy={10 + (i * 23) % 44} r={4 + (i % 3)} fill="#F2B6C1" opacity=".9" />)}
-      </>}
-      {scene.motif === "dome" && <>
-        <path d="M112 92 V66 h36 V92Z" fill="#E9E4D8" />
-        <path d="M116 66 Q130 38 144 66Z" fill="#4E73A8" /><rect x="128.5" y="30" width="3" height="10" fill="#C8A24A" />
-        {[40, 62, 180, 204].map(x => <rect key={x} x={x} y="74" width="16" height="18" fill="#E7DCC9" />)}
-      </>}
-    </>}
-  </svg>;
+  return { name: work.name, type: work.type, nodes: nodes.slice(0, 6) };
 }

@@ -1,5 +1,7 @@
 "use client";
 import type { FormEvent, ReactNode } from "react";
+import Image from "next/image";
+import { publicAssetUrl } from "../lib/app/assets";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 
 export type NavView = "home" | "records" | "graph" | "assistant" | "research";
@@ -18,8 +20,8 @@ export function AppTopNav({ active, onNavigate, onAbout, search, trailing }: {
 }) {
   return <nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
-      <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label="返回首页">
-        <WorkbenchIcon name="sprout" /><b>芽谱</b><small>中小学音乐教育知识图谱平台</small>
+      <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label="芽谱">
+        <Image src={publicAssetUrl("brand/logo.svg")} alt="" aria-hidden="true" width={310} height={112} priority unoptimized />
       </button>
       <div className="home-nav-links">
         {LINKS.map(([view, label]) => <button key={view} type="button" className={active === view ? "is-active" : ""} aria-current={active === view ? "page" : undefined} onClick={() => onNavigate(view)}>{label}</button>)}
