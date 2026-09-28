@@ -80,17 +80,15 @@ const compactRelationship = (relationship) => ({
     ? { objectId: relationship.objectId }
     : {}),
   ...(relationship.literal != null ? { literal: relationship.literal } : {}),
-  ...(relationship.objectKind
-    ? { objectKind: relationship.objectKind }
-    : {}),
   ...(relationship.sourcePage != null
     ? { sourcePage: relationship.sourcePage }
     : {}),
-  ...(relationship.section ? { section: relationship.section } : {}),
   ...(relationship.confidence != null
     ? { confidence: relationship.confidence }
     : {}),
-  ...(relationship.label ? { label: relationship.label } : {}),
+  ...(relationship.label && relationship.label !== relationship.predicate
+    ? { label: relationship.label }
+    : {}),
   ...(relationship.bookKeys?.length
     ? { bookKeys: relationship.bookKeys }
     : {}),
@@ -100,9 +98,27 @@ const compactRelationship = (relationship) => ({
 });
 
 const compactBooks = [];
+const omittedBookMetadata = new Set([
+  "source",
+  "evidenceCount",
+  "reviewCount",
+  "structureShare",
+  "publishedCount",
+  "candidateCount",
+  "structuralCount",
+  "structuralTriples",
+  "resourceSlotCount",
+  "resourceSlots",
+]);
 for (const book of dataset.books) {
-  const { entities, triples, evidenceByTriple, candidateTriples, ...metadata } =
-    book;
+  const {
+    entities,
+    triples,
+    evidenceByTriple,
+    candidateTriples,
+    ...metadata
+  } = book;
+  for (const key of omittedBookMetadata) delete metadata[key];
   compactBooks.push({
     ...metadata,
     entities: buildBookLayout(entities, triples).map(compactEntity),
