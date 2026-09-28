@@ -168,6 +168,7 @@ function SigmaController<E extends GraphEntity>({
     [highlightedRelationshipIds],
   );
   const hoverEdges = useMemo(() => new Set((indexes.adjacencyMap.get(hoveredNode ?? "") ?? []).map(item => item.edge.id)), [hoveredNode, indexes]);
+  const hoverNeighbors = useMemo(() => new Set((indexes.adjacencyMap.get(hoveredNode ?? "") ?? []).map(item => item.neighborId)), [hoveredNode, indexes]);
   // Hub concepts (旋律/节奏…) link to 100+ nodes across the whole map; their
   // long spokes stay in the faint layer so local communities read first.
   const structuralEdges = useMemo(() => new Set([...indexes.edgeMap.values()]
@@ -291,8 +292,9 @@ function SigmaController<E extends GraphEntity>({
           : focus.depthByNode.size > 0 && depth == null;
         const selected = node === selectedId && !focusSuppressed;
         const hovered = node === hoveredNode;
+        const hoverDimmed = hoveredNode !== null && !hovered && !hoverNeighbors.has(node) && !selected;
         const overviewCore = data.visualRank <= [70, 200, 550, 1337][zoomTier] || (data.entity.textbookCount ?? 1) >= 3;
-        const alpha = dimmed ? .05 : depth === 2 ? .3 : focus.depthByNode.size || overviewCore ? 1 : [.62, .74, .86, 1][zoomTier];
+        const alpha = dimmed ? .05 : hoverDimmed ? .12 : depth === 2 ? .3 : focus.depthByNode.size || overviewCore ? 1 : [.62, .74, .86, 1][zoomTier];
         return {
           ...data,
           hidden: !shownNodeIds.has(node),
@@ -316,6 +318,7 @@ function SigmaController<E extends GraphEntity>({
           ? !highlighted
           : focus.depthByNode.size > 0 && !direct && !secondary;
         const hovered = edge === hoveredEdge || hoverEdges.has(edge);
+        const hoverDimmed = hoveredNode !== null && !hovered && !highlighted && !direct;
         const relationship = data.relationship;
         const label = relationLabels[relationship.predicate] ?? relationship.label ?? relationship.predicate;
         return {
@@ -323,6 +326,7 @@ function SigmaController<E extends GraphEntity>({
           hidden: !visibleRelationshipIds.has(edge) || !shownNodeIds.has(data.relationship.subject) || !shownNodeIds.has(data.relationship.objectId ?? ""),
           color: highlighted ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, 1)
             : direct || hovered ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.direct)
+            : hoverDimmed ? rgba(129, 146, 163, .08)
             : dimmed ? rgba(129, 146, 163, RELATION_VISIBILITY.focus.unrelated)
             : secondary ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.secondary)
             : relationship.provenance ? rgba(138, 151, 164, RELATION_VISIBILITY.overview.provenance)
@@ -348,6 +352,7 @@ function SigmaController<E extends GraphEntity>({
     hoveredEdge,
     hoveredNode,
     hoverEdges,
+    hoverNeighbors,
     labelIds,
     sameIsland,
     structuralEdges,

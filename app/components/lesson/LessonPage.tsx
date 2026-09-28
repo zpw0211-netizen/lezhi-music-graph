@@ -156,8 +156,8 @@ export function LessonPage({
     </nav>
 
     <div className="lesson-layout">
-      <div className="lesson-main">
-        <header className="lesson-hero">
+      <div className="lesson-main" data-reveal-group>
+        <header className="lesson-hero" data-reveal>
           <div>
             <span className="lesson-type">{work.type}</span>{starred && <span className="lesson-star" title="教材标注的重点学习曲目">☆ 重点曲目</span>}
             <h1 id="lesson-title">{work.name}</h1>
@@ -172,7 +172,7 @@ export function LessonPage({
           </div>
         </header>
 
-        <section className="lesson-block">
+        <section className="lesson-block" data-reveal>
           <h2><em>1</em>{work.type === "朗诵作品" ? "阅读 · 聆听" : "看谱 · 听旋律"}</h2>
           {melody ? <MelodySet melodies={melody} /> : <p className="lesson-note">{work.type === "朗诵作品"
             ? "这是朗诵作品，没有固定的歌曲旋律。请结合教材原文体会语言节奏。"
@@ -189,7 +189,7 @@ export function LessonPage({
           </details>}
         </section>
 
-        <section className="lesson-block">
+        <section className="lesson-block" data-reveal>
           <h2><em>2</em>知识要点</h2>
           <div className="lesson-facts">
             {lesson.groups.map((group) => <div key={group.key} className={`lesson-fact-group is-${group.key}`}>
@@ -214,27 +214,27 @@ export function LessonPage({
           </div>}
         </section>
 
-        {(lesson.tasks.length > 0) && <section className="lesson-block">
+        {(lesson.tasks.length > 0) && <section className="lesson-block" data-reveal>
           <h2><em>3</em>课堂活动</h2>
           <ol className="lesson-tasks">{lesson.tasks.map((task) => { const { title, focus } = parseTask(task); return <li key={task}>{title}{focus && <small>练习重点：{focus}</small>}</li>; })}</ol>
         </section>}
 
-        {questions.length > 0 && <section className="lesson-block">
+        {questions.length > 0 && <section className="lesson-block" data-reveal>
           <h2><em>{lesson.tasks.length ? 4 : 3}</em>小练习</h2>
           <Quiz questions={questions} />
         </section>}
 
-        <footer className="lesson-pager">
+        <footer className="lesson-pager" data-reveal>
           {previous ? <button type="button" onClick={() => onOpenLesson(previous.id)}><WorkbenchIcon name="left" /><span><small>上一课</small>{previous.name}</span></button> : <span />}
           {next ? <button type="button" className="is-next" onClick={() => onOpenLesson(next.id)}><span><small>下一课</small>{next.name}</span><WorkbenchIcon name="right" /></button> : <span />}
         </footer>
       </div>
 
-      <aside className="lesson-side">
-        <section>
+      <aside className="lesson-side" data-reveal-group>
+        <section data-reveal>
           <h3>{lesson.unit?.name ?? "本单元"}</h3>
           {lesson.goals.length > 0 && <ul className="lesson-goals">{lesson.goals.map((goal) => <li key={goal}>{goal}</li>)}</ul>}
-          <ol className="lesson-unit-works">{lesson.unitWorks.map((entity) => <li key={entity.id}>
+          <ol className="lesson-unit-works" data-reveal-group>{lesson.unitWorks.map((entity) => <li key={entity.id} data-reveal>
             <button type="button" className={entity.id === workId ? "active" : ""} onClick={() => onOpenLesson(entity.id)}>
               {entity.name}<small>{entity.type}</small>
             </button>

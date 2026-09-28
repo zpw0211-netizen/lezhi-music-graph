@@ -4,6 +4,7 @@ import { publicAssetUrl } from "../../lib/app/assets";
 import { isWorkType, type Entity, type Evidence, type KnowledgeOccurrence, type Triple } from "../../lib/app/types";
 import { NodeAIInterpretation } from "../assistant/NodeAIInterpretation";
 import { WorkbenchIcon } from "../WorkbenchIcon";
+import { SlidingIndicator } from "../graph/SlidingIndicator";
 import type { GraphExplorerState, InspectorTab } from "./useGraphExplorer";
 
 export type InspectorFact = { triple: Triple; label: string; value: string; target?: Entity };
@@ -75,7 +76,8 @@ export function NodeInspector({
         >
           查看知识 <WorkbenchIcon name="arrow" />
         </button>
-        <div className="inspector-tabs">
+        <div className="inspector-tabs motion-tabs">
+          <SlidingIndicator activeKey={panel} />
           {tabs.map(([key, label]) => (
             <button key={key} className={panel === key ? "active" : ""} onClick={() => setPanel(key)}>
               {label}

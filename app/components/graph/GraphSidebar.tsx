@@ -5,6 +5,7 @@ import { EntityTypeFilter } from "./EntityTypeFilter";
 import { RelationshipFilter } from "./RelationshipFilter";
 import { PropertyFilter } from "./PropertyFilter";
 import { SmartGraphQuery } from "./SmartGraphQuery";
+import { SlidingIndicator } from "./SlidingIndicator";
 import { analyzeGraphSchema } from "../../lib/graph/graph-schema-analysis";
 import type { GraphPerspective } from "../../lib/graph/types";
 import type { FilterBook, GraphFilters } from "../../hooks/useGraphFilters";
@@ -40,7 +41,7 @@ export function GraphSidebar({ view, onView, graph, books, scopeBook, filters, p
     }
   }}>
     <div className="explorer-brand"><span className="explorer-brand-mark"><WorkbenchIcon name="sprout" /></span>{!collapsed && <div><strong>芽谱</strong><span className="explorer-brand-english">Music Education Knowledge Atlas</span><small>中小学音乐教育知识图谱</small></div>}<button aria-label={collapsed ? "展开左侧栏" : "折叠左侧栏"} onClick={() => setCollapsed(!collapsed)}><WorkbenchIcon name={collapsed ? "right" : "left"} /></button></div>
-    <nav className="explorer-nav">{([["home", "首页", "home"], ["records", "按课学习", "book"], ["graph", "图谱探索", "graph"], ["assistant", "智能问答", "message"], ["research", "研究分析", "research"]] as const).map(([key, label, icon]) => <button key={key} title={label} aria-label={label} className={view === key || (key === "records" && (view === "work" || view === "lesson")) ? "active" : ""} onClick={() => onView(key)}><WorkbenchIcon name={icon} />{!collapsed && label}</button>)}</nav>
+    <nav className="explorer-nav motion-tabs"><SlidingIndicator activeKey={view === "work" || view === "lesson" ? "records" : view} orientation="sidebar" />{([["home", "首页", "home"], ["records", "按课学习", "book"], ["graph", "图谱探索", "graph"], ["assistant", "智能问答", "message"], ["research", "研究分析", "research"]] as const).map(([key, label, icon]) => <button key={key} title={label} aria-label={label} className={view === key || (key === "records" && (view === "work" || view === "lesson")) ? "active" : ""} onClick={() => onView(key)}><WorkbenchIcon name={icon} />{!collapsed && label}</button>)}</nav>
     {!collapsed && view === "graph" && <div className="explorer-controls"><div className="mobile-filter-panel-heading"><strong>筛选</strong><button type="button" onClick={closeMobileFilters}>关闭</button></div><section className="explorer-perspective"><h3>图谱观察方式</h3><div>{([["comprehensive", "综合知识"], ["textbook", "教材结构"], ["music", "音乐知识"], ["progression", "学习进阶"]] as const).map(([key, label]) => <button key={key} aria-pressed={perspective === key} onClick={() => onPerspective(key)}>{label}</button>)}</div></section>
       <EntityTypeFilter categories={schema.categories} visible={filters.visibleSchemaKeys} onChange={filters.setVisibleSchemaKeys} />
       <RelationshipFilter relations={schema.relations} hidden={filters.hiddenRelations} onChange={filters.setHiddenRelations} onSources={onSources} />

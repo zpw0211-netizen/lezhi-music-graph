@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { schemaCategoryMeta } from "../graph-schema";
 import { QualityPanel, SourceLayerPanel, type QualityMetrics } from "./QualityPanel";
+import { SlidingIndicator } from "./graph/SlidingIndicator";
 
 type ResearchBook = {
   key: string;
@@ -115,7 +116,7 @@ export function ResearchAnalysis({
 
   return (
     <section className="research-analysis" aria-labelledby="research-analysis-title">
-      <header className="research-analysis-header">
+      <header className="research-analysis-header" data-reveal>
         <div>
           <h2 id="research-analysis-title">六册教材知识结构研究分析</h2>
           <p>基于规范实体融合、教材出现记录与图谱审计结果进行关联查询。</p>
@@ -126,14 +127,15 @@ export function ResearchAnalysis({
         </div>
       </header>
 
-      <div className="research-grid">
-        <section className="matrix-panel">
+      <div className="research-grid" data-reveal-group>
+        <section className="matrix-panel" data-reveal>
           <header>
             <div>
               <span>TEXTBOOK ASSOCIATION</span>
               <h3>六册教材关联矩阵</h3>
             </div>
-            <div className="matrix-metric-toggle" aria-label="关联指标">
+            <div className="matrix-metric-toggle motion-tabs" aria-label="关联指标">
+              <SlidingIndicator activeKey={metric} />
               <button className={metric === "shared" ? "active" : ""} onClick={() => setMetric("shared")}>共享实体</button>
               <button className={metric === "jaccard" ? "active" : ""} onClick={() => setMetric("jaccard")}>Jaccard</button>
             </div>
@@ -182,7 +184,7 @@ export function ResearchAnalysis({
           <p>点击任一单元格，进入两册教材共享知识子图。</p>
         </section>
 
-        <section className="core-ranking-panel">
+        <section className="core-ranking-panel" data-reveal>
           <header>
             <div>
               <span>CROSS-TEXTBOOK CORE</span>

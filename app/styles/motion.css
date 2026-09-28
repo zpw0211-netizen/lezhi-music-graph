@@ -1,0 +1,214 @@
+:root {
+  --motion-fast: 150ms;
+  --motion-base: 240ms;
+  --motion-slow: 320ms;
+  --ease-out: cubic-bezier(.2,.8,.2,1);
+}
+
+.motion-ready :is(button, [role="button"], a[role="button"], a.button, a.btn, a[class*="btn-"]):not([data-motion-ignore]) {
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .motion-ready :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    [role="button"]:not([aria-disabled="true"]),
+    a[role="button"],
+    a.button,
+    a.btn
+  ):not([data-motion-ignore]):hover {
+    transform: translateY(-1px);
+  }
+}
+
+.motion-ready :is(
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]),
+  a[role="button"],
+  a.button,
+  a.btn
+):not([data-motion-ignore]):active {
+  transform: scale(.97);
+}
+
+.motion-ready [data-drag-handle],
+.motion-ready [data-motion-ignore],
+.motion-ready .sigma-scene-host :is(button, [role="button"], a.button, a.btn),
+.motion-ready .work-graph-svg :is(button, [role="button"], a.button, a.btn) {
+  transition: none;
+}
+
+.motion-ready [data-reveal] {
+  transition:
+    opacity var(--motion-base) var(--ease-out),
+    transform var(--motion-base) var(--ease-out) !important;
+  transition-property: opacity, transform !important;
+  transition-delay: calc(var(--reveal-i, 0) * 40ms);
+}
+
+.motion-ready [data-reveal]:not(.is-revealed) {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.motion-ready [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+.motion-tabs {
+  position: relative;
+}
+
+.motion-tabs > button {
+  position: relative;
+  z-index: 2;
+}
+
+.motion-ready .explorer-nav.motion-tabs button.active::before {
+  content: none;
+}
+
+.motion-tab-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  display: block;
+  border-radius: 2px;
+  background: var(--brand-sprout, #3E9B4F);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--motion-base) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out);
+}
+
+.motion-tab-indicator--horizontal {
+  height: 2px;
+}
+
+.motion-tab-indicator--vertical {
+  width: 3px;
+}
+
+.motion-ready .work-card {
+  position: relative;
+}
+
+.motion-ready .work-card::after {
+  position: absolute;
+  right: 16px;
+  bottom: 0;
+  left: 16px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand-sprout, #3E9B4F);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transform: scaleX(.72);
+  transform-origin: left center;
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+.motion-ready .work-card:hover::after,
+.motion-ready .work-card:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.motion-ready .melody-player .melody-digit {
+  isolation: isolate;
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+.motion-ready .melody-digit-highlight {
+  position: absolute;
+  z-index: -1;
+  inset: 1px 0;
+  border-radius: 6px;
+  background: var(--brand-amber, #E9A83A);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(.88);
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+.motion-ready .melody-note.is-active .melody-digit-highlight {
+  opacity: .36;
+  transform: scale(1);
+}
+
+.motion-ready .melody-note.is-active .melody-digit {
+  background: transparent;
+  color: var(--brand-amber, #E9A83A) !important;
+  box-shadow: none;
+}
+
+.motion-ready .melody-play.is-playing {
+  border-color: var(--brand-amber, #E9A83A);
+  background: var(--brand-amber, #E9A83A);
+  color: var(--brand-ink, #1C2B26);
+  box-shadow: none;
+}
+
+.motion-ready :is(
+  [data-drag-handle],
+  .sigma-scene-host :is(button, [role="button"], a.button, a.btn),
+  .work-graph-svg :is(button, [role="button"], a.button, a.btn)
+):is(:hover, :active) {
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-ready [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .motion-tab-indicator {
+    opacity: 1;
+  }
+
+  .motion-ready :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    [role="button"]:not([aria-disabled="true"]),
+    a[role="button"],
+    a.button,
+    a.btn
+  ):hover,
+  .motion-ready :is(
+    button:not(:disabled):not([aria-disabled="true"]),
+    [role="button"]:not([aria-disabled="true"]),
+    a[role="button"],
+    a.button,
+    a.btn
+  ):active {
+    transform: none !important;
+  }
+}
+
+@media print {
+  .motion-ready [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
