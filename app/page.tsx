@@ -177,7 +177,9 @@ export default function Home() {
         { opacity: 0, transform: "translateY(8px)" },
         { opacity: 1, transform: "none" },
       ],
-      { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" },
+      // "backwards" applies the first frame immediately but drops the effect once finished,
+      // so the container doesn't stay an animated layer after every route change.
+      { duration: 320, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" },
     );
     const stopForReducedMotion = (event: MediaQueryListEvent) => {
       if (event.matches) animation.cancel();
