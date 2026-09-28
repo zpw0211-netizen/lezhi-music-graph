@@ -17,6 +17,17 @@ const TIMBRES = [
   { wave: "sine" as OscillatorType, overtone: 0.3, level: 0.65 },
   { wave: "sine" as OscillatorType, overtone: 0.2, level: 0.55 },
 ];
+const VISUALLY_HIDDEN = {
+  position: "absolute" as const,
+  width: "1px",
+  height: "1px",
+  padding: 0,
+  margin: "-1px",
+  overflow: "hidden" as const,
+  clip: "rect(0, 0, 0, 0)",
+  whiteSpace: "nowrap" as const,
+  border: 0,
+};
 
 /** Excerpts of one work: tabs when there are several themes, one player each. */
 export function MelodySet({ melodies, large }: { melodies: Melody[]; large?: boolean }) {
@@ -37,21 +48,28 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const [loadingPiano, setLoadingPiano] = useState(false);
   const [audioMode, setAudioMode] = useState<"unknown" | "piano" | "synth">("unknown");
   const [current, setCurrent] = useState<number[]>([]);
+  const [announcement, setAnnouncement] = useState("");
   const [tempo, setTempo] = useState(melody.bpm);
   const [enabled, setEnabled] = useState<boolean[]>(() => lines.map(() => true));
   const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
   const mounted = useRef(true);
+  const playbackActive = useRef(false);
+  const pianoLoading = useRef(false);
   const stopRef = useRef<() => void>(() => {});
   const playRequestRef = useRef(0);
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
   const offsets = useMemo(() => lines.map((line) => line.bars.reduce<number[]>((acc, bar, i) => [...acc, i ? acc[i - 1] + line.bars[i - 1].length : 0], [])), [lines]);
 
   const stop = useCallback(() => {
+    const shouldAnnounceStop = playbackActive.current || pianoLoading.current;
     playRequestRef.current += 1;
+    playbackActive.current = false;
+    pianoLoading.current = false;
     stopRef.current();
     stopRef.current = () => {};
     setPlaying(false);
     setCurrent([]);
+    if (shouldAnnounceStop && mounted.current) setAnnouncement("已停止");
   }, []);
   useEffect(() => {
     mounted.current = true;
@@ -67,21 +85,30 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
     const request = ++playRequestRef.current;
     window.dispatchEvent(new Event(MELODY_PLAYBACK_STARTED));
     const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtor) { setAudioMode("synth"); return; }
+    if (!AudioCtor) {
+      setAudioMode("synth");
+      setAnnouncement("钢琴音色加载失败，改用电子音色");
+      return;
+    }
     const ctx = sharedContext ?? new AudioCtor();
     sharedContext = ctx;
 
     let sampler = sharedSampler;
+    let pianoLoadFailed = false;
     if (!rhythmOnly && audioMode !== "synth" && !sampler) {
+      pianoLoading.current = true;
       setLoadingPiano(true);
+      setAnnouncement("载入钢琴音色…");
       try {
         await ctx.resume();
         sampler = await loadPianoSampler(ctx);
         sharedSampler = sampler;
         if (mounted.current) setAudioMode("piano");
       } catch {
+        pianoLoadFailed = true;
         if (mounted.current) setAudioMode("synth");
       } finally {
+        pianoLoading.current = false;
         if (mounted.current) setLoadingPiano(false);
       }
     } else {
@@ -163,12 +190,14 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
       master.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
       setTimeout(() => master.disconnect(), 100);
     };
+    playbackActive.current = true;
     setPlaying(true);
+    setAnnouncement(pianoLoadFailed ? "钢琴音色加载失败，改用电子音色。开始播放" : "开始播放");
   };
 
   const renderNote = (note: MelodyNote, key: number, active: boolean) => {
     const { lines: underlines, dotted, dashes } = notation(note);
-    return <span key={key} className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
+    return <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
       <span className={`melody-digit lines-${underlines} ${(note.o ?? 0) > 0 ? "is-high" : ""} ${(note.o ?? 0) < 0 ? "is-low" : ""} ${Math.abs(note.o ?? 0) === 2 ? "is-double" : ""}`}>{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d === 9 ? "×" : note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
       {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash">–</span>)}
       <span className="melody-lyric">{note.lyric || " "}</span>
@@ -179,10 +208,11 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className="melody-play" onClick={play} disabled={loadingPiano} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+      <button type="button" className="melody-play" onClick={play} disabled={loadingPiano} aria-pressed={playing} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
         {!loadingPiano && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
         {loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>
+      <span role="status" aria-live="polite" aria-atomic="true" style={VISUALLY_HIDDEN}>{announcement}</span>
       <span className="melody-key">{melody.key} · {melody.meter}</span>
       {lines.length > 1 && <span className="melody-voices" role="group" aria-label="选择声部">
         {lines.map((line, k) => <label key={line.label} className={`voice-${k}`}>
@@ -191,11 +221,15 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
         </label>)}
       </span>}
       <label className="melody-tempo">速度
-        <input type="range" min={40} max={160} step={4} value={tempo} disabled={playing || loadingPiano} onChange={(event) => setTempo(Number(event.target.value))} />
+        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingPiano} onKeyDown={(event) => {
+          if (event.code !== "Space" || event.repeat) return;
+          event.preventDefault();
+          setTempo((value) => Math.min(160, value + 4));
+        }} onChange={(event) => setTempo(Number(event.target.value))} />
         <b>♩={tempo}</b>
       </label>
     </div>
-    <div className="melody-score" aria-label="简谱旋律">
+    <div className="melody-score" role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${melody.meter} 拍`}>
       {melody.bars.map((_, barIndex) => <span key={barIndex} className="melody-bar">
         {lines.map((line, voice) => <span key={voice} className={`melody-voice voice-${voice}`}>
           {(line.bars[barIndex] ?? []).map((note, noteIndex) => renderNote(note, noteIndex, offsets[voice][barIndex] + noteIndex === current[voice]))}
