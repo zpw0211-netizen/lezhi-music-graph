@@ -44,7 +44,7 @@ body:has(.ink-app),.ink-app,.ink-app .workspace { background:var(--paper); }
 .ink-app .lesson { padding-top:20px; padding-bottom:40px; }
 
 /* Cards: white on paper, softer borders */
-.ink-app :is(.work-card,.lesson-card,.lesson-section,.research-card,.assistant-card) { border-color:var(--line); box-shadow:var(--shadow-sm); }
+.ink-app :is(.work-card) { border-color:var(--line); box-shadow:var(--shadow-sm); }
 
 @media (max-width:1100px) {
   .app-nav-search { width:200px; }
