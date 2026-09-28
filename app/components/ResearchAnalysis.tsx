@@ -40,9 +40,8 @@ type Props = {
 
 const shortBook = (book: ResearchBook) => `${book.grade}${book.semester === "上册" ? "上" : "下"}`;
 
-// Sequential ramp (one hue, light -> dark) in the sprout-green brand family.
-// Steps 0-4 carry dark ink; only the darkest step switches to white text.
-const MATRIX_RAMP = ["#EEF7F1", "#CDEBD8", "#9BD5B2", "#5DB887", "#2E9A62", "#16834F"] as const;
+// Five-step indigo ramp; the last two cells use light text for readable contrast.
+const MATRIX_RAMP = ["#F0F3F9", "#D8E0EF", "#AAB9D6", "#5E75A0", "#2E4A7D"] as const;
 
 export function ResearchAnalysis({
   books,
@@ -120,10 +119,10 @@ export function ResearchAnalysis({
         <div>
           <h2 id="research-analysis-title">六册教材知识结构研究分析</h2>
           <p>基于规范实体融合、教材出现记录与图谱审计结果进行关联查询。</p>
-        </div>
-        <div className="research-method-note">
-          <b>研究口径</b>
-          <span>同名同类型实体先融合，再计算教材覆盖与网络结构。</span>
+          <p className="research-method-note">
+            <b>研究口径</b>
+            <span>同名同类型实体先融合，再计算教材覆盖与网络结构。</span>
+          </p>
         </div>
       </header>
 
@@ -131,7 +130,6 @@ export function ResearchAnalysis({
         <section className="matrix-panel" data-reveal>
           <header>
             <div>
-              <span>TEXTBOOK ASSOCIATION</span>
               <h3>六册教材关联矩阵</h3>
             </div>
             <div className="matrix-metric-toggle motion-tabs" aria-label="关联指标">
@@ -162,7 +160,7 @@ export function ResearchAnalysis({
                           <button
                             className={diagonal ? "is-diagonal" : ""}
                             title={diagonal ? `${left.title}：本册共 ${cell.shared} 个规范实体` : `${left.title} × ${right.title}：${cell.shared} 个共享规范实体，Jaccard ${cell.jaccard.toFixed(3)}`}
-                            style={diagonal ? undefined : { backgroundColor: MATRIX_RAMP[step], color: step === MATRIX_RAMP.length - 1 ? "#FFFFFF" : undefined }}
+                            style={diagonal ? undefined : { backgroundColor: MATRIX_RAMP[step], color: step >= 3 ? "#FFFFFF" : "var(--brand-ink)" }}
                             onClick={() => onSelectPair(left.key, right.key, cell.sharedIds)}
                           >
                             {metric === "shared" ? value : Number(value).toFixed(3)}
@@ -187,7 +185,6 @@ export function ResearchAnalysis({
         <section className="core-ranking-panel" data-reveal>
           <header>
             <div>
-              <span>CROSS-TEXTBOOK CORE</span>
               <h3>跨册核心知识 Top 20</h3>
             </div>
             <small>覆盖册数优先</small>

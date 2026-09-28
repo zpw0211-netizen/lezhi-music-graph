@@ -1,45 +1,4 @@
-/* P2: 研究分析 / 智能问答 on the fresh-education tokens (workbench-v5.css). */
-
-/* ---------- 研究分析 ---------- */
-.theme-light .research-analysis { padding:28px 4px 40px; }
-.theme-light .research-analysis-header h2 { font-size:26px; font-weight:700; }
-.theme-light .research-method-note { border-left:3px solid var(--accent); border-radius:0 10px 10px 0; background:var(--accent-soft); }
-.theme-light :is(.matrix-panel,.core-ranking-panel,.quality-panel) { border-radius:16px; box-shadow:var(--shadow-sm); }
-.theme-light :is(.matrix-panel,.core-ranking-panel,.quality-panel) header span { color:var(--accent); font-weight:600; letter-spacing:.06em; }
-.theme-light .matrix-panel td button { border:0; border-radius:8px; color:var(--text-primary); font-variant-numeric:tabular-nums; transition:transform .12s,box-shadow .12s; }
-.theme-light .matrix-panel td button:hover { transform:scale(1.04); box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent); outline:0; }
-.theme-light .matrix-panel td button.is-diagonal { background:repeating-linear-gradient(135deg,#F4F6F5 0 6px,#EBEFEC 6px 12px); color:var(--text-secondary); }
-.matrix-legend { display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; margin:14px 16px 0; font-size:12px; color:var(--text-secondary); }
-.matrix-legend-ramp { display:inline-flex; gap:2px; }
-.matrix-legend-ramp i { width:22px; height:12px; border-radius:3px; }
-.matrix-legend-diagonal { display:inline-flex; align-items:center; gap:6px; margin-left:auto; }
-.matrix-legend-diagonal i { width:14px; height:12px; border-radius:3px; background:repeating-linear-gradient(135deg,#F4F6F5 0 4px,#E1E6E3 4px 8px); }
-.theme-light .core-ranking-panel li button:hover { background:var(--accent-soft); }
-.theme-light .core-ranking-panel li button>b { color:var(--accent); }
-.theme-light .quality-panel header>b { padding:3px 10px; border-radius:999px; background:var(--accent-soft); }
-
-/* ---------- 智能问答 ---------- */
-.theme-light .assistant-welcome { padding:3vh 0 12px; }
-.assistant-welcome-badge { display:grid; place-items:center; width:52px; height:52px; margin-bottom:18px; border-radius:16px; background:linear-gradient(145deg,#2DB36F,#16834F); color:#fff; box-shadow:0 8px 20px #16834F33; }
-.assistant-welcome-badge svg { width:28px; height:28px; }
-.theme-light .assistant-welcome h1 { font-size:32px; font-weight:700; }
-.theme-light .assistant-suggestions { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:28px; }
-.theme-light .assistant-suggestions button { display:flex; flex-direction:column; gap:8px; padding:16px 18px; border:1px solid var(--border); border-radius:14px; background:var(--surface); color:var(--text-primary); font-size:14px; line-height:1.6; text-align:left; box-shadow:var(--shadow-sm); transition:border-color .15s,box-shadow .15s,transform .15s; }
-.theme-light .assistant-suggestions button:hover:not(:disabled) { border-color:#BFE0CD; background:var(--surface); color:var(--text-primary); box-shadow:var(--shadow-md); transform:translateY(-1px); }
-.theme-light .assistant-suggestions button+button::before { content:none; }
-.assistant-suggestion-tag { display:inline-flex; align-items:center; gap:6px; color:var(--accent); font-size:12px; font-weight:600; }
-.assistant-suggestion-tag svg { width:15px; height:15px; }
-.theme-light .assistant-composer { border-radius:18px; box-shadow:var(--shadow-md); }
-.theme-light .assistant-composer:focus-within { box-shadow:0 0 0 4px var(--accent-soft),var(--shadow-md); }
-.theme-light .assistant-composer button[type=submit] { border-radius:10px; padding:9px 16px; font-weight:600; }
-.theme-light .assistant-turn>h2 { font-size:21px; font-weight:650; }
-.theme-light .assistant-related button,.theme-light .assistant-followups button { border-radius:999px; padding:5px 12px; }
-.theme-light .assistant-graph-link { margin-top:6px; border:0; border-radius:9px; background:var(--accent-soft); color:var(--accent); font-size:13px; font-weight:600; padding:8px 14px; }
-
-@media (max-width:760px) {
-  .theme-light .assistant-suggestions { grid-template-columns:1fr; }
-  .matrix-legend-diagonal { margin-left:0; }
-}
+/* Shared page bits: knowledge-inspector scores, extended-knowledge badge, view status. (Research, assistant and records styles live in their own files.) */
 
 /* 教材谱例 in the knowledge inspector */
 .inspector-scores { margin:14px 0 4px; }
@@ -50,21 +9,9 @@
 .inspector-scores small { display:block; margin-top:6px; font-size:11px; color:var(--text-secondary); }
 .media-item img, .knowledge-body figure img { display:block; width:100%; height:auto; border:1px solid var(--border); border-radius:8px; background:#fff; }
 
-/* 拓展知识 badge and provenance table */
+/* 拓展知识 badge */
 .fact-extended { margin-left:6px; padding:0 6px; border-radius:999px; background:#FDF1E4; color:#A2560E; font-size:10px; font-style:normal; font-weight:600; vertical-align:1px; }
 .knowledge-evidence>span.is-extended { color:#A2560E; }
-.theme-light .source-layer-panel { grid-column:1/-1; border:1px solid var(--border); border-radius:16px; background:var(--surface); box-shadow:var(--shadow-sm); overflow:hidden; }
-.source-layer-panel>header { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:18px 16px; border-bottom:1px solid var(--border); }
-.source-layer-panel header span { font-size:11px; color:var(--accent); font-weight:600; letter-spacing:.06em; }
-.source-layer-panel h3 { margin:6px 0 0; font-size:16px; color:var(--text-primary); }
-.source-layer-panel header small { font-size:12px; color:var(--text-secondary); }
-.source-layer-panel table { width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; }
-.source-layer-panel :is(th,td) { padding:10px 16px; border-bottom:1px solid var(--border); text-align:right; }
-.source-layer-panel :is(thead th) { font-size:12px; font-weight:600; color:var(--text-secondary); background:var(--surface-soft); }
-.source-layer-panel tbody th { text-align:left; font-weight:600; color:var(--text-primary); }
-.source-layer-panel tbody th small { margin-left:8px; font-size:11px; font-weight:500; color:var(--text-tertiary); }
-.source-layer-panel thead th:first-child { text-align:left; }
-.source-layer-panel tbody tr:last-child :is(th,td) { border-bottom:0; }
 
 /* ---------- 数据载入 / 找不到页面 ---------- */
 .app-view-status { max-width:560px; margin:72px auto; padding:28px 24px; border:1px solid var(--border); border-radius:16px; background:var(--surface); color:var(--text-secondary); font-size:15px; line-height:1.7; text-align:center; }

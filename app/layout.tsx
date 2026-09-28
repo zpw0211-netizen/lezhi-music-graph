@@ -13,6 +13,8 @@ import "./work-graph.css";
 import "./lesson.css";
 import "./ink-theme.css";
 import "./mobile-layout.css";
+import "./research.css";
+import "./assistant.css";
 import "./styles/motion.css";
 import "./records.css";
 
