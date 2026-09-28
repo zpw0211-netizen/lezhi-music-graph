@@ -125,7 +125,7 @@ export default function Home() {
     },
     route.node,
   );
-  const searchResults = useKnowledgeSearch(books, query);
+  const searchResults = useKnowledgeSearch(canonicalGraph, query);
 
   // Lesson and work pages are addressed by the bare work title (?work=歌唱祖国).
   const worksByTitle = useMemo(() => {
@@ -157,14 +157,14 @@ export default function Home() {
     document.title = page ? `${page} · 芽谱` : SITE_TITLE;
   }, [route.work, view]);
 
-  const pickSearchResult = (entity: Entity, book: Book) => {
+  const pickSearchResult = (entity: Entity) => {
     setQuery("");
-    explorer.selectSearchResult(entity, book);
+    if (explorer.canonicalBook) explorer.selectSearchResult(entity, explorer.canonicalBook);
   };
   const submitSearch = (event: FormEvent) => {
     event.preventDefault();
     const top: SearchResult | undefined = searchResults[0];
-    if (top) pickSearchResult(top.entity, top.book);
+    if (top) pickSearchResult(top.entity);
   };
   const goTo = (target: NavView | "graph") => {
     if (target === "graph") explorer.chooseFullGraph();
@@ -221,7 +221,7 @@ export default function Home() {
                 key: `${book.key}-${entity.id}`,
                 title: entity.name,
                 meta: `${book.grade}年级${book.semester} · ${entity.type} · ${relationCount} 条关系`,
-                onPick: () => pickSearchResult(entity, book),
+                onPick: () => pickSearchResult(entity),
               })),
             }}
           />
@@ -242,7 +242,7 @@ export default function Home() {
             onView={(value) => (value === "assistant" ? openAssistant() : navigate({ view: value }))}
             onPickEntityName={(name) => {
               const entity = explorer.canonicalBook?.entities.find((item) => item.name === name);
-              if (entity && explorer.canonicalBook) pickSearchResult(entity, explorer.canonicalBook);
+              if (entity) pickSearchResult(entity);
             }}
             onResearchInfo={() => setResearchInfoOpen(true)}
           />
