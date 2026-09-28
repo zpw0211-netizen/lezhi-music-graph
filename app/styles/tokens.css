@@ -1,0 +1,153 @@
+/* 基础界面令牌。保留样式导入顺序中的最终生效值。 */
+:root {
+    --violet: #356f68;
+    --cyan: #2f7185;
+    --yellow: #aa7a31;
+    --green: #2d6a4f;
+    --space-1: 4px;
+    --space-2: 6px;
+    --space-3: 8px;
+    --space-4: 12px;
+    --space-5: 16px;
+    --font-academic: Georgia,"Songti SC","SimSun",serif;
+    --app-bg: #F6F8F7;
+    --surface: #FFFFFF;
+    --surface-soft: #F1F6F3;
+    --text-primary: #1B2420;
+    --text-secondary: #5E6A64;
+    --text-tertiary: #8E9993;
+    --accent: #16834F;
+    --accent-hover: #116B40;
+    --accent-bright: #2DB36F;
+    --accent-soft: #E6F5EC;
+    --border: #E2E8E4;
+    --border-strong: #CBD5CF;
+    --shadow-sm: 0 1px 2px #1B24200A,0 1px 3px #1B242008;
+    --shadow-md: 0 4px 16px #1B24200F,0 1px 3px #1B24200A;
+    --shadow-lg: 0 18px 48px #1B242014;
+    --bg: var(--app-bg);
+    --panel: var(--surface);
+    --panel-2: var(--surface-soft);
+    --surface-hover: #EDF3EF;
+    --surface-selected: var(--accent-soft);
+    --line: var(--border);
+    --line-subtle: #EDF1EE;
+    --line-active: var(--border-strong);
+    --text: var(--text-primary);
+    --text-strong: var(--text-primary);
+    --muted: var(--text-secondary);
+    --radius-xs: 6px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --font-ui: var(--font-geist-sans),"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",Arial,sans-serif
+}
+/* 图谱工作区与 Sigma 场景令牌。 */
+.graph-first {
+    --workspace-bg: #0b1017;
+    --workspace-panel: #101721;
+    --workspace-panel-raised: #141d29;
+    --workspace-border: #263343;
+    --workspace-text: #e8eef5;
+    --workspace-muted: #91a0ae;
+    --workspace-accent: #62d6b0
+}
+.graph-first div.react-sigma.sigma-graph-scene {
+    --sigma-background-color: transparent
+}
+/* 首页门户令牌与按类别设置的颜色。 */
+.home-portal {
+    --paper: #F7F5EF;
+    --paper-deep: #EFEBE1;
+    --ink: #1F3B31;
+    --ink-soft: #4F6158;
+    --pine: #1F5C47;
+    --pine-hover: #17493A;
+    --seal: #B5463A;
+    --gold: #D39A4B;
+    --line: #E4DFD3;
+    --serif: "Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+    --brush: "STKaiti","KaiTi","Kaiti SC","楷体",var(--serif)
+}
+.home-hero-node.cat-person {
+    --node-bg: #F1E7D6;
+    --node-fg: #8A5A2B
+}
+.home-hero-node.cat-textbook {
+    --node-bg: #E3EFE8;
+    --node-fg: #2B6B52
+}
+.home-hero-node.cat-culture {
+    --node-bg: #F4E1DC;
+    --node-fg: var(--seal)
+}
+.home-hero-node.cat-element {
+    --node-bg: #1F5C47;
+    --node-fg: #fff
+}
+.home-hero-node.cat-theory {
+    --node-bg: #FBEFD4;
+    --node-fg: #A06A12
+}
+.home-hero-node.cat-work {
+    --node-bg: #E8E4F4;
+    --node-fg: #5B4BB5
+}
+.home-entry.is-learn {
+    --entry-bg: linear-gradient(135deg,#E9F1EC,#F4F6F1);
+    --entry-fg: var(--pine)
+}
+.home-entry.is-graph {
+    --entry-bg: linear-gradient(135deg,#E6EEF3,#F3F5F4);
+    --entry-fg: #2F5E7C
+}
+.home-entry.is-ask {
+    --entry-bg: linear-gradient(135deg,#F7E6E1,#F9F2EE);
+    --entry-fg: var(--seal)
+}
+/* 按教材年级显示作品卡片的强调色。 */
+.theme-light .work-library {
+    --grade-a: #2DB36F;
+    --grade-b: #16834F;
+    --grade-soft: #E6F5EC
+}
+.work-library .grade-8 {
+    --grade-a: #4C9BE8;
+    --grade-b: #2466B8;
+    --grade-soft: #E8F1FC
+}
+.work-library .grade-9 {
+    --grade-a: #F2A04A;
+    --grade-b: #C66A12;
+    --grade-soft: #FDF1E4
+}
+/* 应用主界面的水墨主题覆盖值。 */
+.ink-app {
+    --paper: #F7F5EF;
+    --paper-deep: #EFEBE1;
+    --ink: #1F3B31;
+    --ink-soft: #56655D;
+    --pine: #1F5C47;
+    --pine-hover: #17493A;
+    --seal: #B5463A;
+    --gold: #D39A4B;
+    --line: #E4DFD3;
+    --serif: "Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+    --brush: "STKaiti","KaiTi","Kaiti SC","楷体",var(--serif);
+    --app-bg: var(--paper);
+    --bg: var(--paper);
+    --surface-soft: #F3F0E8;
+    --surface-hover: #EFEBE1;
+    --text-primary: var(--ink);
+    --text-secondary: var(--ink-soft);
+    --text-tertiary: #8C958F;
+    --accent: var(--pine);
+    --accent-hover: var(--pine-hover);
+    --accent-bright: #3E8C72;
+    --accent-soft: #E5EEE8;
+    --border: #E6E1D5;
+    --border-strong: #D4CDBD;
+    --shadow-sm: 0 1px 2px #1F3B310D,0 2px 6px #1F3B310A;
+    --shadow-md: 0 6px 18px #1F3B3114;
+    --shadow-lg: 0 18px 44px #1F3B311F
+}

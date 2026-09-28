@@ -1,39 +1,5 @@
 /* Academic Knowledge Workbench. UI surfaces only: graph semantic colors and
    renderer parameters deliberately remain in their existing shared modules. */
-:root {
-  /* 清新教育风: white surfaces, sprout-green brand, generous type. */
-  --app-bg:#F6F8F7;
-  --surface:#FFFFFF;
-  --surface-soft:#F1F6F3;
-  --text-primary:#1B2420;
-  --text-secondary:#5E6A64;
-  --text-tertiary:#8E9993;
-  --accent:#16834F;
-  --accent-hover:#116B40;
-  --accent-bright:#2DB36F;
-  --accent-soft:#E6F5EC;
-  --border:#E2E8E4;
-  --border-strong:#CBD5CF;
-  --shadow-sm:0 1px 2px #1B24200A,0 1px 3px #1B242008;
-  --shadow-md:0 4px 16px #1B24200F,0 1px 3px #1B24200A;
-  --shadow-lg:0 18px 48px #1B242014;
-  --bg:var(--app-bg);
-  --panel:var(--surface);
-  --panel-2:var(--surface-soft);
-  --surface-hover:#EDF3EF;
-  --surface-selected:var(--accent-soft);
-  --line:var(--border);
-  --line-subtle:#EDF1EE;
-  --line-active:var(--border-strong);
-  --text:var(--text-primary);
-  --text-strong:var(--text-primary);
-  --muted:var(--text-secondary);
-  --radius-xs:6px;
-  --radius-sm:8px;
-  --radius-md:12px;
-  --radius-lg:16px;
-  --font-ui:var(--font-geist-sans),"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",Arial,sans-serif;
-}
 .workbench-icon { flex-shrink:0; display:inline-block; vertical-align:middle; }
 body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var(--text-primary); }
 .theme-light { font-family:var(--font-ui); }

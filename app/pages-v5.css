@@ -1,9 +1,7 @@
 /* P2: 作品档案 / 研究分析 / 智能问答 on the fresh-education tokens (workbench-v5.css). */
 
 /* ---------- 作品档案 ---------- */
-.theme-light .work-library { --grade-a:#2DB36F; --grade-b:#16834F; --grade-soft:#E6F5EC; max-width:1240px; margin:0 auto; padding:28px 4px 48px; color:var(--text-primary); }
-.work-library .grade-8 { --grade-a:#4C9BE8; --grade-b:#2466B8; --grade-soft:#E8F1FC; }
-.work-library .grade-9 { --grade-a:#F2A04A; --grade-b:#C66A12; --grade-soft:#FDF1E4; }
+.theme-light .work-library { max-width:1240px; margin:0 auto; padding:28px 4px 48px; color:var(--text-primary); }
 .work-library-head { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:22px; }
 .work-library-head h2 { margin:0; font-size:26px; font-weight:700; letter-spacing:-.01em; }
 .work-library-head p { margin:8px 0 0; color:var(--text-secondary); font-size:14px; line-height:1.7; }
