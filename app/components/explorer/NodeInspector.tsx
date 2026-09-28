@@ -9,6 +9,17 @@ import type { GraphExplorerState, InspectorTab } from "./useGraphExplorer";
 export type InspectorFact = { triple: Triple; label: string; value: string; target?: Entity };
 export type InspectorEvidence = Evidence & { triple: Triple };
 
+const citationPageLabel = (textbookPage?: string | null, pdfPage?: number | null) => {
+  const printedPage = String(textbookPage ?? "").trim();
+  return /^\d+(?:\s*[-–—]\s*\d+)?$/.test(printedPage)
+    ? `教材第 ${printedPage} 页`
+    : pdfPage != null
+      ? `PDF 第 ${pdfPage} 页`
+      : "页码未记录";
+};
+const formatPageReferences = (text?: string | null) =>
+  (text ?? "").replace(/(教材|PDF)?\s*第\s*(\d+(?:\s*[-–—]\s*\d+)?)\s*页/g, (_match, label: string | undefined, page: string) => `${label === "PDF" ? "PDF " : label ?? ""}第 ${page.trim()} 页`);
+
 /** 知识档案: the right-hand panel describing the selected node. */
 export function NodeInspector({
   explorer,
@@ -73,7 +84,7 @@ export function NodeInspector({
         </div>
         {panel === "overview" && (
           <div className="inspector-body">
-            <p>{selected?.description || "该节点来自教材知识图谱，可继续查看关系、来源证据与教学应用。"}</p>
+            <p>{formatPageReferences(selected?.description || "该节点来自教材知识图谱，可继续查看关系、来源证据与教学应用。")}</p>
             {!!selected?.media?.some((asset) => asset.kind === "score") && (
               <section className="inspector-scores" aria-label="教材谱例">
                 <h3>教材谱例</h3>
@@ -84,7 +95,7 @@ export function NodeInspector({
                       {/* Score crops are static WebP files; no image optimizer on GitHub Pages. */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img loading="lazy" src={publicAssetUrl(asset.url)} alt={asset.title ?? "教材谱例"} />
-                      <small>{asset.source}</small>
+                      <small>{formatPageReferences(asset.source)}</small>
                     </a>
                   ))}
               </section>
@@ -155,7 +166,7 @@ export function NodeInspector({
                     <li key={occurrence.id}>
                       <strong>{occurrence.textbookTitle}</strong>
                       <span>
-                        {occurrence.unit ?? "所属单元待细化"} · PDF第{occurrence.page ?? "—"}页
+                        {formatPageReferences(occurrence.unit ?? "所属单元待细化")} · PDF 第 {occurrence.page ?? "—"} 页
                       </span>
                     </li>
                   ))}
@@ -225,7 +236,7 @@ export function NodeInspector({
                   <span>
                     <strong>{occurrence.textbookTitle}</strong>
                     <small>
-                      {occurrence.unit ?? "所属单元待细化"} · PDF 第{occurrence.page ?? "—"}页
+                      {formatPageReferences(occurrence.unit ?? "所属单元待细化")} · PDF 第 {occurrence.page ?? "—"} 页
                     </small>
                   </span>
                 </li>
@@ -258,18 +269,16 @@ export function NodeInspector({
             {evidence.length ? (
               evidence.slice(0, 30).map((item, index) => (
                 <div className="evidence-item" key={`${item.triple.id}-${item.pdfPage}-${index}`}>
-                  <div className="evidence-page">
-                    {item.pdfPage ?? "—"}
-                    <small>PDF</small>
+                  <div className="evidence-page" aria-hidden="true">
+                    <WorkbenchIcon name="book" />
                   </div>
                   <div>
                     <strong>
                       {relationLabel(item.triple)} · {objectLabel(item.triple)}
                     </strong>
-                    <p>{item.summary || "教材关系证据记录"}</p>
+                    <p>{formatPageReferences(item.summary || "教材关系证据记录")}</p>
                     <small>
-                      {item.bookTitle ?? inspectionBook.title} ·{" "}
-                      {item.textbookPage ? `教材第${item.textbookPage}页` : "教材页码待对应"}
+                      {item.bookTitle ?? inspectionBook.title} · {citationPageLabel(item.textbookPage, item.pdfPage)}
                     </small>
                   </div>
                 </div>
