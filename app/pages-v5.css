@@ -1,41 +1,4 @@
-/* P2: 作品档案 / 研究分析 / 智能问答 on the fresh-education tokens (workbench-v5.css). */
-
-/* ---------- 作品档案 ---------- */
-.theme-light .work-library { max-width:1240px; margin:0 auto; padding:28px 4px 48px; color:var(--text-primary); }
-.work-library-head { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:22px; }
-.work-library-head h2 { margin:0; font-size:26px; font-weight:700; letter-spacing:-.01em; }
-.work-library-head p { margin:8px 0 0; color:var(--text-secondary); font-size:14px; line-height:1.7; }
-.work-library-search { display:flex; align-items:center; gap:8px; width:280px; flex:none; height:42px; padding:0 14px; border:1px solid var(--border-strong); border-radius:12px; background:var(--surface); color:var(--text-tertiary); }
-.work-library-search:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
-.work-library-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--text-primary); font-size:14px; }
-.work-library-books { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; }
-.work-library-books button { position:relative; display:flex; flex-direction:column; gap:4px; padding:12px 14px 12px 18px; border:1px solid var(--border); border-radius:12px; background:var(--surface); color:var(--text-primary); text-align:left; overflow:hidden; box-shadow:var(--shadow-sm); }
-.work-library-books button::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:linear-gradient(var(--grade-a),var(--grade-b)); }
-.work-library-books button:hover { border-color:var(--border-strong); }
-.work-library-books button.active { background:var(--grade-soft); border-color:var(--grade-b); }
-.work-library-books b { font-size:14px; font-weight:650; }
-.work-library-books small { font-size:12px; color:var(--text-secondary); }
-.work-library-count { margin:18px 0 6px; color:var(--text-secondary); font-size:13px; }
-.work-unit { margin-top:26px; }
-.work-unit h3 { display:flex; align-items:baseline; gap:10px; margin:0 0 14px; padding-left:12px; border-left:3px solid var(--accent); font-size:17px; font-weight:650; }
-.work-unit h3 small { font-size:12px; font-weight:500; color:var(--text-tertiary); }
-.work-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; }
-.work-card { display:flex; flex-direction:column; gap:10px; min-height:190px; padding:16px 18px 14px; border:1px solid var(--border); border-top:3px solid var(--grade-a); border-radius:14px; background:var(--surface); color:var(--text-primary); text-align:left; box-shadow:var(--shadow-sm); transition:box-shadow .18s,transform .18s,border-color .18s; }
-.work-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); border-color:var(--border-strong); border-top-color:var(--grade-b); }
-.work-card-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.work-card-top em { padding:2px 9px; border-radius:999px; background:var(--grade-soft); color:var(--grade-b); font-size:12px; font-style:normal; font-weight:600; }
-.work-card-top small { font-size:12px; color:var(--text-tertiary); font-variant-numeric:tabular-nums; }
-.work-card>strong { font-size:17px; font-weight:650; line-height:1.45; }
-.work-card-creators { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:13px; color:var(--text-primary); }
-.work-card-creators small { margin-right:5px; color:var(--text-tertiary); font-size:12px; }
-.work-card-creators .muted { color:var(--text-tertiary); }
-.work-card-facts { display:flex; flex-wrap:wrap; gap:6px; }
-.work-card-facts i { padding:3px 9px; border:1px solid var(--border); border-radius:7px; background:var(--surface-soft); color:var(--text-secondary); font-size:12px; font-style:normal; }
-.work-card-facts i.is-activity { border-color:#CFE7DA; background:var(--accent-soft); color:var(--accent); }
-.work-card-foot { display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:10px; border-top:1px solid var(--border); font-size:12px; color:var(--text-secondary); }
-.work-card-foot span:last-child { display:inline-flex; align-items:center; gap:2px; color:var(--accent); font-weight:600; }
-.work-card-foot svg { width:14px; height:14px; }
-.work-library-empty { margin:40px 0; text-align:center; color:var(--text-secondary); font-size:14px; }
+/* P2: 研究分析 / 智能问答 on the fresh-education tokens (workbench-v5.css). */
 
 /* ---------- 研究分析 ---------- */
 .theme-light .research-analysis { padding:28px 4px 40px; }
@@ -73,13 +36,7 @@
 .theme-light .assistant-related button,.theme-light .assistant-followups button { border-radius:999px; padding:5px 12px; }
 .theme-light .assistant-graph-link { margin-top:6px; border:0; border-radius:9px; background:var(--accent-soft); color:var(--accent); font-size:13px; font-weight:600; padding:8px 14px; }
 
-@media (max-width:1100px) {
-  .work-library-books { grid-template-columns:repeat(3,minmax(0,1fr)); }
-}
 @media (max-width:760px) {
-  .work-library-head { flex-direction:column; align-items:stretch; }
-  .work-library-search { width:auto; }
-  .work-library-books { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .theme-light .assistant-suggestions { grid-template-columns:1fr; }
   .matrix-legend-diagonal { margin-left:0; }
 }

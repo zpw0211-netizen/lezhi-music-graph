@@ -1,26 +1,40 @@
 "use client";
+
+/* The static hero must load eagerly at a fixed size to reserve space and protect LCP. */
+/* eslint-disable @next/next/no-img-element */
+
 import { useMemo, useState } from "react";
 import { WorkbenchIcon } from "../WorkbenchIcon";
-import { MELODIES } from "../../lib/lesson/melodies";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
+import { MELODIES } from "../../lib/lesson/melodies";
+import { publicAssetUrl } from "../../lib/app/assets";
 
 type LibraryEntity = { id: string; name: string; type: string; firstPage?: number | null; media?: Array<{ title?: string }> };
 // Score titles carry the printed page ("教材第44页"); firstPage is the PDF page.
 const printedPage = (entity: LibraryEntity) => entity.media?.map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1]).find(Boolean);
+const pageLabel = (entity: LibraryEntity) => printedPage(entity)
+  ? `教材第 ${printedPage(entity)} 页`
+  : `PDF 第 ${entity.firstPage ?? "—"} 页`;
 type LibraryTriple = { id: string; subject: string; predicate: string; objectId?: string | null; literal?: string | null };
 type LibraryBookDirectory = { key: string; title: string; grade: number; semester: string; workCount: number };
 type LibraryBookData = { entities: LibraryEntity[]; triples: LibraryTriple[] };
 
 const GRADE_NAMES: Record<number, string> = { 7: "七年级", 8: "八年级", 9: "九年级" };
+const GRADE_SHORT_NAMES: Record<number, string> = { 7: "七", 8: "八", 9: "九" };
 const CREATOR_PREDICATES = ["作曲", "作词", "编曲", "改编"];
+const BOOK_ART_DESCRIPTIONS: Record<string, string> = {
+  g7s1: "小军鼓和马头琴放在红旗下，远处是草原，彩带环绕画面。",
+  g7s2: "京剧脸谱、冬不拉和展开的乐谱摆在舞台帷幕前。",
+  g8s1: "胶片、古琴和非洲鼓围绕一张乐谱，摆在书斋中。",
+  g8s2: "翻开的诗集旁有竹笛、交响乐大鼓和军号。",
+  g9s1: "山水画卷展开成旋律线，旁边有芦笙和水袖舞者。",
+  g9s2: "藏族扎念琴、经幡与戏台栏杆和竹板并置。",
+};
 
 type WorkCard<E> = {
   work: E;
   creators: Array<{ role: string; name: string }>;
   genre?: string;
-  tempo?: string;
-  activities: string[];
-  relationCount: number;
   starred: boolean;
 };
 
@@ -29,12 +43,15 @@ function playbackBadge(name: string) {
   if (!melodies?.length) return null;
   const draft = melodies.every((melody) => melody.quality === "draft");
   const rhythm = melodies.every((melody) => melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9)));
-  return <b className="work-card-audio" title={draft ? "自动识谱草稿，待人工核对" : rhythm ? "可播放节奏示范" : "可播放旋律示范"}>
-    ♪ {draft ? "识谱草稿" : rhythm ? "节奏" : "旋律"}
-  </b>;
+  const title = draft ? "自动识谱草稿，待人工核对" : rhythm ? "可播放节奏示范" : "可播放旋律示范";
+  return <b className="records-audio" title={title}>♪ 可播放</b>;
 }
 
-/** 按课学习 directory: works grouped by textbook unit; each card opens that lesson. */
+function unitAnchorId(bookKey: string, unitId: string) {
+  return `records-${bookKey}-${unitId}`;
+}
+
+/** 按课学习目录：用教材插画建立当前册的视觉中心，按单元列出可学习作品。 */
 export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirectory>({
   books, bookKey, bookData, bookDataStatus, onRetryBookData, isWork, onBook, onOpen,
 }: {
@@ -50,13 +67,15 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirect
   const [filter, setFilter] = useState("");
   const directory = books.find((item) => item.key === bookKey) ?? books[0];
   const book = bookData?.key === directory?.key ? bookData : null;
+  const entities = book?.entities;
+  const triples = book?.triples;
 
   const units = useMemo(() => {
-    if (!book) return [] as Array<{ id: string; name: string; cards: Array<WorkCard<E>> }>;
-    const entityById = new Map(book.entities.map((entity) => [entity.id, entity]));
+    if (!entities || !triples) return [] as Array<{ id: string; name: string; cards: Array<WorkCard<E>> }>;
+    const entityById = new Map(entities.map((entity) => [entity.id, entity]));
     const valueOf = (triple: LibraryTriple) => (triple.objectId ? entityById.get(triple.objectId)?.name : undefined) ?? triple.literal ?? "";
     const triplesBySubject = new Map<string, LibraryTriple[]>();
-    for (const triple of book.triples) {
+    for (const triple of triples) {
       if (!triplesBySubject.has(triple.subject)) triplesBySubject.set(triple.subject, []);
       triplesBySubject.get(triple.subject)!.push(triple);
     }
@@ -75,15 +94,12 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirect
         work,
         creators: creators.slice(0, 3),
         genre: first("音乐体裁") ? valueOf(first("音乐体裁")!) : undefined,
-        tempo: first("速度特点") ? valueOf(first("速度特点")!) : undefined,
-        activities: [...new Set(own.filter((triple) => triple.predicate === "学习方式").map(valueOf))].slice(0, 3),
-        relationCount: own.length,
         starred: own.some((triple) => triple.predicate === "教材标注"),
       };
     };
-    const works = book.entities.filter((entity) => isWork(entity.type)) as E[];
+    const works = entities.filter((entity) => isWork(entity.type)) as E[];
     const grouped = new Set<string>();
-    const result = book.entities
+    const result = entities
       .filter((entity) => entity.type === "单元")
       .sort((a, b) => (a.firstPage ?? 0) - (b.firstPage ?? 0) || a.name.localeCompare(b.name, "zh"))
       .map((unit) => {
@@ -96,7 +112,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirect
     const rest = works.filter((work) => !grouped.has(work.id)).sort((a, b) => (a.firstPage ?? 0) - (b.firstPage ?? 0)).map(cardFor);
     if (rest.length) result.push({ id: "other", name: "其他收录作品", cards: rest });
     return result;
-  }, [book, isWork]);
+  }, [entities, triples, isWork]);
 
   const term = filter.trim().toLowerCase();
   const visibleUnits = term
@@ -106,48 +122,122 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirect
     : units;
   const total = units.reduce((sum, unit) => sum + unit.cards.length, 0);
   const shown = visibleUnits.reduce((sum, unit) => sum + unit.cards.length, 0);
+  const unitCount = units.filter((unit) => unit.id !== "other").length;
+  // The existing smoke check uses this selector for its first course. Keep it on
+  // the first page-ordered work even though cards now render as featured items or rows.
+  const firstWorkId = units[0]?.cards[0]?.work.id;
   if (!directory) return null;
 
-  return <section className="work-library" aria-labelledby="work-library-title">
-    <header className="work-library-head">
-      <div>
-        <h2 id="work-library-title">按课学习</h2>
-        <p>按教材单元一课一课地学：查看教材谱例、试听已整理的旋律或节奏，并结合知识要点、课堂活动和小练习学习；老师可以进入上课模式。</p>
+  const gradeName = GRADE_NAMES[directory.grade] ?? `${directory.grade}年级`;
+
+  const jumpToUnit = (id: string) => {
+    const target = document.getElementById(id);
+    if (!target) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+  };
+
+  return <section className="work-library" data-grade={directory.grade} aria-labelledby="records-book-title">
+    <nav className="work-library-books motion-tabs" aria-label="选择教材">
+      <SlidingIndicator activeKey={directory.key} />
+      {books.map((item) => {
+        const label = `${GRADE_SHORT_NAMES[item.grade] ?? item.grade}${item.semester.replace(/册$/, "")}`;
+        return <button key={item.key} type="button" className={item.key === directory.key ? "active" : ""} aria-label={`${GRADE_NAMES[item.grade] ?? `${item.grade}年级`}${item.semester}`} aria-pressed={item.key === directory.key} onClick={() => onBook(item)}>
+          <b>{label}</b>
+        </button>;
+      })}
+    </nav>
+
+    <section className="records-hero" aria-labelledby="records-book-title">
+      <figure className="records-hero-art">
+        <img
+          src={publicAssetUrl(`/art/${directory.key}.webp`)}
+          alt={`${directory.title}插画：${BOOK_ART_DESCRIPTIONS[directory.key] ?? "套色木刻风格的音乐教材插画。"}`}
+          width={1200}
+          height={750}
+          decoding="async"
+          loading="eager"
+          fetchPriority="high"
+        />
+      </figure>
+      <div className="records-hero-copy">
+        <p className="records-kicker">{gradeName} · {directory.semester}</p>
+        <h1 id="records-book-title">{directory.title}</h1>
+        <span className="records-book-underline" aria-hidden="true" />
+        <p className="records-book-count" aria-live="polite">
+          {book ? `共 ${total} 首作品，${unitCount} 个单元` : "正在读取本册目录…"}
+        </p>
+      </div>
+    </section>
+
+    <div className="work-library-navigation">
+      <div className="work-unit-directory">
+        <h2>单元目录</h2>
+        {book && visibleUnits.filter((unit) => unit.id !== "other").length > 0
+          ? <nav aria-label={`${directory.title}单元目录`}>
+              {visibleUnits.filter((unit) => unit.id !== "other").map((unit) => {
+                const position = units.findIndex((item) => item.id === unit.id) + 1;
+                return <button key={unit.id} type="button" className="work-unit-link" onClick={() => jumpToUnit(unitAnchorId(directory.key, unit.id))}>
+                  <span>{String(position).padStart(2, "0")}</span>{unit.name}
+                </button>;
+              })}
+            </nav>
+          : <p className="work-unit-directory-empty">{term ? "没有匹配的单元" : "单元目录载入中"}</p>}
       </div>
       <label className="work-library-search">
         <WorkbenchIcon name="search" />
         <input value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="筛选作品、作者、体裁" aria-label="筛选作品" />
       </label>
-    </header>
-    <nav className="work-library-books motion-tabs" aria-label="选择教材">
-      <SlidingIndicator activeKey={directory.key} />
-      {books.map((item) => <button key={item.key} type="button" className={`grade-${item.grade} ${item.key === directory.key ? "active" : ""}`} aria-pressed={item.key === directory.key} onClick={() => onBook(item)}>
-        <b>{GRADE_NAMES[item.grade] ?? `${item.grade}年级`}{item.semester}</b>
-        <small>{item.workCount} 首作品</small>
-      </button>)}
-    </nav>
-    {book && <p className="work-library-count">{book.title} · {term ? `筛选出 ${shown} / ${total} 首` : `共 ${total} 首作品，${units.filter((unit) => unit.id !== "other").length} 个单元`}</p>}
+    </div>
+
     {!book && bookDataStatus !== "error" && <div className="app-view-status" role="status" aria-live="polite">正在载入这一册…</div>}
     {!book && bookDataStatus === "error" && <div className="app-view-status" role="status" aria-live="polite">
       <p>这一册数据加载失败，请检查网络后重试。</p>
       <button type="button" onClick={onRetryBookData}>重试</button>
     </div>}
-    {book && visibleUnits.map((unit) => <section key={unit.id} className="work-unit" data-reveal>
-      <h3>{unit.name}<small>{unit.cards.length} 首</small></h3>
-      <div className="work-grid" data-reveal-group>
-        {unit.cards.map((card) => <button key={card.work.id} type="button" className={`work-card grade-${book.grade}`} data-reveal onClick={() => onOpen(card.work, book)}>
-          <span className="work-card-top"><em>{card.work.type}</em>{card.starred && <b className="work-card-star" title="教材标注的重点学习曲目">☆ 重点</b>}{playbackBadge(card.work.name)}<small>{printedPage(card.work) ? `教材第 ${printedPage(card.work)} 页` : `PDF 第 ${card.work.firstPage ?? "—"} 页`}</small></span>
-          <strong>{card.work.name}</strong>
-          <span className="work-card-creators">{card.creators.length ? card.creators.map((item) => <span key={item.name}><small>{item.role}</small>{item.name}</span>) : <span className="muted">作者信息待补充</span>}</span>
-          <span className="work-card-facts">
-            {card.genre && <i>{card.genre}</i>}
-            {card.tempo && <i>{card.tempo}</i>}
-            {card.activities.map((activity) => <i key={activity} className="is-activity">{activity}</i>)}
-          </span>
-          <span className="work-card-foot"><span>{card.relationCount} 条关系</span><span>开始学习<WorkbenchIcon name="right" /></span></span>
-        </button>)}
-      </div>
-    </section>)}
+
+    {book && visibleUnits.map((unit) => {
+      const anchorId = unitAnchorId(directory.key, unit.id);
+      const position = units.findIndex((item) => item.id === unit.id) + 1;
+      const featured = unit.cards.filter((card) => card.starred);
+      const regular = unit.cards.filter((card) => !card.starred);
+      return <section key={unit.id} id={anchorId} className="work-unit" aria-labelledby={`${anchorId}-title`} data-reveal>
+        <h2 id={`${anchorId}-title`}>
+          <span className="work-unit-number">{String(position).padStart(2, "0")}</span>
+          {unit.name}
+          <small>{unit.cards.length} 首</small>
+        </h2>
+        {featured.length > 0 && <div className="work-featured-list" data-reveal-group>
+          {featured.map((card) => <button key={card.work.id} type="button" className={`work-featured${card.work.id === firstWorkId ? " work-card" : ""}`} data-reveal onClick={() => onOpen(card.work, book)}>
+            <span className="records-badges">
+              <b className="records-star" title="教材标注的重点学习曲目">☆ 重点</b>
+              {playbackBadge(card.work.name)}
+            </span>
+            <strong className="work-featured-title">{card.work.name}</strong>
+            <span className="work-featured-details">
+              <span className="records-creators">
+                {card.creators.length ? card.creators.map((item) => <span key={item.name}><small>{item.role}</small>{item.name}</span>) : <span className="records-muted">作者信息待补充</span>}
+              </span>
+              {card.genre && <span>{card.genre}</span>}
+              <span className="records-page">{pageLabel(card.work)}</span>
+            </span>
+            <span className="work-featured-action">开始学习<WorkbenchIcon name="right" /></span>
+          </button>)}
+        </div>}
+        {regular.length > 0 && <div className="work-row-list" data-reveal-group>
+          {regular.map((card) => <button key={card.work.id} type="button" className={`work-row${card.work.id === firstWorkId ? " work-card" : ""}`} data-reveal onClick={() => onOpen(card.work, book)}>
+            <strong className="work-row-title">{card.work.name}</strong>
+            <span className="work-row-details">
+              {card.genre && <span>{card.genre}</span>}
+              <span>{card.creators.length ? card.creators.map((item) => `${item.role}${item.name}`).join("、") : "作者信息待补充"}</span>
+              <span className="records-page">{pageLabel(card.work)}</span>
+              {playbackBadge(card.work.name)}
+            </span>
+            <WorkbenchIcon name="right" />
+          </button>)}
+        </div>}
+      </section>;
+    })}
     {book && !shown && <p className="work-library-empty">没有找到匹配“{filter}”的作品。</p>}
   </section>;
 }
