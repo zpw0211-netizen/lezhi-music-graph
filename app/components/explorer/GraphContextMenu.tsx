@@ -7,6 +7,7 @@ export function GraphContextMenu({ explorer }: { explorer: GraphExplorerState })
   const { contextMenu } = explorer;
   if (!contextMenu) return null;
   const { entity, book } = contextMenu;
+  const category = schemaCategoryMeta(entity.type);
   const pinned = explorer.pinnedNodeKeys.includes(`${book.key}-${entity.id}`);
   return (
     <div
@@ -17,7 +18,7 @@ export function GraphContextMenu({ explorer }: { explorer: GraphExplorerState })
     >
       <div className="context-title">
         <strong>{entity.name}</strong>
-        <small>{schemaCategoryMeta(entity.type).label}</small>
+        <small style={{ color: category.color }}>{category.label}</small>
       </div>
       <button onClick={() => explorer.expandNode(entity, book, 1)}>展开全部 1 跳邻居</button>
       <button onClick={() => explorer.expandNode(entity, book, 2)}>展开全部 2 跳邻居</button>

@@ -40,19 +40,19 @@ export function GraphSidebar({ view, onView, graph, books, scopeBook, filters, p
       closeMobileFilters();
     }
   }}>
-    <div className="explorer-brand"><span className="explorer-brand-mark"><WorkbenchIcon name="sprout" /></span>{!collapsed && <div><strong>芽谱</strong><span className="explorer-brand-english">Music Education Knowledge Atlas</span><small>中小学音乐教育知识图谱</small></div>}<button aria-label={collapsed ? "展开左侧栏" : "折叠左侧栏"} onClick={() => setCollapsed(!collapsed)}><WorkbenchIcon name={collapsed ? "right" : "left"} /></button></div>
+    <div className="explorer-brand"><span className="explorer-brand-mark"><WorkbenchIcon name="sprout" /></span>{!collapsed && <div><strong>芽谱</strong><small>中小学音乐教育知识图谱</small></div>}<button aria-label={collapsed ? "展开左侧栏" : "折叠左侧栏"} onClick={() => setCollapsed(!collapsed)}><WorkbenchIcon name={collapsed ? "right" : "left"} /></button></div>
     <nav className="explorer-nav motion-tabs"><SlidingIndicator activeKey={view === "work" || view === "lesson" ? "records" : view} orientation="sidebar" />{([["home", "首页", "home"], ["records", "按课学习", "book"], ["graph", "图谱探索", "graph"], ["assistant", "智能问答", "message"], ["research", "研究分析", "research"]] as const).map(([key, label, icon]) => <button key={key} title={label} aria-label={label} className={view === key || (key === "records" && (view === "work" || view === "lesson")) ? "active" : ""} onClick={() => onView(key)}><WorkbenchIcon name={icon} />{!collapsed && label}</button>)}</nav>
     {!collapsed && view === "graph" && <div className="explorer-controls"><div className="mobile-filter-panel-heading"><strong>筛选</strong><button type="button" onClick={closeMobileFilters}>关闭</button></div><section className="explorer-perspective"><h3>图谱观察方式</h3><div>{([["comprehensive", "综合知识"], ["textbook", "教材结构"], ["music", "音乐知识"], ["progression", "学习进阶"]] as const).map(([key, label]) => <button key={key} aria-pressed={perspective === key} onClick={() => onPerspective(key)}>{label}</button>)}</div></section>
       <EntityTypeFilter categories={schema.categories} visible={filters.visibleSchemaKeys} onChange={filters.setVisibleSchemaKeys} />
       <RelationshipFilter relations={schema.relations} hidden={filters.hiddenRelations} onChange={filters.setHiddenRelations} onSources={onSources} />
       <PropertyFilter books={books} filters={filters} />
-      <details className="explorer-section explorer-schema-section"><summary>知识模式 <small>Schema</small></summary>
+      <details className="explorer-section explorer-schema-section"><summary>知识模式</summary>
         <button className="explorer-schema-button" onClick={onSchema}>查看实体与关系模式 <WorkbenchIcon name="arrow" /></button>
       </details>
       <SmartGraphQuery graph={graph} execute={execute} assetUrl={assetUrl} onGraphFocus={onGraphFocus} notice={notice} />
       <button className="explorer-reset" onClick={onReset}>恢复全部筛选</button>
     </div>}
-    {!collapsed && <section className="explorer-dataset" aria-label="教材数据规模"><h3>教材数据集 <small>DATASET</small></h3><dl><div><dt>规范实体</dt><dd>{(graph?.entities.length ?? 0).toLocaleString("en-US")}</dd></div><div><dt>规范关系</dt><dd>{(graph?.relationships.length ?? 0).toLocaleString("en-US")}</dd></div></dl></section>}
+    {!collapsed && <section className="explorer-dataset explorer-dataset-summary" aria-label="教材数据"><h3>教材数据</h3><p>{(graph?.entities.length ?? 0).toLocaleString("en-US")} 个规范实体 · {(graph?.relationships.length ?? 0).toLocaleString("en-US")} 条规范关系</p></section>}
     {!collapsed && <button className="explorer-import" onClick={() => onView("import")}>数据导入与校验</button>}
   </aside>;
 }

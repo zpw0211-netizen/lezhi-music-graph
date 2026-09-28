@@ -42,6 +42,7 @@ export function NodeInspector({
     triple.objectId ? (entityMap.get(triple.objectId)?.name ?? triple.objectId) : (triple.literal ?? "未命名客体");
   const select = (entity: Entity) => explorer.selectEntity(entity, inspectionBook);
   const selectedType = selected?.type ?? "音乐概念";
+  const selectedCategory = schemaCategoryMeta(selectedType);
   const tabs: Array<[InspectorTab, string]> = [
     ["overview", "概览"],
     ["relations", `关系 ${directTriples.length}`],
@@ -60,11 +61,11 @@ export function NodeInspector({
       </div>
       <section className="inspector-card">
         <header className="inspector-header">
-          <div className={`inspector-icon schema-${schemaCategoryFor(selectedType)}`}>
+          <div className={`inspector-icon schema-${schemaCategoryFor(selectedType)}`} style={{ backgroundColor: selectedCategory.color, borderColor: selectedCategory.color, color: "#fff" }}>
             <WorkbenchIcon name={schemaCategoryFor(selectedType) === "person" ? "person" : "music"} />
           </div>
           <div>
-            <span>{schemaCategoryMeta(selectedType).neoLabel}</span>
+            <span className="inspector-category-label" style={{ color: selectedCategory.color, borderColor: selectedCategory.color }}>{selectedCategory.label}</span>
             <h2>{selected?.name ?? "未选择实体"}</h2>
             <small>{selected?.type ?? "实体"}</small>
           </div>
@@ -105,7 +106,7 @@ export function NodeInspector({
             <dl>
               <div>
                 <dt>语义标签</dt>
-                <dd>{schemaCategoryMeta(selectedType).label}</dd>
+                <dd>{selectedCategory.label}</dd>
               </div>
               <div>
                 <dt>首次出现</dt>

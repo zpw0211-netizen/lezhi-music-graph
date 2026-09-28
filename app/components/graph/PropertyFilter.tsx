@@ -6,7 +6,7 @@ export const PropertyFilter = memo(function PropertyFilter({ books, filters }: {
   const p = filters.properties;
   const update = (key: keyof PropertyFilters, value: string | string[]) => filters.setProperties(current => ({ ...current, [key]: value }));
   const toggle = (key: "books" | "grades" | "semesters", value: string) => update(key, p[key].includes(value) ? p[key].filter(item => item !== value) : [...p[key], value]);
-  return <details className="explorer-section"><summary>属性筛选 <small>Properties</small></summary>
+  return <details className="explorer-section"><summary>属性筛选</summary>
     <div className="property-fields"><fieldset><legend>教材（可多选）</legend>{books.map(book => <label key={book.key}><input type="checkbox" checked={p.books.includes(book.key)} onChange={() => toggle("books", book.key)} />{book.title}</label>)}</fieldset>
       <fieldset><legend>年级</legend>{["7", "8", "9"].map(grade => <label key={grade}><input type="checkbox" checked={p.grades.includes(grade)} onChange={() => toggle("grades", grade)} />{grade} 年级</label>)}</fieldset>
       <fieldset><legend>学期</legend>{["上册", "下册"].map(semester => <label key={semester}><input type="checkbox" checked={p.semesters.includes(semester)} onChange={() => toggle("semesters", semester)} />{semester}</label>)}</fieldset>

@@ -14,7 +14,6 @@ import { NodeRingProgram, drawLabelBelow } from "../../lib/graph/node-ring-progr
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CanvasPerformanceMetrics } from "../FullGraphCanvas";
 import { schemaCategoryFor, schemaCategoryMeta } from "../../graph-schema";
-import { SEMANTIC_PALETTE } from "../../semantic-palette";
 import { LABEL_BUDGETS, RELATION_STYLES, RELATION_VISIBILITY, relationFamily, semanticZoomTier } from "../../lib/graph/constellation-style";
 import {
   buildGraphIndexes,
@@ -611,7 +610,7 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
         x: node.x,
         y: node.y,
         size: nodeSize(node.entity),
-        color: SEMANTIC_PALETTE[category].fill,
+        color: schemaCategoryMeta(node.entity.type).color,
         label: node.entity.name,
         entity: node.entity,
         visualRank: node.entity.visualRank ?? Number.MAX_SAFE_INTEGER,
