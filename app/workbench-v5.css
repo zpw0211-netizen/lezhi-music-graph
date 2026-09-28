@@ -83,21 +83,6 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
 .explorer-dataset dt { font-size:11px; color:var(--text-secondary); }
 .explorer-dataset dd { margin:0; font-size:19px; font-weight:550; font-variant-numeric:tabular-nums; color:var(--text-primary); }
 .explorer-import { background:transparent; margin-left:17px; flex-shrink:0; }
-.theme-light .topbar { min-height:94px; height:94px; gap:24px; align-items:center; background:var(--app-bg); border-color:var(--border); }
-.theme-light .topbar h1 { font-size:22px; font-weight:600; letter-spacing:-.025em; color:var(--text-primary); white-space:nowrap; }
-.theme-light .search-zone { flex:1; width:auto; max-width:620px; min-width:160px; margin-left:auto; }
-.theme-light .search-wrap { height:44px; border-radius:var(--radius-md); border-color:var(--border-strong); background:var(--surface); }
-.theme-light .search-wrap:focus-within { border-color:var(--accent); outline:3px solid var(--accent-soft); }
-.theme-light .search-wrap input { font-size:13px; color:var(--text-primary); }
-.theme-light.graph-first .search-wrap input { border:0; height:42px; border-radius:var(--radius-md); box-shadow:none; }
-.theme-light.graph-first .search-submit { background:var(--accent-soft); color:var(--accent); border:0; }
-.theme-light .search-icon { display:flex; align-items:center; color:var(--text-secondary); }
-.theme-light .search-submit { border:0; background:var(--accent-soft); color:var(--accent); font-size:12px; border-radius:var(--radius-xs); padding:6px 10px; }
-.theme-light .search-submit:hover { background:var(--accent); color:white; }
-.theme-light .top-actions { gap:12px; flex-shrink:0; }
-.theme-light .live-pill { background:transparent; border:0; color:var(--text-secondary); font-size:12px; padding:0; }
-.theme-light .status-dot { background:var(--accent); box-shadow:none; }
-.theme-light .research-info-trigger { background:transparent; color:var(--text-secondary); border-color:var(--border); font-size:12px; }
 .theme-light .book-tabs { background:transparent; border-color:var(--border); gap:5px; padding:10px 0; }
 .theme-light .book-tab { background:transparent; border-color:transparent; font-size:12px; border-radius:var(--radius-xs); }
 .theme-light .book-tab.active { background:var(--accent-soft); border-color:#C5D8CF; color:var(--accent); }
@@ -247,25 +232,13 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
 .quality-panel dd { font-size:15px; font-weight:550; margin:0; color:var(--text-primary); }
 .quality-panel header>b { font-size:12px; color:var(--accent); }
 .quality-panel>p { font-size:11px; color:var(--text-secondary); margin:12px 26px 18px; }
-.theme-light .records-view { padding:28px 0; }
-.records-intro { border-bottom:1px solid var(--border); padding-bottom:22px; margin-bottom:24px; }
-.theme-light .records-intro h2 { font-size:23px; color:var(--text-primary); margin:0 0 12px; }
-.theme-light :is(.research-analysis-header h2,.records-intro h2,.knowledge-header h2) { font-family:var(--font-ui); }
-.records-intro p { font-size:13px; line-height:1.7; color:var(--text-secondary); }
-.record-grid { gap:18px; }
-.theme-light .record-card { padding:22px; border-color:var(--border); border-radius:var(--radius-md); text-align:left; background:var(--surface); box-shadow:none; }
-.theme-light .record-card:hover { border-color:#B9D0C6; background:#FAFCF9; }
-.record-number { font-size:12px; color:var(--accent); letter-spacing:0; }
-.theme-light .record-card h3 { font-size:17px; line-height:1.5; margin:12px 0; color:var(--text-primary); }
-.record-card p { font-size:13px; line-height:1.8; color:var(--text-secondary); }
-.record-footer { font-size:12px; color:var(--accent); border-color:var(--border); margin-top:20px; }
+.theme-light :is(.research-analysis-header h2, .knowledge-header h2) { font-family:var(--font-ui); }
 @media(max-width:1450px) and (min-width:761px) {
   .research-analysis-header h2 { font-size:21px; }
   .research-method-note { max-width:260px; }
   .research-grid { gap:16px; grid-template-columns:minmax(0,1fr) minmax(390px,1fr); }
   .matrix-panel>header { align-items:flex-start; flex-wrap:wrap; }
   .matrix-panel th { font-size:11px; }
-  .record-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media(max-width:1000px) {
   .research-grid { grid-template-columns:minmax(0,1fr); }
@@ -285,9 +258,6 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
 }
 @media(max-width:1450px) and (min-width:761px) {
   .theme-light .workspace { padding:0 14px; }
-  .theme-light .topbar { gap:16px; }
-  .theme-light .topbar h1 { font-size:20px; }
-  .theme-light .live-pill { display:none; }
 }
 @media(max-width:1500px) and (min-width:1001px) {
   .detail-open .explorer-dataset { display:none; }
@@ -297,8 +267,6 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
   .theme-light .explorer-sidebar { height:auto; overflow-y:auto; }
   .explorer-controls { overflow:visible; flex:none; }
   .theme-light .workspace { padding:0 10px; }
-  .theme-light .topbar { min-height:64px; height:auto; gap:10px; padding:10px 0; }
-  .theme-light .top-actions { display:none; }
   .theme-light .neo-layout { height:auto; }
   .explorer-brand-english { display:none; }
   .explorer-brand small { margin-top:3px; }
@@ -313,7 +281,6 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
   .assistant-composer { margin:0 0 16px; padding:14px; }
   .theme-light .research-analysis { height:auto; }
   .quality-panel dl { grid-template-columns:1fr; }
-  .record-grid { grid-template-columns:1fr; }
   .theme-light .neo-actions { flex-wrap:wrap; gap:6px; }
   .theme-light .neo-actions button { font-size:11px; padding:6px; }
   .theme-light .graph-toolbar-core .workbench-icon { display:none; }
@@ -321,7 +288,6 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
 
 /* Give the network the viewport: keep primary graph modes in one compact row. */
 @media (min-width:1101px) {
-  .theme-light.graph-first .topbar { min-height:68px; height:68px; }
   .theme-light.graph-first .neo-layout { height:calc(100dvh - 112px); }
 }
 .theme-light .full-graph-filterbar { display:flex; align-items:center; flex-wrap:nowrap; min-height:46px; gap:10px; padding:6px 12px; }
