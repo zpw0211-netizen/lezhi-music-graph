@@ -364,27 +364,47 @@ function SigmaController<E extends GraphEntity>({
 
   useEffect(() => {
     if (!focusSelectionToken || !selectedId || !sigma.getGraph().hasNode(selectedId)) return;
-    const display = sigma.getNodeDisplayData(selectedId);
-    if (!display) return;
-    // Frame the selection with all of its visible 1-hop neighbours: works sit
-    // at the rim while their shared concepts sit near the core, so a fixed
-    // close-up would leave most related nodes off-screen.
-    const reach = (indexes.adjacencyMap.get(selectedId) ?? []).reduce((max, item) => {
-      const neighbour = sigma.getNodeDisplayData(item.neighborId);
-      return neighbour && !neighbour.hidden ? Math.max(max, Math.hypot(neighbour.x - display.x, neighbour.y - display.y)) : max;
-    }, 0);
-    sigma.getCamera().animate(
-      { x: display.x, y: display.y, ratio: Math.max(0.22, Math.min(0.9, reach * 2.4)) },
-      { duration: 320 },
-    );
+    const frameSelection = () => {
+      const display = sigma.getNodeDisplayData(selectedId);
+      if (!display) return false;
+      // Frame the selection with all of its visible 1-hop neighbours: works sit
+      // at the rim while their shared concepts sit near the core, so a fixed
+      // close-up would leave most related nodes off-screen.
+      const reach = (indexes.adjacencyMap.get(selectedId) ?? []).reduce((max, item) => {
+        const neighbour = sigma.getNodeDisplayData(item.neighborId);
+        return neighbour && !neighbour.hidden ? Math.max(max, Math.hypot(neighbour.x - display.x, neighbour.y - display.y)) : max;
+      }, 0);
+      sigma.getCamera().animate(
+        { x: display.x, y: display.y, ratio: Math.max(0.22, Math.min(0.9, reach * 2.4)) },
+        { duration: 320 },
+      );
+      return true;
+    };
+    if (frameSelection()) return;
+    // Right after mounting, node positions exist only once the first frame is drawn.
+    const onRender = () => {
+      if (frameSelection()) sigma.off("afterRender", onRender);
+    };
+    sigma.on("afterRender", onRender);
+    return () => {
+      sigma.off("afterRender", onRender);
+    };
   }, [dataGraph, detailOpen, focusSelectionToken, indexes, selectedId, sigma]);
 
+  // Zoom and reset only react to changes: on mount they would otherwise run
+  // after the selection focus above and pull the camera back to the whole map.
+  const appliedZoom = useRef(zoom);
   useEffect(() => {
+    if (appliedZoom.current === zoom) return;
+    appliedZoom.current = zoom;
     const ratio = Math.max(0.08, Math.min(8, 0.64 / Math.max(0.01, zoom)));
     sigma.getCamera().animate({ ratio }, { duration: 180 });
   }, [sigma, zoom]);
 
+  const appliedResetToken = useRef(cameraResetToken);
   useEffect(() => {
+    if (appliedResetToken.current === cameraResetToken) return;
+    appliedResetToken.current = cameraResetToken;
     sigma.getCamera().animate(
       { x: 0.5, y: 0.5, ratio: 1, angle: 0 },
       { duration: 220 },
