@@ -63,7 +63,7 @@ const imageStat = await stat(imagePath);
 assert(imageStat.size <= 300 * 1024, "分享图超过 300 KB");
 const dimensions = readJpegDimensions(imageInfo);
 assert(
-  dimensions.width === 1729 && dimensions.height === 910,
+  dimensions.width === 1200 && dimensions.height === 630,
   `分享图尺寸改变：${dimensions.width}x${dimensions.height}`,
 );
 
