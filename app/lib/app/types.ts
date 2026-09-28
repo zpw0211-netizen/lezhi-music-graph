@@ -63,7 +63,7 @@ export type Evidence = {
   region?: string;
   confidence?: number;
 };
-export type Book = {
+export type BookDirectory = {
   key: string;
   title: string;
   grade: number;
@@ -75,13 +75,19 @@ export type Book = {
   workCount: number;
   reviewCount?: number;
   structureShare?: number;
+};
+export type BookData = {
   entities: Entity[];
   triples: Triple[];
   candidateTriples?: Triple[];
   evidenceByTriple: Record<string, Evidence[]>;
   relations: Record<string, string>;
 };
-export type Dataset = { books: Book[] };
+export type Book = BookDirectory & BookData;
+export type BookDataPayload = Pick<BookData, "entities" | "triples" | "evidenceByTriple" | "relations"> & {
+  bookKey: string;
+};
+export type Dataset = { books: BookDirectory[] };
 export type GraphIndexPayload = {
   version: string;
   generatedAt: string;
@@ -142,7 +148,7 @@ export type GraphQuality = {
 };
 export type CanonicalGraph = {
   version: string;
-  books: Array<Pick<Book, "key" | "title" | "grade" | "semester">>;
+  books: Array<Pick<BookDirectory, "key" | "title" | "grade" | "semester">>;
   entities: Entity[];
   relationships: Triple[];
   occurrences: KnowledgeOccurrence[];

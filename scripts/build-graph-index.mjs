@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
 const detailsDir = path.join(dataDir, "details");
 const evidenceDir = path.join(dataDir, "evidence");
+const booksDir = path.join(dataDir, "books");
 
 const dataset = JSON.parse(
   await readFile(path.join(dataDir, "music-graph.json"), "utf8"),
@@ -17,6 +18,7 @@ const canonical = JSON.parse(
 
 await mkdir(detailsDir, { recursive: true });
 await mkdir(evidenceDir, { recursive: true });
+await mkdir(booksDir, { recursive: true });
 
 const compactEntity = (entity) => ({
   id: entity.id,
@@ -114,17 +116,25 @@ for (const book of dataset.books) {
   const {
     entities,
     triples,
-    evidenceByTriple,
     candidateTriples,
     ...metadata
   } = book;
+  delete metadata.evidenceByTriple;
+  delete metadata.relations;
   for (const key of omittedBookMetadata) delete metadata[key];
-  compactBooks.push({
-    ...metadata,
+  const bookPayload = {
+    bookKey: book.key,
     entities: buildBookLayout(entities, triples).map(compactEntity),
     triples: triples.map(compactRelationship),
-    evidenceByTriple: {},
-  });
+    evidenceByTriple: book.evidenceByTriple ?? {},
+    relations: book.relations ?? {},
+  };
+  compactBooks.push(metadata);
+  await writeFile(
+    path.join(booksDir, `${book.key}.json`),
+    `${JSON.stringify(bookPayload)}\n`,
+    "utf8",
+  );
   await writeFile(
     path.join(detailsDir, `${book.key}.json`),
     `${JSON.stringify({
@@ -148,7 +158,7 @@ for (const book of dataset.books) {
     path.join(evidenceDir, `${book.key}.json`),
     `${JSON.stringify({
       bookKey: book.key,
-      evidenceByTriple: evidenceByTriple ?? {},
+      evidenceByTriple: book.evidenceByTriple ?? {},
       occurrences,
       relationshipEvidenceById,
     })}\n`,
