@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { preload } from "react-dom";
+import "./styles/tokens.css";
 import "./globals.css";
 import "./theme-light.css";
 import "./graph-explorer.css";

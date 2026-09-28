@@ -5,8 +5,6 @@
    .theme-light/.graph-first in theme-light.css and graph-explorer.css. Keep
    older selectors for records/import/assistant until each is migrated and
    covered by visual regression. */
-
-:root { --bg:#09101f; --panel:#101b31; --panel-2:#162544; --line:#243653; --text:#eef4ff; --muted:#8b9ab5; --violet:#8b7cff; --cyan:#55d6ff; --yellow:#f7c861; --green:#65e6b4; }
 * { box-sizing:border-box; }
 html, body { min-height:100%; }
 body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font-geist-sans),"PingFang SC","Microsoft YaHei",Arial,sans-serif; }
@@ -28,18 +26,6 @@ button,input { font:inherit; } button { cursor:pointer; }
 .neo-canvas .neo-edge { stroke-width:.8; opacity:.34; }.neo-canvas .edge-label { font-size:8px; opacity:.3; pointer-events:none; }.neo-canvas .svg-node:not(.center) circle { stroke-width:1.4; }.neo-canvas .svg-node:not(.center):hover circle { stroke-width:2.5; }
 
 /* Academic archive visual system: warm paper background, quiet ink panels, and moss accents. */
-:root {
-  --bg: #f3f0e8;
-  --panel: #fffdf8;
-  --panel-2: #f7f4ed;
-  --line: #d8d6cc;
-  --text: #1e2925;
-  --muted: #6b756e;
-  --violet: #356f68;
-  --cyan: #2f7185;
-  --yellow: #aa7a31;
-  --green: #2d6a4f;
-}
 
 /* V2.1: canonical full graph, cross-textbook exploration and graph QA. */
 .full-graph-filterbar {
@@ -1611,13 +1597,6 @@ body:has(.neo-card.expanded) { overflow:hidden; }
 
 /* V3 Graph Explorer: professional graphite workspace with Sigma/WebGL as the primary scene. */
 .graph-first {
-  --workspace-bg: #0b1017;
-  --workspace-panel: #101721;
-  --workspace-panel-raised: #141d29;
-  --workspace-border: #263343;
-  --workspace-text: #e8eef5;
-  --workspace-muted: #91a0ae;
-  --workspace-accent: #62d6b0;
   background: var(--workspace-bg);
   color: var(--workspace-text);
 }
@@ -1685,7 +1664,7 @@ body:has(.neo-card.expanded) { overflow:hidden; }
 .graph-first .neo-canvas:before { opacity: .22; background-image: linear-gradient(#64748515 1px, transparent 1px), linear-gradient(90deg, #64748515 1px, transparent 1px); }
 .sigma-graph-scene,
 .sigma-graph-scene > .sigma-container { width: 100%; height: 100%; background: transparent; }
-.graph-first div.react-sigma.sigma-graph-scene { --sigma-background-color: transparent; background: transparent; }
+.graph-first div.react-sigma.sigma-graph-scene { background: transparent; }
 .graph-empty-overlay { position: absolute; top: 42%; left: 15%; right: 15%; padding: 18px; color: #bacbd9; background: #15212a; border: 1px solid #334552; line-height: 1.8; pointer-events: none; text-align: center; }
 .sigma-graph-scene canvas { cursor: crosshair; }
 .graph-first .canvas-hint { color: #71808c; font-size: 11px; }

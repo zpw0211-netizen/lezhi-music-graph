@@ -1,16 +1,4 @@
 /* 芽谱水墨主题：让应用内页与首页共用同一套纸色、墨绿与宋体标题。 */
-.ink-app {
-  --paper:#F7F5EF; --paper-deep:#EFEBE1; --ink:#1F3B31; --ink-soft:#56655D; --pine:#1F5C47; --pine-hover:#17493A;
-  --seal:#B5463A; --gold:#D39A4B; --line:#E4DFD3;
-  --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
-  --brush:"STKaiti","KaiTi","Kaiti SC","楷体",var(--serif);
-  --app-bg:var(--paper); --bg:var(--paper);
-  --surface-soft:#F3F0E8; --surface-hover:#EFEBE1;
-  --text-primary:var(--ink); --text-secondary:var(--ink-soft); --text-tertiary:#8C958F;
-  --accent:var(--pine); --accent-hover:var(--pine-hover); --accent-bright:#3E8C72; --accent-soft:#E5EEE8;
-  --border:#E6E1D5; --border-strong:#D4CDBD;
-  --shadow-sm:0 1px 2px #1F3B310D,0 2px 6px #1F3B310A; --shadow-md:0 6px 18px #1F3B3114; --shadow-lg:0 18px 44px #1F3B311F;
-}
 body:has(.ink-app),.ink-app,.ink-app .workspace { background:var(--paper); }
 
 /* Shared top navigation (also used on the home page) */

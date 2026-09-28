@@ -2,27 +2,6 @@
 :root {
   /* Stable light-workbench tokens. Values mirror the current UI; this is a
      naming pass, not a visual redesign. */
-  --bg:#fff;
-  --panel:#fff;
-  --panel-2:#f7f7f8;
-  --surface-hover:#f4f4f5;
-  --surface-selected:#f0f0f2;
-  --line:#e5e7eb;
-  --line-subtle:#eee;
-  --line-active:#d4d4d8;
-  --text:#18181b;
-  --text-strong:#27272a;
-  --muted:#71717a;
-  --radius-xs:3px;
-  --radius-sm:4px;
-  --radius-md:6px;
-  --space-1:4px;
-  --space-2:6px;
-  --space-3:8px;
-  --space-4:12px;
-  --space-5:16px;
-  --font-ui:var(--font-geist-sans),"PingFang SC","Microsoft YaHei",Arial,sans-serif;
-  --font-academic:Georgia,"Songti SC","SimSun",serif;
   color-scheme:light;
 }
 body { background:#fff; color:#18181b; }
