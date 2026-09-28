@@ -21,11 +21,11 @@ import type { WorkLibrary as WorkLibraryComponent } from "./components/records/W
 import type { ResearchAnalysis as ResearchAnalysisComponent } from "./components/ResearchAnalysis";
 import { ResearchInfo } from "./components/ResearchInfo";
 import { useAppRoute } from "./hooks/useAppRoute";
-import { useGraphIndex } from "./hooks/useGraphIndex";
+import { useBookData, useGraphIndex } from "./hooks/useGraphIndex";
 import { useKnowledgeSearch, type SearchResult } from "./hooks/useKnowledgeSearch";
 import { publicAssetUrl } from "./lib/app/assets";
 import type { AppView } from "./lib/app/routing";
-import { bareWorkName, DEFAULT_BOOK_KEY, isWorkType, type Book, type Entity } from "./lib/app/types";
+import { bareWorkName, DEFAULT_BOOK_KEY, isWorkType, type BookDirectory, type Entity } from "./lib/app/types";
 
 // Only the home page ships in the first script. Every other page is its own
 // chunk, loaded when opened and prefetched in the background once the data is in.
@@ -42,7 +42,7 @@ const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
 const ExplorerSidebar = nextDynamic<PropsOf<typeof ExplorerSidebarComponent>>(
   () => import("./components/explorer/GraphExplorer").then((module) => module.ExplorerSidebar),
 );
-const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent<Entity, Book>>>(
+const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent<Entity, BookDirectory>>>(
   () => import("./components/records/WorkLibrary").then((module) => module.WorkLibrary),
   { loading: viewLoading },
 );
@@ -76,7 +76,7 @@ const prefetchPages = () => {
   void import("./components/ResearchAnalysis");
 };
 
-const EMPTY_BOOKS: Book[] = [];
+const EMPTY_BOOKS: BookDirectory[] = [];
 const SITE_TITLE = "芽谱——中小学音乐教育知识图谱与智能分析平台";
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
@@ -112,6 +112,8 @@ export default function Home() {
   const index = useGraphIndex();
   const { dataset, canonicalGraph } = index;
   const books = dataset?.books ?? EMPTY_BOOKS;
+  const selectedRecordsKey = route.book ?? recordsBook;
+  const recordsBookData = useBookData(selectedRecordsKey, books, view === "records");
   const explorer = useGraphExplorer(
     dataset,
     canonicalGraph,
@@ -124,6 +126,7 @@ export default function Home() {
       ask: openAssistant,
     },
     route.node,
+    view === "graph",
   );
   const searchResults = useKnowledgeSearch(canonicalGraph, query);
 
@@ -270,7 +273,10 @@ export default function Home() {
         {view === "records" && dataset && (
           <WorkLibrary
             books={books}
-            bookKey={route.book ?? recordsBook}
+            bookKey={selectedRecordsKey}
+            bookData={recordsBookData.book}
+            bookDataStatus={recordsBookData.status}
+            onRetryBookData={recordsBookData.retry}
             isWork={isWorkType}
             onBook={(book) => openRecordsBook(book.key, true)}
             onOpen={(work: Entity) => explorer.openLesson(work)}

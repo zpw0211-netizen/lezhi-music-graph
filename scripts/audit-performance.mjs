@@ -13,6 +13,11 @@ const legacyBytes =
 const indexBytes = (await stat(path.join(dataRoot, "graph-index.json"))).size;
 
 assert(index.dataset.books.length === 6, "graph-index 未包含六册教材");
+for (const book of index.dataset.books) {
+  for (const payloadField of ["entities", "triples", "relations", "evidenceByTriple"]) {
+    assert(!(payloadField in book), `graph-index 的 ${book.key} 目录仍包含按册数据：${payloadField}`);
+  }
+}
 // Data may grow (textbook re-reading) but must never shrink below the last release,
 // and the page index must stay in sync with canonical-graph.json.
 const canonicalSource = JSON.parse(await readFile(path.join(dataRoot, "canonical-graph.json"), "utf8"));
@@ -24,6 +29,13 @@ assert(indexBytes / legacyBytes < 0.3, "首屏图索引没有缩减到原数据�
 for (const book of index.dataset.books) {
   await access(path.join(dataRoot, "details", `${book.key}.json`));
   await access(path.join(dataRoot, "evidence", `${book.key}.json`));
+  const bookPayload = JSON.parse(
+    await readFile(path.join(dataRoot, "books", `${book.key}.json`), "utf8"),
+  );
+  assert(bookPayload.bookKey === book.key, `按册数据键不匹配：${book.key}`);
+  assert(bookPayload.entities.length === book.entityCount, `按册实体数量不匹配：${book.key}`);
+  assert(bookPayload.triples.length === book.tripleCount, `按册关系数量不匹配：${book.key}`);
+  assert(bookPayload.evidenceByTriple && bookPayload.relations, `按册证据或关系名称缺失：${book.key}`);
 }
 
 const page = await readAppSource();

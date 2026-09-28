@@ -7,7 +7,8 @@ type LibraryEntity = { id: string; name: string; type: string; firstPage?: numbe
 // Score titles carry the printed page ("教材第44页"); firstPage is the PDF page.
 const printedPage = (entity: LibraryEntity) => entity.media?.map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1]).find(Boolean);
 type LibraryTriple = { id: string; subject: string; predicate: string; objectId?: string | null; literal?: string | null };
-type LibraryBook = { key: string; title: string; grade: number; semester: string; workCount: number; entities: LibraryEntity[]; triples: LibraryTriple[] };
+type LibraryBookDirectory = { key: string; title: string; grade: number; semester: string; workCount: number };
+type LibraryBookData = { entities: LibraryEntity[]; triples: LibraryTriple[] };
 
 const GRADE_NAMES: Record<number, string> = { 7: "七年级", 8: "八年级", 9: "九年级" };
 const CREATOR_PREDICATES = ["作曲", "作词", "编曲", "改编"];
@@ -33,17 +34,21 @@ function playbackBadge(name: string) {
 }
 
 /** 按课学习 directory: works grouped by textbook unit; each card opens that lesson. */
-export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
-  books, bookKey, isWork, onBook, onOpen,
+export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirectory>({
+  books, bookKey, bookData, bookDataStatus, onRetryBookData, isWork, onBook, onOpen,
 }: {
   books: B[];
   bookKey: string;
+  bookData: (B & LibraryBookData) | null;
+  bookDataStatus: "idle" | "loading" | "ready" | "error";
+  onRetryBookData: () => void;
   isWork: (type: string) => boolean;
   onBook: (book: B) => void;
-  onOpen: (work: E, book: B) => void;
+  onOpen: (work: E, book: B & LibraryBookData) => void;
 }) {
   const [filter, setFilter] = useState("");
-  const book = books.find((item) => item.key === bookKey) ?? books[0];
+  const directory = books.find((item) => item.key === bookKey) ?? books[0];
+  const book = bookData?.key === directory?.key ? bookData : null;
 
   const units = useMemo(() => {
     if (!book) return [] as Array<{ id: string; name: string; cards: Array<WorkCard<E>> }>;
@@ -100,7 +105,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
     : units;
   const total = units.reduce((sum, unit) => sum + unit.cards.length, 0);
   const shown = visibleUnits.reduce((sum, unit) => sum + unit.cards.length, 0);
-  if (!book) return null;
+  if (!directory) return null;
 
   return <section className="work-library" aria-labelledby="work-library-title">
     <header className="work-library-head">
@@ -114,13 +119,18 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
       </label>
     </header>
     <nav className="work-library-books" aria-label="选择教材">
-      {books.map((item) => <button key={item.key} type="button" className={`grade-${item.grade} ${item.key === book.key ? "active" : ""}`} aria-pressed={item.key === book.key} onClick={() => onBook(item)}>
+      {books.map((item) => <button key={item.key} type="button" className={`grade-${item.grade} ${item.key === directory.key ? "active" : ""}`} aria-pressed={item.key === directory.key} onClick={() => onBook(item)}>
         <b>{GRADE_NAMES[item.grade] ?? `${item.grade}年级`}{item.semester}</b>
         <small>{item.workCount} 首作品</small>
       </button>)}
     </nav>
-    <p className="work-library-count">{book.title} · {term ? `筛选出 ${shown} / ${total} 首` : `共 ${total} 首作品，${units.filter((unit) => unit.id !== "other").length} 个单元`}</p>
-    {visibleUnits.map((unit) => <section key={unit.id} className="work-unit">
+    {book && <p className="work-library-count">{book.title} · {term ? `筛选出 ${shown} / ${total} 首` : `共 ${total} 首作品，${units.filter((unit) => unit.id !== "other").length} 个单元`}</p>}
+    {!book && bookDataStatus !== "error" && <div className="app-view-status" role="status" aria-live="polite">正在载入这一册…</div>}
+    {!book && bookDataStatus === "error" && <div className="app-view-status" role="status" aria-live="polite">
+      <p>这一册数据加载失败，请检查网络后重试。</p>
+      <button type="button" onClick={onRetryBookData}>重试</button>
+    </div>}
+    {book && visibleUnits.map((unit) => <section key={unit.id} className="work-unit">
       <h3>{unit.name}<small>{unit.cards.length} 首</small></h3>
       <div className="work-grid">
         {unit.cards.map((card) => <button key={card.work.id} type="button" className={`work-card grade-${book.grade}`} onClick={() => onOpen(card.work, book)}>
@@ -136,6 +146,6 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBook>({
         </button>)}
       </div>
     </section>)}
-    {!shown && <p className="work-library-empty">没有找到匹配“{filter}”的作品。</p>}
+    {book && !shown && <p className="work-library-empty">没有找到匹配“{filter}”的作品。</p>}
   </section>;
 }

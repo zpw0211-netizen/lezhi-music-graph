@@ -269,7 +269,10 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
   const evidence = useMemo<InspectorEvidence[]>(
     () =>
       directTriples.flatMap((triple) => {
-        const local = inspectionBook.evidenceByTriple[triple.id] ?? [];
+        const local = (inspectionBook.evidenceByTriple[triple.id] ?? []).map((item) => ({
+          ...item,
+          bookTitle: item.bookTitle ?? inspectionBook.title,
+        }));
         const lazyLocal = Object.values(evidencePayloads).flatMap((payload) =>
           (payload.evidenceByTriple[triple.id] ?? []).map((item) => ({
             ...item,
@@ -291,9 +294,14 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                 ],
           ),
         );
-        return [...local, ...lazyLocal, ...lazyCanonical].map((item) => ({ ...item, triple }));
+        const unique = new Map<string, (typeof local)[number]>();
+        for (const item of [...local, ...lazyLocal, ...lazyCanonical]) {
+          const key = [item.bookTitle ?? "", item.pdfPage ?? "", item.textbookPage ?? "", item.summary ?? "", item.region ?? ""].join("|");
+          if (!unique.has(key)) unique.set(key, item);
+        }
+        return [...unique.values()].map((item) => ({ ...item, triple }));
       }),
-    [directTriples, evidencePayloads, inspectionBook.evidenceByTriple, datasetBookMap],
+    [directTriples, evidencePayloads, inspectionBook.evidenceByTriple, inspectionBook.title, datasetBookMap],
   );
   const canonicalGraph = explorer.canonicalGraph;
   const selectedOccurrences = useMemo<KnowledgeOccurrence[]>(() => {
@@ -1005,6 +1013,33 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
       }
     } else explorer.selectEntity(selected, currentBook, true);
   };
+
+  if (graphMode !== "all" && explorer.bookDataStatus !== "ready") {
+    return (
+      <>
+        <div className="book-tabs">
+          <button className="book-tab" onClick={explorer.chooseFullGraph}>六册叠加</button>
+          {books.map((book) => (
+            <button
+              key={book.key}
+              className={`book-tab ${book.key === explorer.bookKey ? "active" : ""}`}
+              onClick={() => explorer.chooseBook(book)}
+            >
+              {book.grade}年级{book.semester}
+            </button>
+          ))}
+        </div>
+        <div className="app-view-status" role="status" aria-live="polite">
+          {explorer.bookDataStatus === "error" ? (
+            <>
+              <p>这一册数据加载失败，请检查网络后重试。</p>
+              <button type="button" onClick={explorer.retryBookData}>重试</button>
+            </>
+          ) : "正在载入这一册…"}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

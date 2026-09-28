@@ -27,10 +27,8 @@ if (await exists(path.join(root, "data"))) {
   await cp(path.join(root, "data"), path.join(siteRoot, "data"), {
     recursive: true,
     filter: (source) =>
-      !new Set(["canonical-graph.json", "music-graph.json"]).has(
-        path.relative(path.join(root, "data"), source)
-          .split(path.sep)
-          .join("/"),
+      !excludedGraphFiles.has(
+        `data/${path.relative(path.join(root, "data"), source).split(path.sep).join("/")}`,
       ),
   });
 }

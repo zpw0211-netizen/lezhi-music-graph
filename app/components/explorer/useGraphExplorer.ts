@@ -9,6 +9,7 @@ import { graphRuntimeFor, neighborhood } from "../../graph-runtime";
 import { useGraphActions } from "../../hooks/useGraphActions";
 import { useGraphFilters } from "../../hooks/useGraphFilters";
 import { useGraphPath } from "../../hooks/useGraphPath";
+import { useBookData } from "../../hooks/useGraphIndex";
 import type { AnswerResult } from "../../lib/ai/graph-rag";
 import { publicAssetUrl } from "../../lib/app/assets";
 import {
@@ -18,6 +19,7 @@ import {
   isWorkType,
   relationTextFor,
   type Book,
+  type BookDirectory,
   type CanonicalGraph,
   type Dataset,
   type Entity,
@@ -45,7 +47,7 @@ export type ExplorerLinks = {
   ask: (question: string) => void;
 };
 
-const EMPTY_BOOKS: Book[] = [];
+const EMPTY_BOOKS: BookDirectory[] = [];
 const EMPTY_BOOK: Book = {
   key: "none",
   title: "",
@@ -74,6 +76,7 @@ export function useGraphExplorer(
   canonicalGraph: CanonicalGraph | null,
   links: ExplorerLinks,
   initialNodeId?: string,
+  loadBookData = false,
 ) {
   const books = dataset?.books ?? EMPTY_BOOKS;
   const linksRef = useRef(links);
@@ -112,6 +115,7 @@ export function useGraphExplorer(
   const [activePathIndex, setActivePathIndex] = useState(0);
   const [cameraResetToken, setCameraResetToken] = useState(0);
   const [focusSelectionToken, setFocusSelectionToken] = useState(initialNodeId ? 1 : 0);
+  const bookDataState = useBookData(bookKey, books, loadBookData && graphMode !== "all");
 
   // Until the reader picks a node, the most widely shared cross-book concept is the selection.
   const defaultSelectedId = useMemo(
@@ -121,10 +125,17 @@ export function useGraphExplorer(
         .sort((a, b) => (b.textbookCount ?? 1) - (a.textbookCount ?? 1) || (b.degree ?? 0) - (a.degree ?? 0))[0]?.id ?? "",
     [canonicalGraph],
   );
-  const selectedId = chosenId || defaultSelectedId;
-
+  const requestedSelectedId = chosenId || defaultSelectedId;
   const datasetBookMap = useMemo(() => new Map(books.map((book) => [book.key, book])), [books]);
-  const currentBook = datasetBookMap.get(bookKey) ?? books[0] ?? EMPTY_BOOK;
+  const currentDirectory = datasetBookMap.get(bookKey) ?? books[0];
+  const currentBook = bookDataState.book?.key === bookKey
+      ? bookDataState.book
+      : currentDirectory
+        ? { ...currentDirectory, entities: EMPTY_ENTITIES, triples: EMPTY_TRIPLES, evidenceByTriple: {}, relations: {} }
+        : EMPTY_BOOK;
+  const selectedId = graphMode === "all" || currentBook.entities.some((entity) => entity.id === requestedSelectedId)
+    ? requestedSelectedId
+    : currentBook.entities.find((entity) => isWorkType(entity.type))?.id ?? currentBook.entities[0]?.id ?? requestedSelectedId;
   const canonicalBook = useMemo<Book | null>(() => {
     if (!canonicalGraph) return null;
     const relations = Object.fromEntries(
@@ -343,11 +354,12 @@ export function useGraphExplorer(
     setKnowledgeDetailOpen(true);
     setContextMenu(null);
   };
-  const chooseBook = (book: Book) => {
+  const chooseBook = (book: BookDirectory) => {
     setKnowledgeDetailOpen(false);
+    const loadedBook = bookDataState.book?.key === book.key ? bookDataState.book : null;
+    const work = loadedBook?.entities.find((entity) => isWorkType(entity.type)) ?? loadedBook?.entities[0];
+    setSelectedId(work?.id ?? "");
     setBookKey(book.key);
-    const work = book.entities.find((e) => isWorkType(e.type)) ?? book.entities[0];
-    if (work) setSelectedId(work.id);
     setGraphMode("book");
     linksRef.current.showGraph();
     setZoom(0.64);
@@ -622,6 +634,8 @@ export function useGraphExplorer(
     // derived
     datasetBookMap,
     currentBook,
+    bookDataStatus: bookDataState.status,
+    retryBookData: bookDataState.retry,
     canonicalBook,
     inspectionBook,
     inspectionRuntime,

@@ -12,6 +12,8 @@ const requiredFiles = [
   "og.jpg",
   "data/graph-quality.json",
   "data/graph-index.json",
+  "data/books/g7s1.json",
+  "data/books/g9s2.json",
   "data/evidence/g7s1.json",
   "data/evidence/g9s2.json",
 ];
@@ -34,6 +36,7 @@ for (const relativePath of excludedFiles) {
 for (const directory of [
   { path: "data/evidence", extension: ".json" },
   { path: "data/details", extension: ".json" },
+  { path: "data/books", extension: ".json" },
   { path: "media/scores", extension: null },
 ]) {
   const sourceDirectory = path.join(publicRoot, directory.path);
