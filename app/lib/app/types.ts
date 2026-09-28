@@ -71,10 +71,10 @@ export type Book = {
   pages: number;
   entityCount: number;
   tripleCount: number;
-  evidenceCount: number;
+  evidenceCount?: number;
   workCount: number;
-  reviewCount: number;
-  structureShare: number;
+  reviewCount?: number;
+  structureShare?: number;
   entities: Entity[];
   triples: Triple[];
   candidateTriples?: Triple[];
