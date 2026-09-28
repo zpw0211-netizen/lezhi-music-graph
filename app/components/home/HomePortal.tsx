@@ -7,7 +7,8 @@ type PortalEntity = { id: string; name: string; type: string; category?: string;
 type PortalRelationship = { subject: string; objectId?: string | null; predicate: string; label?: string };
 type PortalBook = { key: string; title: string; grade: number; semester: string; entityCount: number; tripleCount: number; workCount: number; pages: number };
 type PortalGraph = { entities: PortalEntity[]; relationships: PortalRelationship[] };
-type PortalSearchResult<E, B> = { entity: E; book: B; relationCount: number; matchedBy: string };
+type PortalSearchBook = Pick<PortalBook, "key" | "title" | "grade" | "semester">;
+type PortalSearchResult<E, B extends PortalSearchBook> = { entity: E; book: B; relationCount: number; matchedBy: string };
 type PortalView = "graph" | "assistant" | "research" | "records";
 
 const GRADE_NAMES: Record<number, string> = { 7: "七年级", 8: "八年级", 9: "九年级" };
@@ -19,15 +20,15 @@ const CATEGORY_ICON: Record<string, "person" | "book" | "music" | "graph" | "spa
   person: "person", textbook: "book", work: "music", element: "music", theory: "spark", culture: "layers",
 };
 
-export function HomePortal<E extends PortalEntity, B extends PortalBook>({
+export function HomePortal<E extends PortalEntity, B extends PortalBook, R extends PortalSearchBook = B>({
   books, graph, query, onQuery, results, onPickResult, onSearch, onOpenBook, onOpenFullGraph, onView, onPickEntityName, onResearchInfo,
 }: {
   books: B[];
   graph: PortalGraph | null;
   query: string;
   onQuery: (value: string) => void;
-  results: Array<PortalSearchResult<E, B>>;
-  onPickResult: (entity: E, book: B) => void;
+  results: Array<PortalSearchResult<E, R>>;
+  onPickResult: (entity: E, book: R) => void;
   onSearch: (event: FormEvent) => void;
   onOpenBook: (book: B) => void;
   onOpenFullGraph: () => void;
