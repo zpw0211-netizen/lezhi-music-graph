@@ -9,6 +9,11 @@
   color: var(--brand-ink);
 }
 
+/* theme-light.css paints .research-analysis white with (0,2,0) specificity; the page sits on paper like the rest. */
+.theme-light .research-analysis {
+  background: transparent;
+}
+
 .research-analysis-header {
   display: block;
   margin: 0 0 28px;
