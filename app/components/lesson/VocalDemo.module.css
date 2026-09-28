@@ -1,0 +1,62 @@
+.section {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(91, 112, 87, 0.2);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.heading {
+  margin: 0 0 0.8rem;
+  color: #38523a;
+  font-size: 1rem;
+}
+
+.list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recording {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.performer,
+.versionNote,
+.details {
+  margin: 0;
+  color: #4d5148;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.versionNote {
+  color: #727165;
+}
+
+.recording audio {
+  display: block;
+  width: min(100%, 34rem);
+  height: 2.75rem;
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+}
+
+.details a {
+  color: #4c6a48;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.language {
+  color: #77766b;
+}

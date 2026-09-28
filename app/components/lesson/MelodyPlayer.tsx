@@ -4,6 +4,7 @@ import { midiOf, notation } from "../../lib/lesson/melodies";
 import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
 import { loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
 import type { PianoSampler } from "../../lib/lesson/piano-sampler";
+import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 
 type Line = { label: string; bars: MelodyNote[][] };
 // One audio context and one decoded piano bank for the whole session, so
@@ -41,17 +42,30 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
   const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
   const mounted = useRef(true);
   const stopRef = useRef<() => void>(() => {});
+  const playRequestRef = useRef(0);
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
   const offsets = useMemo(() => lines.map((line) => line.bars.reduce<number[]>((acc, bar, i) => [...acc, i ? acc[i - 1] + line.bars[i - 1].length : 0], [])), [lines]);
 
-  const stop = useCallback(() => { stopRef.current(); stopRef.current = () => {}; setPlaying(false); setCurrent([]); }, []);
+  const stop = useCallback(() => {
+    playRequestRef.current += 1;
+    stopRef.current();
+    stopRef.current = () => {};
+    setPlaying(false);
+    setCurrent([]);
+  }, []);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; stop(); };
   }, [stop]);
+  useEffect(() => {
+    window.addEventListener(VOCAL_PLAYBACK_STARTED, stop);
+    return () => window.removeEventListener(VOCAL_PLAYBACK_STARTED, stop);
+  }, [stop]);
 
   const play = async () => {
     if (playing) { stop(); return; }
+    const request = ++playRequestRef.current;
+    window.dispatchEvent(new Event(MELODY_PLAYBACK_STARTED));
     const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor) { setAudioMode("synth"); return; }
     const ctx = sharedContext ?? new AudioCtor();
@@ -74,7 +88,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
       await ctx.resume().catch(() => undefined);
     }
     // The reader may have left the lesson while the samples were loading.
-    if (!mounted.current) return;
+    if (!mounted.current || request !== playRequestRef.current) return;
 
     const beat = 60 / tempo;
     const start = ctx.currentTime + 0.12;
