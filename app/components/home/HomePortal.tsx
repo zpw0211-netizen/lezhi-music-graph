@@ -118,7 +118,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             </div>}
           </form>
           <div className="home-hot"><span>热门搜索</span>{HOT_SEARCHES.map((term) => <button key={term} type="button" onClick={() => onQuery(term)}>{term}</button>)}</div>
-          {graph && <p className="home-proof"><strong>{fmt(knowledgeCount)}</strong><span>个知识节点，连接六册教材</span></p>}
+          {/* Rendered before the graph loads (hidden) so its line height is reserved and nothing below it jumps. */}
+          <p className="home-proof" style={graph ? undefined : { visibility: "hidden" }} aria-hidden={graph ? undefined : true}><strong>{graph ? fmt(knowledgeCount) : "0"}</strong><span>个知识节点，连接六册教材</span></p>
         </div>
 
         <section className="home-song-stage" aria-labelledby="home-song-title">
@@ -134,10 +135,15 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             <p className="home-song-scroll-hint">左右滑动查看完整简谱</p>
           </div>
           <div className="home-song-links" aria-label="《游击队歌》关联知识点" data-reveal-group>
-            {hero?.nodes.map((node) => <button type="button" key={node.name} onClick={() => onPickEntityName(node.name)}>
-              <strong>{node.name}</strong><small>{node.relation}</small>
-            </button>)}
-            {!hero && <p>关联知识正在载入…</p>}
+            {hero
+              ? hero.nodes.map((node) => <button type="button" key={node.name} onClick={() => onPickEntityName(node.name)}>
+                <strong>{node.name}</strong><small>{node.relation}</small>
+              </button>)
+              // Same boxes as the real links, so the hero keeps its final height while the graph loads.
+              : Array.from({ length: 6 }, (_, index) => <span className="home-song-link-placeholder" key={index} aria-hidden="true">
+                <strong>&nbsp;</strong><small>&nbsp;</small>
+              </span>)}
+            {!hero && <span className="home-sr-only" role="status">关联知识正在载入…</span>}
           </div>
         </section>
       </div>

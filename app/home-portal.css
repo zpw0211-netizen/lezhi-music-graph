@@ -92,13 +92,20 @@
 .home-song-player .melody-source { margin:10px 0 0; color:#E3EADF; font-size:11px; line-height:1.55; }
 .home-song-player .melody-source a { color:var(--brand-paper); text-decoration:underline; text-underline-offset:2px; }
 .home-song-scroll-hint { display:none; }
-.home-song-loading { min-height:115px; padding-top:20px; color:#E3EADF; font-size:14px; }
+/* The player chunk loads after first paint; reserve its measured height (4 bars of 游击队歌) so the hero doesn't grow and push the page. */
+.home-song-loading { box-sizing:border-box; min-height:548px; padding-top:20px; color:#E3EADF; font-size:14px; }
+@media (max-width:1199px) { .home-song-loading { min-height:565px; } }
+@media (max-width:1064px) { .home-song-loading { min-height:838px; } }
+@media (max-width:760px) { .home-song-loading { min-height:201px; } }
 .home-song-links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:14px; margin-top:12px; border-top:1px solid #F7F3EA4A; }
-.home-song-links button { display:flex; width:100%; min-width:0; flex-direction:column; align-items:flex-start; gap:2px; padding:10px 4px 5px 0; border:0; border-bottom:1px solid #F7F3EA30; background:transparent; color:var(--brand-paper); text-align:left; }
+.home-song-links :is(button, .home-song-link-placeholder) { display:flex; width:100%; min-width:0; flex-direction:column; align-items:flex-start; gap:2px; padding:10px 4px 5px 0; border:0; border-bottom:1px solid #F7F3EA30; background:transparent; color:var(--brand-paper); font-family:inherit; line-height:1.4; text-align:left; }
 .home-song-links button:hover strong { text-decoration:underline; text-underline-offset:3px; }
 .home-song-links strong { max-width:100%; overflow:hidden; font-family:var(--serif); font-size:14px; font-weight:650; text-overflow:ellipsis; white-space:nowrap; }
 .home-portal .home-song-links small { max-width:100%; overflow:hidden; color:var(--brand-paper); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
-.home-song-links p { margin:10px 0 0; color:#D9E6DC; font-size:12px; }
+/* Placeholders hold the six links' space until the graph index arrives (prevents a layout shift). */
+.home-song-links .home-song-link-placeholder strong { display:block; width:60%; border-radius:2px; background:#F7F3EA1F; }
+.home-song-links .home-song-link-placeholder small { display:block; width:36%; border-radius:2px; background:#F7F3EA14; }
+.home-sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
 
 /* Textbooks grouped by grade. Each book shows its real unit names. */
 .home-body { max-width:1392px; margin:0 auto; padding:4px 32px 38px; }
@@ -219,7 +226,7 @@
   .home-song-player .melody-player.is-large .melody-lyric { min-width:36px; font-size:18px; line-height:1.25; }
   .home-song-scroll-hint { display:block; margin:4px 0 0; color:#D9E6DC; font-size:11px; line-height:1.4; text-align:right; }
   .home-song-links { grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:10px; margin-top:9px; }
-  .home-song-links button { padding-top:8px; }
+  .home-song-links :is(button, .home-song-link-placeholder) { padding-top:8px; }
   .home-song-links strong { font-size:13px; }
   .home-song-links small { font-size:10px; }
   .home-body { padding:2px 16px 26px; }
