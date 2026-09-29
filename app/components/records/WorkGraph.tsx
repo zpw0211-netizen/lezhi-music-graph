@@ -349,9 +349,6 @@ export function WorkGraph({
         </div>
       </header>
       <svg ref={svgRef} className="work-graph-svg" viewBox={`${-size.width / 2} ${-size.height / 2} ${size.width} ${size.height}`} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerLeave={onPointerUp} onClick={(event) => { if (event.target === svgRef.current) setSelectedId(null); }}>
-        <defs>
-          <radialGradient id="work-graph-core" cx="50%" cy="40%" r="65%"><stop offset="0%" stopColor="#A78BFA" /><stop offset="100%" stopColor="#6D28D9" /></radialGradient>
-        </defs>
         <ellipse className="work-graph-orbit" rx={ringX} ry={ringY} />
         {links.map((link) => {
           const a = position(link.source), b = position(link.target);
@@ -366,7 +363,6 @@ export function WorkGraph({
           const showLabel = active || (!activeSet && link.depth === 1 && links.length <= 34 && firstRadius >= 180);
           return <g key={link.id} className={`work-graph-link depth-${link.depth} ${active ? "is-active" : ""} ${dim ? "is-dim" : ""}`}>
             <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} style={{ stroke: color }} />
-            {active && <line className="work-graph-flow" x1={a.x} y1={a.y} x2={b.x} y2={b.y} style={{ stroke: color }} />}
             {showLabel && <text x={mx} y={my} className="work-graph-edge-label">{link.labels.slice(0, 2).join(" · ")}</text>}
           </g>;
         })}
@@ -381,9 +377,7 @@ export function WorkGraph({
             role="button" tabIndex={0} aria-label={`${node.entity.name}（${node.labels.join("、") || node.entity.type}）`}
             onKeyDown={(event) => { if (event.key === "Enter") setSelectedId(node.id); }}>
             {node.depth === 0 ? <>
-              <circle className="work-graph-pulse" r={(s?.r ?? 30) + 6} />
-              <circle r={s?.r ?? 30} fill="url(#work-graph-core)" stroke="#fff" strokeWidth={3} />
-              <path d="M-4 7V-8l11-2v12M-4 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Zm11-2a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" fill="none" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+              <circle r={s?.r ?? 30} fill="var(--brand-ink)" stroke="#fff" strokeWidth={2} />
             </> : <>
               {isSelected && <circle r={(s?.r ?? 12) + 7} className="work-graph-halo" style={{ stroke: palette.fill }} />}
               <circle r={s?.r ?? 12} fill={node.depth === 2 ? palette.soft : palette.fill} stroke={node.depth === 2 ? palette.fill : "#fff"} strokeWidth={node.depth === 2 ? 1.6 : 2.5} />
