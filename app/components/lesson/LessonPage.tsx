@@ -334,8 +334,8 @@ function PresentMode({ work, melody, groups, tasks, questions, valueOf, assetUrl
       <span>{work.name} · 上课模式</span>
       <div className="present-dots">{slides.map((item, index) => <i key={item.key} className={index === position.slide ? "active" : ""} />)}</div>
       <div className="present-nav">
-        <button type="button" onClick={back} aria-label="上一步"><WorkbenchIcon name="left" /></button>
-        <button type="button" onClick={forward} aria-label="下一步"><WorkbenchIcon name="right" /></button>
+        <button type="button" onClick={back} aria-label="上一段"><WorkbenchIcon name="left" /><span>上一段</span></button>
+        <button type="button" onClick={forward} aria-label="下一段"><WorkbenchIcon name="right" /><span>下一段</span></button>
         <button type="button" onClick={onClose}>退出</button>
       </div>
     </footer>

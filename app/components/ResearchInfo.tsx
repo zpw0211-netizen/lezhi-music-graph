@@ -1,6 +1,9 @@
 "use client";
 
+import Image from "next/image";
+import { useEffect } from "react";
 import { SCHEMA_CATEGORIES } from "../graph-schema";
+import { publicAssetUrl } from "../lib/app/assets";
 
 type Props = {
   open: boolean;
@@ -10,6 +13,17 @@ type Props = {
 };
 
 export function ResearchInfo({ open, version, generatedAt, onClose }: Props) {
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
   const updated = generatedAt
     ? new Intl.DateTimeFormat("zh-CN", { dateStyle: "long", timeStyle: "short" }).format(new Date(generatedAt))
@@ -18,11 +32,11 @@ export function ResearchInfo({ open, version, generatedAt, onClose }: Props) {
     <div className="research-info-backdrop" role="presentation" onMouseDown={onClose}>
       <aside className="research-info" role="dialog" aria-modal="true" aria-labelledby="research-info-title" onMouseDown={(event) => event.stopPropagation()}>
         <header>
-          <div>
-            <span>ABOUT / RESEARCH INFO</span>
+          <div className="research-info-heading">
+            <Image className="research-info-logo" src={publicAssetUrl("brand/logo.svg")} alt="芽谱" width={220} height={80} unoptimized />
             <h2 id="research-info-title">芽谱研究信息</h2>
           </div>
-          <button aria-label="关闭研究信息" onClick={onClose}>×</button>
+          <button type="button" aria-label="关闭研究信息" onClick={onClose}>×</button>
         </header>
         <dl>
           <div><dt>平台全称</dt><dd>芽谱——中小学音乐教育知识图谱与智能分析平台</dd></div>
