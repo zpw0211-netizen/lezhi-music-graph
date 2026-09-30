@@ -4,7 +4,7 @@
 // 页码为教材页码（PDF页 = 教材页 + pdfOffset）；front 表示前置页，用 pdf 页码。
 // scores: [教材页码, x0, y0, x1, y1]，坐标为页面比例；{pdf:n} 用于前置页。
 
-export default {
+const textbook = {
   key: "g7s1",
   title: "人音版七年级上册",
   pdfOffset: 8,
@@ -1171,3 +1171,5 @@ export default {
   },
   ],
 };
+
+export default textbook;
