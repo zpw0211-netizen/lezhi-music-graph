@@ -8,12 +8,12 @@ import { WorkbenchIcon } from "../WorkbenchIcon";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 import { MELODIES } from "../../lib/lesson/melodies";
 import { publicAssetUrl } from "../../lib/app/assets";
+import { getPrintedPage, hasMelody, isStarredWork } from "../../lib/app/unit-data";
 
-type LibraryEntity = { id: string; name: string; type: string; firstPage?: number | null; media?: Array<{ title?: string }> };
-// Score titles carry the printed page ("教材第44页"); firstPage is the PDF page.
-const printedPage = (entity: LibraryEntity) => entity.media?.map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1]).find(Boolean);
-const pageLabel = (entity: LibraryEntity) => printedPage(entity)
-  ? `教材第 ${printedPage(entity)} 页`
+type LibraryEntity = { id: string; name: string; type: string; firstPage?: number | null; media?: Array<{ kind: string; url: string; title?: string }> };
+// Score titles carry the printed page; firstPage is the PDF page.
+const pageLabel = (entity: LibraryEntity) => getPrintedPage(entity.media)
+  ? `教材第 ${getPrintedPage(entity.media)} 页`
   : `PDF 第 ${entity.firstPage ?? "—"} 页`;
 type LibraryTriple = { id: string; subject: string; predicate: string; objectId?: string | null; literal?: string | null };
 type LibraryBookDirectory = { key: string; title: string; grade: number; semester: string; workCount: number };
@@ -40,7 +40,7 @@ type WorkCard<E> = {
 
 function playbackBadge(name: string) {
   const melodies = MELODIES[name];
-  if (!melodies?.length) return null;
+  if (!hasMelody(name, MELODIES)) return null;
   const draft = melodies.every((melody) => melody.quality === "draft");
   const rhythm = melodies.every((melody) => melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9)));
   const title = draft ? "自动识谱草稿，待人工核对" : rhythm ? "可播放节奏示范" : "可播放旋律示范";
@@ -94,7 +94,7 @@ export function WorkLibrary<E extends LibraryEntity, B extends LibraryBookDirect
         work,
         creators: creators.slice(0, 3),
         genre: first("音乐体裁") ? valueOf(first("音乐体裁")!) : undefined,
-        starred: own.some((triple) => triple.predicate === "教材标注"),
+        starred: isStarredWork(own),
       };
     };
     const works = entities.filter((entity) => isWork(entity.type)) as E[];
