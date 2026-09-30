@@ -32,7 +32,8 @@
     "quality:ai-candidate": "node scripts/audit-ai-candidate.mjs",
     "quality:explorer": "node scripts/audit-graph-explorer.mjs",
     "quality:constellation": "node scripts/audit-constellation.mjs",
-    "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
+    "taxonomy:refine": "node scripts/refine-public-ontology.mjs",
+    "qa:copy": "node scripts/qa-ui-copy.mjs"
   },
   "dependencies": {
     "@react-sigma/core": "^5.0.6",
