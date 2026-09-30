@@ -32,7 +32,7 @@ npm run build
 npx vinext start                 # 默认 3000 端口，可用 npx vinext start --port 4335
 ```
 
-`npm run build` 依次跑 `scripts/build-graph-index.mjs`、`scripts/build-entity-details.mjs`、`vinext build`，产物在 `dist/`。
+`npm run build` 依次跑 `scripts/build-graph-index.mjs`、`scripts/build-entity-details.mjs`、`scripts/build-units.mjs`（单元篇章数据 `public/data/units.json`）、`scripts/build-atlas.mjs`（音乐地图与年表数据 `atlas.json`、`timeline.json`）、`vinext build`，产物在 `dist/`。
 
 **如果 `npm run dev` 报 `There was an access violation in the runtime` / `MiniflareCoreError [ERR_RUNTIME_FAILURE]`**：vinext 的开发服务器要启动 Cloudflare Workers 运行时（workerd），这个报错是本机缺少最新的 [Microsoft Visual C++ 运行库](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)。装好运行库再试；不想装也可以直接用上面的 `npm run build` + `npx vinext start` 预览。
 
