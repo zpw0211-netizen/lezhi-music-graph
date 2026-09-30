@@ -1,11 +1,16 @@
-// 教材数据只读质检（T002）。
+// 教材数据只读质检（T002 建立，T004 修正页码口径并补充检查）。
 // 输入：public/data/books/<册>.json 的 entities[] / triples[]。
 // 输出：Markdown 报告 + JSON 明细。**不修改任何教材数据，也不写 public/**。
 // 检查项与判定规则见生成的报告开头「判定规则」一节。
 
+import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const root = new URL("../", import.meta.url);
+const rootPath = fileURLToPath(root);
+const publicPath = path.join(rootPath, "public");
 const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
 const REPORT_PATH =
   process.env.QA_REPORT_PATH ??
@@ -15,7 +20,9 @@ const DETAIL_LIMIT = 30;
 
 // ---- 判定规则（要改判定口径就改这一段）------------------------------------
 
-// 「作品类」实体类型：由实体 type 字段的实测分布决定（33 个 type 值里挑出作品类）。
+// 「作品类」实体类型：由实体 type 字段的实测分布决定。
+// 比 app/lib/app/types.ts:217 的 WORK_TYPES 多一个「来源作品」，少「音乐作品」「戏曲歌曲」
+//（后两者在当前数据里没有实例）；保持这个口径可以让 T002 报告里已被复核过的数量不变。
 const WORK_TYPES = new Set([
   "歌曲",
   "合唱作品",
@@ -83,8 +90,12 @@ const FOLK_KEYWORDS = ["民间", "民歌", "佚名", "传统", "口传"];
 const THEME_PREDICATES = ["表现主题"];
 const GENRE_PREDICATES = ["音乐体裁"];
 
-// 单元 → 作品 的关系谓语。
+// 单元 → 作品、单元 → 学习目标 的关系谓语。
 const UNIT_WORK_PREDICATES = new Set(["包含作品"]);
+const UNIT_GOAL_PREDICATES = new Set(["学习目标"]);
+
+// 页码是「缺失时的默认值」，不是真实教材页码。
+const PLACEHOLDER_PAGE = 1;
 
 const GARBAGE_PATTERN = /[?？\uFFFD\u0000]/;
 const DOUBLE_SPACE_PATTERN = /\s\s/;
@@ -108,6 +119,29 @@ const readBookTitle = async (key) => {
   }
 };
 
+// 与 app/lib/app/unit-data.ts:29 的 getPrintedPage 同一套规则：
+// 教材上印刷的页码藏在 media[].title 的「教材第N页」里，firstPage 是 PDF 页码。
+// 网站展示用的是印刷页（scripts/build-units.mjs:133 把它写成 work.page）。
+const printedPageOf = (entity) => {
+  const match = (entity.media ?? [])
+    .map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1])
+    .find(Boolean);
+  return match ? Number(match) : null;
+};
+
+// 与 scripts/build-units.mjs:101-105 同一套规则：kind === "score"、
+// URL 必须落在本册的 media/scores/<册>/ 下、且文件真的存在。
+const scoreUrlsOf = (entity, bookKey) =>
+  (entity.media ?? [])
+    .filter((asset) => asset.kind === "score")
+    .map((asset) => asset.url)
+    .filter(
+      (url) =>
+        typeof url === "string" &&
+        url.startsWith(`media/scores/${bookKey}/`) &&
+        existsSync(path.join(publicPath, url)),
+    );
+
 const books = [];
 for (const key of BOOK_KEYS) {
   const data = JSON.parse(
@@ -123,14 +157,26 @@ for (const key of BOOK_KEYS) {
     if (triple.objectId) pushTo(incoming, triple.objectId, triple);
   }
   const works = entities.filter((entity) => WORK_TYPES.has(entity.type));
+
+  const units = entities.filter((entity) => entity.type === "单元");
   const unitOf = new Map();
-  for (const unit of entities.filter((entity) => entity.type === "单元")) {
-    for (const triple of outgoing.get(unit.id) ?? []) {
+  const unitsWithoutGoal = [];
+  for (const unit of units) {
+    const unitTriples = outgoing.get(unit.id) ?? [];
+    for (const triple of unitTriples) {
       if (UNIT_WORK_PREDICATES.has(triple.predicate) && triple.objectId) {
         pushTo(unitOf, triple.objectId, unit);
       }
     }
+    if (!unitTriples.some((triple) => UNIT_GOAL_PREDICATES.has(triple.predicate))) {
+      unitsWithoutGoal.push({ name: unit.name, page: unit.firstPage, id: unit.id });
+    }
   }
+
+  const printedPages = entities
+    .map((entity) => printedPageOf(entity))
+    .filter((page) => Number.isInteger(page));
+
   books.push({
     key,
     title: await readBookTitle(key),
@@ -140,11 +186,14 @@ for (const key of BOOK_KEYS) {
     outgoing,
     incoming,
     works,
+    units,
+    unitsWithoutGoal,
     unitOf,
     maxPage: entities.reduce(
       (max, entity) => Math.max(max, Number(entity.firstPage) || 0),
       0,
     ),
+    maxPrintedPage: printedPages.length ? Math.max(...printedPages) : 0,
   });
 }
 
@@ -187,7 +236,7 @@ const hasAnyPredicate = (book, entity, predicates) =>
     predicates.includes(triple.predicate),
   );
 
-// ---- 八项检查 -------------------------------------------------------------
+// ---- 检查 -----------------------------------------------------------------
 
 const workEntry = (book, work, unitNames) => ({
   book: book.key,
@@ -195,13 +244,18 @@ const workEntry = (book, work, unitNames) => ({
   id: work.id,
   name: work.name,
   type: work.type,
-  page: work.firstPage,
+  page: printedPageOf(work),
+  pdfPage: work.firstPage ?? null,
   units: unitNames ?? (book.unitOf.get(work.id) ?? []).map((unit) => unit.name),
 });
+
+const pageText = (item) =>
+  item.page == null ? `无印刷页（PDF 第 ${item.pdfPage} 页）` : `教材第 ${item.page} 页（PDF 第 ${item.pdfPage} 页）`;
 
 const results = {
   missingAuthor: [],
   missingPage: [],
+  placeholderPage: [],
   unitPageOrder: [],
   duplicateName: [],
   missingTheme: [],
@@ -209,10 +263,13 @@ const results = {
   emptyType: [],
   dangling: [],
   charIssue: [],
+  unitGoal: [],
+  workScore: [],
 };
 
 const unitStats = [];
 const folkSkipped = new Map();
+const orderSkipped = new Map();
 
 for (const book of books) {
   // 1. 作品缺作者（排除带民间/传统标记的）
@@ -225,45 +282,56 @@ for (const book of books) {
     results.missingAuthor.push(workEntry(book, work));
   }
 
-  // 2. 作品缺页码
+  // 2. 作品缺页码：2a 两个字段都没有；2b 页码是缺失时的默认值 1
   for (const work of book.works) {
-    if (work.firstPage || work.printedPage) continue;
-    results.missingPage.push(workEntry(book, work, []));
+    const printed = printedPageOf(work);
+    if (!work.firstPage && !printed) {
+      results.missingPage.push(workEntry(book, work, []));
+      continue;
+    }
+    if (Number(work.firstPage) === PLACEHOLDER_PAGE && printed == null) {
+      results.placeholderPage.push(workEntry(book, work));
+    }
   }
 
-  // 3. 单元内作品页码乱序 / 越界
-  const units = book.entities.filter((entity) => entity.type === "单元");
-  for (const unit of units) {
+  // 3. 单元内作品页码乱序 / 越界（一律用教材印刷页比较，不用 firstPage）
+  for (const unit of book.units) {
     const targets = (book.outgoing.get(unit.id) ?? [])
       .filter((triple) => UNIT_WORK_PREDICATES.has(triple.predicate) && triple.objectId)
       .map((triple) => book.byId.get(triple.objectId))
       .filter(Boolean);
     let previous = null;
     for (const work of targets) {
-      const page = Number(work.firstPage) || 0;
-      if (previous && page < previous.page) {
+      const printed = printedPageOf(work);
+      if (printed == null) {
+        orderSkipped.set(book.key, (orderSkipped.get(book.key) ?? 0) + 1);
+        continue;
+      }
+      if (previous && printed < previous.printed) {
         results.unitPageOrder.push({
           ...workEntry(book, work, [unit.name]),
           issue: "乱序",
-          detail: `第 ${page} 页 < 上一首 ${titleOf(previous.name)} 的第 ${previous.page} 页`,
+          detail: `教材第 ${printed} 页 < 上一首 ${titleOf(previous.name)} 的教材第 ${previous.printed} 页`,
         });
       }
-      if (page > book.maxPage) {
+      if (printed > book.maxPrintedPage) {
         results.unitPageOrder.push({
           ...workEntry(book, work, [unit.name]),
           issue: "越界",
-          detail: `第 ${page} 页 > 本册最大页码 ${book.maxPage}`,
+          detail: `教材第 ${printed} 页 > 本册最大印刷页 ${book.maxPrintedPage}`,
         });
       }
-      previous = { name: work.name, page };
+      previous = { name: work.name, printed };
     }
   }
   unitStats.push({
     book,
-    units,
-    rows: units.map((unit) => ({
+    rows: book.units.map((unit) => ({
       name: unit.name,
-      page: unit.firstPage,
+      page: printedPageOf(unit) ?? unit.firstPage,
+      goals: (book.outgoing.get(unit.id) ?? []).filter((triple) =>
+        UNIT_GOAL_PREDICATES.has(triple.predicate),
+      ).length,
       works: (book.outgoing.get(unit.id) ?? []).filter(
         (triple) => UNIT_WORK_PREDICATES.has(triple.predicate) && triple.objectId,
       ).length,
@@ -279,9 +347,8 @@ for (const book of books) {
       book: book.key,
       name: norm,
       count: list.length,
-      detail: list
-        .map((work) => `${work.name}（${work.type}，第 ${work.firstPage} 页）`)
-        .join(" + "),
+      types: [...new Set(list.map((work) => work.type))],
+      detail: list.map((work) => `${work.name}（${work.type}）`).join(" + "),
     });
   }
 
@@ -339,6 +406,23 @@ for (const book of books) {
       detail: issues.join("；"),
     });
   }
+
+  // 9. 单元缺「学习目标」
+  for (const unit of book.unitsWithoutGoal) {
+    results.unitGoal.push({
+      book: book.key,
+      name: unit.name,
+      page: printedPageOf(unit) ?? unit.page,
+      pdfPage: unit.page,
+      id: unit.id,
+    });
+  }
+
+  // 10. 作品缺教材谱例
+  for (const work of book.works) {
+    if (scoreUrlsOf(work, book.key).length > 0) continue;
+    results.workScore.push(workEntry(book, work));
+  }
 }
 
 // 4b 跨册同名（同一作品出现在多册，未必是错误，单独计数）
@@ -353,27 +437,37 @@ const crossBookDuplicates = [...crossGroups.entries()]
   .map(([name, list]) => ({
     name,
     books: [...new Set(list.map((item) => item.book))],
+    types: [...new Set(list.map((item) => item.work.type))],
+    sameType: new Set(list.map((item) => item.work.type)).size === 1,
     detail: list
-      .map(
-        (item) =>
-          `${item.book} ${item.work.name}（${item.work.type}，第 ${item.work.firstPage} 页）`,
-      )
+      .map((item) => `${item.book} ${item.work.name}（${item.work.type}）`)
       .join(" + "),
   }))
-  .sort((a, b) => b.books.length - a.books.length || a.name.localeCompare(b.name, "zh"));
+  .sort(
+    (a, b) =>
+      Number(a.sameType) - Number(b.sameType) ||
+      b.books.length - a.books.length ||
+      a.name.localeCompare(b.name, "zh"),
+  );
+
+const crossSameType = crossBookDuplicates.filter((item) => item.sameType);
+const crossDiffType = crossBookDuplicates.filter((item) => !item.sameType);
 
 // ---- 汇总 -----------------------------------------------------------------
 
 const CHECK_ROWS = [
   { key: "missingAuthor", no: "1", label: "作品缺作者" },
-  { key: "missingPage", no: "2", label: "作品缺页码" },
-  { key: "unitPageOrder", no: "3", label: "单元内作品页码乱序/越界" },
+  { key: "missingPage", no: "2a", label: "作品完全没有页码" },
+  { key: "placeholderPage", no: "2b", label: "页码是默认值 1（实为缺页码）" },
+  { key: "unitPageOrder", no: "3", label: "单元内作品印刷页乱序/越界" },
   { key: "duplicateName", no: "4a", label: "同名作品（册内重复组）" },
   { key: "missingTheme", no: "5a", label: "作品缺「表现主题」" },
   { key: "missingGenre", no: "5b", label: "作品缺「音乐体裁」" },
   { key: "emptyType", no: "5c", label: "作品类型字段为空" },
   { key: "dangling", no: "6", label: "悬空引用" },
   { key: "charIssue", no: "7", label: "实体名字符异常" },
+  { key: "unitGoal", no: "9", label: "单元缺「学习目标」" },
+  { key: "workScore", no: "10", label: "作品缺教材谱例" },
 ];
 
 const countIn = (key, bookKey) =>
@@ -462,12 +556,15 @@ table.push(
 const bookStats = unitStats.map((stat) => ({
   key: stat.book.key,
   title: stat.book.title,
-  unitCount: stat.units.length,
+  unitCount: stat.book.units.length,
   workCount: stat.rows.reduce((sum, row) => sum + row.works, 0),
+  goalCount: stat.rows.reduce((sum, row) => sum + row.goals, 0),
+  goalMissing: stat.book.unitsWithoutGoal.length,
   entityCount: stat.book.entities.length,
   tripleCount: stat.book.triples.length,
   workEntities: stat.book.works.length,
   maxPage: stat.book.maxPage,
+  maxPrintedPage: stat.book.maxPrintedPage,
   rows: stat.rows,
 }));
 
@@ -479,26 +576,39 @@ sections.push(
     "已排除带民间/传统标记的作品",
     { keyName: "missingAuthor", list: results.missingAuthor },
     (item) =>
-      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，第 ${item.page} 页，${item.id}）`,
+      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，${pageText(item)}，${item.id}）`,
   ),
 );
 
-sections.push(
-  section(
-    "2. 作品缺页码",
-    "既没有 firstPage 也没有 printedPage",
+sections.push([
+  "### 2. 作品缺页码",
+  "",
+  ...section(
+    "2a 两个页码字段都没有",
+    "firstPage 与「教材第N页」都没有",
     { keyName: "missingPage", list: results.missingPage },
     (item) => `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，${item.id}）`,
+    "####",
   ),
-);
+  ...section(
+    "2b 页码是缺失时的默认值 1",
+    `firstPage === ${PLACEHOLDER_PAGE} 且 media 里没有「教材第N页」；PDF 第 1 页是前置页，不可能是作品所在页`,
+    { keyName: "placeholderPage", list: results.placeholderPage },
+    (item) =>
+      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，PDF 第 ${item.pdfPage} 页，${item.id}）`,
+    "####",
+  ),
+  `其中**在单元里**的作品 ${results.placeholderPage.filter((item) => item.units.length > 0).length} 个、**不在任何单元里**的 ${results.placeholderPage.filter((item) => item.units.length === 0).length} 个。`,
+  "",
+]);
 
 sections.push(
   section(
-    "3. 单元内作品页码乱序 / 越界",
-    "按「单元 —包含作品→ 作品」的顺序逐首比较 firstPage",
+    "3. 单元内作品印刷页乱序 / 越界",
+    "按「单元 —包含作品→ 作品」的顺序，逐首比较**教材印刷页**；没有印刷页的作品跳过不比较，跳过数量见下一行",
     { keyName: "unitPageOrder", list: results.unitPageOrder },
     (item) =>
-      `- ${item.book}｜${item.units.join("、")}｜${titleOf(item.name)}：${item.issue}——${item.detail}`,
+      `- ${item.book}｜${item.units.join("、")}｜${titleOf(item.name)}：${item.issue}——${item.detail}（该作品 PDF 第 ${item.pdfPage} 页）`,
   ),
 );
 
@@ -512,11 +622,20 @@ sections.push([
     (item) => `- ${item.book}｜${item.name}：${item.count} 个 → ${item.detail}`,
   ),
   "",
-  `**4b 跨册同名**（同一作品名出现在 2 册及以上，可能是同一首歌被多册选用，也可能重复建模）：合计 ${crossBookDuplicates.length} 个名字`,
+  `**4b 跨册同名**（同一作品名出现在 2 册及以上）：合计 ${crossBookDuplicates.length} 个名字，其中 **${crossSameType.length} 个类型相同**（可能是同一首作品被多册选用）、**${crossDiffType.length} 个类型不同**（几乎肯定是不同作品）。`,
+  "",
+  `**4b-1 类型不同，几乎肯定是不同作品**（${crossDiffType.length} 个）`,
   "",
   ...renderItems(
-    crossBookDuplicates,
-    (item) => `- ${item.name}（${item.books.length} 册）→ ${item.detail}`,
+    crossDiffType,
+    (item) => `- ${item.name}｜类型：${item.types.join(" / ")} → ${item.detail}`,
+  ),
+  "",
+  `**4b-2 类型相同，可能是同一首作品被多册选用**（${crossSameType.length} 个）`,
+  "",
+  ...renderItems(
+    crossSameType,
+    (item) => `- ${item.name}｜${item.types[0]} → ${item.detail}`,
   ),
   "",
 ]);
@@ -529,7 +648,7 @@ sections.push([
     "",
     { keyName: "missingTheme", list: results.missingTheme },
     (item) =>
-      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，第 ${item.page} 页，${item.id}）`,
+      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，${pageText(item)}，${item.id}）`,
     "####",
   ),
   ...section(
@@ -537,14 +656,14 @@ sections.push([
     "",
     { keyName: "missingGenre", list: results.missingGenre },
     (item) =>
-      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，第 ${item.page} 页，${item.id}）`,
+      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，${pageText(item)}，${item.id}）`,
     "####",
   ),
   ...section(
     "5c 类型字段为空",
     "",
     { keyName: "emptyType", list: results.emptyType },
-    (item) => `- ${item.book}｜${titleOf(item.name)}（第 ${item.page} 页，${item.id}）`,
+    (item) => `- ${item.book}｜${titleOf(item.name)}（${item.id}）`,
     "####",
   ),
 ]);
@@ -564,31 +683,51 @@ sections.push(
     "检查首尾空白、连续空白、《》内空白、疑似乱码、全角半角括号混用",
     { keyName: "charIssue", list: results.charIssue },
     (item) =>
-      `- ${item.book}｜${JSON.stringify(item.name)}（${item.type}，第 ${item.page} 页）：${item.detail}`,
+      `- ${item.book}｜${JSON.stringify(item.name)}（${item.type}，PDF 第 ${item.page} 页）：${item.detail}`,
   ),
 );
 
 sections.push([
   "### 8. 单元统计",
   "",
-  "只列数字，和教材实际情况是否一致需要人工判断（本册最大页码取该册实体 `firstPage` 的最大值）。",
+  "只列数字，和教材实际情况是否一致需要人工判断。",
   "",
-  `| 册 | 实体 | 关系 | 作品类实体 | 单元 | 「包含作品」关系 | 本册最大页码 |`,
-  `|---|---|---|---|---|---|---|`,
+  "| 册 | 实体 | 关系 | 作品类实体 | 单元 | 「包含作品」关系 | 「学习目标」条数 | 本册最大印刷页 | 最大 PDF 页 |",
+  "|---|---|---|---|---|---|---|---|---|",
   ...bookStats.map(
     (stat) =>
-      `| ${stat.key} ${stat.title} | ${stat.entityCount} | ${stat.tripleCount} | ${stat.workEntities} | ${stat.unitCount} | ${stat.workCount} | ${stat.maxPage} |`,
+      `| ${stat.key} ${stat.title} | ${stat.entityCount} | ${stat.tripleCount} | ${stat.workEntities} | ${stat.unitCount} | ${stat.workCount} | ${stat.goalCount} | ${stat.maxPrintedPage} | ${stat.maxPage} |`,
   ),
   "",
   ...bookStats.flatMap((stat) => [
     `**${stat.title}（${stat.key}）**`,
     "",
     ...stat.rows.map(
-      (row) => `- ${row.name}（第 ${row.page} 页起）：${row.works} 首`,
+      (row) => `- ${row.name}（教材第 ${row.page} 页起）：作品 ${row.works} 首、学习目标 ${row.goals} 条`,
     ),
     "",
   ]),
 ]);
+
+sections.push(
+  section(
+    "9. 单元缺「学习目标」",
+    "新界面的「本单元先读」区块要用学习目标，缺了这块会空着",
+    { keyName: "unitGoal", list: results.unitGoal },
+    (item) =>
+      `- ${item.book}｜${item.name}（教材第 ${item.page} 页起，PDF 第 ${item.pdfPage} 页，${item.id}）`,
+  ),
+);
+
+sections.push(
+  section(
+    "10. 作品缺教材谱例",
+    "判断依据同 scripts/build-units.mjs:101-105：media 里 kind 为 score、URL 落在本册 media/scores/<册>/ 下、文件真实存在",
+    { keyName: "workScore", list: results.workScore },
+    (item) =>
+      `- ${item.book}｜${unitText(item)}｜${titleOf(item.name)}（${item.type}，${pageText(item)}）`,
+  ),
+);
 
 // ---- 人工核对优先级 --------------------------------------------------------
 
@@ -612,8 +751,8 @@ for (const item of results.unitPageOrder) {
     item.issue === "越界" ? 95 : 88,
     `${item.book}｜${item.units.join("、")}｜${titleOf(item.name)}：${item.issue}（${item.detail}）`,
     item.issue === "越界"
-      ? "页码超出本册范围，教材页码展示会明显出错"
-      : "单元内页码倒序，作品卡片会显示出和单元顺序矛盾的页码",
+      ? "印刷页超出本册范围，教材页码展示会明显出错"
+      : "单元里的作品顺序和教材印刷页矛盾，单元页上的作品卡片顺序会看起来不对",
   );
 }
 for (const item of results.duplicateName) {
@@ -625,23 +764,60 @@ for (const item of results.duplicateName) {
     "同一册出现两个同名作品实体，可能是重复建模，列表里会出现重复条目",
   );
 }
+for (const item of results.workScore) {
+  if (item.units.length === 0) continue;
+  addCandidate(
+    "workScore",
+    item.book,
+    65,
+    `${item.book}｜${item.units.join("、")}｜${titleOf(item.name)}缺少教材谱例`,
+    "这首歌在单元正文里，但 media/scores 下没有对应谱例图片，新界面的作品卡片会缺谱",
+  );
+}
 for (const item of results.missingAuthor) {
   if (item.units.length === 0) continue;
   addCandidate(
     "missingAuthor",
     item.book,
     60,
-    `${item.book}｜${item.units.join("、")}｜${titleOf(item.name)}（${item.type}，第 ${item.page} 页）缺作者`,
+    `${item.book}｜${item.units.join("、")}｜${titleOf(item.name)}（${item.type}，${pageText(item)}）缺作者`,
     "单元正文里当作教学作品使用，却查不到作曲/作词，改版后的作品卡片作者栏会空着",
   );
 }
-for (const item of crossBookDuplicates) {
+for (const item of results.unitGoal) {
   addCandidate(
-    "crossBook",
+    "unitGoal",
+    item.book,
+    55,
+    `${item.book}｜${item.name}缺「学习目标」`,
+    "新界面的「本单元先读」要用学习目标，缺了这块会空着",
+  );
+}
+for (const item of crossDiffType) {
+  addCandidate(
+    "crossDiffType",
     item.books[0],
-    item.books.length >= 3 ? 45 : 35,
-    `跨册同名作品：${item.name} 出现在 ${item.books.join("、")}`,
-    "同一名字在多个册里各建了一个实体，需要判断是不是同一首作品、是否该合并或加限定名",
+    50,
+    `跨册同名但类型不同：${item.name}（${item.types.join(" / ")}）出现在 ${item.books.join("、")}`,
+    "同名不同曲被建成了同名实体，检索或合并时容易张冠李戴",
+  );
+}
+for (const item of results.placeholderPage) {
+  addCandidate(
+    "placeholderPage",
+    item.book,
+    40,
+    `${item.book}｜${titleOf(item.name)}的页码是默认值 1，其实缺页码`,
+    "PDF 第 1 页是前置页，展示出去会是一个明显的错误页码",
+  );
+}
+for (const item of crossSameType) {
+  addCandidate(
+    "crossSameType",
+    item.books[0],
+    35,
+    `跨册同名作品：${item.name}（${item.types[0]}）出现在 ${item.books.join("、")}`,
+    "同一首歌在多册各建了实体，需要判断是否该合并或加限定名",
   );
 }
 for (const item of results.missingTheme) {
@@ -689,14 +865,17 @@ const pickWithQuota = (perKind, perBook, limit, taken) => {
   return taken;
 };
 
-const topTen = pickWithQuota(2, 2, 10, []);
-pickWithQuota(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, 10, topTen);
+const TOP_LIMIT = 10;
+const topTen = pickWithQuota(2, 2, TOP_LIMIT, []);
+pickWithQuota(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, TOP_LIMIT, topTen);
+const topShortfall = TOP_LIMIT - topTen.length;
 
 // ---- 组装报告 -------------------------------------------------------------
 
 const rules = [
   "- **作品类类型**（`WORK_TYPES`，取自实体 `type` 的实测分布）：" +
-    [...WORK_TYPES].join("、"),
+    [...WORK_TYPES].join("、") +
+    "。比 `app/lib/app/types.ts:217` 的 `WORK_TYPES` 多一个「来源作品」（10 个实例），少「音乐作品」「戏曲歌曲」（当前数据里没有实例）。",
   "- **作者类谓语**（`AUTHOR_PREDICATES`，命中任意一条即算「有作者」）：" +
     [...AUTHOR_PREDICATES].join("、"),
   "- **民间/传统标记**（`FOLK_PREDICATES`、`FOLK_TYPES`、关键词 `" +
@@ -706,15 +885,15 @@ const rules = [
     "；类型 " +
     [...FOLK_TYPES].join("、") +
     "。命中即认为该作品本来就没有具名作者，不计入第 1 项。",
-  `- **本册最大页码**：取该册实体 \`firstPage\` 的最大值（${bookStats
-    .map((stat) => `${stat.key}=${stat.maxPage}`)
-    .join("、")}）。`,
+  "- **页码**：教材上印刷的页码在实体 `media[].title` 的「教材第N页」里（规则同 `app/lib/app/unit-data.ts:29` 的 `getPrintedPage`，网站展示用的就是它，见 `scripts/build-units.mjs:133`）；`firstPage` 是 **PDF 页码**，两者相差约 8 页。**除第 2 项外，所有页码比较都用印刷页**；`firstPage === 1` 且没有印刷页的，视为缺页码（第 2b 项）。",
+  `- **本册最大印刷页**：${bookStats.map((stat) => `${stat.key}=${stat.maxPrintedPage}`).join("、")}；最大 PDF 页：${bookStats.map((stat) => `${stat.key}=${stat.maxPage}`).join("、")}。`,
   "- **同名比较**：实体名去掉 `《》` 和所有空白后比较。",
-  "- 每个检查项明细最多列 30 条（单元内的问题优先），超出写「另有 N 条」；第 8 节是统计不是问题。",
+  "- **谱例**：`media` 里 `kind` 为 `score`、URL 落在本册 `media/scores/<册>/` 下、且文件真实存在，三者都满足才算有谱例（规则同 `scripts/build-units.mjs:101-105`）。",
+  "- 每个检查项明细最多列 30 条（单元内的问题优先，并按册轮流取值），超出写「另有 N 条」；第 8 节是统计不是问题。",
 ];
 
 const report = [
-  "# T002 教材数据质检报告（只读，未修改任何数据）",
+  "# 教材数据质检报告（只读，未修改任何数据）",
   "",
   `生成时间：${new Date().toISOString()}`,
   "",
@@ -724,7 +903,7 @@ const report = [
   "",
   ...rules,
   "",
-  `**问题合计：${issueTotal} 条**（第 1–7 项条目数之和，另含跨册同名 ${crossBookDuplicates.length} 个名字；第 8 节是统计，不计入）。`,
+  `**问题合计：${issueTotal} 条**（第 1–7、9、10 项条目数之和，另含跨册同名 ${crossBookDuplicates.length} 个名字；第 8 节是统计，不计入）。`,
   "",
   "## 汇总表",
   "",
@@ -732,18 +911,24 @@ const report = [
   "",
   `另有 ${[...folkSkipped.values()].reduce((sum, value) => sum + value, 0)} 个作品没有作者类关系，但带民间/传统标记，按规则未计入第 1 项（${BOOK_KEYS.map((bookKey) => `${bookKey}=${folkSkipped.get(bookKey) ?? 0}`).join("、")}）。`,
   "",
+  `第 3 项里另有 ${[...orderSkipped.values()].reduce((sum, value) => sum + value, 0)} 首单元作品没有印刷页，无法参与页码比较，已跳过（${BOOK_KEYS.map((bookKey) => `${bookKey}=${orderSkipped.get(bookKey) ?? 0}`).join("、")}）。`,
+  "",
   "## 明细",
   "",
   ...sections.flat(),
   "## 需要人工核对的最重要的 10 条",
   "",
-  "排序依据：数据完整性错误（悬空引用、页码越界）> 结构性错误（页码倒序、册内同名）> 单元正文里会直接展示却缺失的字段（作者、表现主题、体裁）> 跨册同名需要判断的。同一类问题最多取 2 条、同一册最多取 2 条，避免前 10 条被同一处问题占满。",
+  "排序依据：数据完整性错误（悬空引用、页码越界）> 结构性矛盾（单元内页码倒序、同名不同曲）> 新界面会直接空掉的字段（单元学习目标、作品谱例、作者）> 页码占位值 > 表现主题与体裁。同一类问题最多取 2 条、同一册最多取 2 条，避免前 10 条被同一处问题占满。",
   "",
   ...(topTen.length === 0
     ? ["（无）"]
-    : topTen.map(
-        (item, index) => `${index + 1}. ${item.text}　→ ${item.reason}`,
-      )),
+    : topTen.map((item, index) => `${index + 1}. ${item.text}　→ ${item.reason}`)),
+  ...(topShortfall > 0
+    ? [
+        "",
+        `注：符合「单元正文里会直接展示、又确实缺东西」的候选问题只有 ${topTen.length} 条，排不满 ${TOP_LIMIT} 条。未归入单元的补充作品不纳入候选。`,
+      ]
+    : []),
   "",
 ];
 
@@ -759,9 +944,14 @@ await writeFile(
         CHECK_ROWS.map((row) => [
           row.key,
           Object.fromEntries(BOOK_KEYS.map((bookKey) => [bookKey, countIn(row.key, bookKey)])),
-        ]).concat([["duplicateNameCrossBook", { total: crossBookDuplicates.length }]]),
+        ]).concat([
+          ["duplicateNameCrossBook", { total: crossBookDuplicates.length }],
+          ["duplicateNameCrossBookSameType", { total: crossSameType.length }],
+          ["duplicateNameCrossBookDiffType", { total: crossDiffType.length }],
+        ]),
       ),
       folkSkipped: Object.fromEntries(folkSkipped),
+      orderSkipped: Object.fromEntries(orderSkipped),
       books: bookStats.map((stat) => ({
         key: stat.key,
         title: stat.title,
@@ -770,7 +960,10 @@ await writeFile(
         workEntities: stat.workEntities,
         unitCount: stat.unitCount,
         workCount: stat.workCount,
+        goalCount: stat.goalCount,
+        goalMissing: stat.goalMissing,
         maxPage: stat.maxPage,
+        maxPrintedPage: stat.maxPrintedPage,
         unitRows: stat.rows,
       })),
       topTen,
@@ -789,5 +982,8 @@ await writeFile(
 for (const row of CHECK_ROWS) {
   console.log(`${row.no} ${row.label}: ${totalOf(row.key)}`);
 }
-console.log(`4b 同名作品（跨册）: ${crossBookDuplicates.length}`);
+console.log(
+  `4b 同名作品（跨册）: ${crossBookDuplicates.length}（类型相同 ${crossSameType.length} / 类型不同 ${crossDiffType.length}）`,
+);
+console.log(`TOP10 条数: ${topTen.length}`);
 console.log(`QA_REPORT_WRITTEN ${REPORT_PATH} issues=${issueTotal}`);
