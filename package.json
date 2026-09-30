@@ -15,6 +15,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern out --ignore-pattern .site-package-*",
     "db:generate": "drizzle-kit generate",
     "quality:check": "node scripts/audit-quality.mjs",
+    "audit:assets": "node scripts/audit-assets.mjs",
     "quality:rebuild": "node scripts/build-graph-data.mjs && node scripts/audit-quality.mjs",
     "quality:audit": "node scripts/audit-quality.mjs",
     "quality:p0": "node scripts/audit-p0-regression.mjs",
