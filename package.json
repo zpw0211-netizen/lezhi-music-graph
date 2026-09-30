@@ -16,6 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "quality:check": "node scripts/audit-quality.mjs",
     "audit:assets": "node scripts/audit-assets.mjs",
+    "audit:units-crosscheck": "node scripts/audit-units-crosscheck.mjs",
     "quality:rebuild": "node scripts/build-graph-data.mjs && node scripts/audit-quality.mjs",
     "quality:audit": "node scripts/audit-quality.mjs",
     "quality:p0": "node scripts/audit-p0-regression.mjs",
