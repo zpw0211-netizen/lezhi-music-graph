@@ -39,7 +39,8 @@
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs",
     "qa:copy": "node scripts/qa-ui-copy.mjs",
     "audit:contrast": "node scripts/audit-contrast.mjs",
-    "test:lib": "node scripts/test-lib.mjs"
+    "test:lib": "node scripts/test-lib.mjs",
+    "audit:palette": "node scripts/audit-palette-usage.mjs"
   },
   "dependencies": {
     "@react-sigma/core": "^5.0.6",
