@@ -7,6 +7,7 @@ import { MelodySet } from "./MelodyPlayer";
 import type { Melody } from "../../lib/lesson/melodies";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { getPrintedPage, getScoreMedia, isStarredWork, parseUnitTask } from "../../lib/app/unit-data";
+import { SCORE_SIZES } from "../../lib/lesson/score-sizes";
 
 type LessonEntity = {
   id: string;
@@ -153,6 +154,7 @@ export function LessonPage({
     <div className="lesson-layout">
       <div className="lesson-main" data-reveal-group>
         <header className="lesson-hero" data-reveal>
+          <p className="lesson-kicker">{[lesson.book?.name, lesson.unit?.name].filter(Boolean).join(" · ")}</p>
           <div>
             <h1 id="lesson-title" data-grade={lesson.book?.name.match(/([七八九])年级/)?.[1] ?? ""}>{work.name}</h1>
             <p className="lesson-meta">
@@ -178,10 +180,13 @@ export function LessonPage({
           <VocalDemo workName={work.name} assetUrl={assetUrl} />
           {scoreMedia.length > 0 && <details className="lesson-scores" open={!melody || melody.every((item) => item.quality === "draft")}>
             <summary>教材谱例原图（{scoreMedia.length} 张）</summary>
-            <div>{scoreMedia.map((asset) => <a key={asset.url} href={assetUrl(asset.url)} target="_blank" rel="noreferrer">
+            <div>{scoreMedia.map((asset) => {
+              /* CLS：写死谱例图固有尺寸，懒加载不再撑开布局 */
+              const size = SCORE_SIZES[asset.url];
+              return <a key={asset.url} href={assetUrl(asset.url)} target="_blank" rel="noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img loading="lazy" src={assetUrl(asset.url)} alt={asset.title ?? "教材谱例"} />
-            </a>)}</div>
+              <img loading="lazy" src={assetUrl(asset.url)} width={size?.[0]} height={size?.[1]} alt={asset.title ?? "教材谱例"} />
+            </a>; })}</div>
           </details>}
         </section>
 
