@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && node scripts/build-units.mjs && node scripts/build-atlas.mjs && vinext build",
+    "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && node scripts/build-units.mjs && node scripts/build-atlas.mjs && node scripts/brand/build-display-font.mjs && vinext build",
     "build:units": "node scripts/build-units.mjs",
     "build:atlas": "node scripts/build-atlas.mjs",
     "build:terrain": "D:/zhishitupu/project/env/miniconda3/python.exe scripts/build-atlas-terrain.py",
@@ -41,7 +41,8 @@
     "qa:copy": "node scripts/qa-ui-copy.mjs",
     "audit:contrast": "node scripts/audit-contrast.mjs",
     "test:lib": "node scripts/test-lib.mjs",
-    "audit:palette": "node scripts/audit-palette-usage.mjs"
+    "audit:palette": "node scripts/audit-palette-usage.mjs",
+    "build:font": "node scripts/brand/build-display-font.mjs"
   },
   "dependencies": {
     "@react-sigma/core": "^5.0.6",
