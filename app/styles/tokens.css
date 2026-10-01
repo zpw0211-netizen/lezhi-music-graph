@@ -1,5 +1,25 @@
-/* 基础界面令牌。保留样式导入顺序中的最终生效值。 */
+@import "./fonts.css";
+
+/* 芽谱「书卷」视觉令牌。 */
 :root {
+    --paper: #F4EEE1;
+    --paper-2: #EAE2D0;
+    --paper-3: #E1D6BF;
+    --sheet: #FBF8F0;
+    --ink: #1B2622;
+    --ink-2: #44504A;
+    --ink-3: #62675B;
+    --pine: #1F4A3C;
+    --pine-deep: #13302A;
+    --seal: #B8392A;
+    --amber: #C98A22;
+    --amber-bg: #F3D9A4;
+    --line: #CFC4AC;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --kai: "LXGW WenKai", "STKaiti", "KaiTi", serif;
+    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+    --ui: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+
     --brand-ink: #1C2B26;
     --brand-paper: #F7F3EA;
     --brand-paper-deep: #EDE6D6;
@@ -41,7 +61,7 @@
     --panel-2: var(--surface-soft);
     --surface-hover: #EDF3EF;
     --surface-selected: var(--accent-soft);
-    --line: var(--border);
+    --line: #CFC4AC;
     --line-subtle: #EDF1EE;
     --line-active: var(--border-strong);
     --text: var(--text-primary);
@@ -68,17 +88,28 @@
 }
 /* 首页门户令牌与按类别设置的颜色。 */
 .home-portal {
-    --paper: #F7F5EF;
-    --paper-deep: #EFEBE1;
-    --ink: #1F3B31;
-    --ink-soft: #4F6158;
-    --pine: #1F5C47;
-    --pine-hover: #17493A;
-    --seal: #B5463A;
-    --gold: #D39A4B;
-    --line: #E4DFD3;
-    --serif: "Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
-    --brush: "STKaiti","KaiTi","Kaiti SC","楷体",var(--serif)
+    --paper: #F4EEE1;
+    --paper-2: #EAE2D0;
+    --paper-3: #E1D6BF;
+    --sheet: #FBF8F0;
+    --ink: #1B2622;
+    --ink-2: #44504A;
+    --ink-3: #62675B;
+    --pine: #1F4A3C;
+    --pine-deep: #13302A;
+    --seal: #B8392A;
+    --amber: #C98A22;
+    --amber-bg: #F3D9A4;
+    --line: #CFC4AC;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --kai: "LXGW WenKai", "STKaiti", "KaiTi", serif;
+    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+    --ui: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --paper-deep: var(--paper-2);
+    --ink-soft: var(--ink-2);
+    --pine-hover: var(--pine-deep);
+    --gold: var(--amber);
+    --brush: var(--kai);
 }
 .home-hero-node.cat-person {
     --node-bg: #F1E7D6;
@@ -134,15 +165,15 @@
 }
 /* 应用主界面的水墨主题覆盖值。 */
 .ink-app {
-    --paper: #F7F5EF;
-    --paper-deep: #EFEBE1;
-    --ink: #1F3B31;
-    --ink-soft: #56655D;
-    --pine: #1F5C47;
-    --pine-hover: #17493A;
-    --seal: #B5463A;
-    --gold: #D39A4B;
-    --line: #E4DFD3;
+    --paper: #F4EEE1;
+    --paper-deep: #EAE2D0;
+    --ink: #1B2622;
+    --ink-soft: #44504A;
+    --pine: #1F4A3C;
+    --pine-hover: #13302A;
+    --seal: #B8392A;
+    --gold: #C98A22;
+    --line: #CFC4AC;
     --serif: "Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
     --brush: "STKaiti","KaiTi","Kaiti SC","楷体",var(--serif);
     --app-bg: var(--paper);
@@ -151,7 +182,7 @@
     --surface-hover: #EFEBE1;
     --text-primary: var(--ink);
     --text-secondary: var(--ink-soft);
-    --text-tertiary: #8C958F;
+    --text-tertiary: #62675B;
     --accent: var(--pine);
     --accent-hover: var(--pine-hover);
     --accent-bright: #3E8C72;

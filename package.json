@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && node scripts/build-units.mjs && vinext build",
+    "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && node scripts/build-units.mjs && node scripts/brand/build-display-font.mjs && vinext build",
     "build:units": "node scripts/build-units.mjs",
     "start": "vinext start",
     "smoke": "node scripts/smoke-pages.mjs",
@@ -30,7 +30,8 @@
     "quality:ai-candidate": "node scripts/audit-ai-candidate.mjs",
     "quality:explorer": "node scripts/audit-graph-explorer.mjs",
     "quality:constellation": "node scripts/audit-constellation.mjs",
-    "taxonomy:refine": "node scripts/refine-public-ontology.mjs"
+    "taxonomy:refine": "node scripts/refine-public-ontology.mjs",
+    "build:font": "node scripts/brand/build-display-font.mjs"
   },
   "dependencies": {
     "@react-sigma/core": "^5.0.6",

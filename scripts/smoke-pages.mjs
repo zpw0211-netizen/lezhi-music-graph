@@ -118,6 +118,8 @@ async function auditViewport(page, width, height) {
         const style = getComputedStyle(parent);
         if (["auto", "scroll"].includes(style.overflowX) && parent.scrollWidth > parent.clientWidth + 1)
           return selector(parent);
+        if (["hidden", "clip"].includes(style.overflowX) || style.clipPath !== "none" || style.clip !== "auto")
+          return selector(parent);
       }
       return null;
     };
@@ -160,9 +162,14 @@ async function main() {
   await step("桌面：首页加载并显示内容", async () => {
     await page.goto(siteRoot.href, { waitUntil: "domcontentloaded", timeout: 60_000 });
     await waitForApp(page);
-    await page.locator(".home-portal .home-title").waitFor({ state: "visible", timeout: 90_000 });
-    const title = (await page.locator(".home-portal .home-title").innerText()).trim();
+    const titleNode = page.locator(".home-portal h1#home-title");
+    await titleNode.waitFor({ state: "attached", timeout: 90_000 });
+    const title = (await titleNode.innerText()).trim();
     if (!title.includes("芽谱")) fail(`首页标题为空或不正确：${title}`);
+    await page.locator(".home-portal .home-search input").waitFor({ state: "visible", timeout: 10_000 });
+    const scrollCount = await page.locator(".home-portal .home-scroll-trigger").count();
+    if (scrollCount !== 6) fail(`首页教材画卷数量不正确：${scrollCount}`);
+    if (!(await page.locator(".home-portal .home-view-teasers").count())) fail("首页专属视图入口未显示");
   });
 
   await step("桌面：按课学习导航到 #/records", async () => {
