@@ -13,7 +13,8 @@ export type AppView =
   | "records"
   | "lesson"
   | "work"
-  | "import";
+  | "import"
+  | "atlas";
 
 export type AppRoute = {
   view: AppView;
@@ -25,7 +26,17 @@ export type AppRoute = {
   node?: string;
 };
 
-const VIEWS = new Set<AppView>(["home", "graph", "assistant", "research", "records", "lesson", "work", "import"]);
+const VIEWS = new Set<AppView>([
+  "home",
+  "graph",
+  "assistant",
+  "research",
+  "records",
+  "lesson",
+  "work",
+  "import",
+  "atlas",
+]);
 
 export const HOME_ROUTE: AppRoute = { view: "home" };
 

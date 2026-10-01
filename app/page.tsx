@@ -9,6 +9,7 @@ import { designTokenCssVariables } from "./design-tokens";
 import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AppTopNav, type NavView } from "./components/AppTopNav";
 import type { AssistantPage as AssistantPageComponent } from "./components/assistant/AssistantPage";
+import type { AtlasPage as AtlasPageComponent } from "./components/atlas/AtlasPage";
 import type {
   ExplorerSidebar as ExplorerSidebarComponent,
   GraphExplorer as GraphExplorerComponent,
@@ -59,6 +60,10 @@ const AssistantPage = nextDynamic<PropsOf<typeof AssistantPageComponent>>(
   () => import("./components/assistant/AssistantPage").then((module) => module.AssistantPage),
   { loading: viewLoading },
 );
+const AtlasPage = nextDynamic<PropsOf<typeof AtlasPageComponent>>(
+  () => import("./components/atlas/AtlasPage").then((module) => module.AtlasPage),
+  { loading: viewLoading },
+);
 const ResearchAnalysis = nextDynamic<PropsOf<typeof ResearchAnalysisComponent>>(
   () => import("./components/ResearchAnalysis").then((module) => module.ResearchAnalysis),
   { loading: viewLoading },
@@ -81,6 +86,7 @@ const EMPTY_BOOKS: BookDirectory[] = [];
 const SITE_TITLE = "芽谱——中小学音乐教育知识图谱与智能分析平台";
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
+  atlas: "音乐地图",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
@@ -210,7 +216,7 @@ export default function Home() {
     navigate({ view: "records", book: bookKey }, { replace });
   };
 
-  const needsData = view !== "home" && view !== "import";
+  const needsData = view !== "home" && view !== "import" && view !== "atlas";
   const dataStatus =
     needsData && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
@@ -244,7 +250,13 @@ export default function Home() {
       <section className="workspace" ref={workspaceRef}>
         {view !== "home" && (
           <AppTopNav
-            active={view === "lesson" || view === "work" ? "records" : view === "import" ? null : view}
+            active={
+              view === "lesson" || view === "work"
+                ? "records"
+                : view === "import" || view === "atlas"
+                  ? null
+                  : view
+            }
             onNavigate={goTo}
             onAbout={() => setResearchInfoOpen(true)}
             search={{
@@ -348,6 +360,7 @@ export default function Home() {
             />
           )}
           {view === "import" && <ImportView />}
+          {view === "atlas" && <AtlasPage onOpenWork={(work) => navigate({ view: "lesson", work })} />}
         </div>
       </section>
       <ResearchInfo
