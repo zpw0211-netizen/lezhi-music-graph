@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { formatRoute, HOME_ROUTE, parseRoute, type AppRoute } from "../lib/app/routing";
 
 type HistoryState = { yapuIndex?: number } | null;
@@ -38,7 +39,13 @@ export function useAppRoute(getScroller: () => HTMLElement | null) {
     const onPopState = () => {
       scrollByUrl.current.set(formatRoute(routeRef.current), readScroll());
       const next = currentRoute();
-      commit(next, scrollByUrl.current.get(formatRoute(next)) ?? 0);
+      const scrollTop = scrollByUrl.current.get(formatRoute(next)) ?? 0;
+      const closesRecordDetail = routeRef.current.view === "records" && next.view === "records"
+        && routeRef.current.book === next.book && Boolean(routeRef.current.work) !== Boolean(next.work);
+      const api = (document as Document & { startViewTransition?: (callback: () => void) => unknown }).startViewTransition;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (closesRecordDetail && api && !reducedMotion) api.call(document, () => flushSync(() => commit(next, scrollTop)));
+      else commit(next, scrollTop);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -67,10 +74,26 @@ export function useAppRoute(getScroller: () => HTMLElement | null) {
     commit(next, 0);
   }, []);
 
+  /** Push a route while keeping the current scroll position. */
+  const pushQuietly = useCallback((next: AppRoute) => {
+    const current = routeRef.current;
+    if (formatRoute(next) === formatRoute(current)) return;
+    scrollByUrl.current.set(formatRoute(current), readScroll());
+    window.history.pushState({ yapuIndex: historyIndex() + 1 }, "", hrefFor(next));
+    commit(next, null);
+  }, []);
+
   /** Return to the previous page of this site, or to `fallback` when the visit started here. */
   const back = useCallback((fallback: AppRoute) => {
     if (historyIndex() > 0) window.history.back();
-    else navigate(fallback);
+    else {
+      const api = (document as Document & { startViewTransition?: (callback: () => void) => unknown }).startViewTransition;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const closesRecordDetail = routeRef.current.view === "records" && Boolean(routeRef.current.work)
+        && fallback.view === "records" && routeRef.current.book === fallback.book;
+      if (closesRecordDetail && api && !reducedMotion) api.call(document, () => flushSync(() => navigate(fallback)));
+      else navigate(fallback);
+    }
   }, [navigate]);
 
   /** Record a detail (such as the selected graph node) in the URL without a new history entry or re-render. */
@@ -80,5 +103,5 @@ export function useAppRoute(getScroller: () => HTMLElement | null) {
     window.history.replaceState({ yapuIndex: historyIndex() }, "", hrefFor(next));
   }, []);
 
-  return { route, routeRef, navigate, back, replaceQuietly };
+  return { route, routeRef, navigate, pushQuietly, back, replaceQuietly };
 }

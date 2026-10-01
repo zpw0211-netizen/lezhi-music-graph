@@ -168,14 +168,21 @@ async function main() {
   await step("桌面：按课学习导航到 #/records", async () => {
     await page.getByRole("navigation", { name: "主导航" }).getByRole("button", { name: "按课学习", exact: true }).click();
     await page.waitForFunction(() => location.hash === "#/records", null, { timeout: 10_000 });
-    await page.locator(".work-library .work-card").first().waitFor({ state: "visible", timeout: 90_000 });
+    await page.locator('.records-book-picker [aria-label="7年级上册"]').click();
+    await page.waitForFunction(() => location.hash === "#/records/g7s1", null, { timeout: 10_000 });
+    await page.locator(".work-library .records-score-card").first().waitFor({ state: "visible", timeout: 90_000 });
   });
 
   const marker = `yapu-smoke-${Date.now()}`;
   await page.evaluate((value) => { window.__yapuSmokeMarker = value; }, marker);
 
-  await step("桌面：打开第一课并进入 #/lesson/…", async () => {
-    await page.locator(".work-library .work-card").first().click();
+  await step("桌面：打开作品详情并进入完整学习页", async () => {
+    await page.locator(".work-library .records-score-card").first().click();
+    await page.waitForFunction(() => location.hash.startsWith("#/records/g7s1/"), null, { timeout: 10_000 });
+    await page.locator(".records-detail").waitFor({ state: "visible", timeout: 30_000 });
+    const detailTitle = (await page.locator(".records-detail-title").innerText()).trim();
+    if (!detailTitle) fail("作品详情标题为空");
+    await page.getByRole("button", { name: "进入完整学习页" }).click();
     await page.waitForFunction(() => location.hash.startsWith("#/lesson/"), null, { timeout: 10_000 });
     await page.locator(".lesson #lesson-title").waitFor({ state: "visible", timeout: 90_000 });
     const playButton = page.locator(".melody-play");
@@ -200,11 +207,18 @@ async function main() {
     null, { timeout: 3_000 });
   });
 
-  await step("桌面：浏览器后退回目录且没有整页刷新", async () => {
+  await step("桌面：浏览器后退回作品详情且没有整页刷新", async () => {
     await page.evaluate(() => window.history.back());
-    await page.waitForFunction(() => location.hash === "#/records" && Boolean(document.querySelector(".work-library")), null, { timeout: 10_000 });
+    await page.waitForFunction(() => location.hash.startsWith("#/records/g7s1/") && Boolean(document.querySelector(".records-detail")), null, { timeout: 10_000 });
     const retained = await page.evaluate(() => window.__yapuSmokeMarker);
     if (retained !== marker) fail("浏览器后退后 window 标记消失，页面发生了整页刷新");
+  });
+
+  await step("桌面：关闭作品详情并回到目录", async () => {
+    await page.locator(".records-detail-close").click();
+    await page.waitForFunction(() => location.hash === "#/records/g7s1" && Boolean(document.querySelector(".work-library")), null, { timeout: 10_000 });
+    const retained = await page.evaluate(() => window.__yapuSmokeMarker);
+    if (retained !== marker) fail("关闭作品详情后 window 标记消失，页面发生了整页刷新");
   });
 
   await step("桌面：知识图谱出现 WebGL 画布", async () => {

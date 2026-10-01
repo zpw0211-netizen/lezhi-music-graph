@@ -2,7 +2,7 @@
 
 export const dynamic = "force-static";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { CSSProperties, FormEvent } from "react";
 import nextDynamic from "next/dynamic";
 import { designTokenCssVariables } from "./design-tokens";
@@ -43,7 +43,7 @@ const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
 const ExplorerSidebar = nextDynamic<PropsOf<typeof ExplorerSidebarComponent>>(
   () => import("./components/explorer/GraphExplorer").then((module) => module.ExplorerSidebar),
 );
-const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent<Entity, BookDirectory>>>(
+const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent>>(
   () => import("./components/records/WorkLibrary").then((module) => module.WorkLibrary),
   { loading: viewLoading },
 );
@@ -98,10 +98,10 @@ export default function Home() {
   );
   const workspaceRef = useRef<HTMLElement>(null);
   const viewContainerRef = useRef<HTMLDivElement>(null);
-  const { route, routeRef, navigate, back, replaceQuietly } = useAppRoute(() => workspaceRef.current);
+  const { route, routeRef, navigate, pushQuietly, back, replaceQuietly } = useAppRoute(() => workspaceRef.current);
   useScrollReveal();
   const view = route.view;
-  const routeTransitionKey = `${route.view}:${route.work ?? ""}`;
+  const routeTransitionKey = `${route.view}:${route.book ?? ""}:${route.work ?? ""}`;
   const previousRouteTransitionKey = useRef<string | null>(null);
   const [query, setQuery] = useState("");
   const [assistantEntry, setAssistantEntry] = useState({ question: "", token: 0 });
@@ -209,6 +209,15 @@ export default function Home() {
     setRecordsBook(bookKey);
     navigate({ view: "records", book: bookKey }, { replace });
   };
+  const openRecordsWork = useCallback((routeTitle: string, bookKey: string) => {
+    setRecordsBook(bookKey);
+    pushQuietly({ view: "records", book: bookKey, work: routeTitle });
+  }, [pushQuietly]);
+  const openRecordsKnowledge = (name: string, type?: string) => {
+    const candidates = canonicalGraph?.entities.filter((item) => item.name === name || item.aliases?.includes(name)) ?? [];
+    const entity = candidates.find((item) => item.type === type || item.rawTypes?.includes(type ?? "")) ?? candidates[0];
+    if (entity) navigate({ view: "graph", node: entity.id });
+  };
 
   const needsData = view !== "home" && view !== "import";
   const dataStatus =
@@ -309,9 +318,15 @@ export default function Home() {
               bookData={recordsBookData.book}
               bookDataStatus={recordsBookData.status}
               onRetryBookData={recordsBookData.retry}
-              isWork={isWorkType}
-              onBook={(book) => openRecordsBook(book.key, true)}
-              onOpen={(work: Entity) => explorer.openLesson(work)}
+              detailWork={route.view === "records" ? route.work : undefined}
+              onBook={(book) => openRecordsBook(book.key)}
+              onOpen={openRecordsWork}
+              onClose={() => back({ view: "records", book: selectedRecordsKey })}
+              onLearn={(workId) => {
+                const work = recordsBookData.book?.entities.find((entity) => entity.id === workId);
+                if (work && isWorkType(work.type)) openLessonPage(work);
+              }}
+              onKnowledge={openRecordsKnowledge}
             />
           )}
           {view === "lesson" && canonicalGraph && routeWork && (
