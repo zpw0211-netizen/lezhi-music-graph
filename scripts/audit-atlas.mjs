@@ -220,6 +220,64 @@ for (const person of timeline.people ?? []) {
   }
 }
 
+// Orientation guard for the globe textures: the land mask is an equirectangular PNG whose first row is the north pole.
+// A vertical flip (e.g. UNPACK_FLIP_Y in the renderer, or a flipped asset) once put Antarctica at the north pole and Europe in the ocean.
+{
+  const { inflateSync } = await import("node:zlib");
+  const png = await readFile(path.join(dataDir, "atlas", "world-mask.png"));
+  let offset = 8;
+  let header = null;
+  const idat = [];
+  while (offset < png.length) {
+    const length = png.readUInt32BE(offset);
+    const type = png.toString("ascii", offset + 4, offset + 8);
+    const body = png.subarray(offset + 8, offset + 8 + length);
+    if (type === "IHDR") header = { width: body.readUInt32BE(0), height: body.readUInt32BE(4), bitDepth: body[8], colorType: body[9] };
+    if (type === "IDAT") idat.push(body);
+    offset += 12 + length;
+  }
+  assert(header && header.bitDepth === 8 && header.colorType === 0, "world-mask.png must be an 8-bit greyscale PNG.");
+  const raw = inflateSync(Buffer.concat(idat));
+  const rowBytes = header.width + 1;
+  const rows = [];
+  let previous = Buffer.alloc(header.width);
+  for (let y = 0; y < header.height; y += 1) {
+    const filter = raw[y * rowBytes];
+    const line = Buffer.from(raw.subarray(y * rowBytes + 1, (y + 1) * rowBytes));
+    for (let x = 0; x < header.width; x += 1) {
+      const left = x > 0 ? line[x - 1] : 0;
+      const up = previous[x];
+      const upLeft = x > 0 ? previous[x - 1] : 0;
+      let predictor = 0;
+      if (filter === 1) predictor = left;
+      else if (filter === 2) predictor = up;
+      else if (filter === 3) predictor = (left + up) >> 1;
+      else if (filter === 4) {
+        const estimate = left + up - upLeft;
+        const dl = Math.abs(estimate - left);
+        const du = Math.abs(estimate - up);
+        const dul = Math.abs(estimate - upLeft);
+        predictor = dl <= du && dl <= dul ? left : du <= dul ? up : upLeft;
+      }
+      line[x] = (line[x] + predictor) & 255;
+    }
+    rows.push(line);
+    previous = line;
+  }
+  const landAt = (latitude, longitude) => {
+    const y = Math.min(header.height - 1, Math.max(0, Math.floor(((90 - latitude) / 180) * header.height)));
+    const x = Math.min(header.width - 1, Math.max(0, Math.floor(((longitude + 180) / 360) * header.width)));
+    return rows[y][x] > 127;
+  };
+  // Land that must be land, ocean that must be ocean (all far from any coastline).
+  const land = [["Sahara", 24, 15], ["central Europe", 48, 12], ["Siberia", 62, 95], ["Tibetan plateau", 33, 88], ["Brazil", -10, -52], ["Australia", -25, 134], ["North America", 45, -100]];
+  const ocean = [["mid North Atlantic", 30, -40], ["mid South Pacific", -30, -130], ["Indian Ocean", -20, 80]];
+  for (const [name, latitude, longitude] of land) assert(landAt(latitude, longitude), "world-mask.png is not land at " + name + " (is the texture flipped?)");
+  for (const [name, latitude, longitude] of ocean) assert(!landAt(latitude, longitude), "world-mask.png is not ocean at " + name + " (is the texture flipped?)");
+  const renderer = await readFile(path.join(root, "app", "components", "atlas", "atlasScene.ts"), "utf8");
+  assert(!/UNPACK_FLIP_Y_WEBGL,\s*1\)/.test(renderer), "atlasScene.ts must not flip textures on upload (sphere v runs north to south, like the images).");
+}
+
 const atlasBytes = Buffer.byteLength(await readFile(path.join(dataDir, "atlas.json"), "utf8"));
 const timelineBytes = Buffer.byteLength(await readFile(path.join(dataDir, "timeline.json"), "utf8"));
 const domesticKeys = new Set();

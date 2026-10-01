@@ -631,7 +631,9 @@ export class AtlasScene {
       if (!texture) throw new Error("WebGL relief texture could not be allocated");
       this.texturesOwned.push(texture);
       this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-      this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, 1);
+      // The sphere's v runs north -> south (row / latitudeSteps) and so does the image, so no Y flip.
+      // (A flip here puts Antarctica at the north pole and Europe in the ocean.)
+      this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, 0);
       this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
       this.gl.generateMipmap(this.gl.TEXTURE_2D);
       this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR_MIPMAP_LINEAR);
