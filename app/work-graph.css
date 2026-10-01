@@ -1,84 +1,117 @@
-/* 单个作品的关系图与资料面板。 */
-.work-graph { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:16px; height:calc(100vh - 150px); min-height:560px; padding:16px 4px 20px; }
-.work-graph-stage { container-type:inline-size; position:relative; min-width:0; border:1px solid var(--brand-paper-deep); border-radius:6px; overflow:hidden;
-  background:var(--brand-paper); }
+/* 作品关系页 · 书卷 v2
+   真实作品名作为篇章标题（楷体），图与资料主次分明。保留图算法、节点语义与全部交互；
+   只调整版式、颜色（DESIGN-v2 色板，页面作用域令牌）、边框与可达性视觉。 */
+.work-graph,
+.work-graph-empty {
+  /* DESIGN-v2 色板（页面作用域） */
+  --p2: #EAE2D0;
+  --p3: #E1D6BF;
+  --sheet: #FBF8F0;
+  --ink: #1B2622;
+  --ink-2: #44504A;
+  --ink-3: #62675B;
+  --pine: #1F4A3C;
+  --pine-deep: #13302A;
+  --seal: #B8392A;
+  --amber-text: #916319;
+  --line: #CFC4AC;
+  --kai: "LXGW WenKai", "STKaiti", "KaiTi", "Kaiti SC", "楷体", var(--serif, serif);
+}
+.work-graph { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:20px; height:calc(100vh - 150px); min-height:560px; padding:8px 4px 20px; }
+.work-graph-stage { container-type:inline-size; position:relative; min-width:0; border:1px solid var(--line); border-radius:2px; overflow:hidden;
+  background:transparent; }
 .work-graph-toolbar { position:absolute; top:12px; left:12px; right:12px; z-index:2; display:flex; align-items:center; gap:12px; pointer-events:none; }
 .work-graph-toolbar>* { pointer-events:auto; }
 .work-graph-toolbar button, .work-graph-toolbar label, .work-graph-legend span { white-space:nowrap; flex:none; }
 .work-graph-legend { pointer-events:auto; }
 .work-graph-footer .work-graph-legend { flex:1 1 auto; min-width:0; }
 @container (max-width: 760px) { .work-graph-hint { display:none; } }
-.work-graph-back { display:inline-flex; align-items:center; gap:4px; height:34px; padding:0 12px 0 8px; border:1px solid var(--brand-paper-deep); border-radius:4px; background:var(--brand-paper); color:var(--text-primary); font-size:13px; font-weight:600; }
-.work-graph-back:hover { border-color:var(--accent); color:var(--accent); }
+.work-graph-back { display:inline-flex; align-items:center; gap:5px; height:34px; padding:0 13px 0 9px; border:1px solid var(--line); border-radius:2px; background:var(--sheet); color:var(--pine); font-family:var(--serif); font-size:13px; font-weight:600; transition:border-color .2s, color .2s; }
+.work-graph-back:hover { border-color:var(--pine); color:var(--pine-deep); }
 .work-graph-back svg { width:16px; height:16px; }
 .work-graph-legend { display:flex; flex-wrap:wrap; gap:6px; }
-.work-graph-legend span { display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 8px; border-radius:4px; background:var(--brand-paper); border:1px solid var(--brand-paper-deep); font-size:12px; color:var(--text-secondary); }
+.work-graph-legend span { display:inline-flex; align-items:center; gap:6px; height:28px; padding:0 9px; border-radius:2px; background:var(--sheet); border:1px solid var(--line); font-size:12px; color:var(--ink-2); }
 .work-graph-legend i { width:8px; height:8px; border-radius:50%; }
-.work-graph-legend b { color:var(--text-primary); font-weight:650; font-variant-numeric:tabular-nums; }
+.work-graph-legend b { color:var(--ink); font-weight:650; font-variant-numeric:tabular-nums; }
 .work-graph-actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
-.work-graph-actions label { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 10px; border-radius:4px; background:var(--brand-paper); border:1px solid var(--brand-paper-deep); font-size:12px; color:var(--text-secondary); cursor:pointer; }
-.work-graph-actions input { accent-color:var(--accent); }
-.work-graph-actions button { display:inline-flex; align-items:center; gap:5px; height:32px; padding:0 12px; border:1px solid var(--brand-paper-deep); border-radius:4px; background:var(--brand-paper); font-size:12px; color:var(--text-primary); }
-.work-graph-actions button:hover { border-color:var(--accent); color:var(--accent); }
+.work-graph-actions label { display:inline-flex; align-items:center; gap:6px; height:32px; padding:0 10px; border-radius:2px; background:var(--sheet); border:1px solid var(--line); font-size:12px; color:var(--ink-2); cursor:pointer; }
+.work-graph-actions input { accent-color:var(--pine); }
+.work-graph-actions button { display:inline-flex; align-items:center; gap:5px; height:32px; padding:0 12px; border:1px solid var(--line); border-radius:2px; background:var(--sheet); font-size:12px; color:var(--ink-2); font-family:var(--serif); transition:border-color .2s, color .2s; }
+.work-graph-actions button:hover { border-color:var(--pine); color:var(--pine); }
+.work-graph-actions button:focus-visible, .work-graph-back:focus-visible { outline:2px solid var(--pine); outline-offset:2px; }
 .work-graph-actions svg { width:14px; height:14px; }
 .work-graph-svg { display:block; width:100%; height:100%; touch-action:none; user-select:none; font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
-.work-graph-orbit { fill:none; stroke:var(--brand-paper-deep); stroke-width:1; }
+.work-graph-orbit { fill:none; stroke:var(--line); stroke-width:1; stroke-dasharray:1 5; stroke-linecap:round; }
 .work-graph-link { transition:opacity var(--motion-fast) var(--ease-out); }
-.work-graph-link line { stroke-width:1.6; stroke-opacity:.34; }
+.work-graph-link line { stroke-width:1.5; stroke-opacity:.38; }
 .work-graph-link.depth-2 line { stroke-dasharray:4 5; stroke-opacity:.26; stroke-width:1.2; }
-.work-graph-link.is-active line { stroke-opacity:.8; stroke-width:2.4; }
+.work-graph-link.is-active line { stroke-opacity:.85; stroke-width:2.4; }
 .work-graph-link.is-dim { opacity:.12; }
-.work-graph-edge-label { font-size:10.5px; fill:#59665F; text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:var(--brand-paper); stroke-width:4px; stroke-linejoin:round; pointer-events:none; }
+.work-graph-edge-label { font-size:10.5px; fill:var(--ink-3); text-anchor:middle; dominant-baseline:middle; paint-order:stroke; stroke:var(--paper, #F7F5EF); stroke-width:4px; stroke-linejoin:round; pointer-events:none; }
 .work-graph-link.is-dim .work-graph-edge-label { opacity:0; }
 .work-graph-node { cursor:grab; transition:opacity var(--motion-fast) var(--ease-out); outline:none; }
 .work-graph-node:active { cursor:grabbing; }
 .work-graph-node>circle:not(.work-graph-halo) { transform-box:fill-box; transform-origin:center; transition:transform var(--motion-fast) var(--ease-out); }
 .work-graph-node:hover>circle:not(.work-graph-halo) { transform:scale(1.12); }
-.work-graph-node:focus-visible .work-graph-label { text-decoration:underline; }
+/* 键盘焦点：节点圆环描边 + 标签下划线，均清晰可见 */
+.work-graph-node:focus-visible>circle:not(.work-graph-halo) { stroke:var(--pine); stroke-width:3px; }
+.work-graph-node:focus-visible .work-graph-label { text-decoration:underline; text-underline-offset:3px; }
 .work-graph-node.is-dim { opacity:.18; }
 .work-graph-node.depth-0 { cursor:default; }
 .work-graph-halo { fill:none; stroke-width:2.5; stroke-opacity:.45; }
-.work-graph-label { font-size:12px; font-weight:600; fill:var(--brand-ink); text-anchor:middle; paint-order:stroke; stroke:var(--brand-paper); stroke-width:4px; stroke-linejoin:round; pointer-events:none; }
+.work-graph-label { font-size:12px; font-weight:600; fill:var(--ink); text-anchor:middle; paint-order:stroke; stroke:var(--paper, #F7F5EF); stroke-width:4px; stroke-linejoin:round; pointer-events:none; }
 .work-graph-node.depth-0 .work-graph-label { font-family:var(--serif); font-size:18px; font-weight:700; }
-.work-graph-node.depth-2 .work-graph-label { font-size:11px; font-weight:500; fill:#5E6A64; }
+.work-graph-node.depth-2 .work-graph-label { font-size:11px; font-weight:500; fill:var(--ink-3); }
 .work-graph-footer { position:absolute; left:12px; right:12px; bottom:10px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px; pointer-events:none; }
-.work-graph-hint { margin:0; font-size:12px; color:var(--text-tertiary); white-space:nowrap; }
-.work-graph-legend span.is-second i { background:#fff; border:1.5px solid var(--brand-sprout-deep); }
+.work-graph-hint { margin:0; font-size:12px; color:var(--ink-3); white-space:nowrap; }
+.work-graph-legend span.is-second i { background:var(--sheet); border:1.5px solid var(--pine); }
 @media (prefers-reduced-motion: reduce) {
   .work-graph-link, .work-graph-node, .work-graph-node>circle:not(.work-graph-halo) { transition-duration:1ms; }
 }
 
-.work-graph-panel { display:flex; flex-direction:column; gap:12px; min-height:0; overflow:auto; padding-right:4px; }
-.work-graph-card { padding:18px 18px 16px; border:1px solid var(--brand-paper-deep); border-radius:6px; background:var(--brand-paper); }
-.work-graph-card h2 { margin:8px 0 4px; font-family:var(--serif); font-size:24px; font-weight:700; line-height:1.35; }
-.work-graph-card h3 { margin:8px 0 6px; font-size:16px; font-weight:650; }
-.work-graph-card p { margin:0; font-size:13px; line-height:1.7; color:var(--text-secondary); }
-.work-graph-card.is-selection { border-color:var(--brand-sprout); background:var(--brand-paper); animation:work-graph-in var(--motion-base) var(--ease-out); }
+/* ---------- 资料面板：篇章式阅读栏 ---------- */
+.work-graph-panel { display:flex; flex-direction:column; gap:14px; min-height:0; overflow:auto; padding-right:4px; }
+.work-graph-card { padding:20px 20px 18px; border:1px solid var(--line); border-radius:2px; background:var(--sheet); box-shadow:0 1px 0 var(--p3), 0 8px 18px -14px rgba(40, 30, 10, .5); }
+.work-graph-kicker { display:block; margin-bottom:10px; color:var(--seal); font-family:var(--serif); font-size:12px; letter-spacing:.28em; }
+.work-graph-kicker::before { content:""; display:inline-block; width:22px; height:1px; margin-right:10px; vertical-align:4px; background:currentColor; }
+.work-graph-card h2 { margin:0 0 6px; color:var(--ink); font-family:var(--kai); font-size:32px; font-weight:400; line-height:1.25; letter-spacing:.04em; }
+.ink-app .work-graph-card h2 { font-family:var(--kai); color:var(--ink); }
+.work-graph-card h3 { margin:8px 0 6px; color:var(--ink); font-family:var(--serif); font-size:17px; font-weight:600; }
+.work-graph-card p { margin:0; font-size:13px; line-height:1.7; color:var(--ink-2); }
+.work-graph-card.is-selection { border-color:var(--pine); background:var(--sheet); animation:work-graph-in var(--motion-base) var(--ease-out); }
 @keyframes work-graph-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-.work-graph-type { display:inline-block; padding:2px 8px; border-radius:3px; background:var(--brand-paper-deep); color:var(--brand-sprout-deep); font-size:12px; font-weight:600; }
+/* 类型标签：原型 theme-seal 式朱砂小签 */
+.work-graph-type { display:inline-block; padding:3px 10px; border:1.5px solid var(--seal); border-radius:2px; background:transparent; color:var(--seal); font-family:var(--kai); font-size:13px; letter-spacing:.1em; transform:rotate(-2deg); }
 .work-graph-source { font-variant-numeric:tabular-nums; }
-.work-graph-card .work-graph-creators { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:8px; color:var(--text-primary); }
-.work-graph-creators small { margin-right:5px; color:var(--text-tertiary); font-size:12px; }
-.work-graph-locate { display:inline-flex; align-items:center; gap:4px; margin-top:12px; height:32px; padding:0 12px; border:0; border-radius:9px; background:var(--accent-soft); color:var(--accent); font-size:13px; font-weight:600; }
+.work-graph-card .work-graph-creators { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:10px; color:var(--ink); font-family:var(--serif); }
+.work-graph-creators small { margin-right:5px; color:var(--ink-3); font-size:12px; font-family:var(--font-ui); }
+.work-graph-locate { display:inline-flex; align-items:center; gap:5px; margin-top:14px; height:32px; padding:0 12px; border:1px solid var(--pine); border-radius:2px; background:transparent; color:var(--pine); font-family:var(--serif); font-size:13px; font-weight:600; transition:background .2s, color .2s; }
+.work-graph-locate:hover { background:var(--pine); color:var(--sheet); }
+.work-graph-locate:focus-visible { outline:2px solid var(--pine); outline-offset:2px; }
 .work-graph-locate svg { width:14px; height:14px; }
 .work-graph-selection-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-.work-graph-selection-actions button { height:32px; padding:0 12px; border:1px solid var(--border); border-radius:9px; background:#fff; font-size:13px; color:var(--text-primary); }
-.work-graph-selection-actions button:first-child { border-color:var(--brand-sprout); color:var(--brand-sprout-deep); font-weight:600; }
-.work-graph-section { padding:14px 16px; border:1px solid var(--brand-paper-deep); border-radius:6px; background:var(--brand-paper); }
-.work-graph-section h4 { display:flex; align-items:baseline; gap:8px; margin:0 0 10px; font-size:13px; color:var(--accent); }
-.work-graph-section h4 small { font-size:11px; font-weight:500; color:#A2560E; }
-.work-graph-section.is-extended { background:#FFFBF5; border-color:#F5E1C8; }
-.work-graph-section.is-extended h4 { color:#A2560E; }
-.work-graph-section dl { margin:0; display:grid; gap:8px; }
-.work-graph-section dl>div { display:grid; grid-template-columns:78px 1fr; gap:10px; font-size:13px; line-height:1.6; }
-.work-graph-section dt { color:var(--text-tertiary); }
-.work-graph-section dd { margin:0; color:var(--text-primary); }
-.work-graph-section dd em { margin-left:6px; padding:0 6px; border-radius:999px; background:var(--surface-soft); color:var(--text-tertiary); font-size:10px; font-style:normal; vertical-align:1px; }
-.work-graph-scores { display:grid; gap:8px; }
-.work-graph-scores a { display:block; padding:6px; border:1px solid var(--brand-paper-deep); border-radius:4px; background:var(--brand-paper); }
-.work-graph-scores a:hover { border-color:var(--accent); }
-.work-graph-scores img { display:block; width:100%; height:auto; border-radius:6px; }
-.work-graph-empty { padding:60px; text-align:center; color:var(--text-secondary); }
+.work-graph-selection-actions button { height:32px; padding:0 12px; border:1px solid var(--line); border-radius:2px; background:var(--sheet); font-family:var(--serif); font-size:13px; color:var(--ink-2); transition:border-color .2s, color .2s; }
+.work-graph-selection-actions button:hover { border-color:var(--pine); color:var(--pine); }
+.work-graph-selection-actions button:focus-visible { outline:2px solid var(--pine); outline-offset:2px; }
+.work-graph-selection-actions button:first-child { border-color:var(--pine); color:var(--pine); font-weight:600; }
+.work-graph-section { padding:16px 18px; border:1px solid var(--line); border-radius:2px; background:var(--sheet); }
+.work-graph-section h4 { display:flex; align-items:baseline; gap:8px; margin:0 0 10px; color:var(--seal); font-family:var(--serif); font-size:13px; font-weight:600; letter-spacing:.16em; }
+.work-graph-section h4::after { content:""; flex:1; height:1px; background:var(--line); }
+.work-graph-section h4 small { font-size:11px; font-weight:500; color:var(--amber-text); letter-spacing:.04em; }
+.work-graph-section.is-extended { background:color-mix(in srgb, var(--p2) 58%, transparent); border-color:var(--line); }
+.work-graph-section.is-extended h4 { color:var(--amber-text); }
+.work-graph-section dl { margin:0; display:grid; gap:9px; }
+.work-graph-section dl>div { display:grid; grid-template-columns:82px 1fr; gap:10px; font-size:13px; line-height:1.65; }
+.work-graph-section dt { color:var(--ink-3); }
+.work-graph-section dd { margin:0; color:var(--ink); }
+.work-graph-section dd em { margin-left:6px; padding:0 6px; border:1px solid var(--line); border-radius:2px; background:transparent; color:var(--ink-3); font-size:10px; font-style:normal; vertical-align:1px; }
+.work-graph-scores { display:grid; gap:10px; }
+.work-graph-scores a { display:block; padding:6px; border:1px solid var(--line); border-radius:2px; background:var(--sheet); box-shadow:0 1px 0 var(--p3); transition:transform var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out); }
+.work-graph-scores a:hover { border-color:var(--pine); transform:translateY(-2px); box-shadow:0 1px 0 var(--p3), 0 12px 18px -14px rgba(40, 30, 10, .55); }
+.work-graph-scores a:focus-visible { outline:2px solid var(--pine); outline-offset:2px; }
+.work-graph-scores img { display:block; width:100%; height:auto; aspect-ratio:707/1000; object-fit:contain; background:var(--sheet); border-radius:2px; }
+.work-graph-empty { padding:60px; text-align:center; color:var(--ink-2); font-family:var(--serif); }
+.work-graph-empty button { display:inline-flex; align-items:center; gap:5px; margin-top:12px; height:34px; padding:0 14px; border:1px solid var(--pine); border-radius:2px; background:transparent; color:var(--pine); font-family:var(--serif); }
 @media (max-width:1320px) { .work-graph { grid-template-columns:minmax(0,1fr) 320px; } }
 @media (max-width:1100px) {
   .work-graph { grid-template-columns:1fr; height:auto; }
@@ -86,9 +119,11 @@
   .work-graph-hint { display:none; }
 }
 @media (max-width:640px) {
-  .work-graph { gap:12px; padding-right:0; padding-left:0; }
+  .work-graph { gap:14px; padding-right:0; padding-left:0; }
+  .work-graph-stage { height:62vh; min-height:420px; }
   .work-graph-toolbar { flex-wrap:wrap; gap:8px; }
   .work-graph-actions { gap:4px; }
   .work-graph-actions label, .work-graph-actions button { padding-right:7px; padding-left:7px; font-size:11px; }
   .work-graph-panel { padding-right:0; }
+  .work-graph-card h2 { font-size:26px; }
 }

@@ -40,8 +40,8 @@ type Props = {
 
 const shortBook = (book: ResearchBook) => `${book.grade}${book.semester === "上册" ? "上" : "下"}`;
 
-// Five-step indigo ramp; the last two cells use light text for readable contrast.
-const MATRIX_RAMP = ["#F0F3F9", "#D8E0EF", "#AAB9D6", "#5E75A0", "#2E4A7D"] as const;
+// Five-step pine ramp on the DESIGN-v2 palette; the last two cells use light text for readable contrast.
+const MATRIX_RAMP = ["#EAF0EC", "#CFE0D6", "#8FB8A3", "#3E7D64", "#1F4A3C"] as const;
 
 export function ResearchAnalysis({
   books,
@@ -117,8 +117,9 @@ export function ResearchAnalysis({
     <section className="research-analysis" aria-labelledby="research-analysis-title">
       <header className="research-analysis-header" data-reveal>
         <div>
+          <span className="research-kicker">研究分析 · 数据与口径</span>
           <h2 id="research-analysis-title">六册教材知识结构研究分析</h2>
-          <p>基于规范实体融合、教材出现记录与图谱审计结果进行关联查询。</p>
+          <p className="research-lede">基于规范实体融合、教材出现记录与图谱审计结果进行关联查询。</p>
           <p className="research-method-note">
             <b>研究口径</b>
             <span>同名同类型实体先融合，再计算教材覆盖与网络结构。</span>

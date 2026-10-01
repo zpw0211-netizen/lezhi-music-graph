@@ -375,7 +375,7 @@ export function WorkGraph({
           return <g key={node.id} className={`work-graph-node depth-${node.depth} ${dim ? "is-dim" : ""} ${isSelected ? "is-selected" : ""}`} transform={`translate(${p.x} ${p.y})`}
             onPointerDown={(event) => onNodeDown(event, node.id)} onPointerEnter={() => setHoveredId(node.id)} onPointerLeave={() => setHoveredId(null)}
             role="button" tabIndex={0} aria-label={`${node.entity.name}（${node.labels.join("、") || node.entity.type}）`}
-            onKeyDown={(event) => { if (event.key === "Enter") setSelectedId(node.id); }}>
+            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedId(node.id); } }}>
             {node.depth === 0 ? <>
               <circle r={s?.r ?? 30} fill="var(--brand-ink)" stroke="#fff" strokeWidth={2} />
             </> : <>
@@ -396,13 +396,14 @@ export function WorkGraph({
     </div>
     <aside className="work-graph-panel">
       <div className="work-graph-card">
+        <span className="work-graph-kicker">作品图谱</span>
         <span className="work-graph-type">{work.type}</span>
         <h2>{work.name}</h2>
         <p className="work-graph-source">{sourceLabel}</p>
         {creators.length > 0 && <p className="work-graph-creators">{creators.map((node) => <span key={node.id}><small>{node.labels.join("/")}</small>{node.entity.name}</span>)}</p>}
         <button type="button" className="work-graph-locate" onClick={() => onLocate(workId)}>在总图谱中定位<WorkbenchIcon name="arrow" /></button>
       </div>
-      {selected && <div className="work-graph-card is-selection">
+      {selected && <div className="work-graph-card is-selection" aria-live="polite">
         <span className="work-graph-type" style={{ color: SEMANTIC_PALETTE[selected.category].stroke, background: SEMANTIC_PALETTE[selected.category].soft }}>{selected.entity.type}</span>
         <h3>{selected.entity.name}</h3>
         <p>{selected.depth === 1 ? `与本作品的关系：${selected.labels.join("、")}` : `经由「${entityMap.get(selected.parent ?? "")?.name ?? ""}」关联：${selected.labels.join("、")}`}</p>
