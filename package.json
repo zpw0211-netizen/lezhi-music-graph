@@ -39,7 +39,8 @@
     "quality:constellation": "node scripts/audit-constellation.mjs",
     "taxonomy:refine": "node scripts/refine-public-ontology.mjs",
     "qa:copy": "node scripts/qa-ui-copy.mjs",
-    "audit:contrast": "node scripts/audit-contrast.mjs"
+    "audit:contrast": "node scripts/audit-contrast.mjs",
+    "test:lib": "node scripts/test-lib.mjs"
   },
   "dependencies": {
     "@react-sigma/core": "^5.0.6",
