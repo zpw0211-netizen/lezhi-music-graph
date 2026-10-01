@@ -1,22 +1,17 @@
 import { access, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { gzipSync } from "node:zlib";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
 const booksDir = path.join(dataDir, "books");
 const rawDir =
-  process.env.ATLAS_RAW_DIR ?? "E:\\Projects\\.tmp\\codex1\\T012\\raw";
-const atlasGeoPath = path.join(dataDir, "atlas-geo.json");
-const landRawPath = path.join(rawDir, "ne_110m_land.geojson");
-const worldRawPath = path.join(rawDir, "ne_110m_admin_0_countries.geojson");
-
-const VIEW_WIDTH = 1000;
-const VIEW_HEIGHT = 500;
-const VIEW_PADDING = 12;
-const MAX_GEO_BYTES = 60 * 1024;
-const MAX_GEO_GZIP_BYTES = 25 * 1024;
+  process.env.ATLAS_RAW_DIR ?? "E:/Projects/.tmp/codex1/T012/raw";
+const admin0RawPath = path.join(rawDir, "ne_110m_admin_0_countries.geojson");
+const admin1RawPath = path.join(rawDir, "ne_10m_admin_1_states_provinces.geojson");
+const atlasPointsDir = path.join(dataDir, "atlas");
+const provincesPath = path.join(atlasPointsDir, "provinces.json");
+const countriesPath = path.join(atlasPointsDir, "countries.json");
 
 const WORK_TYPES = new Set([
   "歌曲",
@@ -114,42 +109,6 @@ const CHINA_REGIONS = {
   "CN-MO": "澳门",
 };
 
-const CHINA_TILE_POSITIONS = [
-  ["CN-HL", 8, 0],
-  ["CN-NM", 4, 1],
-  ["CN-JL", 8, 1],
-  ["CN-XJ", 0, 2],
-  ["CN-GS", 2, 2],
-  ["CN-NX", 3, 2],
-  ["CN-SX", 4, 2],
-  ["CN-HE", 5, 2],
-  ["CN-BJ", 6, 2],
-  ["CN-TJ", 7, 2],
-  ["CN-LN", 8, 2],
-  ["CN-XZ", 0, 3],
-  ["CN-QH", 1, 3],
-  ["CN-SN", 3, 3],
-  ["CN-HA", 4, 3],
-  ["CN-SD", 5, 3],
-  ["CN-YN", 0, 4],
-  ["CN-SC", 1, 4],
-  ["CN-CQ", 2, 4],
-  ["CN-GZ", 3, 4],
-  ["CN-HB", 4, 4],
-  ["CN-AH", 5, 4],
-  ["CN-JS", 6, 4],
-  ["CN-SH", 7, 4],
-  ["CN-ZJ", 8, 4],
-  ["CN-GX", 2, 5],
-  ["CN-HN", 3, 5],
-  ["CN-JX", 4, 5],
-  ["CN-FJ", 5, 5],
-  ["CN-TW", 6, 5],
-  ["CN-MO", 2, 6],
-  ["CN-GD", 3, 6],
-  ["CN-HK", 4, 6],
-  ["CN-HI", 4, 7],
-];
 const EXCLUDED_WORLD_MARKERS = new Set(["TWN", "CYN", "SOL", "KOS"]);
 
 const CHINA_ALIASES = {
@@ -249,7 +208,6 @@ const PROVINCE_NAMES_LONGEST_FIRST = Object.keys(CHINA_ALIASES).sort(
   (a, b) => b.length - a.length,
 );
 
-const round = (value) => Math.round(value);
 const normalizeName = (value) =>
   String(value ?? "")
     .normalize("NFKC")
@@ -267,281 +225,6 @@ async function exists(filePath) {
 
 function readJson(filePath) {
   return readFile(filePath, "utf8").then((text) => JSON.parse(text));
-}
-
-function equalEarth(longitude, latitude) {
-  const radians = Math.PI / 180;
-  const lambda = longitude * radians;
-  const phi = latitude * radians;
-  const A1 = 1.340264;
-  const A2 = -0.081106;
-  const A3 = 0.000893;
-  const A4 = 0.003796;
-  const theta = Math.asin((Math.sqrt(3) / 2) * Math.sin(phi));
-  const theta2 = theta * theta;
-  const theta6 = theta2 * theta2 * theta2;
-  const denominator =
-    3 *
-    (A1 + 3 * A2 * theta2 + theta6 * (7 * A3 + 9 * A4 * theta2));
-  const x = (2 * Math.sqrt(3) * lambda * Math.cos(theta)) / denominator;
-  const y =
-    theta * (A1 + A2 * theta2 + theta6 * (A3 + A4 * theta2));
-  return [x, y];
-}
-
-function polygonsForGeometry(geometry) {
-  if (!geometry) return [];
-  if (geometry.type === "Polygon") return [geometry.coordinates];
-  if (geometry.type === "MultiPolygon") return geometry.coordinates;
-  return [];
-}
-
-function ringMetrics(points) {
-  let area2 = 0;
-  let xSum = 0;
-  let ySum = 0;
-  for (let index = 0; index < points.length; index += 1) {
-    const current = points[index];
-    const next = points[(index + 1) % points.length];
-    const cross = current[0] * next[1] - next[0] * current[1];
-    area2 += cross;
-    xSum += (current[0] + next[0]) * cross;
-    ySum += (current[1] + next[1]) * cross;
-  }
-  if (Math.abs(area2) < 1e-12) return null;
-  return {
-    area2,
-    centroid: [xSum / (3 * area2), ySum / (3 * area2)],
-  };
-}
-
-function pointSegmentDistanceSquared(point, start, end) {
-  const dx = end[0] - start[0];
-  const dy = end[1] - start[1];
-  if (dx === 0 && dy === 0) {
-    return (point[0] - start[0]) ** 2 + (point[1] - start[1]) ** 2;
-  }
-  const amount = Math.max(
-    0,
-    Math.min(
-      1,
-      ((point[0] - start[0]) * dx + (point[1] - start[1]) * dy) /
-        (dx * dx + dy * dy),
-    ),
-  );
-  const x = start[0] + amount * dx;
-  const y = start[1] + amount * dy;
-  return (point[0] - x) ** 2 + (point[1] - y) ** 2;
-}
-
-function simplifyOpenLine(points, tolerance) {
-  if (points.length <= 2) return points;
-  const keep = new Uint8Array(points.length);
-  keep[0] = 1;
-  keep[points.length - 1] = 1;
-  const stack = [[0, points.length - 1]];
-  const toleranceSquared = tolerance * tolerance;
-  while (stack.length) {
-    const [startIndex, endIndex] = stack.pop();
-    let farthestIndex = -1;
-    let farthestDistance = toleranceSquared;
-    for (let index = startIndex + 1; index < endIndex; index += 1) {
-      const distance = pointSegmentDistanceSquared(
-        points[index],
-        points[startIndex],
-        points[endIndex],
-      );
-      if (distance > farthestDistance) {
-        farthestDistance = distance;
-        farthestIndex = index;
-      }
-    }
-    if (farthestIndex >= 0) {
-      keep[farthestIndex] = 1;
-      stack.push([startIndex, farthestIndex], [farthestIndex, endIndex]);
-    }
-  }
-  return points.filter((_, index) => keep[index] === 1);
-}
-
-function simplifyClosedRing(ring, tolerance) {
-  const points = ring.slice();
-  if (
-    points.length > 1 &&
-    Math.hypot(
-      points[0][0] - points.at(-1)[0],
-      points[0][1] - points.at(-1)[1],
-    ) < 1e-8
-  ) {
-    points.pop();
-  }
-  if (points.length <= 4) return points;
-
-  let farthestIndex = 1;
-  let farthestDistance = -1;
-  for (let index = 1; index < points.length; index += 1) {
-    const distance =
-      (points[index][0] - points[0][0]) ** 2 +
-      (points[index][1] - points[0][1]) ** 2;
-    if (distance > farthestDistance) {
-      farthestDistance = distance;
-      farthestIndex = index;
-    }
-  }
-  const firstArc = simplifyOpenLine(points.slice(0, farthestIndex + 1), tolerance);
-  const secondArc = simplifyOpenLine(
-    [...points.slice(farthestIndex), points[0]],
-    tolerance,
-  );
-  const simplified = [...firstArc.slice(0, -1), ...secondArc.slice(0, -1)];
-  const unique = simplified.filter(
-    (point, index) =>
-      index === 0 ||
-      Math.hypot(
-        point[0] - simplified[index - 1][0],
-        point[1] - simplified[index - 1][1],
-      ) > 1e-8,
-  );
-  return unique.length >= 3 ? unique : points;
-}
-
-function buildProjectedShape(features, project, tolerance) {
-  const polygons = [];
-  const bounds = {
-    minX: Number.POSITIVE_INFINITY,
-    minY: Number.POSITIVE_INFINITY,
-    maxX: Number.NEGATIVE_INFINITY,
-    maxY: Number.NEGATIVE_INFINITY,
-  };
-  let centroidX = 0;
-  let centroidY = 0;
-  let totalArea = 0;
-
-  for (const feature of features) {
-    for (const polygon of polygonsForGeometry(feature.geometry)) {
-      const projectedRings = [];
-      for (let ringIndex = 0; ringIndex < polygon.length; ringIndex += 1) {
-        const projected = polygon[ringIndex]
-          .map(([longitude, latitude]) => project(longitude, latitude))
-          .filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
-        if (projected.length < 3) continue;
-        for (const [x, y] of projected) {
-          bounds.minX = Math.min(bounds.minX, x);
-          bounds.maxX = Math.max(bounds.maxX, x);
-          bounds.minY = Math.min(bounds.minY, y);
-          bounds.maxY = Math.max(bounds.maxY, y);
-        }
-        const metrics = ringMetrics(projected);
-        if (metrics) {
-          const area = Math.abs(metrics.area2) / 2;
-          const weight = ringIndex === 0 ? area : -area;
-          centroidX += metrics.centroid[0] * weight;
-          centroidY += metrics.centroid[1] * weight;
-          totalArea += weight;
-        }
-        projectedRings.push(simplifyClosedRing(projected, tolerance));
-      }
-      if (projectedRings.length) polygons.push(projectedRings);
-    }
-  }
-  if (!polygons.length || !Number.isFinite(bounds.minX)) {
-    throw new Error("A map region has no polygon coordinates.");
-  }
-
-  const width = bounds.maxX - bounds.minX || 1;
-  const height = bounds.maxY - bounds.minY || 1;
-  const scale = Math.min(
-    (VIEW_WIDTH - VIEW_PADDING * 2) / width,
-    (VIEW_HEIGHT - VIEW_PADDING * 2) / height,
-  );
-  const drawnWidth = width * scale;
-  const drawnHeight = height * scale;
-  const offsetX = (VIEW_WIDTH - drawnWidth) / 2;
-  const offsetY = (VIEW_HEIGHT - drawnHeight) / 2;
-  const toView = ([x, y]) => [
-    round(offsetX + (x - bounds.minX) * scale),
-    round(VIEW_HEIGHT - offsetY - (y - bounds.minY) * scale),
-  ];
-  const d = polygons
-    .flatMap((polygon) =>
-      polygon.map((ring) => {
-        const points = ring.map(toView);
-        return (
-          "M" +
-          points[0][0] +
-          " " +
-          points[0][1] +
-          points
-            .slice(1)
-            .map((point) => "L" + point[0] + " " + point[1])
-            .join("") +
-          "Z"
-        );
-      }),
-    )
-    .join("");
-  const center =
-    Math.abs(totalArea) > 1e-12
-      ? toView([centroidX / totalArea, centroidY / totalArea])
-      : toView([(bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2]);
-
-  return {
-    viewBox: "0 0 " + VIEW_WIDTH + " " + VIEW_HEIGHT,
-    d,
-    centroid: { x: center[0], y: center[1] },
-    project: (longitude, latitude) =>
-      toView(project(longitude, latitude)),
-  };
-}
-
-function buildAtlasGeo(land, admin0) {
-  const landPolygons = land.features
-    .flatMap((feature) => polygonsForGeometry(feature.geometry))
-    .filter((polygon) => polygon[0]?.some(([, latitude]) => latitude > -60))
-    .map((coordinates) => ({ geometry: { type: "Polygon", coordinates } }));
-  const landShape = buildProjectedShape(landPolygons, equalEarth, 0.006);
-  const markers = admin0.features
-    .map((feature) => {
-      const properties = feature.properties ?? {};
-      const id = properties.ADM0_A3;
-      const name = properties.NAME_ZH ?? properties.NAME_EN ?? properties.ADMIN;
-      if (
-        !/^[A-Z0-9]{3}$/.test(id ?? "") ||
-        EXCLUDED_WORLD_MARKERS.has(id) ||
-        !name ||
-        /中华民国|台湾|北塞浦路斯|索马里兰/u.test(name)
-      ) {
-        return null;
-      }
-      const longitude = Number(properties.LABEL_X);
-      const latitude = Number(properties.LABEL_Y);
-      if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return null;
-      const [x, y] = landShape.project(longitude, latitude);
-      return { id, name, x, y };
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.id.localeCompare(b.id));
-  const tiles = CHINA_TILE_POSITIONS.map(([id, col, row]) => ({
-    id,
-    name: CHINA_REGIONS[id],
-    col,
-    row,
-  })).sort((a, b) => a.id.localeCompare(b.id));
-
-  if (tiles.length !== 34 || new Set(tiles.map((tile) => tile.id)).size !== 34) {
-    throw new Error("China tile layout must contain 34 unique regions.");
-  }
-  if (markers.length < 150) {
-    throw new Error("Natural Earth admin-0 data returned too few label points.");
-  }
-  return {
-    china: { cols: 11, rows: 9, tiles },
-    world: {
-      viewBox: landShape.viewBox,
-      land: landShape.d,
-      markers,
-    },
-  };
 }
 
 function sourceEntityMap(book) {
@@ -570,55 +253,48 @@ function getWorkUnits(work, book, entities) {
     .filter(Boolean);
 }
 
+const GENRE_RELATIONS = new Set(["民歌体裁", "音乐体裁", "民歌类别"]);
+const UNRELIABLE_GENRES = new Set(["不详", "未知", "无", "暂无"]);
+
+function workGenre(work, book, entities) {
+  return book.triples
+    .filter((triple) => triple.subject === work.id && GENRE_RELATIONS.has(triple.predicate))
+    .sort((a, b) => (a.sourcePage ?? 0) - (b.sourcePage ?? 0) || a.id.localeCompare(b.id))
+    .map((triple) => valueForTriple(triple, entities)?.trim())
+    .find((value) => value && !UNRELIABLE_GENRES.has(value)) ?? null;
+}
+
 function makeWorkRecord(work, book, entities) {
   return {
     id: work.id,
     name: work.name,
     type: work.type,
+    genre: workGenre(work, book, entities),
     bookKey: book.bookKey,
     unit: getWorkUnits(work, book, entities)[0] ?? null,
     page: work.firstPage ?? null,
   };
 }
 
-function makeCountryNameMap(atlasGeo, admin0) {
+function makeCountryNameMap(countries, admin0) {
   const ids = new Map();
-  for (const marker of atlasGeo.world.markers) {
-    ids.set(normalizeName(marker.name), marker.id);
-  }
+  for (const marker of countries) ids.set(normalizeName(marker.name), marker.id);
   for (const feature of admin0?.features ?? []) {
     const properties = feature.properties ?? {};
-    if (
-      !/^[A-Z0-9]{3}$/.test(properties.ADM0_A3 ?? "") ||
-      EXCLUDED_WORLD_MARKERS.has(properties.ADM0_A3)
-    ) {
-      continue;
-    }
-    for (const name of [
-      properties.ADMIN,
-      properties.NAME,
-      properties.NAME_LONG,
-      properties.NAME_ZH,
-      properties.NAME_ZHT,
-      properties.NAME_EN,
-    ]) {
-      if (name) ids.set(normalizeName(name), properties.ADM0_A3);
+    const id = properties.ADM0_A3;
+    if (!/^[A-Z0-9]{3}$/.test(id ?? "") || EXCLUDED_WORLD_MARKERS.has(id)) continue;
+    for (const name of [properties.ADMIN, properties.NAME, properties.NAME_LONG, properties.NAME_ZH, properties.NAME_ZHT, properties.NAME_EN]) {
+      if (name) ids.set(normalizeName(name), id);
     }
   }
-  for (const [name, id] of Object.entries(COUNTRY_ALIASES)) {
-    ids.set(normalizeName(name), id);
-  }
+  for (const [name, id] of Object.entries(COUNTRY_ALIASES)) ids.set(normalizeName(name), id);
   return ids;
 }
 
-function makeChinaNameMap(atlasGeo) {
+function makeChinaNameMap(provinces) {
   const ids = new Map();
-  for (const tile of atlasGeo.china.tiles) {
-    ids.set(normalizeName(tile.name), tile.id);
-  }
-  for (const [name, id] of Object.entries(CHINA_ALIASES)) {
-    ids.set(normalizeName(name), id);
-  }
+  for (const province of provinces) ids.set(normalizeName(province.name), province.id);
+  for (const [name, id] of Object.entries(CHINA_ALIASES)) ids.set(normalizeName(name), id);
   return ids;
 }
 
@@ -908,55 +584,35 @@ function getAssignmentsForWork({
   return { assignments: byId, unresolved };
 }
 
-function makeAtlasData(books, atlasGeo, admin0) {
-  const chinaNameToId = makeChinaNameMap(atlasGeo);
-  const countryNameToId = makeCountryNameMap(atlasGeo, admin0);
+function makeAtlasData(books, provinces, countries, admin0) {
+  const chinaNameToId = makeChinaNameMap(provinces);
+  const countryNameToId = makeCountryNameMap(countries, admin0);
   const regionNamesById = new Map([
-    ...atlasGeo.china.tiles.map((tile) => [tile.id, tile.name]),
-    ...atlasGeo.world.markers.map((marker) => [marker.id, marker.name]),
+    ...provinces.map((province) => [province.id, province.name]),
+    ...countries.map((country) => [country.id, country.name]),
   ]);
   const assignmentsByRegion = new Map();
   const unassignedWorks = [];
   const assignedKeys = new Set();
   let totalWorks = 0;
+  let worksWithGenre = 0;
 
   for (const book of books) {
     const entities = sourceEntityMap(book);
-    for (const work of book.entities.filter((entity) =>
-      WORK_TYPES.has(entity.type),
-    )) {
+    for (const work of book.entities.filter((entity) => WORK_TYPES.has(entity.type))) {
       totalWorks += 1;
       const record = makeWorkRecord(work, book, entities);
-      const result = getAssignmentsForWork({
-        work,
-        book,
-        entities,
-        chinaNameToId,
-        countryNameToId,
-        regionNamesById,
-      });
+      if (record.genre) worksWithGenre += 1;
+      const result = getAssignmentsForWork({ work, book, entities, chinaNameToId, countryNameToId, regionNamesById });
       if (!result.assignments.size) {
-        unassignedWorks.push({
-          ...record,
-          region: null,
-          evidence: result.unresolved,
-        });
+        unassignedWorks.push({ ...record, region: null, evidence: result.unresolved });
         continue;
       }
       assignedKeys.add(book.bookKey + ":" + work.id);
       for (const [regionId, evidence] of result.assignments) {
-        if (!assignmentsByRegion.has(regionId)) {
-          assignmentsByRegion.set(regionId, []);
-        }
-        const uniqueEvidence = [
-          ...new Map(
-            evidence.map((entry) => [JSON.stringify(entry), entry]),
-          ).values(),
-        ];
-        assignmentsByRegion.get(regionId).push({
-          ...record,
-          evidence: uniqueEvidence,
-        });
+        if (!assignmentsByRegion.has(regionId)) assignmentsByRegion.set(regionId, []);
+        const uniqueEvidence = [...new Map(evidence.map((entry) => [JSON.stringify(entry), entry])).values()];
+        assignmentsByRegion.get(regionId).push({ ...record, evidence: uniqueEvidence });
       }
     }
   }
@@ -966,42 +622,19 @@ function makeAtlasData(books, atlasGeo, admin0) {
       regionId,
       name: regionNamesById.get(regionId),
       type: regionId.startsWith("CN-") ? "china" : "country",
-      works: works.sort(
-        (a, b) =>
-          a.bookKey.localeCompare(b.bookKey) ||
-          (a.page ?? 0) - (b.page ?? 0) ||
-          a.name.localeCompare(b.name, "zh-CN"),
-      ),
+      works: works.sort((a, b) => a.bookKey.localeCompare(b.bookKey) || (a.page ?? 0) - (b.page ?? 0) || a.name.localeCompare(b.name, "zh-CN")),
     }))
     .sort((a, b) => a.regionId.localeCompare(b.regionId));
 
   return {
     regions,
-    unassignedWorks: unassignedWorks.sort(
-      (a, b) =>
-        a.bookKey.localeCompare(b.bookKey) ||
-        (a.page ?? 0) - (b.page ?? 0) ||
-        a.name.localeCompare(b.name, "zh-CN"),
-    ),
+    unassignedWorks: unassignedWorks.sort((a, b) => a.bookKey.localeCompare(b.bookKey) || (a.page ?? 0) - (b.page ?? 0) || a.name.localeCompare(b.name, "zh-CN")),
     summary: {
       totalWorks,
+      worksWithGenre,
       assignedWorks: assignedKeys.size,
-      domesticWorks: new Set(
-        regions
-          .filter((region) => region.type === "china")
-          .flatMap((region) =>
-            region.works.map((work) => work.bookKey + ":" + work.id),
-          ),
-      ).size,
-      foreignWorks: new Set(
-        regions
-          .filter(
-            (region) => region.type === "country" && region.regionId !== "CHN",
-          )
-          .flatMap((region) =>
-            region.works.map((work) => work.bookKey + ":" + work.id),
-          ),
-      ).size,
+      domesticWorks: new Set(regions.filter((region) => region.type === "china").flatMap((region) => region.works.map((work) => work.bookKey + ":" + work.id))).size,
+      foreignWorks: new Set(regions.filter((region) => region.type === "country" && region.regionId !== "CHN").flatMap((region) => region.works.map((work) => work.bookKey + ":" + work.id))).size,
       unassignedWorks: unassignedWorks.length,
     },
   };
@@ -1327,33 +960,74 @@ function makeTimeline(books) {
   return { works, people };
 }
 
-async function buildGeoIfPossible() {
-  const hasLandRaw = await exists(landRawPath);
-  const hasWorldRaw = await exists(worldRawPath);
-  if (!hasLandRaw && !hasWorldRaw && (await exists(atlasGeoPath))) {
-    console.log("Atlas geometry: reusing public/data/atlas-geo.json");
-    return {
-      atlasGeo: await readJson(atlasGeoPath),
-      admin0: null,
-      writeGeo: false,
-    };
+function makeProvinces(admin1) {
+  const provinces = new Map();
+  for (const feature of admin1?.features ?? []) {
+    const properties = feature.properties ?? {};
+    const id = properties.iso_3166_2;
+    if (properties.admin !== "China" || !CHINA_REGIONS[id]) continue;
+    const lat = Number(properties.latitude);
+    const lon = Number(properties.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    provinces.set(id, { id, name: CHINA_REGIONS[id], lat, lon });
   }
-  if (!hasLandRaw || !hasWorldRaw) {
+  for (const [id, lat, lon] of [
+    ["CN-TW", 23.7, 121.0],
+    ["CN-HK", 22.35, 114.15],
+    ["CN-MO", 22.2, 113.55],
+  ]) {
+    provinces.set(id, { id, name: CHINA_REGIONS[id], lat, lon });
+  }
+  if (provinces.size !== 34) {
     throw new Error(
-      "Natural Earth land and admin-0 source files must both exist at " +
-        rawDir +
-        " (or public/data/atlas-geo.json must already exist).",
+      "Expected 31 Natural Earth provinces plus Taiwan, Hong Kong, and Macao points; got " +
+        provinces.size,
     );
   }
-
-  const [land, admin0] = await Promise.all([
-    readJson(landRawPath),
-    readJson(worldRawPath),
-  ]);
-  return { atlasGeo: buildAtlasGeo(land, admin0), admin0, writeGeo: true };
+  return [...provinces.values()].sort((a, b) => a.id.localeCompare(b.id));
 }
 
-const { atlasGeo, admin0, writeGeo } = await buildGeoIfPossible();
+function makeCountryPoints(admin0) {
+  return (admin0?.features ?? [])
+    .map((feature) => {
+      const properties = feature.properties ?? {};
+      const id = properties.ADM0_A3;
+      const name = properties.NAME_ZH ?? properties.NAME_EN ?? properties.ADMIN;
+      const lat = Number(properties.LABEL_Y);
+      const lon = Number(properties.LABEL_X);
+      if (
+        !/^[A-Z0-9]{3}$/.test(id ?? "") ||
+        EXCLUDED_WORLD_MARKERS.has(id) ||
+        !name ||
+        /中华民国|台湾|北塞浦路斯|索马里兰/u.test(name) ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon)
+      ) {
+        return null;
+      }
+      return { id, name, lat, lon };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+async function loadPointSources() {
+  const [hasAdmin0, hasAdmin1] = await Promise.all([
+    exists(admin0RawPath),
+    exists(admin1RawPath),
+  ]);
+  const [admin0, admin1] = await Promise.all([
+    hasAdmin0 ? readJson(admin0RawPath) : Promise.resolve(null),
+    hasAdmin1 ? readJson(admin1RawPath) : Promise.resolve(null),
+  ]);
+  const [provinces, countries] = await Promise.all([
+    hasAdmin1 ? Promise.resolve(makeProvinces(admin1)) : readJson(provincesPath),
+    hasAdmin0 ? Promise.resolve(makeCountryPoints(admin0)) : readJson(countriesPath),
+  ]);
+  return { provinces, countries, admin0 };
+}
+
+const { provinces, countries: candidateCountries, admin0 } = await loadPointSources();
 const books = (
   await Promise.all(
     (await readdir(booksDir))
@@ -1362,70 +1036,36 @@ const books = (
       .map((name) => readJson(path.join(booksDir, name))),
   )
 ).sort((a, b) => a.bookKey.localeCompare(b.bookKey));
-if (books.length !== 6) {
-  throw new Error("Expected six public/data/books/*.json files.");
-}
+if (books.length !== 6) throw new Error("Expected six public/data/books/*.json files.");
 
 await mkdir(dataDir, { recursive: true });
-const atlas = makeAtlasData(books, atlasGeo, admin0);
+await mkdir(atlasPointsDir, { recursive: true });
+const atlas = makeAtlasData(books, provinces, candidateCountries, admin0);
 const timeline = makeTimeline(books);
 const usedForeignIds = new Set(
-  atlas.regions
-    .filter((region) => region.type === "country" && region.regionId !== "CHN")
-    .map((region) => region.regionId),
+  atlas.regions.filter((region) => region.type === "country" && region.regionId !== "CHN").map((region) => region.regionId),
 );
-const candidateMarkerIds = new Set(atlasGeo.world.markers.map((marker) => marker.id));
+const countryById = new Map(candidateCountries.map((country) => [country.id, country]));
 for (const id of usedForeignIds) {
-  if (!candidateMarkerIds.has(id)) {
-    throw new Error("Atlas country is missing a world label point: " + id);
-  }
+  if (!countryById.has(id)) throw new Error("Atlas country is missing a label point: " + id);
 }
-atlasGeo.world.markers = atlasGeo.world.markers.filter((marker) =>
-  usedForeignIds.has(marker.id),
-);
-const atlasGeoText = JSON.stringify(atlasGeo) + "\n";
-const atlasGeoBytes = Buffer.byteLength(atlasGeoText);
-const atlasGeoGzipBytes = gzipSync(Buffer.from(atlasGeoText, "utf8")).byteLength;
-if (
-  atlasGeoBytes > MAX_GEO_BYTES ||
-  atlasGeoGzipBytes > MAX_GEO_GZIP_BYTES
-) {
-  throw new Error(
-    "atlas-geo.json exceeds its size limit: " +
-      atlasGeoBytes +
-      " bytes, gzip " +
-      atlasGeoGzipBytes +
-      " bytes.",
-  );
-}
+const countries = candidateCountries.filter((country) => usedForeignIds.has(country.id));
 const atlasText = JSON.stringify(atlas) + "\n";
 const timelineText = JSON.stringify(timeline) + "\n";
 const writes = [
   writeFile(path.join(dataDir, "atlas.json"), atlasText, "utf8"),
   writeFile(path.join(dataDir, "timeline.json"), timelineText, "utf8"),
+  writeFile(provincesPath, JSON.stringify(provinces) + "\n", "utf8"),
+  writeFile(countriesPath, JSON.stringify(countries) + "\n", "utf8"),
 ];
-if (writeGeo || atlasGeoText !== JSON.stringify(await readJson(atlasGeoPath)) + "\n") {
-  writes.push(writeFile(atlasGeoPath, atlasGeoText, "utf8"));
-}
 await Promise.all(writes);
 
-console.log(
-  JSON.stringify(
-    {
-      atlasGeoBytes,
-      atlasGeoGzipBytes,
-      atlasBytes: Buffer.byteLength(atlasText),
-      timelineBytes: Buffer.byteLength(timelineText),
-      chinaTiles: atlasGeo.china.tiles.length,
-      worldMarkers: atlasGeo.world.markers.length,
-      works: atlas.summary,
-      worksWithYear: timeline.works.filter((work) => work.year != null).length,
-      peopleWithYears: timeline.people.filter(
-        (person) => person.born != null || person.died != null,
-      ).length,
-      ethnicityMappings: ETHNICITY_TO_PROVINCES,
-    },
-    null,
-    2,
-  ),
-);
+console.log(JSON.stringify({
+  atlasBytes: Buffer.byteLength(atlasText),
+  timelineBytes: Buffer.byteLength(timelineText),
+  provinces: provinces.length,
+  countries: countries.length,
+  works: atlas.summary,
+  worksWithYear: timeline.works.filter((work) => work.year != null).length,
+  peopleWithYears: timeline.people.filter((person) => person.born != null || person.died != null).length,
+}, null, 2));

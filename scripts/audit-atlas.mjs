@@ -1,14 +1,13 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { gzipSync } from "node:zlib";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
+const atlasDir = path.join(dataDir, "atlas");
 const booksDir = path.join(dataDir, "books");
 const MIN_MAPPED_WORKS = 80;
-const MAX_GEO_BYTES = 60 * 1024;
-const MAX_GEO_GZIP_BYTES = 25 * 1024;
+const MAX_ATLAS_DATA_BYTES = 500 * 1024;
 const WORK_TYPES = new Set([
   "歌曲",
   "民歌",
@@ -23,6 +22,8 @@ const WORK_TYPES = new Set([
   "进行曲",
   "朗诵作品",
 ]);
+const DISALLOWED_COUNTRY_IDS = new Set(["TWN", "CYN", "SOL", "KOS"]);
+const DISALLOWED_COUNTRY_NAMES = /中华民国|台湾|北塞浦路斯|索马里兰/u;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -32,112 +33,112 @@ async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, "utf8"));
 }
 
-const files = ["atlas-geo.json", "atlas.json", "timeline.json"];
-for (const file of files) {
-  await stat(path.join(dataDir, file));
-}
-const [atlasGeo, atlas, timeline] = await Promise.all(
-  files.map((file) => readJson(path.join(dataDir, file))),
-);
-const geoText = await readFile(path.join(dataDir, "atlas-geo.json"), "utf8");
-const geoBytes = Buffer.byteLength(geoText);
-const geoGzipBytes = gzipSync(Buffer.from(geoText, "utf8")).byteLength;
-assert(
-  geoBytes <= MAX_GEO_BYTES,
-  "atlas-geo.json is " + geoBytes + " bytes; maximum is " + MAX_GEO_BYTES,
-);
-assert(
-  geoGzipBytes <= MAX_GEO_GZIP_BYTES,
-  "atlas-geo.json gzip is " +
-    geoGzipBytes +
-    " bytes; maximum is " +
-    MAX_GEO_GZIP_BYTES,
-);
-const chinaTiles = atlasGeo.china?.tiles;
-const worldMarkers = atlasGeo.world?.markers;
-assert(
-  atlasGeo.china?.cols === 11 && atlasGeo.china?.rows === 9,
-  "atlas-geo.json China tile grid must be 11 columns by 9 rows.",
-);
-assert(
-  Array.isArray(chinaTiles) && chinaTiles.length === 34,
-  "atlas-geo.json must contain exactly 34 China tiles.",
-);
-const requiredChinaIds = ["CN-TW", "CN-HK", "CN-MO", "CN-XZ", "CN-XJ"];
-for (const id of requiredChinaIds) {
-  assert(
-    chinaTiles.some((tile) => tile.id === id),
-    "China tile grid is missing " + id,
-  );
-}
-const chinaTileIds = new Set();
-const chinaTilePositions = new Set();
-for (const tile of chinaTiles) {
-  assert(/^CN-[A-Z]{2}$/.test(tile.id), "Invalid China tile id: " + tile.id);
-  assert(tile.name, "China tile is missing a Chinese short name: " + tile.id);
-  assert(
-    Number.isInteger(tile.col) &&
-      tile.col >= 0 &&
-      tile.col < atlasGeo.china.cols &&
-      Number.isInteger(tile.row) &&
-      tile.row >= 0 &&
-      tile.row < atlasGeo.china.rows,
-    "China tile is outside its grid: " + tile.id,
-  );
-  const position = tile.col + "," + tile.row;
-  assert(!chinaTileIds.has(tile.id), "Duplicate China tile id: " + tile.id);
-  assert(
-    !chinaTilePositions.has(position),
-    "Multiple China tiles occupy " + position,
-  );
-  chinaTileIds.add(tile.id);
-  chinaTilePositions.add(position);
-}
-assert(
-  typeof atlasGeo.world?.land === "string" && atlasGeo.world.land.startsWith("M"),
-  "atlas-geo.json must contain a projected world land path.",
-);
-assert(
-  Array.isArray(worldMarkers),
-  "atlas-geo.json must contain world label markers.",
-);
-const markerIds = new Set();
-for (const marker of worldMarkers) {
-  assert(/^[A-Z0-9]{3}$/.test(marker.id), "Invalid world marker id: " + marker.id);
-  assert(!markerIds.has(marker.id), "Duplicate world marker id: " + marker.id);
-  assert(
-    !["TWN", "CYN", "SOL", "KOS"].includes(marker.id),
-    "Disallowed world marker id: " + marker.id,
-  );
-  assert(
-    !/中华民国|台湾|北塞浦路斯|索马里兰/u.test(marker.name ?? ""),
-    "Disallowed world marker name: " + marker.name,
-  );
-  assert(
-    Number.isFinite(marker.x) && Number.isFinite(marker.y),
-    "World marker is missing projected coordinates: " + marker.id,
-  );
-  markerIds.add(marker.id);
-}
-
-function assertNoBoundaryFields(value, parent = "atlas-geo") {
-  if (!value || typeof value !== "object") return;
-  for (const [key, nested] of Object.entries(value)) {
+function assertPointList(points, label, idPattern) {
+  assert(Array.isArray(points), label + " must be an array.");
+  const ids = new Set();
+  for (const point of points) {
     assert(
-      !/(?:border|boundary|country|province|region|国界|省界|国家|省份|轮廓)/iu.test(
-        key,
-      ),
-      "atlas-geo.json contains a boundary-related field: " + parent + "." + key,
+      JSON.stringify(Object.keys(point).sort()) ===
+        JSON.stringify(["id", "lat", "lon", "name"]),
+      label + " entries must contain only id, name, lat, and lon.",
     );
-    assertNoBoundaryFields(nested, parent + "." + key);
+    assert(idPattern.test(point.id), "Invalid " + label + " id: " + point.id);
+    assert(!ids.has(point.id), "Duplicate " + label + " id: " + point.id);
+    assert(typeof point.name === "string" && point.name.length > 0, label + " name is missing: " + point.id);
+    assert(
+      Number.isFinite(point.lat) && point.lat >= -90 && point.lat <= 90,
+      label + " latitude is invalid: " + point.id,
+    );
+    assert(
+      Number.isFinite(point.lon) && point.lon >= -180 && point.lon <= 180,
+      label + " longitude is invalid: " + point.id,
+    );
+    ids.add(point.id);
   }
+  return ids;
 }
-assertNoBoundaryFields(atlasGeo);
 
-const geoRegionIds = new Set([
-  ...chinaTiles.map((tile) => tile.id),
-  ...worldMarkers.map((marker) => marker.id),
+async function assertPngSize(filePath, width, height) {
+  const data = await readFile(filePath);
+  assert(data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), "Invalid PNG: " + path.basename(filePath));
+  assert(data.readUInt32BE(16) === width, "Unexpected PNG width: " + path.basename(filePath));
+  assert(data.readUInt32BE(20) === height, "Unexpected PNG height: " + path.basename(filePath));
+  return data.byteLength;
+}
+
+const atlasFiles = [
+  "china-height.png",
+  "china-meta.json",
+  "countries.json",
+  "provinces.json",
+  "world-mask.png",
+  "world-relief.webp",
+];
+for (const file of [...atlasFiles, "atlas.json", "timeline.json"]) {
+  await stat(path.join(file === "atlas.json" || file === "timeline.json" ? dataDir : atlasDir, file));
+}
+assert(
+  !(await stat(path.join(dataDir, "atlas-geo.json")).then(() => true, () => false)),
+  "Legacy atlas-geo.json must be removed; atlas runtime data uses point lists only.",
+);
+
+const [atlas, timeline, provinces, countries, chinaMeta] = await Promise.all([
+  readJson(path.join(dataDir, "atlas.json")),
+  readJson(path.join(dataDir, "timeline.json")),
+  readJson(path.join(atlasDir, "provinces.json")),
+  readJson(path.join(atlasDir, "countries.json")),
+  readJson(path.join(atlasDir, "china-meta.json")),
 ]);
+
+const provinceIds = assertPointList(provinces, "provinces.json", /^CN-[A-Z]{2}$/);
+assert(provinces.length === 34, "provinces.json must contain 34 province-level points.");
+for (const id of ["CN-TW", "CN-HK", "CN-MO", "CN-XZ", "CN-XJ"]) {
+  assert(provinceIds.has(id), "provinces.json is missing " + id);
+}
+for (const [id, lat, lon] of [
+  ["CN-TW", 23.7, 121.0],
+  ["CN-HK", 22.35, 114.15],
+  ["CN-MO", 22.2, 113.55],
+]) {
+  const point = provinces.find((item) => item.id === id);
+  assert(point.lat === lat && point.lon === lon, "Manual point is incorrect: " + id);
+}
+
+const countryIds = assertPointList(countries, "countries.json", /^[A-Z0-9]{3}$/);
+for (const point of countries) {
+  assert(!DISALLOWED_COUNTRY_IDS.has(point.id), "Disallowed world marker id: " + point.id);
+  assert(!DISALLOWED_COUNTRY_NAMES.test(point.name), "Disallowed world marker name: " + point.name);
+}
+
+assert(
+  chinaMeta.lon0 === 70 && chinaMeta.lon1 === 137 && chinaMeta.lat0 === 14 && chinaMeta.lat1 === 56,
+  "China terrain metadata must describe the requested 70–137E, 14–56N rectangle.",
+);
+assert(
+  chinaMeta.cols === 537 && chinaMeta.rows === 337 && chinaMeta.step === 0.125,
+  "China terrain grid must be 537 x 337 at 0.125 degree spacing.",
+);
+assert(chinaMeta.vmin === -500 && chinaMeta.vmax === 9000, "Unexpected elevation encoding range.");
+const chinaHeightBytes = await assertPngSize(path.join(atlasDir, "china-height.png"), 537, 337);
+const worldMaskBytes = await assertPngSize(path.join(atlasDir, "world-mask.png"), 2048, 1024);
+const relief = await readFile(path.join(atlasDir, "world-relief.webp"));
+assert(
+  relief.subarray(0, 4).toString("ascii") === "RIFF" &&
+    relief.subarray(8, 12).toString("ascii") === "WEBP",
+  "world-relief.webp must be a valid WebP file.",
+);
+assert(relief.subarray(12, 16).toString("ascii") === "VP8 ", "World relief must be an opaque RGB WebP texture.");
+const atlasDirectoryEntries = await readdir(atlasDir);
+assert(
+  atlasDirectoryEntries.length === atlasFiles.length &&
+    atlasFiles.every((file) => atlasDirectoryEntries.includes(file)),
+  "public/data/atlas must contain only the six declared point and terrain data files.",
+);
+const exactAtlasDataBytes = (
+  await Promise.all(atlasDirectoryEntries.map((file) => stat(path.join(atlasDir, file))))
+).reduce((total, entry) => total + entry.size, 0);
+assert(exactAtlasDataBytes <= MAX_ATLAS_DATA_BYTES, "Atlas data totals " + exactAtlasDataBytes + " bytes; maximum is " + MAX_ATLAS_DATA_BYTES);
+
 const books = await Promise.all(
   (await readdir(booksDir))
     .filter((name) => name.endsWith(".json"))
@@ -148,66 +149,58 @@ const knownWorks = new Set();
 const peopleByBookAndId = new Set();
 for (const book of books) {
   for (const entity of book.entities) {
-    if (WORK_TYPES.has(entity.type)) {
-      knownWorks.add(book.bookKey + ":" + entity.id);
-    }
-    if (entity.type === "人物") {
-      peopleByBookAndId.add(book.bookKey + ":" + entity.id);
-    }
+    if (WORK_TYPES.has(entity.type)) knownWorks.add(book.bookKey + ":" + entity.id);
+    if (entity.type === "人物") peopleByBookAndId.add(book.bookKey + ":" + entity.id);
   }
 }
 
+const validRegionIds = new Set([...provinceIds, ...countryIds]);
 const atlasWorks = new Map();
 const assignedWorkKeys = new Set();
+const genreWorkKeys = new Set();
+function recordAtlasWork(work, location) {
+  const key = work.bookKey + ":" + work.id;
+  assert(knownWorks.has(key), "Atlas work not found in books data: " + key);
+  assert(typeof work.type === "string" && WORK_TYPES.has(work.type), "Atlas work is missing its type: " + key);
+  assert(Object.hasOwn(work, "genre"), "Atlas work is missing its genre field: " + key);
+  assert(work.genre === null || (typeof work.genre === "string" && work.genre.trim().length > 0), "Invalid atlas genre: " + key);
+  if (work.genre) genreWorkKeys.add(key);
+  if (!atlasWorks.has(key)) atlasWorks.set(key, new Set());
+  if (location) atlasWorks.get(key).add(location);
+}
+
 for (const region of atlas.regions ?? []) {
+  assert(validRegionIds.has(region.regionId), "Unknown atlas region: " + region.regionId);
   assert(
-    geoRegionIds.has(region.regionId),
-    "Unknown atlas region: " + region.regionId,
+    region.type === (region.regionId.startsWith("CN-") ? "china" : "country"),
+    "Atlas region type does not match point id: " + region.regionId,
   );
   for (const work of region.works ?? []) {
     const key = work.bookKey + ":" + work.id;
-    assert(knownWorks.has(key), "Atlas work not found in books data: " + key);
     assignedWorkKeys.add(key);
-    if (!atlasWorks.has(key)) atlasWorks.set(key, new Set());
-    atlasWorks.get(key).add(region.regionId);
+    recordAtlasWork(work, region.regionId);
   }
 }
 for (const work of atlas.unassignedWorks ?? []) {
   const key = work.bookKey + ":" + work.id;
-  assert(
-    knownWorks.has(key),
-    "Unassigned atlas work not found in books data: " + key,
-  );
+  recordAtlasWork(work, null);
   assert(work.region === null, "Unassigned atlas work must have region:null: " + key);
-  assert(!atlasWorks.has(key), "Work is both assigned and unassigned: " + key);
-  atlasWorks.set(key, new Set());
+  assert(!atlasWorks.get(key).size, "Work is both assigned and unassigned: " + key);
 }
-assert(
-  atlasWorks.size === knownWorks.size,
-  "Atlas work coverage differs from books data: found " +
-    atlasWorks.size +
-    ", expected " +
-    knownWorks.size,
-);
-for (const key of knownWorks) {
-  assert(atlasWorks.has(key), "Atlas is missing work: " + key);
-}
-assert(
-  assignedWorkKeys.size >= MIN_MAPPED_WORKS,
-  "Only " +
-    assignedWorkKeys.size +
-    " works have a region; minimum is " +
-    MIN_MAPPED_WORKS,
-);
+assert(atlasWorks.size === knownWorks.size, "Atlas work coverage differs from books data: found " + atlasWorks.size + ", expected " + knownWorks.size);
+for (const key of knownWorks) assert(atlasWorks.has(key), "Atlas is missing work: " + key);
+assert(assignedWorkKeys.size >= MIN_MAPPED_WORKS, "Only " + assignedWorkKeys.size + " works have a region; minimum is " + MIN_MAPPED_WORKS);
+assert(atlas.summary.totalWorks === knownWorks.size, "Atlas summary totalWorks does not match books data.");
+assert(atlas.summary.worksWithGenre === genreWorkKeys.size, "Atlas summary worksWithGenre does not match record coverage.");
+
 const atlasForeignIds = new Set(
   atlas.regions
     .filter((region) => region.type === "country" && region.regionId !== "CHN")
     .map((region) => region.regionId),
 );
 assert(
-  markerIds.size === atlasForeignIds.size &&
-    [...markerIds].every((id) => atlasForeignIds.has(id)),
-  "World markers must match exactly the foreign countries used by atlas.json.",
+  countryIds.size === atlasForeignIds.size && [...countryIds].every((id) => atlasForeignIds.has(id)),
+  "countries.json must contain exactly the foreign countries used by atlas.json.",
 );
 
 const timelineWorks = new Set();
@@ -216,65 +209,40 @@ for (const work of timeline.works ?? []) {
   assert(knownWorks.has(key), "Timeline work not found in books data: " + key);
   timelineWorks.add(key);
 }
-assert(
-  timelineWorks.size === knownWorks.size,
-  "Timeline work coverage differs from books data: found " +
-    timelineWorks.size +
-    ", expected " +
-    knownWorks.size,
-);
+assert(timelineWorks.size === knownWorks.size, "Timeline work coverage differs from books data: found " + timelineWorks.size + ", expected " + knownWorks.size);
 for (const person of timeline.people ?? []) {
-  assert(
-    Array.isArray(person.sourceEntities),
-    "Person is missing sourceEntities: " + person.name,
-  );
+  assert(Array.isArray(person.sourceEntities), "Person is missing sourceEntities: " + person.name);
   for (const source of person.sourceEntities) {
-    assert(
-      peopleByBookAndId.has(source.bookKey + ":" + source.id),
-      "Timeline person not found in books data: " +
-        source.bookKey +
-        ":" +
-        source.id,
-    );
+    assert(peopleByBookAndId.has(source.bookKey + ":" + source.id), "Timeline person not found in books data: " + source.bookKey + ":" + source.id);
   }
   for (const workId of person.works ?? []) {
-    assert(
-      [...knownWorks].some((key) => key.endsWith(":" + workId)),
-      "Timeline person references an unknown work: " + workId,
-    );
+    assert([...knownWorks].some((key) => key.endsWith(":" + workId)), "Timeline person references an unknown work: " + workId);
   }
 }
 
-const atlasBytes = Buffer.byteLength(
-  await readFile(path.join(dataDir, "atlas.json"), "utf8"),
-);
-const timelineBytes = Buffer.byteLength(
-  await readFile(path.join(dataDir, "timeline.json"), "utf8"),
-);
+const atlasBytes = Buffer.byteLength(await readFile(path.join(dataDir, "atlas.json"), "utf8"));
+const timelineBytes = Buffer.byteLength(await readFile(path.join(dataDir, "timeline.json"), "utf8"));
 const domesticKeys = new Set();
 const foreignKeys = new Set();
 for (const region of atlas.regions) {
   for (const work of region.works) {
     const key = work.bookKey + ":" + work.id;
     if (region.type === "china") domesticKeys.add(key);
-    else if (region.type === "country" && region.regionId !== "CHN") {
-      foreignKeys.add(key);
-    }
+    else if (region.type === "country" && region.regionId !== "CHN") foreignKeys.add(key);
   }
 }
 const worksWithYear = timeline.works.filter((work) => work.year != null).length;
-const peopleWithYears = timeline.people.filter(
-  (person) => person.born != null || person.died != null,
-).length;
+const peopleWithYears = timeline.people.filter((person) => person.born != null || person.died != null).length;
 
 console.log(
-  "QUALITY_ATLAS_PASSED | china=" +
-    chinaTiles.length +
-    " tiles, world=" +
-    worldMarkers.length +
-    " used markers" +
+  "QUALITY_ATLAS_PASSED | provinces=" +
+    provinces.length +
+    ", countries=" +
+    countries.length +
     ", works=" +
     knownWorks.size +
+    ", genre=" +
+    genreWorkKeys.size +
     ", mapped=" +
     assignedWorkKeys.size +
     " (minimum=" +
@@ -287,6 +255,12 @@ console.log(
     worksWithYear +
     ", peopleWithYears=" +
     peopleWithYears +
-    ", bytes=" +
-    [geoBytes, atlasBytes, timelineBytes].join("/"),
+    ", atlasDataBytes=" +
+    exactAtlasDataBytes +
+    "/" +
+    MAX_ATLAS_DATA_BYTES +
+    ", textures=" +
+    [chinaHeightBytes, worldMaskBytes, relief.byteLength].join("/") +
+    ", json=" +
+    [atlasBytes, timelineBytes].join("/"),
 );
