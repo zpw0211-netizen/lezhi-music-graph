@@ -7,17 +7,16 @@
 
 import { createHash, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
+import os from "node:os";
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, "..");
-const REPORT_PATH =
-  process.env.ASSET_REPORT_PATH ??
-  "E:\\Projects\\yapu-collab\\ds1\\outbox\\T005-asset-report.md";
-const JSON_PATH = process.env.ASSET_JSON_PATH ?? "E:\\Projects\\.tmp\\ds1\\asset-audit.json";
-const SELF_TEST_ROOT = "E:\\Projects\\.tmp\\ds1\\fixture";
+const REPORT_PATH = process.env.ASSET_REPORT_PATH ?? ".tmp-audit/asset-report.md";
+const JSON_PATH = process.env.ASSET_JSON_PATH ?? ".tmp-audit/asset-audit.json";
+const SELF_TEST_ROOT = path.join(os.tmpdir(), "audit-assets-fixture");
 const SELF_TEST_REPORT = path.join(SELF_TEST_ROOT, "self-test-report.md");
 
 const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];

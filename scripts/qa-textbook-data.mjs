@@ -12,10 +12,8 @@ const root = new URL("../", import.meta.url);
 const rootPath = fileURLToPath(root);
 const publicPath = path.join(rootPath, "public");
 const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
-const REPORT_PATH =
-  process.env.QA_REPORT_PATH ??
-  "E:\\Projects\\yapu-collab\\ds1\\outbox\\T002-data-qa-report.md";
-const JSON_PATH = process.env.QA_JSON_PATH ?? "E:\\Projects\\.tmp\\ds1\\qa.json";
+const REPORT_PATH = process.env.QA_REPORT_PATH ?? ".tmp-audit/data-qa-report.md";
+const JSON_PATH = process.env.QA_JSON_PATH ?? ".tmp-audit/data-qa.json";
 const DETAIL_LIMIT = 30;
 
 // ---- 判定规则（要改判定口径就改这一段）------------------------------------
@@ -932,8 +930,9 @@ const report = [
   "",
 ];
 
+await mkdir(path.dirname(REPORT_PATH), { recursive: true });
 await writeFile(REPORT_PATH, report.join("\n"), "utf8");
-await mkdir(JSON_PATH.replace(/[\\/][^\\/]+$/, ""), { recursive: true });
+await mkdir(path.dirname(JSON_PATH), { recursive: true });
 await writeFile(
   JSON_PATH,
   `${JSON.stringify(

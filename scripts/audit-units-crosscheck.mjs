@@ -15,11 +15,9 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, "..");
-const REPORT_PATH =
-  process.env.UNITS_REPORT_PATH ??
-  "E:\\Projects\\yapu-collab\\ds1\\outbox\\T006-units-crosscheck-report.md";
-const JSON_PATH = process.env.UNITS_JSON_PATH ?? "E:\\Projects\\.tmp\\ds1\\units-crosscheck.json";
-const SELF_TEST_REPORT = "E:\\Projects\\.tmp\\ds1\\units-crosscheck-self-test.md";
+const REPORT_PATH = process.env.UNITS_REPORT_PATH ?? ".tmp-audit/units-crosscheck-report.md";
+const JSON_PATH = process.env.UNITS_JSON_PATH ?? ".tmp-audit/units-crosscheck.json";
+const SELF_TEST_REPORT = ".tmp-audit/units-crosscheck-self-test.md";
 
 const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
 

@@ -1,6 +1,6 @@
 // qa-ui-copy.mjs — 扫描 app/ 源码里用户可见的中文界面文案，报告文案质量问题。
 // 只报告，不修改任何界面文件。用法：node scripts/qa-ui-copy.mjs [--self-test] [--out <输出目录>]
-// 报告默认写入 E:\Projects\yapu-collab\glm2\outbox\（可用环境变量 GLM2_OUTBOX 覆盖）。
+// 报告默认写入仓库内被 git 忽略的 .tmp-audit/（可用环境变量 AUDIT_OUT_DIR 或 GLM2_OUTBOX 覆盖）。
 //
 // 残留英文的分级规则（T001 返工确定）：
 //   1. 完全不报：乐理记号（1=C、C 大调、4/4、D.S.）、署名与许可（CC BY、OFL、Salamander Grand Piano）、
@@ -18,9 +18,7 @@ import ts from "typescript";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, "../app");
-const outDir = process.env.GLM2_OUTBOX
-  ? path.resolve(process.env.GLM2_OUTBOX)
-  : path.resolve(scriptDir, "../../../yapu-collab/glm2/outbox");
+const outDir = path.resolve(process.env.AUDIT_OUT_DIR ?? process.env.GLM2_OUTBOX ?? path.join(scriptDir, "../.tmp-audit"));
 
 const JSX_COPY_ATTRS = new Set(["title", "aria-label", "alt", "placeholder", "label"]);
 // 这些属性名下的字符串几乎不可能是用户可见文案（类名 / 键名 / 路径 / 标识符）。
