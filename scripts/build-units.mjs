@@ -144,9 +144,15 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
   const parsedTasks = unitTriples
     .filter((triple) => triple.predicate === "课堂任务")
     .map((triple) => parseUnitTask(valueOf(triple, entityById)));
+  // A task may name a work from another unit (or a same-named entity modelled in another book).
+  // Only link works that belong to THIS unit, so a task card never jumps to a song missing from the unit page;
+  // names that are not unit works stay in the task text and are listed in `relatedNames` for the UI to show as plain text.
+  const bareName = (name) => String(name ?? "").replace(/[《》\s]/g, "");
+  const unitWorkByName = new Map(works.map((work) => [bareName(work.name), work]));
   const tasks = parsedTasks.map((task) => ({
     text: task.text,
-    works: task.works.map((name) => workByName.get(name)?.id).filter(Boolean),
+    works: task.works.map((name) => unitWorkByName.get(bareName(name))?.id).filter(Boolean),
+    relatedNames: task.works.filter((name) => !unitWorkByName.has(bareName(name))),
     focus: task.focus,
   }));
   const goals = [...new Set(unitTriples
