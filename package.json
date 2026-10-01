@@ -15,8 +15,12 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern out --ignore-pattern .site-package-*",
     "db:generate": "drizzle-kit generate",
     "quality:check": "node scripts/audit-quality.mjs",
+<<<<<<< HEAD
     "audit:assets": "node scripts/audit-assets.mjs",
     "audit:units-crosscheck": "node scripts/audit-units-crosscheck.mjs",
+=======
+    "qa:data": "node scripts/qa-textbook-data.mjs",
+>>>>>>> ds1/T004-data-qa-fixes
     "quality:rebuild": "node scripts/build-graph-data.mjs && node scripts/audit-quality.mjs",
     "quality:audit": "node scripts/audit-quality.mjs",
     "quality:p0": "node scripts/audit-p0-regression.mjs",
