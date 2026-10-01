@@ -127,10 +127,13 @@ function hslToRgbHex(h, s, l) {
 
 /**
  * 拆 rgb()/hsl() 参数：兼容逗号语法与现代空格语法（含 `/ alpha`）。
+ * 按 CSS Color 4，斜杠两侧不要求空白（rgb(0 0 0/50%)、rgb(0 0 0 /.5) 均合法），
+ * 而参数记号（数字/百分比/角度）内部不会出现 `/`，因此先给 `/` 两侧补空格，
+ * 让它独立成 token，再按逗号或空白切分。
  * 返回 {comps: [前三个参数], alphaTok: alpha 记号或 null}。
  */
 function splitColorArgs(inner) {
-  const tokens = inner.trim().split(/\s*,\s*|\s+/).filter(Boolean);
+  const tokens = inner.trim().replaceAll("/", " / ").split(/\s*,\s*|\s+/).filter(Boolean);
   const slash = tokens.indexOf("/");
   if (slash >= 0) return { comps: tokens.slice(0, slash), alphaTok: tokens[slash + 1] ?? null };
   return { comps: tokens.slice(0, 3), alphaTok: tokens[3] ?? null };
@@ -306,7 +309,7 @@ function scanCssText(text) {
       const value = declStr.slice(colon + 1);
       if (!property || property.startsWith("--")) continue; // 变量定义不计
       const valueStart = absStart + colon + 1;
-      for (const match of value.matchAll(VAR_RE)) varCount += 1;
+      varCount += [...value.matchAll(VAR_RE)].length;
       for (const literal of extractColorLiterals(value)) {
         literals.push({
           line: lineOf(text, valueStart + literal.index),
@@ -349,7 +352,7 @@ function scanTsText(text) {
         alpha: literal.alpha,
       });
     }
-    for (const _ of line.matchAll(VAR_RE)) varCount += 1;
+    varCount += [...line.matchAll(VAR_RE)].length;
   });
   return { literals, varCount };
 }
@@ -382,9 +385,11 @@ async function scanAll() {
 
 function runSelfTest(palette) {
   const failures = [];
+  let passed = 0;
   const check = (label, ok, detail) => {
     console.log(`  ${ok ? "PASS" : "FAIL"}  ${label}${detail ? `（${detail}）` : ""}`);
-    if (!ok) failures.push(label);
+    if (ok) passed += 1;
+    else failures.push(label);
   };
 
   // Lab 已知值
@@ -431,7 +436,8 @@ function runSelfTest(palette) {
     `vars=${vars.length} literals=${lits.length}`,
   );
 
-  // ---- 现代语法与 slash alpha（负责人反例 + T005 任务单写法）----
+  // ---- 现代语法与 slash alpha（负责人反例 + T006 追加反例）----
+  // CSS Color 4：斜杠两侧空白可选（无空格 / 单侧 / 双侧都必须支持）。
   const syntaxCases = [
     ["rgb(0 0 0 / 50%)", "#000000", 0.5], // 负责人反例：此前整个漏检
     ["rgba(0,0,0,50%)", "#000000", 0.5], // 负责人反例：此前 alpha 被当成 1
@@ -439,6 +445,12 @@ function runSelfTest(palette) {
     ["rgb(10 20 30 / 50%)", "#0A141E", 0.5],
     ["rgb(10% 20% 30% / .25)", "#1A334D", 0.25],
     ["hsl(120 50% 50% / .5)", "#40BF40", 0.5],
+    ["rgb(0 0 0/50%)", "#000000", 0.5], // T006 反例：斜杠前无空格，此前 alpha 被当成 1
+    ["hsl(120 100% 50%/.5)", "#00FF00", 0.5], // T006 反例：斜杠前无空格，此前 alpha 被当成 1
+    ["rgb(0 0 0 /50%)", "#000000", 0.5], // 斜杠前空格、后无空格
+    ["rgb(0 0 0/ 50%)", "#000000", 0.5], // 斜杠前无空格、后有空格
+    ["rgb(0 0 0/.5)", "#000000", 0.5], // 无空格 + 小数 alpha
+    ["hsl(120 100% 50%/.25)", "#00FF00", 0.25], // hsl 无空格 + 小数 alpha
     ["rgb(10 20 30)", "#0A141E", 1],
   ];
   for (const [syntax, expectBase, expectAlpha] of syntaxCases) {
@@ -497,7 +509,7 @@ function runSelfTest(palette) {
     console.error(`自测失败 ${failures.length} 项`);
     process.exit(1);
   }
-  console.log(`SELF_TEST_PASSED (16/16)`);
+  console.log(`SELF_TEST_PASSED (${passed}/${passed + failures.length})`);
 }
 
 // ---------- 主流程 ----------
