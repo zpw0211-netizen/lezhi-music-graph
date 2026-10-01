@@ -21,7 +21,7 @@ export type AppRoute = {
   view: AppView;
   /** records: the textbook whose lessons are listed. */
   book?: string;
-  /** lesson / work: the bare work title, without 《》. */
+  /** records detail / lesson / work: the work title or disambiguated title, without 《》. */
   work?: string;
   /** graph: the canonical entity shown in the inspector. */
   node?: string;
@@ -57,6 +57,10 @@ export function parseRoute(hash: string, search = ""): AppRoute {
     const [rawView, ...rest] = hash.slice(2).split("/");
     const view = decodeURIComponent(rawView) as AppView;
     if (!VIEWS.has(view)) return HOME_ROUTE;
+    if (view === "records") {
+      const [book, ...workParts] = rest.map(decodeURIComponent);
+      return { view, book: book || undefined, work: workParts.length ? workParts.join("/") : undefined };
+    }
     const detail = rest.length ? decodeURIComponent(rest.join("/")) : undefined;
     return buildRoute(view, detail || undefined);
   }
@@ -70,6 +74,11 @@ export function parseRoute(hash: string, search = ""): AppRoute {
 /** The hash for a page ("" for the home page). */
 export function formatRoute(route: AppRoute): string {
   if (route.view === "home") return "";
+  if (route.view === "records") {
+    const book = route.book ? `/${encodeURIComponent(route.book)}` : "";
+    const work = route.work ? `/${encodeURIComponent(route.work)}` : "";
+    return `#/records${book}${work}`;
+  }
   const detail = route.book ?? route.work ?? route.node;
   return `#/${route.view}${detail ? `/${encodeURIComponent(detail)}` : ""}`;
 }
