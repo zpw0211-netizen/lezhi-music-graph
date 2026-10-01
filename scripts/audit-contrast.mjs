@@ -3,16 +3,23 @@
 // 2) 站点实际样式检查：扫描 app/ 下 CSS，找同一规则里 color 与 background(-color) 都可解析的规则并计算对比度。
 // 默认只报告；--strict 时规范内置检查有不达标就 exit(1)。
 // 变量只用 app/styles/tokens.css 里的定义解析（最后定义生效）；渐变、color-mix、currentColor 跳过并计数。
+import { existsSync } from "node:fs";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(scriptDir, "../app");
-const designDoc = path.resolve(scriptDir, "../../../yapu-collab/DESIGN-v2.md");
-const outDir = process.env.GLM2_OUTBOX
-  ? path.resolve(process.env.GLM2_OUTBOX)
-  : path.resolve(scriptDir, "../../../yapu-collab/glm2/outbox");
+// The design spec lives in the collaboration folder, outside the repo. Look for it via DESIGN_SPEC, then next to the repo or its worktree parent.
+const designDocCandidates = [
+  process.env.DESIGN_SPEC,
+  path.resolve(scriptDir, "../../yapu-collab/DESIGN-v2.md"),
+  path.resolve(scriptDir, "../../../yapu-collab/DESIGN-v2.md"),
+  "E:/Projects/yapu-collab/DESIGN-v2.md",
+].filter(Boolean);
+const designDoc = designDocCandidates.find((candidate) => existsSync(candidate)) ?? designDocCandidates[1];
+// Reports go to AUDIT_OUT_DIR (or the legacy GLM2_OUTBOX), else the repo-local .tmp-audit folder (never outside the project by accident).
+const outDir = path.resolve(process.env.AUDIT_OUT_DIR ?? process.env.GLM2_OUTBOX ?? path.join(scriptDir, "../.tmp-audit"));
 
 const AA_NORMAL = 4.5; // 正文阈值
 const AA_LARGE = 3.0; // 大字（≥24px 或 ≥18.66px 加粗）阈值

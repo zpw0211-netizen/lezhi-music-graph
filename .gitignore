@@ -47,3 +47,6 @@ public/data/details/CAN_*.json
 /.agents/
 /.claude/
 /d/
+
+# local audit reports
+.tmp-audit/
