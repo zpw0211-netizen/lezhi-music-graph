@@ -4,8 +4,8 @@ import Image from "next/image";
 import { publicAssetUrl } from "../lib/app/assets";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 
-export type NavView = "home" | "records" | "graph" | "assistant" | "research";
-const LINKS: Array<[NavView, string]> = [["home", "首页"], ["records", "按课学习"], ["graph", "知识图谱"], ["assistant", "智能问答"], ["research", "研究分析"]];
+export type NavView = "home" | "records" | "graph" | "assistant" | "research" | "lab";
+const LINKS: Array<[NavView, string]> = [["home", "首页"], ["records", "按课学习"], ["lab", "五声实验室"], ["graph", "知识图谱"], ["assistant", "智能问答"], ["research", "研究分析"]];
 
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
 

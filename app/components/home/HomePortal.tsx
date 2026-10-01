@@ -33,7 +33,7 @@ type PortalBook = {
 type PortalGraph = { entities: PortalEntity[]; relationships: PortalRelationship[] };
 type PortalSearchBook = Pick<PortalBook, "key" | "title" | "grade" | "semester">;
 type PortalSearchResult<E, B extends PortalSearchBook> = { entity: E; book: B; relationCount: number; matchedBy: string };
-type PortalView = "graph" | "assistant" | "research" | "records";
+type PortalView = "graph" | "assistant" | "research" | "records" | "lab";
 type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
 
 const GRADE_NAMES: Record<number, string> = { 7: "七年级", 8: "八年级", 9: "九年级" };

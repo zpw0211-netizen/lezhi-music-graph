@@ -10,6 +10,7 @@ import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AppTopNav, type NavView } from "./components/AppTopNav";
 import type { AssistantPage as AssistantPageComponent } from "./components/assistant/AssistantPage";
 import type { AtlasPage as AtlasPageComponent } from "./components/atlas/AtlasPage";
+import type { LabPage as LabPageComponent } from "./components/lab/LabPage";
 import type {
   ExplorerSidebar as ExplorerSidebarComponent,
   GraphExplorer as GraphExplorerComponent,
@@ -64,6 +65,10 @@ const AtlasPage = nextDynamic<PropsOf<typeof AtlasPageComponent>>(
   () => import("./components/atlas/AtlasPage").then((module) => module.AtlasPage),
   { loading: viewLoading },
 );
+const LabPage = nextDynamic<PropsOf<typeof LabPageComponent>>(
+  () => import("./components/lab/LabPage").then((module) => module.LabPage),
+  { loading: viewLoading },
+);
 const ResearchAnalysis = nextDynamic<PropsOf<typeof ResearchAnalysisComponent>>(
   () => import("./components/ResearchAnalysis").then((module) => module.ResearchAnalysis),
   { loading: viewLoading },
@@ -87,6 +92,7 @@ const SITE_TITLE = "芽谱——中小学音乐教育知识图谱与智能分析
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
   atlas: "音乐地图",
+  lab: "五声实验室",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
@@ -272,7 +278,7 @@ export default function Home() {
             }}
           />
         )}
-        <div className="route-view" ref={viewContainerRef}>
+        <div className={`route-view${view === "lab" ? " route-view-lab" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
           {view === "home" && (
@@ -361,6 +367,7 @@ export default function Home() {
           )}
           {view === "import" && <ImportView />}
           {view === "atlas" && <AtlasPage onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+          {view === "lab" && canonicalGraph && <LabPage graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
         </div>
       </section>
       <ResearchInfo
