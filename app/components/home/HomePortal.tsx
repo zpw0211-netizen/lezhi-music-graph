@@ -14,7 +14,7 @@ type PortalBook = { key: string; title: string; grade: number; semester: string;
 type PortalGraph = { entities: PortalEntity[]; relationships: PortalRelationship[] };
 type PortalSearchBook = Pick<PortalBook, "key" | "title" | "grade" | "semester">;
 type PortalSearchResult<E, B extends PortalSearchBook> = { entity: E; book: B; relationCount: number; matchedBy: string };
-type PortalView = "graph" | "assistant" | "research" | "records";
+type PortalView = "graph" | "assistant" | "research" | "records" | "lab";
 type PortalUnit = { id: string; bookKey: string; order: number; name: string; title: string; numeral: string; theme?: string; goals?: string[] };
 type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
 const HOT_SEARCHES = ["黄河", "京剧", "民歌", "五声调式", "歌唱祖国"];

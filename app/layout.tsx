@@ -19,6 +19,7 @@ import "./about.css";
 import "./styles/motion.css";
 import "./records.css";
 import "./atlas.css";
+import "./lab.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

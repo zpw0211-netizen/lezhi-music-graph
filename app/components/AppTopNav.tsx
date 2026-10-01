@@ -3,7 +3,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { publicAssetUrl } from "../lib/app/assets";
 import { WorkbenchIcon } from "./WorkbenchIcon";
-export type NavView = "home" | "records" | "graph" | "assistant" | "research";
+export type NavView = "home" | "records" | "graph" | "assistant" | "research" | "lab";
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
 type NavItem = { label: string; view?: NavView; href?: string };
 export function AppTopNav({ active, onNavigate, search, trailing, centerSlot }: {

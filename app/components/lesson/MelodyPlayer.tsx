@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { midiOf, notation } from "../../lib/lesson/melodies";
 import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
-import { loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
+import { getPianoAudioContext, loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
 import type { PianoSampler } from "../../lib/lesson/piano-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
@@ -10,7 +10,6 @@ import { SlidingIndicator } from "../graph/SlidingIndicator";
 type Line = { label: string; bars: MelodyNote[][] };
 // One audio context and one decoded piano bank for the whole session, so
 // switching excerpts or lessons never re-decodes the samples.
-let sharedContext: AudioContext | null = null;
 let sharedSampler: PianoSampler | null = null;
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
 const TIMBRES = [
@@ -44,7 +43,9 @@ export function MelodySet({ melodies, large }: { melodies: Melody[]; large?: boo
 }
 
 /** Plays a jianpu melody (and any extra voices) with WebAudio, highlighting each sounding note. */
-export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolean }) {
+export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melody; large?: boolean; onSoundingNotes?: (notes: number[], playing: boolean) => void }) {
+  const soundingCallback = useRef(onSoundingNotes);
+  useEffect(() => { soundingCallback.current = onSoundingNotes; }, [onSoundingNotes]);
   const lines = useMemo<Line[]>(() => [{ label: melody.label ?? "旋律", bars: melody.bars }, ...(melody.voices ?? [])], [melody]);
   const [playing, setPlaying] = useState(false);
   const [loadingPiano, setLoadingPiano] = useState(false);
@@ -71,6 +72,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
     stopRef.current = () => {};
     setPlaying(false);
     setCurrent([]);
+    soundingCallback.current?.([], false);
     if (shouldAnnounceStop && mounted.current) setAnnouncement("已停止");
   }, []);
   useEffect(() => {
@@ -92,8 +94,7 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
       setAnnouncement("钢琴音色加载失败，改用电子音色");
       return;
     }
-    const ctx = sharedContext ?? new AudioCtor();
-    sharedContext = ctx;
+    const ctx = getPianoAudioContext();
 
     let sampler = sharedSampler;
     let pianoLoadFailed = false;
@@ -174,15 +175,25 @@ export function MelodyPlayer({ melody, large }: { melody: Melody; large?: boolea
       return times;
     });
     let raf = 0;
+    let previousNotes = "";
     const tick = () => {
       const now = ctx.currentTime;
       if (now >= end) { stop(); return; }
-      setCurrent(timeline.map((times) => {
+      const indices = timeline.map((times) => {
         if (now < start) return -1;
         let index = times.length - 1;
         while (index > 0 && times[index] > now) index -= 1;
         return index;
-      }));
+      });
+      setCurrent(indices);
+      const notes = indices.flatMap((index, voice) => {
+        const note = flats[voice][index];
+        return enabled[voice] && note?.d && note.d !== 9 ? [midiOf(melody, note)] : [];
+      });
+      if (notes.join(",") !== previousNotes) {
+        previousNotes = notes.join(",");
+        soundingCallback.current?.(notes, true);
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);

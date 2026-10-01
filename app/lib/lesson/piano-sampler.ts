@@ -9,6 +9,15 @@ export type PianoSampler = {
 };
 
 const samplerByContext = new WeakMap<AudioContext, Promise<PianoSampler>>();
+let sharedContext: AudioContext | null = null;
+
+/** Call only from a user gesture; all piano interfaces share this context. */
+export function getPianoAudioContext() {
+  const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AudioCtor) throw new Error("Web Audio unavailable");
+  sharedContext ??= new AudioCtor({ latencyHint: "interactive" });
+  return sharedContext;
+}
 
 function sampleFileName(midi: number) {
   const note = NOTE_NAMES[midi % 12];
@@ -27,7 +36,10 @@ export function loadPianoSampler(context: AudioContext): Promise<PianoSampler> {
     if (!response.ok) throw new Error(`Piano sample request failed (${response.status})`);
     const buffer = await context.decodeAudioData(await response.arrayBuffer());
     return { midi, buffer };
-  })).then((samples) => ({ samples }));
+  })).then((samples) => ({ samples })).catch((error: unknown) => {
+    samplerByContext.delete(context);
+    throw error;
+  });
 
   samplerByContext.set(context, loading);
   return loading;
@@ -59,4 +71,13 @@ export function playPianoSample(
   source.connect(envelope).connect(destination);
   source.start(start);
   source.stop(releaseStart + RELEASE_SECONDS + 0.01);
+  source.onended = () => { source.disconnect(); envelope.disconnect(); };
+  return {
+    stop: () => {
+      const now = context.currentTime;
+      envelope.gain.cancelScheduledValues(now);
+      envelope.gain.setTargetAtTime(0.0001, now, 0.015);
+      source.stop(now + 0.08);
+    },
+  };
 }
