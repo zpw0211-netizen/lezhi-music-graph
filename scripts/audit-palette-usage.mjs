@@ -125,29 +125,44 @@ function hslToRgbHex(h, s, l) {
   return `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
 }
 
-/** 解析 rgb()/rgba() 的逗号或空格语法（支持 %），返回 {base, alpha} 或 null。 */
+/**
+ * 拆 rgb()/hsl() 参数：兼容逗号语法与现代空格语法（含 `/ alpha`）。
+ * 返回 {comps: [前三个参数], alphaTok: alpha 记号或 null}。
+ */
+function splitColorArgs(inner) {
+  const tokens = inner.trim().split(/\s*,\s*|\s+/).filter(Boolean);
+  const slash = tokens.indexOf("/");
+  if (slash >= 0) return { comps: tokens.slice(0, slash), alphaTok: tokens[slash + 1] ?? null };
+  return { comps: tokens.slice(0, 3), alphaTok: tokens[3] ?? null };
+}
+
+/** alpha 记号 → [0,1]；支持小数与百分比（50% → 0.5）。 */
+function parseAlphaToken(tok) {
+  if (tok == null) return 1;
+  const v = tok.endsWith("%") ? parseFloat(tok) / 100 : parseFloat(tok);
+  return Number.isNaN(v) ? 1 : Math.max(0, Math.min(1, v));
+}
+
+/** 解析 rgb()/rgba()（逗号或空格语法，% 与 / alpha 均支持），返回 {base, alpha} 或 null。 */
 function parseRgbCall(inner) {
-  const parts = inner.trim().split(/\s*,\s*|\s+/).filter(Boolean);
-  if (parts.length < 3) return null;
-  const comps = parts.slice(0, 3).map((p) =>
+  const { comps, alphaTok } = splitColorArgs(inner);
+  if (comps.length < 3) return null;
+  const channels = comps.slice(0, 3).map((p) =>
     p.endsWith("%") ? Math.round((parseFloat(p) / 100) * 255) : Math.round(parseFloat(p)),
   );
-  if (comps.some((v) => Number.isNaN(v) || v < 0 || v > 255)) return null;
-  const alpha = parts.length > 3 ? parseFloat(parts[3]) : 1;
-  if (Number.isNaN(alpha)) return null;
-  const base = `#${comps.map((v) => v.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
-  return { base, alpha: Math.max(0, Math.min(1, alpha)) };
+  if (channels.some((v) => Number.isNaN(v) || v < 0 || v > 255)) return null;
+  const base = `#${channels.map((v) => v.toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+  return { base, alpha: parseAlphaToken(alphaTok) };
 }
 
 function parseHslCall(inner) {
-  const parts = inner.trim().split(/\s*,\s*|\s+/).filter(Boolean);
-  if (parts.length < 3) return null;
-  const h = parseFloat(parts[0]);
-  const s = parseFloat(parts[1]);
-  const l = parseFloat(parts[2]);
+  const { comps, alphaTok } = splitColorArgs(inner);
+  if (comps.length < 3) return null;
+  const h = parseFloat(comps[0]);
+  const s = parseFloat(comps[1]);
+  const l = parseFloat(comps[2]);
   if ([h, s, l].some((v) => Number.isNaN(v))) return null;
-  const alpha = parts.length > 3 ? parseFloat(parts[3]) : 1;
-  return { base: hslToRgbHex(h, s, l), alpha: Number.isNaN(alpha) ? 1 : Math.max(0, Math.min(1, alpha)) };
+  return { base: hslToRgbHex(h, s, l), alpha: parseAlphaToken(alphaTok) };
 }
 
 /** 把文本里的注释与 url(...) 内容替换成空格（保留换行，行号不漂移）。 */
@@ -272,6 +287,74 @@ async function listAppFiles() {
 }
 
 /**
+ * 扫描一段（注释/url 已处理的）CSS 文本。
+ * 返回 {literals, varCount}；literals: [{line, property, selector, raw, base, alpha}]。
+ * 行号按每个颜色字面量在源文本中的绝对偏移计算——多行规则/多行声明逐条正确，
+ * 不用规则起始行代替。变量定义行（--x: …）不计。
+ */
+function scanCssText(text) {
+  const literals = [];
+  let varCount = 0;
+  for (const rule of parseCssRules(text)) {
+    let pos = 0; // 当前声明在 rule.body 里的起点
+    for (const declStr of rule.body.split(";")) {
+      const absStart = rule.offset + pos;
+      pos += declStr.length + 1;
+      const colon = declStr.indexOf(":");
+      if (colon < 0) continue;
+      const property = declStr.slice(0, colon).trim();
+      const value = declStr.slice(colon + 1);
+      if (!property || property.startsWith("--")) continue; // 变量定义不计
+      const valueStart = absStart + colon + 1;
+      for (const match of value.matchAll(VAR_RE)) varCount += 1;
+      for (const literal of extractColorLiterals(value)) {
+        literals.push({
+          line: lineOf(text, valueStart + literal.index),
+          property,
+          selector: rule.selector.slice(0, 80),
+          raw: literal.raw,
+          base: literal.base,
+          alpha: literal.alpha,
+        });
+      }
+    }
+  }
+  return { literals, varCount };
+}
+
+/** ts/tsx 行内颜色字面量的属性名启发式：取字面量前面最近的 `prop:`；`prop=` 仅在 JSX 行（出现过 `<`）接受。 */
+function propertyBefore(line, index) {
+  const colon = line.slice(0, index).match(/([A-Za-z][\w-]*)\s*:\s*[\{"'`]*\s*$/);
+  if (colon) return colon[1];
+  if (line.includes("<")) {
+    const attr = line.slice(0, index).match(/([A-Za-z][\w-]*)\s*=\s*[\{"'`]*\s*$/);
+    if (attr) return attr[1];
+  }
+  return "(ts/tsx 字符串)";
+}
+
+/** 扫描一段（注释/url 已处理的）ts/tsx 文本。返回 {literals, varCount}。 */
+function scanTsText(text) {
+  const literals = [];
+  let varCount = 0;
+  const lines = text.split("\n");
+  lines.forEach((line, i) => {
+    for (const literal of extractColorLiterals(line)) {
+      literals.push({
+        line: i + 1,
+        property: propertyBefore(line, literal.index),
+        selector: "",
+        raw: literal.raw,
+        base: literal.base,
+        alpha: literal.alpha,
+      });
+    }
+    for (const _ of line.matchAll(VAR_RE)) varCount += 1;
+  });
+  return { literals, varCount };
+}
+
+/**
  * 扫描 app/ 下全部 css/tsx/ts。
  * 返回 {files, literals, varByFile}：
  * literals: [{file, line, property, selector, raw, base, alpha}]（变量定义行不计）
@@ -288,54 +371,9 @@ async function scanAll() {
       cssComments: isCss,
       jsComments: !isCss,
     });
-    const varUses = new Map();
-    const countVar = (segment) => {
-      for (const match of segment.matchAll(VAR_RE)) {
-        varUses.set(match[1], (varUses.get(match[1]) ?? 0) + 1);
-      }
-    };
-    if (isCss) {
-      for (const rule of parseCssRules(text)) {
-        for (const decl of rule.body.split(";")) {
-          const split = decl.indexOf(":");
-          if (split < 0) continue;
-          const property = decl.slice(0, split).trim();
-          const value = decl.slice(split + 1);
-          if (!property || property.startsWith("--")) continue; // 变量定义不计
-          countVar(value);
-          for (const literal of extractColorLiterals(value)) {
-            literals.push({
-              file: relative,
-              line: lineOf(text, rule.offset + decl.indexOf(value)),
-              property,
-              selector: rule.selector.slice(0, 80),
-              raw: literal.raw,
-              base: literal.base,
-              alpha: literal.alpha,
-            });
-          }
-        }
-      }
-    } else {
-      const lines = text.split("\n");
-      lines.forEach((line, i) => {
-        for (const literal of extractColorLiterals(line)) {
-          literals.push({
-            file: relative,
-            line: i + 1,
-            property: "(ts/tsx 字符串)",
-            selector: "",
-            raw: literal.raw,
-            base: literal.base,
-            alpha: literal.alpha,
-          });
-        }
-        countVar(line);
-      });
-    }
-    let fileVarCount = 0;
-    for (const count of varUses.values()) fileVarCount += count;
-    if (fileVarCount) varByFile.set(relative, fileVarCount);
+    const { literals: fileLiterals, varCount } = isCss ? scanCssText(text) : scanTsText(text);
+    for (const item of fileLiterals) literals.push({ file: relative, ...item });
+    if (varCount) varByFile.set(relative, varCount);
   }
   return { files, literals, varByFile };
 }
@@ -393,11 +431,73 @@ function runSelfTest(palette) {
     `vars=${vars.length} literals=${lits.length}`,
   );
 
+  // ---- 现代语法与 slash alpha（负责人反例 + T005 任务单写法）----
+  const syntaxCases = [
+    ["rgb(0 0 0 / 50%)", "#000000", 0.5], // 负责人反例：此前整个漏检
+    ["rgba(0,0,0,50%)", "#000000", 0.5], // 负责人反例：此前 alpha 被当成 1
+    ["hsl(120 100% 50% / 50%)", "#00FF00", 0.5], // 负责人反例：此前 alpha 被当成 1
+    ["rgb(10 20 30 / 50%)", "#0A141E", 0.5],
+    ["rgb(10% 20% 30% / .25)", "#1A334D", 0.25],
+    ["hsl(120 50% 50% / .5)", "#40BF40", 0.5],
+    ["rgb(10 20 30)", "#0A141E", 1],
+  ];
+  for (const [syntax, expectBase, expectAlpha] of syntaxCases) {
+    const parsed = extractColorLiterals(syntax);
+    check(
+      `现代语法 ${syntax} → base/alpha 正确`,
+      parsed.length === 1 && parsed[0].base === expectBase && Math.abs(parsed[0].alpha - expectAlpha) < 1e-9,
+      parsed.length === 1 ? `base=${parsed[0].base} alpha=${parsed[0].alpha}` : `匹配 ${parsed.length} 条`,
+    );
+  }
+
+  // ---- 多行 CSS 声明：行号逐条正确（负责人反例：此前三行全报第 2 行）----
+  const fixtureCss = [
+    "/* 注释里的 #999999 不应计入，也不应让行号漂移 */",
+    ".review,",
+    ".review-two {",
+    "  color: #123456;",
+    "  background: #abcdef;",
+    "  border-color: #fedcba;",
+    "}",
+  ].join("\n");
+  const fixtureScan = scanCssText(prepareText(fixtureCss, { cssComments: true }));
+  const fixtureOk =
+    fixtureScan.literals.length === 3 &&
+    fixtureScan.literals[0]?.line === 4 &&
+    fixtureScan.literals[0]?.property === "color" &&
+    fixtureScan.literals[1]?.line === 5 &&
+    fixtureScan.literals[1]?.property === "background" &&
+    fixtureScan.literals[2]?.line === 6 &&
+    fixtureScan.literals[2]?.property === "border-color";
+  check(
+    "多行选择器 + 注释 + 多行声明：3 个颜色的行号/属性逐条正确（4/5/6 行）",
+    fixtureOk,
+    JSON.stringify(fixtureScan.literals.map((i) => [i.line, i.property])),
+  );
+
+  // ---- ts/tsx 内联颜色：属性名与行号 ----
+  const tsFixture = [
+    "const a = { fill: \"#8295bd\" };",
+    "<path d=\"M0\" fill=\"#6e8297\" />",
+    "const b = \"#8a97a4\";",
+  ].join("\n");
+  const tsScan = scanTsText(tsFixture);
+  const tsOk =
+    tsScan.literals.length === 3 &&
+    tsScan.literals[0]?.property === "fill" &&
+    tsScan.literals[1]?.property === "fill" &&
+    tsScan.literals[2]?.property === "(ts/tsx 字符串)";
+  check(
+    "ts/tsx 内联颜色：属性名（fill= / fill:）与无属性场景识别正确",
+    tsOk,
+    JSON.stringify(tsScan.literals.map((i) => [i.line, i.property])),
+  );
+
   if (failures.length) {
     console.error(`自测失败 ${failures.length} 项`);
     process.exit(1);
   }
-  console.log(`SELF_TEST_PASSED (7/7)`);
+  console.log(`SELF_TEST_PASSED (16/16)`);
 }
 
 // ---------- 主流程 ----------
