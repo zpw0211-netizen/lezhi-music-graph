@@ -7,7 +7,10 @@ export type AtlasWork = {
   genre: string | null;
   bookKey: string;
   unit: string | null;
+  /** PDF 页（firstPage），向后兼容字段，仍叫 page。 */
   page: number | null;
+  /** 印刷页（教材第 N 页，来自正式数据 media 标题）；无法确定为 null。 */
+  printedPage?: number | null;
 };
 
 export type AtlasRegion = {

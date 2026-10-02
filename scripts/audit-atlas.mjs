@@ -292,6 +292,68 @@ for (const region of atlas.regions) {
 const worksWithYear = timeline.works.filter((work) => work.year != null).length;
 const peopleWithYears = timeline.people.filter((person) => person.born != null || person.died != null).length;
 
+// 本单新增检查（事实 / 兼容性）：
+// 1) atlas work 必须带 printedPage 字段；有印刷页时必须是正整数，且不能是「page−8」这种推算值
+//    ——printedPage 只来自正式数据 media 标题，拿不到就是 null，不能拿 firstPage 硬减 8 冒充。
+for (const region of atlas.regions ?? []) {
+  for (const work of region.works ?? []) {
+    const key = work.bookKey + ":" + work.id;
+    assert(Object.hasOwn(work, "printedPage"), "Atlas work is missing printedPage: " + key);
+    const printed = work.printedPage;
+    if (printed != null) {
+      assert(Number.isInteger(printed) && printed > 0, "Invalid atlas printedPage: " + key);
+    }
+  }
+}
+for (const work of atlas.unassignedWorks ?? []) {
+  const key = work.bookKey + ":" + work.id;
+  assert(Object.hasOwn(work, "printedPage"), "Unassigned atlas work is missing printedPage: " + key);
+}
+// 页码口径核对：printedPage 必须来自 books 数据里该实体 media 的「教材第N页」，不能凭空出现。
+{
+  const printedByKey = new Map();
+  for (const book of books) {
+    for (const entity of book.entities) {
+      const match = (entity.media ?? [])
+        .map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1])
+        .find(Boolean);
+      if (match != null) printedByKey.set(book.bookKey + ":" + entity.id, Number(match));
+    }
+  }
+  for (const region of atlas.regions ?? []) {
+    for (const work of region.works ?? []) {
+      const key = work.bookKey + ":" + work.id;
+      const expected = printedByKey.get(key) ?? null;
+      assert(
+        work.printedPage === expected,
+        "Atlas printedPage does not match books media title for " + key + ": atlas=" + work.printedPage + " books=" + expected,
+      );
+    }
+  }
+}
+
+// 2) 年表人物：只要 born/died 有值，就必须有可追溯的原文（lifetimeText 不能为空、
+//    lifetimeEvidence 不能缺，且每个 text 都能指回 bookKey/tripleId）。
+for (const person of timeline.people ?? []) {
+  if (person.born == null && person.died == null) continue;
+  assert(
+    Array.isArray(person.lifetimeText) && person.lifetimeText.length > 0,
+    "Timeline person has born/died but empty lifetimeText: " + person.name,
+  );
+  assert(
+    Array.isArray(person.lifetimeEvidence) && person.lifetimeEvidence.length > 0,
+    "Timeline person has born/died but empty lifetimeEvidence: " + person.name,
+  );
+  const textSet = new Set(person.lifetimeText);
+  for (const entry of person.lifetimeEvidence) {
+    assert(
+      entry && typeof entry.bookKey === "string" && typeof entry.tripleId === "string" && typeof entry.text === "string",
+      "Invalid lifetimeEvidence entry for " + person.name,
+    );
+    assert(textSet.has(entry.text), "lifetimeEvidence text not in lifetimeText for " + person.name + ": " + entry.text);
+  }
+}
+
 console.log(
   "QUALITY_ATLAS_PASSED | provinces=" +
     provinces.length +

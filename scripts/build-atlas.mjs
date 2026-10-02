@@ -264,6 +264,15 @@ function workGenre(work, book, entities) {
     .find((value) => value && !UNRELIABLE_GENRES.has(value)) ?? null;
 }
 
+// 印刷页：只认教材实体 media 里「教材第N页」这种由正式数据标注的页码。
+// 拿不到就返回 null——地图上「无法确定印刷页就不冒充」，绝不拿 firstPage−8 之类的推算值顶替。
+function printedPageOf(work) {
+  const match = (work.media ?? [])
+    .map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1])
+    .find(Boolean);
+  return match ? Number(match) : null;
+}
+
 function makeWorkRecord(work, book, entities) {
   return {
     id: work.id,
@@ -272,7 +281,10 @@ function makeWorkRecord(work, book, entities) {
     genre: workGenre(work, book, entities),
     bookKey: book.bookKey,
     unit: getWorkUnits(work, book, entities)[0] ?? null,
+    // page 保持向后兼容：仍是 PDF 页（firstPage），已有消费者不受影响。
     page: work.firstPage ?? null,
+    // 新增可靠印刷页字段：来自正式数据 media 标题，无法确定则为 null。
+    printedPage: printedPageOf(work),
   };
 }
 
@@ -921,15 +933,30 @@ function makeTimeline(books) {
       (deathEntry
         ? { year: deathEntry.parsed.year, range: deathEntry.parsed.range }
         : null);
-    const rawLifetimeTexts = [
-      ...person.lifetimeEntries.map((entry) => entry.text),
-      ...person.birthEntries
-        .filter((entry) => entry.parsed.year == null)
-        .map((entry) => entry.text),
-      ...person.deathEntries
-        .filter((entry) => entry.parsed.year == null)
-        .map((entry) => entry.text),
-    ];
+    // 保留真实原文：birth/death 条目不管有没有解析出年份，原文都要进 lifetimeText，
+    // 否则「出生年=1948年」这类只给出生、可解析的条目会被丢掉（年表里点不出原文）。
+    // 但绝不拼造生卒年，也不把单独出生年写成完整生卒年——原文是什么就存什么。
+    const lifetimeEvidence = [
+      ...person.lifetimeEntries.map((entry) => ({
+        bookKey: entry.bookKey,
+        tripleId: entry.tripleId,
+        kind: "lifetime",
+        text: entry.text,
+      })),
+      ...person.birthEntries.map((entry) => ({
+        bookKey: entry.bookKey,
+        tripleId: entry.tripleId,
+        kind: "birth",
+        text: entry.text,
+      })),
+      ...person.deathEntries.map((entry) => ({
+        bookKey: entry.bookKey,
+        tripleId: entry.tripleId,
+        kind: "death",
+        text: entry.text,
+      })),
+    ].sort((a, b) => a.bookKey.localeCompare(b.bookKey) || a.tripleId.localeCompare(b.tripleId));
+    const rawLifetimeTexts = lifetimeEvidence.map((entry) => entry.text);
     const sourceEntities = person.sourceEntities
       .map(({ id, bookKey }) => ({ id, bookKey }))
       .sort(
@@ -944,6 +971,7 @@ function makeTimeline(books) {
       died: died?.year ?? null,
       diedRange: died?.range ?? null,
       lifetimeText: [...new Set(rawLifetimeTexts)],
+      lifetimeEvidence,
       sourceEntities,
       works: [...person.works].sort(),
     };

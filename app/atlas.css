@@ -344,6 +344,9 @@
   font-family: var(--serif, "Songti SC", "STSong", serif);
   font-size: 16px;
   font-weight: 600;
+  /* 页码改为「教材页 / PDF 页」双段后更长，作品名允许换行收缩，不被页码挤没。 */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .atlas-work-heading span,
@@ -353,6 +356,7 @@
 }
 
 .atlas-work-heading span {
+  flex: 0 0 auto;
   text-align: right;
   white-space: nowrap;
 }

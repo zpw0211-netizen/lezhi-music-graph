@@ -122,9 +122,16 @@ function selectedWorks(region: AtlasRegion, filter: string) {
   return region.works.filter((work) => work[field] === filter);
 }
 
-function labelForPage(bookKey: string, page: number | null) {
+function labelForPage(bookKey: string, page: number | null, printedPage?: number | null) {
   const book = BOOK_LABELS[bookKey] ?? bookKey;
-  return page == null ? book : `${book} · 第 ${page} 页`;
+  // 明确区分「教材页」与「PDF 页」：印刷页来自正式数据 media 标题，PDF 页来自 firstPage。
+  // 印刷页拿不到就不冒充，只显示 PDF 页。
+  if (printedPage != null) {
+    return page != null && page !== printedPage
+      ? `${book} · 教材第 ${printedPage} 页（PDF 第 ${page} 页）`
+      : `${book} · 教材第 ${printedPage} 页`;
+  }
+  return page == null ? book : `${book} · PDF 第 ${page} 页`;
 }
 
 function shortUnit(unit: string | null) {
@@ -432,7 +439,7 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
                     <button type="button" className="atlas-work-link" onClick={() => openWork(work)}>
                       <span className="atlas-work-heading">
                         <strong>《{work.name.replace(/[《》]/g, "")}》</strong>
-                        <span>{labelForPage(work.bookKey, work.page)}</span>
+                        <span>{labelForPage(work.bookKey, work.page, work.printedPage)}</span>
                       </span>
                       <small>
                         {work.type}
