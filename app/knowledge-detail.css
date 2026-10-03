@@ -1,13 +1,58 @@
+/* 知识详情面板（图谱页右栏抽屉）——「书卷」皮肤（T006）。
+   布局栅格保留，纸面/墨色/朱砂/细线对照 proto 作品详情。 */
 .theme-light.detail-open .neo-layout{grid-template-columns:minmax(0,1fr) clamp(520px,40vw,760px)}
 .theme-light.detail-open .neo-layout>.inspector{display:none}
-.knowledge-detail-drawer{min-width:0;height:100%;min-height:0;background:var(--panel);border:1px solid #e4e4e7;border-radius:var(--radius-md);display:flex;flex-direction:column;overflow:hidden;color:var(--text-strong)}
-.knowledge-header{padding:20px 24px 18px;border-bottom:1px solid #e4e4e7;border-top:3px solid var(--detail-accent);flex-shrink:0}
-.knowledge-navigation{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px;color:#71717a}
-.knowledge-navigation nav{display:flex;gap:var(--space-2)}.knowledge-detail-drawer button{cursor:pointer;border:1px solid #e4e4e7;border-radius:var(--radius-sm);background:var(--panel);color:#3f3f46;padding:6px 8px;font:inherit;font-size:11px}.knowledge-detail-drawer button:disabled{opacity:.35;cursor:default}.knowledge-detail-drawer button:focus-visible{outline:2px solid #64748b;outline-offset:2px}
-.knowledge-header h2{font-size:27px;line-height:1.35;margin:20px 0 10px;overflow-wrap:anywhere}.knowledge-aliases{font-size:12px;color:#71717a}.knowledge-meta{display:flex;gap:0;flex-wrap:wrap;margin:16px 0 0}.knowledge-meta>div{display:flex;align-items:baseline;gap:6px;padding:0 12px;border-right:1px solid #e4e4e7}.knowledge-meta>div:first-child{padding-left:0}.knowledge-meta>div:last-child{border-right:0}.knowledge-meta dt{font-size:10px;color:#71717a}.knowledge-meta dd{margin:0;font-size:12px;font-weight:600;color:#27272a}
-.knowledge-body{overflow:auto;overscroll-behavior:contain;min-height:0;padding:0 24px 24px;scrollbar-gutter:stable}.knowledge-body section{padding:22px 0;border-bottom:1px solid #eee}.knowledge-body h3{font-size:15px;font-weight:650;margin:0 0 16px;color:#27272a}.knowledge-body h4{font-size:12px;margin:14px 0 7px;color:#52525b}.knowledge-body p{font-size:13px;line-height:1.9;margin:8px 0;overflow-wrap:anywhere}.knowledge-summary{white-space:pre-line}.knowledge-body .knowledge-empty,.knowledge-load-status{font-size:11px;color:#8b8b95}.knowledge-load-status{padding-top:10px}
-.knowledge-facts,.knowledge-locations{list-style:none;padding:0;margin:0}.knowledge-facts li{display:grid;grid-template-columns:minmax(88px,28%) minmax(0,1fr);gap:12px;align-items:start;border-bottom:1px solid #f4f4f5;padding:8px 0;font-size:12px}.knowledge-facts li>span{color:#71717a;line-height:1.6}.knowledge-facts button{border:0;background:#f7f7f8;text-align:left;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.knowledge-facts button:hover{background:#eceef0}.knowledge-facts button small{float:right;color:#a1a1aa}.knowledge-facts strong{font-weight:500;line-height:1.6}.knowledge-locations li{display:grid;gap:6px;padding:10px 0;font-size:12px}.knowledge-locations span{color:#71717a}.knowledge-evidence{border-left:2px solid #d4d4d8;padding:6px 12px;margin:14px 0}.knowledge-evidence small,.knowledge-evidence>span{font-size:10px;color:#71717a}.knowledge-body .knowledge-evidence p{font-size:12px}.knowledge-body audio,.knowledge-body video{width:100%;max-height:260px}.knowledge-body figure{margin:12px 0}.knowledge-body figcaption{font-size:11px;color:#71717a}.knowledge-ask{width:100%;text-align:left}
-.knowledge-open-button{margin:0 14px 12px;padding:9px;border:1px solid #d4d4d8;background:var(--panel);color:#3f3f46;border-radius:var(--radius-sm);font-size:12px;cursor:pointer}
-.knowledge-body img{display:block;max-width:100%;max-height:300px;object-fit:contain}
+.ink-app.theme-light.network-mode .knowledge-detail-drawer{min-width:0;height:100%;min-height:0;background:#FBF8F0;border:1px solid #CFC4AC;border-radius:2px;box-shadow:0 1px 0 #E1D6BF,0 12px 26px -20px rgba(40,30,10,.55);display:flex;flex-direction:column;overflow:hidden;color:#1B2622;font-size:15px;line-height:1.75}
+.ink-app.theme-light.network-mode .knowledge-header{padding:22px 26px 18px;border-bottom:1px solid #CFC4AC;border-top:3px solid var(--detail-accent);flex-shrink:0;background:#FBF8F0}
+.ink-app.theme-light.network-mode .knowledge-navigation{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:12px;letter-spacing:.18em;color:#B8392A}
+.ink-app.theme-light.network-mode .knowledge-navigation nav{display:flex;gap:6px}
+.ink-app.theme-light.network-mode .knowledge-detail-drawer button{cursor:pointer;border:1px solid #CFC4AC;border-radius:0;background:#FBF8F0;color:#44504A;padding:6px 10px;font:inherit;font-size:12px;transition:border-color .2s,color .2s,background .2s}
+.ink-app.theme-light.network-mode .knowledge-detail-drawer button:hover{border-color:#1F4A3C;color:#1F4A3C;background:#F4EEE1}
+.ink-app.theme-light.network-mode .knowledge-detail-drawer button:disabled{opacity:.35;cursor:default}
+.ink-app.theme-light.network-mode .knowledge-detail-drawer button:focus-visible{outline:2px solid #1F4A3C;outline-offset:2px}
+.ink-app.theme-light.network-mode .knowledge-header h2{font-family:"LXGW WenKai","STKaiti","KaiTi","楷体",serif;font-weight:400;font-size:30px;line-height:1.3;margin:18px 0 8px;color:#1B2622;text-shadow:2px 1px 0 rgba(184,57,42,.16);overflow-wrap:anywhere}
+.ink-app.theme-light.network-mode .knowledge-aliases{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:13px;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-meta{display:flex;gap:0;flex-wrap:wrap;margin:14px 0 0;border-top:1px solid #D8CDB4;padding-top:12px}
+.ink-app.theme-light.network-mode .knowledge-meta>div{display:flex;align-items:baseline;gap:6px;padding:0 12px;border-right:1px solid #D8CDB4}
+.ink-app.theme-light.network-mode .knowledge-meta>div:first-child{padding-left:0}
+.ink-app.theme-light.network-mode .knowledge-meta>div:last-child{border-right:0}
+.ink-app.theme-light.network-mode .knowledge-meta dt{font-size:11px;letter-spacing:.1em;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-meta dd{margin:0;font-size:13px;font-weight:600;color:#1B2622;font-variant-numeric:tabular-nums}
+.ink-app.theme-light.network-mode .knowledge-body{overflow:auto;overscroll-behavior:contain;min-height:0;padding:0 26px 26px;scrollbar-gutter:stable}
+.ink-app.theme-light.network-mode .knowledge-body section{padding:20px 0;border-bottom:1px solid #D8CDB4}
+.ink-app.theme-light.network-mode .knowledge-body h3{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:16px;font-weight:600;margin:0 0 14px;color:#1B2622;letter-spacing:.06em}
+.ink-app.theme-light.network-mode .knowledge-body h4{font-size:12px;letter-spacing:.16em;margin:14px 0 6px;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-body p{font-size:14px;line-height:1.9;margin:8px 0;overflow-wrap:anywhere;color:#44504A}
+.ink-app.theme-light.network-mode .knowledge-summary{white-space:pre-line;color:#44504A}
+.ink-app.theme-light.network-mode .knowledge-body .knowledge-empty,
+.ink-app.theme-light.network-mode .knowledge-load-status{font-size:12px;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-load-status{padding-top:10px}
+.ink-app.theme-light.network-mode .knowledge-facts,
+.ink-app.theme-light.network-mode .knowledge-locations{list-style:none;padding:0;margin:0}
+.ink-app.theme-light.network-mode .knowledge-facts li{display:grid;grid-template-columns:minmax(88px,28%) minmax(0,1fr);gap:12px;align-items:start;border-top:1px solid #E6DECB;padding:9px 0;font-size:13px}
+.ink-app.theme-light.network-mode .knowledge-facts li:first-child{border-top:0}
+.ink-app.theme-light.network-mode .knowledge-facts li>span{color:#62675B;line-height:1.6}
+.ink-app.theme-light.network-mode .knowledge-facts button{border:0;background:none;text-align:left;font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:13px;line-height:1.6;color:#1F4A3C;overflow-wrap:anywhere;padding:0}
+.ink-app.theme-light.network-mode .knowledge-facts button:hover{background:#F4EEE1;color:#13302A}
+.ink-app.theme-light.network-mode .knowledge-facts button small{float:right;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-facts strong{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-weight:500;line-height:1.6;color:#1B2622}
+.ink-app.theme-light.network-mode .knowledge-locations li{display:grid;gap:4px;padding:9px 0;border-top:1px solid #E6DECB;font-size:13px}
+.ink-app.theme-light.network-mode .knowledge-locations li:first-child{border-top:0}
+.ink-app.theme-light.network-mode .knowledge-locations strong{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;color:#1B2622}
+.ink-app.theme-light.network-mode .knowledge-locations span{color:#62675B;font-variant-numeric:tabular-nums}
+.ink-app.theme-light.network-mode .knowledge-evidence{border-left:2px solid #B8392A;padding:6px 14px;margin:12px 0;background:color-mix(in srgb,#EAE2D0 55%,transparent)}
+.ink-app.theme-light.network-mode .knowledge-evidence small,
+.ink-app.theme-light.network-mode .knowledge-evidence>span{font-size:11px;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-evidence>span{display:inline-block;margin-top:2px;letter-spacing:.08em;color:#B8392A}
+.ink-app.theme-light.network-mode .knowledge-body .knowledge-evidence p{font-size:13px;color:#44504A}
+.ink-app.theme-light.network-mode .knowledge-body audio,
+.ink-app.theme-light.network-mode .knowledge-body video{width:100%;max-height:260px}
+.ink-app.theme-light.network-mode .knowledge-body figure{margin:12px 0}
+.ink-app.theme-light.network-mode .knowledge-body figure img{border:1px solid #CFC4AC;background:#FBF8F0;padding:6px;box-sizing:border-box}
+.ink-app.theme-light.network-mode .knowledge-body figcaption{font-size:11px;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-ask{width:100%;text-align:left;border:1px solid #1F4A3C;color:#1F4A3C;font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif}
+.ink-app.theme-light.network-mode .knowledge-ask:hover{background:#1F4A3C;color:#FBF8F0}
+.ink-app.theme-light.network-mode .knowledge-open-button{margin:0 14px 12px;padding:9px;border:1px solid #CFC4AC;background:#FBF8F0;color:#44504A;border-radius:0;font-size:12px;cursor:pointer}
+.ink-app.theme-light.network-mode .knowledge-body img{display:block;max-width:100%;max-height:300px;object-fit:contain;mix-blend-mode:multiply;filter:sepia(.2) contrast(1.04)}
 @media(max-width:1500px) and (min-width:1001px){.detail-open .explorer-sidebar{width:56px!important;flex-basis:56px!important}.detail-open .explorer-sidebar .explorer-controls,.detail-open .explorer-sidebar .explorer-brand>div,.detail-open .explorer-sidebar .explorer-import{display:none}.detail-open .explorer-sidebar .explorer-nav button{font-size:0;justify-content:center;padding:8px}.detail-open .explorer-sidebar .explorer-brand{padding:12px 4px;flex-wrap:wrap;justify-content:center}}
-@media(max-width:1000px){.theme-light.detail-open .neo-layout{grid-template-columns:minmax(0,1fr);height:auto}.knowledge-detail-drawer{width:100%;height:65vh;min-height:360px}.detail-open .neo-canvas{min-height:45vh}.knowledge-header{padding:16px}.knowledge-body{padding:0 16px 20px}.knowledge-navigation{flex-wrap:wrap}}
+@media(max-width:1000px){.theme-light.detail-open .neo-layout{grid-template-columns:minmax(0,1fr);height:auto}.ink-app.theme-light.network-mode .knowledge-detail-drawer{width:100%;height:65vh;min-height:360px}.detail-open .neo-canvas{min-height:45vh}.ink-app.theme-light.network-mode .knowledge-header{padding:16px}.ink-app.theme-light.network-mode .knowledge-body{padding:0 16px 20px}.knowledge-navigation{flex-wrap:wrap}}

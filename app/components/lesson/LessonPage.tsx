@@ -7,6 +7,7 @@ import { MelodySet } from "./MelodyPlayer";
 import type { Melody } from "../../lib/lesson/melodies";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { getPrintedPage, getScoreMedia, isStarredWork, parseUnitTask } from "../../lib/app/unit-data";
+import { SCORE_SIZES } from "../../lib/lesson/score-sizes";
 
 type LessonEntity = {
   id: string;
@@ -141,12 +142,14 @@ export function LessonPage({
   const index = lesson.unitWorks.findIndex((entity) => entity.id === workId);
   const previous = index > 0 ? lesson.unitWorks[index - 1] : undefined;
   const next = index >= 0 && index < lesson.unitWorks.length - 1 ? lesson.unitWorks[index + 1] : undefined;
+  // 面包屑只渲染真实存在的层级，缺单元归属的作品（如《阿米达》）不留空分隔符
+  const crumbTrail = [lesson.book?.name, lesson.unit?.name].filter((name): name is string => Boolean(name));
 
   return <section className="lesson" aria-labelledby="lesson-title">
     <nav className="lesson-crumbs" aria-label="课程位置">
       <button type="button" onClick={onBack}><WorkbenchIcon name="left" />课程目录</button>
-      <span>{lesson.book?.name}</span><WorkbenchIcon name="right" />
-      <span>{lesson.unit?.name}</span><WorkbenchIcon name="right" />
+      {crumbTrail.map((name) => <span key={name}><WorkbenchIcon name="right" />{name}</span>)}
+      {crumbTrail.length > 0 && <WorkbenchIcon name="right" />}
       <b>{work.name}</b>
     </nav>
 
@@ -178,10 +181,13 @@ export function LessonPage({
           <VocalDemo workName={work.name} assetUrl={assetUrl} />
           {scoreMedia.length > 0 && <details className="lesson-scores" open={!melody || melody.every((item) => item.quality === "draft")}>
             <summary>教材谱例原图（{scoreMedia.length} 张）</summary>
-            <div>{scoreMedia.map((asset) => <a key={asset.url} href={assetUrl(asset.url)} target="_blank" rel="noreferrer">
+            <div>{scoreMedia.map((asset) => {
+              /* CLS：写死谱例图固有尺寸，懒加载不再撑开布局 */
+              const size = SCORE_SIZES[asset.url];
+              return <a key={asset.url} href={assetUrl(asset.url)} target="_blank" rel="noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img loading="lazy" src={assetUrl(asset.url)} alt={asset.title ?? "教材谱例"} />
-            </a>)}</div>
+              <img loading="lazy" src={assetUrl(asset.url)} width={size?.[0]} height={size?.[1]} alt={asset.title ?? "教材谱例"} />
+            </a>; })}</div>
           </details>}
         </section>
 

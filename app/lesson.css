@@ -1,154 +1,174 @@
-/* 按课学习页 (lesson) + 上课模式 (present). Uses the fresh-education tokens. */
-.lesson { max-width:1240px; margin:0 auto; padding:18px 4px 56px; color:var(--text-primary); }
-.lesson-crumbs { display:flex; align-items:center; flex-wrap:wrap; gap:6px; font-size:13px; color:var(--text-secondary); }
-.lesson-crumbs button { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 12px 0 8px; margin-right:6px; border:1px solid var(--border); border-radius:999px; background:var(--surface); color:var(--text-primary); font-weight:600; }
-.lesson-crumbs button:hover { border-color:var(--accent); color:var(--accent); }
-.lesson-crumbs svg { width:14px; height:14px; }
-.lesson-crumbs b { color:var(--text-primary); }
-.lesson-layout { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:22px; margin-top:16px; align-items:start; }
+/* 按课学习页（课程完整学习页）——「书卷」版式（T006）。
+   对照原型 E:\Projects\yapu-collab\proto\index.html：宣纸底、楷体大标题、
+   朱砂细节、细分隔线、谱例纸。全部规则限定在 .lesson 子树内。 */
+.lesson {
+  --paper:#F4EEE1; --paper-2:#EAE2D0; --paper-3:#E1D6BF; --sheet:#FBF8F0;
+  --ink:#1B2622; --ink-2:#44504A; --ink-3:#62675B;
+  --pine:#1F4A3C; --pine-deep:#13302A; --seal:#B8392A; --amber-hi:#F3D9A4;
+  --line:#CFC4AC;
+  --kai:"LXGW WenKai","STKaiti","KaiTi","楷体",serif;
+  --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  position:relative;
+  max-width:1280px;
+  margin:0 auto;
+  padding:16px 40px 88px;
+  color:var(--ink);
+  font-size:16px;
+  line-height:1.75;
+}
+.lesson ::selection { background:var(--amber-hi); }
 
-.lesson-hero { display:flex; align-items:center; justify-content:space-between; gap:28px; padding:30px 0 24px; border-bottom:1px solid var(--brand-paper-deep); background:transparent; }
-.lesson-type { display:inline-block; color:var(--text-secondary); font-size:13px; font-weight:600; }
-.lesson-star { display:inline-block; color:var(--brand-vermilion); font-size:13px; font-weight:650; }
-.lesson-hero h1 { margin:0 0 12px; font-family:var(--serif); font-size:clamp(40px,4vw,56px); font-weight:600; line-height:1.2; letter-spacing:0; }
-.lesson-hero h1::after { content:""; display:block; width:54px; height:4px; margin-top:14px; background:var(--brand-sprout); }
-.lesson-hero h1[data-grade="八"]::after { background:var(--grade-8); }
-.lesson-hero h1[data-grade="九"]::after { background:var(--grade-9); }
-.lesson-meta { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 16px; margin:0; color:var(--text-secondary); font-size:13px; }
-.lesson-meta > span { display:inline-flex; align-items:baseline; gap:5px; }
-.lesson-meta small { color:var(--text-tertiary); font-size:12px; }
-.lesson-hero-actions { display:flex; flex-direction:column; gap:8px; flex:none; }
-.lesson-hero-actions button { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding:0 16px; border:1px solid var(--border); border-radius:10px; background:transparent; color:var(--text-primary); font-size:14px; font-weight:600; transition:transform var(--motion-fast) var(--ease-out); }
-.lesson-hero-actions button:hover { border-color:var(--brand-sprout-deep); color:var(--brand-sprout-deep); transform:translateY(-1px); }
+/* 面包屑 = 原型的 kicker：细线 + 朱砂字距行 */
+.lesson-crumbs { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:6px 0 0; padding:0 0 18px; font-family:var(--serif); font-size:14px; letter-spacing:.12em; color:var(--ink-2); border-bottom:1px solid var(--line); }
+.lesson-crumbs button { display:inline-flex; align-items:center; gap:4px; padding:2px 0; margin-right:6px; border:0; border-bottom:1.5px solid transparent; background:none; color:var(--pine); font:inherit; letter-spacing:inherit; cursor:pointer; transition:border-color .2s; }
+.lesson-crumbs button:hover { border-color:var(--pine); }
+.lesson-crumbs svg { width:14px; height:14px; color:var(--ink-3); }
+.lesson-crumbs b { color:var(--seal); font-weight:600; }
+
+.lesson-layout { display:grid; grid-template-columns:minmax(0,7fr) minmax(260px,4fr); gap:64px; margin-top:0; padding-top:34px; align-items:start; }
+
+/* ---- 题头：楷体大标题 + 朱砂影（下边线去掉：与首节 border-top 形成双横线） ---- */
+.lesson-hero { display:block; padding:10px 0 30px; }
+.lesson-hero h1 { margin:0; font-family:var(--kai); font-weight:400; font-size:clamp(40px,4.6vw,64px); line-height:1.18; letter-spacing:.04em; color:var(--ink); text-shadow:2px 1px 0 rgba(184,57,42,.16); overflow-wrap:anywhere; }
+.lesson-hero h1::after { content:none; }
+.lesson-meta { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 18px; margin:16px 0 0; color:var(--ink-3); font-family:var(--serif); font-size:14px; }
+.lesson-meta > span { display:inline-flex; align-items:baseline; gap:6px; }
+.lesson-meta small { color:var(--ink-3); font-size:12px; letter-spacing:.08em; }
+.lesson-type { color:var(--ink-2); font-weight:600; }
+.lesson-star { display:inline-flex; align-items:center; gap:5px; padding:1px 10px; border:1.5px solid var(--seal); color:var(--seal); font-family:var(--kai); font-size:13px; letter-spacing:.1em; transform:rotate(-2deg); }
+.lesson-hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+.lesson-hero-actions button { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:42px; padding:0 20px; border:1px solid var(--pine); border-radius:999px; background:none; color:var(--pine); font-family:var(--serif); font-size:15px; letter-spacing:.06em; cursor:pointer; transition:background .2s,color .2s,transform .18s var(--ease); }
+.lesson-hero-actions button:hover { background:var(--pine); color:var(--sheet); }
 .lesson-hero-actions button:active { transform:scale(.97); }
-.lesson-hero-actions .lesson-present { border:1px solid var(--brand-sprout-deep); background:var(--brand-sprout-deep); color:#fff; }
-.lesson-hero-actions .lesson-present:hover { color:#fff; }
+.lesson-hero-actions .lesson-present { background:var(--pine); color:var(--sheet); }
+.lesson-hero-actions .lesson-present:hover { background:var(--pine-deep); border-color:var(--pine-deep); }
 .lesson-hero-actions svg { width:16px; height:16px; }
 
-.lesson-block { margin-top:18px; padding:22px 24px; border:1px solid var(--border); border-radius:20px; background:var(--surface); box-shadow:var(--shadow-sm); }
-.lesson-block>h2 { display:flex; align-items:center; gap:10px; margin:0 0 16px; font-size:18px; font-weight:700; }
-.lesson-block>h2 em { display:grid; place-items:center; width:26px; height:26px; border-radius:8px; background:var(--accent); color:#fff; font-size:13px; font-style:normal; }
-.lesson-note { margin:0; font-size:13px; color:var(--text-secondary); }
+/* ---- 正文分节：细线小节头，不用卡片 ---- */
+.lesson-block { margin-top:44px; padding:26px 0 0; border-top:1px solid var(--line); background:transparent; box-shadow:none; }
+.lesson-block>h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 20px; font-family:var(--serif); font-size:22px; font-weight:600; color:var(--ink); }
+.lesson-block>h2 em { display:inline-block; min-width:30px; font-family:var(--kai); font-size:30px; font-style:normal; font-weight:400; color:var(--seal); }
+.lesson-note { margin:0; font-size:14px; color:var(--ink-3); }
 
-/* 简谱旋律 */
-.melody-controls { display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; }
-.melody-play { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 18px 0 12px; border:0; border-radius:999px; background:var(--accent); color:#fff; font-size:14px; font-weight:650; box-shadow:0 6px 14px #16834F33; }
-.melody-play svg { width:20px; height:20px; fill:currentColor; }
-.melody-play:hover { filter:brightness(1.06); }
-.melody-key { font-size:13px; font-weight:650; color:var(--text-secondary); font-variant-numeric:tabular-nums; }
-.melody-tempo { display:inline-flex; align-items:center; gap:8px; margin-left:auto; font-size:12px; color:var(--text-secondary); }
-.melody-tempo input { width:110px; accent-color:var(--accent); }
-.melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }
-.melody-score { display:flex; flex-wrap:wrap; row-gap:14px; margin-top:16px; padding:18px 12px 12px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
-  font-family:"Arial","Microsoft YaHei",sans-serif; }
-.melody-bar { display:inline-flex; align-items:flex-start; padding:0 10px; border-right:1.5px solid #9AA7A0; }
-.melody-bar:last-child { border-right:3px double #6B7771; }
-.melody-note { display:inline-flex; flex-direction:column; align-items:center; min-width:26px; position:relative; }
-.melody-note:not(:has(.melody-dash)) { }
-.melody-digit { position:relative; display:inline-block; padding:4px 3px 5px; font-size:20px; font-weight:700; line-height:1; border-radius:6px; transition:opacity var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out); }
-.melody-digit.lines-1 { box-shadow:inset 0 -2px 0 #3C4742; }
-.melody-digit.lines-2 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -6px 0 #FAFCFB, inset 0 -8px 0 #3C4742; padding-bottom:9px; }
-.melody-digit.is-high::before, .melody-digit.is-low::after { content:""; position:absolute; left:50%; width:4px; height:4px; margin-left:-2px; border-radius:50%; background:currentColor; }
-.melody-digit.is-high::before { top:-3px; }
-.melody-digit.is-low::after { bottom:-6px; }
-.melody-digit.lines-2.is-low::after { bottom:-9px; }
-.melody-dot { font-style:normal; margin-left:1px; }
-.melody-dash { position:absolute; top:4px; left:100%; font-size:18px; color:#3C4742; padding-left:6px; }
-.melody-note:has(.melody-dash) { margin-right:22px; }
-.melody-note.is-tie .melody-digit { color:#8A968F; }
-.melody-lyric { margin-top:8px; font-size:14px; color:var(--text-secondary); white-space:nowrap; font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
-.melody-note.is-active .melody-digit { background:transparent; color:var(--brand-amber, #E9A83A); transform:translateY(-3px) scale(1.12); box-shadow:none; }
-.melody-note.is-active .melody-lyric { color:var(--accent); font-weight:700; }
-.melody-source { margin:10px 2px 0; font-size:12px; color:var(--text-tertiary); }
-.lesson-scores { margin-top:14px; }
-.lesson-scores summary { cursor:pointer; font-size:13px; color:var(--accent); font-weight:600; }
-.lesson-scores>div { display:grid; gap:10px; margin-top:10px; }
-.lesson-scores a { display:block; padding:8px; border:1px solid var(--border); border-radius:12px; background:#fff; }
-.lesson-scores img { display:block; width:100%; height:auto; }
+/* 谱例与旋律：谱例纸 */
+.lesson .melody-score { background:var(--sheet); border:1px solid var(--line); border-radius:2px; box-shadow:0 1px 0 var(--paper-3),0 8px 18px -14px rgba(40,30,10,.5); font-family:var(--serif); }
+.lesson .melody-bar { border-right-color:var(--ink-2); }
+.lesson .melody-note.is-active .melody-digit { background:var(--amber-hi); color:var(--ink); transform:translateY(-3px); }
+.lesson .melody-note.is-active .melody-lyric { color:var(--ink-2); font-weight:700; }
+.lesson .melody-source { color:var(--ink-3); }
+.lesson .melody-tabs button { border-color:var(--line); background:var(--sheet); color:var(--ink-2); }
+.lesson .melody-tabs button.active { background:var(--pine); border-color:var(--pine); color:var(--sheet); }
+.lesson .melody-draft { border-color:#E8C87E; background:#FFF8E8; color:#76530F; }
+.lesson-scores { margin-top:18px; }
+.lesson-scores summary { cursor:pointer; font-family:var(--serif); font-size:14px; color:var(--pine); letter-spacing:.04em; }
+.lesson-scores summary:hover { color:var(--pine-deep); }
+.lesson-scores>div { display:grid; gap:18px; margin-top:14px; }
+.lesson-scores a { display:block; padding:14px; background:var(--sheet); border:1px solid var(--line); box-shadow:0 1px 0 var(--paper-3),0 10px 20px -16px rgba(40,30,10,.5); }
+.lesson-scores a:hover { box-shadow:0 1px 0 var(--paper-3),0 18px 26px -16px rgba(40,30,10,.55); }
+.lesson-scores img { display:block; width:100%; height:auto; mix-blend-mode:multiply; filter:sepia(.25) contrast(1.05); }
 
-/* 知识要点 */
-.lesson-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-.lesson-fact-group { padding:14px 16px; border-radius:14px; background:var(--surface-soft); border:1px solid var(--border); }
-.lesson-fact-group h3 { margin:0 0 10px; font-size:13px; font-weight:700; color:var(--accent); letter-spacing:.04em; }
-.lesson-fact-group dl { display:grid; gap:9px; margin:0; }
-.lesson-fact-group dl>div { display:grid; grid-template-columns:76px 1fr; gap:10px; font-size:14px; line-height:1.55; }
-.lesson-fact-group dt { color:var(--text-tertiary); font-size:13px; }
-.lesson-fact-group dd { margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
-.lesson-chip { padding:2px 10px; border:1px solid #BFE0CD; border-radius:999px; background:#fff; color:var(--accent); font-size:13px; font-weight:600; }
-.lesson-chip:hover, .lesson-chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
-.lesson-layer { padding:0 6px; border-radius:999px; font-size:10.5px; line-height:18px; color:var(--text-tertiary); background:#fff; border:1px solid var(--border); font-variant-numeric:tabular-nums; }
-.lesson-layer.is-score { color:#2466B8; border-color:#CFE0F6; }
-.lesson-layer.is-derived { color:#7A5AB8; border-color:#E2D8F5; }
-.lesson-concept { margin-top:14px; padding:14px 16px; border:1px solid #BFE0CD; border-radius:14px; background:#F3FAF6; animation:lesson-in .2s ease-out; }
-@keyframes lesson-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+/* ---- 知识要点：词条式细线表，不用分格卡片 ---- */
+.lesson-facts { display:grid; gap:0; }
+.lesson-fact-group { padding:0; border:0; border-radius:0; background:transparent; }
+.lesson-fact-group + .lesson-fact-group { margin-top:26px; }
+.lesson-fact-group h3 { margin:0 0 12px; font-family:var(--ui); font-size:13px; font-weight:600; letter-spacing:.24em; color:var(--seal); }
+.lesson-fact-group.is-features h3 { color:var(--ink-3); }
+.lesson-fact-group dl { display:grid; gap:0; margin:0; }
+.lesson-fact-group dl>div { display:grid; grid-template-columns:minmax(76px,168px) 1fr; gap:14px; padding:11px 0; border-top:1px solid var(--line); font-size:15px; line-height:1.7; }
+.lesson-fact-group dl>div:first-child { border-top:0; }
+.lesson-fact-group dt { color:var(--ink-3); font-size:13px; padding-top:2px; }
+.lesson-fact-group dd { margin:0; display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-family:var(--serif); color:var(--ink); }
+.lesson-chip { padding:2px 12px; border:1px solid var(--line); border-radius:0; background:var(--paper); color:var(--ink-2); font-family:var(--serif); font-size:14px; font-weight:400; cursor:pointer; transition:border-color .2s,background .2s,transform .2s var(--ease); }
+.lesson-chip:hover { border-color:var(--pine); background:var(--paper-2); transform:translateY(-2px); }
+.lesson-chip.active { background:var(--pine); border-color:var(--pine); color:var(--sheet); }
+.lesson-layer { padding:1px 8px; border:1px solid var(--line); border-radius:999px; font-size:11px; line-height:1.6; color:var(--ink-3); background:var(--sheet); font-variant-numeric:tabular-nums; }
+.lesson-layer.is-score { color:var(--pine); border-color:var(--pine); }
+.lesson-layer.is-derived { color:#916319; border-color:#C9A96A; }
+.lesson-concept { margin-top:16px; padding:18px 22px; border:1px solid var(--line); border-left:3px solid var(--seal); border-radius:0; background:color-mix(in srgb,var(--paper-2) 70%,transparent); animation:lesson-in .25s var(--ease); }
+@keyframes lesson-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 .lesson-concept header { display:flex; align-items:baseline; gap:10px; }
-.lesson-concept header b { font-size:16px; }
-.lesson-concept header small { color:var(--text-tertiary); }
-.lesson-concept header button { margin-left:auto; border:0; background:transparent; color:var(--text-tertiary); }
+.lesson-concept header b { font-family:var(--kai); font-size:20px; font-weight:400; }
+.lesson-concept header small { color:var(--ink-3); }
+.lesson-concept header button { margin-left:auto; border:0; background:transparent; color:var(--ink-3); cursor:pointer; }
+.lesson-concept header button:hover { color:var(--seal); }
 .lesson-concept header svg { width:16px; height:16px; }
-.lesson-concept dl { display:grid; gap:6px; margin:10px 0 0; }
-.lesson-concept dl>div { display:grid; grid-template-columns:76px 1fr; gap:10px; font-size:13px; }
-.lesson-concept dt { color:var(--text-tertiary); }
-.lesson-concept dd { margin:0; }
-.lesson-concept-works { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0 0; font-size:13px; }
-.lesson-concept-works span { color:var(--text-secondary); }
-.lesson-concept-works button { padding:2px 10px; border:1px solid var(--border); border-radius:999px; background:#fff; font-size:13px; color:var(--text-primary); }
-.lesson-concept-works button:hover { border-color:var(--accent); color:var(--accent); }
-.lesson-extended { margin-top:14px; padding:14px 16px; border-radius:14px; background:#FFFBF5; border:1px solid #F5E1C8; }
-.lesson-extended h3 { display:flex; align-items:baseline; gap:8px; margin:0 0 8px; font-size:13px; color:#A2560E; }
-.lesson-extended h3 small { font-size:11px; font-weight:500; color:#B98A5A; }
-.lesson-extended ul { margin:0; padding-left:18px; display:grid; gap:6px; font-size:14px; line-height:1.6; }
-.lesson-extended b { margin-right:8px; color:#8A5A2B; font-weight:600; }
+.lesson-concept dl { display:grid; gap:0; margin:12px 0 0; }
+.lesson-concept dl>div { display:grid; grid-template-columns:minmax(76px,140px) 1fr; gap:12px; padding:8px 0; border-top:1px solid var(--line); font-size:14px; }
+.lesson-concept dl>div:first-child { border-top:0; }
+.lesson-concept dt { color:var(--ink-3); font-size:13px; }
+.lesson-concept dd { margin:0; font-family:var(--serif); }
+.lesson-concept-works { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:12px 0 0; font-size:13px; }
+.lesson-concept-works span { color:var(--ink-3); }
+.lesson-concept-works button { padding:2px 10px; border:1px solid var(--line); border-radius:0; background:var(--sheet); font-family:var(--serif); font-size:13px; color:var(--ink-2); cursor:pointer; }
+.lesson-concept-works button:hover { border-color:var(--pine); color:var(--pine); }
+.lesson-extended { margin-top:26px; padding:16px 20px; border:1px dashed #C9A96A; border-radius:0; background:color-mix(in srgb,var(--paper-2) 55%,transparent); }
+.lesson-extended h3 { display:flex; align-items:baseline; gap:8px; margin:0 0 8px; font-family:var(--ui); font-size:13px; font-weight:600; letter-spacing:.18em; color:#916319; }
+.lesson-extended h3 small { font-size:11px; font-weight:500; letter-spacing:0; color:var(--ink-3); }
+.lesson-extended ul { margin:0; padding-left:18px; display:grid; gap:6px; font-size:14px; line-height:1.7; }
+.lesson-extended b { margin-right:8px; color:#916319; font-weight:600; }
 
-/* 课堂活动 */
-.lesson-tasks { margin:0; padding-left:0; list-style:none; display:grid; gap:10px; counter-reset:task; }
-.lesson-tasks li { position:relative; padding:12px 14px 12px 46px; border-radius:12px; background:var(--surface-soft); border:1px solid var(--border); font-size:15px; line-height:1.6; counter-increment:task; }
-.lesson-tasks li::before { content:counter(task); position:absolute; left:14px; top:12px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:#fff; border:1px solid #BFE0CD; color:var(--accent); font-size:12px; font-weight:700; }
-.lesson-tasks small { display:block; margin-top:2px; font-size:12px; color:var(--text-tertiary); }
+/* ---- 课堂活动：朱砂序号 + 细线 ---- */
+.lesson-tasks { margin:0; padding:0; list-style:none; display:grid; gap:0; counter-reset:task; }
+.lesson-tasks li { position:relative; display:grid; grid-template-columns:56px 1fr; gap:0 10px; padding:18px 0 16px; border:0; border-top:1px solid var(--line); border-radius:0; background:transparent; font-family:var(--serif); font-size:16px; line-height:1.75; counter-increment:task; }
+.lesson-tasks li:first-child { border-top:0; }
+.lesson-tasks li::before { content:counter(task,decimal-leading-zero); position:static; display:block; padding-top:3px; border:0; border-radius:0; background:none; color:var(--seal); font-family:var(--serif); font-size:15px; }
+/* small 落在第 2 列：否则它作为第 3 个网格项会被自动放进 56px 序号列，挤成窄条折行 */
+.lesson-tasks small { grid-column:2; display:block; margin-top:6px; font-family:var(--ui); font-size:12px; color:var(--ink-3); }
 
-/* 小练习 */
-.lesson-quiz { display:grid; gap:14px; }
-.lesson-quiz fieldset { margin:0; padding:14px 16px; border:1px solid var(--border); border-radius:14px; background:#fff; transition:border-color .2s, background .2s; }
-.lesson-quiz fieldset.is-right { border-color:#9FD8B8; background:#F3FBF6; }
-.lesson-quiz fieldset.is-wrong { border-color:#F3C3B8; background:#FFF8F6; }
-.lesson-quiz legend { display:flex; align-items:center; gap:10px; padding:0; font-size:15px; font-weight:650; }
-.lesson-quiz legend em { padding:1px 8px; border-radius:6px; background:var(--accent-soft); color:var(--accent); font-size:12px; font-style:normal; }
+/* ---- 小练习：谱例纸上的题签 ---- */
+.lesson-quiz { display:grid; gap:18px; }
+.lesson-quiz fieldset { margin:0; padding:16px 20px 18px; border:1px solid var(--line); border-radius:0; background:var(--sheet); box-shadow:0 1px 0 var(--paper-3); transition:border-color .2s,background .2s; }
+.lesson-quiz fieldset.is-right { border-color:var(--pine); background:color-mix(in srgb,var(--sheet) 88%,var(--pine)); }
+.lesson-quiz fieldset.is-wrong { border-color:var(--seal); background:color-mix(in srgb,var(--sheet) 90%,var(--seal)); }
+.lesson-quiz legend { display:flex; align-items:center; gap:10px; padding:0 8px; font-family:var(--serif); font-size:16px; font-weight:600; color:var(--ink); }
+.lesson-quiz legend em { padding:0 7px; border:1px solid var(--seal); border-radius:0; background:none; color:var(--seal); font-family:var(--kai); font-size:13px; font-style:normal; }
 .lesson-quiz fieldset>div { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:12px; }
-.lesson-quiz fieldset>div button { min-height:40px; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface-soft); color:var(--text-primary); font-size:14px; }
-.lesson-quiz fieldset>div button:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); background:#fff; }
+.lesson-quiz fieldset>div button { min-height:42px; padding:6px 12px; border:1px solid var(--line); border-radius:0; background:var(--paper); color:var(--ink-2); font-family:var(--serif); font-size:14px; cursor:pointer; }
+.lesson-quiz fieldset>div button:hover:not(:disabled) { border-color:var(--pine); color:var(--pine); background:var(--paper-2); }
 .lesson-quiz fieldset>div button:disabled { cursor:default; }
-.lesson-quiz button.is-answer { border-color:#2DB36F; background:#E6F5EC; color:#16834F; font-weight:650; }
-.lesson-quiz button.is-picked { border-color:#E07A63; background:#FDECE8; color:#B2442C; }
-.lesson-quiz fieldset>p { margin:10px 0 0; font-size:13px; color:var(--text-secondary); }
-.lesson-quiz-score { display:flex; align-items:center; gap:12px; margin:0; font-size:14px; font-weight:600; color:var(--text-secondary); }
-.lesson-quiz-score button { height:30px; padding:0 12px; border:1px solid var(--border); border-radius:999px; background:#fff; font-size:13px; }
+.lesson-quiz button.is-answer { border-color:var(--pine); background:var(--pine); color:var(--sheet); font-weight:600; }
+.lesson-quiz button.is-picked { border-color:var(--seal); background:var(--seal); color:var(--sheet); }
+.lesson-quiz fieldset>p { margin:12px 0 0; font-size:13px; color:var(--ink-3); }
+.lesson-quiz-score { display:flex; align-items:center; gap:14px; margin:0; font-family:var(--serif); font-size:15px; color:var(--ink-2); }
+.lesson-quiz-score button { height:32px; padding:0 14px; border:1px solid var(--line); border-radius:999px; background:var(--sheet); color:var(--ink-2); font-family:var(--serif); cursor:pointer; }
+.lesson-quiz-score button:hover { border-color:var(--pine); color:var(--pine); }
 
-.lesson-pager { display:flex; justify-content:space-between; gap:12px; margin-top:20px; }
-.lesson-pager button { display:inline-flex; align-items:center; gap:10px; max-width:48%; padding:12px 16px; border:1px solid var(--border); border-radius:14px; background:var(--surface); color:var(--text-primary); font-size:15px; font-weight:650; text-align:left; }
+/* ---- 上一课 / 下一课 ---- */
+.lesson-pager { display:flex; justify-content:space-between; gap:16px; margin-top:52px; padding-top:24px; border-top:1px solid var(--line); }
+.lesson-pager button { display:inline-flex; align-items:center; gap:12px; max-width:48%; padding:6px 2px; border:0; border-radius:0; background:none; color:var(--ink); font-family:var(--serif); font-size:17px; text-align:left; cursor:pointer; }
+.lesson-pager button:hover { color:var(--pine); }
 .lesson-pager button.is-next { text-align:right; }
-.lesson-pager button:hover { border-color:var(--accent); color:var(--accent); }
-.lesson-pager small { display:block; font-size:12px; font-weight:500; color:var(--text-tertiary); }
-.lesson-pager svg { width:18px; height:18px; flex:none; }
+.lesson-pager small { display:block; margin-bottom:2px; font-family:var(--ui); font-size:12px; letter-spacing:.14em; color:var(--ink-3); }
+.lesson-pager svg { width:18px; height:18px; flex:none; color:var(--ink-3); }
+.lesson-pager button:hover svg { color:var(--pine); }
 
-.lesson-side { position:sticky; top:12px; }
-.lesson-side section { padding:18px; border:1px solid var(--border); border-radius:18px; background:var(--surface); box-shadow:var(--shadow-sm); }
-.lesson-side h3 { margin:0 0 10px; font-size:15px; }
-.lesson-goals { margin:0 0 12px; padding:10px 12px 10px 28px; border-radius:12px; background:var(--accent-soft); font-size:13px; line-height:1.6; color:#1F5F3F; }
-.lesson-unit-works { margin:0; padding:0; list-style:none; display:grid; gap:4px; }
-.lesson-unit-works button { display:flex; flex-direction:column; align-items:flex-start; width:100%; padding:8px 12px; border:0; border-radius:10px; background:transparent; color:var(--text-primary); font-size:14px; text-align:left; }
-.lesson-unit-works button small { font-size:11px; color:var(--text-tertiary); }
-.lesson-unit-works button:hover { background:var(--surface-soft); }
-.lesson-unit-works button.active { background:var(--accent-soft); color:var(--accent); font-weight:650; box-shadow:inset 3px 0 0 var(--accent); }
-.lesson-empty { padding:60px; text-align:center; }
+/* ---- 右栏：单元导读（abstract）+ 单元名录（toc） ---- */
+.lesson-side { position:sticky; top:76px; }
+.lesson-side section { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+.lesson-side h3 { margin:0 0 14px; font-family:var(--kai); font-size:22px; font-weight:400; letter-spacing:.04em; color:var(--ink); }
+.lesson-goals { margin:0 0 26px; padding:20px 24px; border:0; border-left:3px solid var(--seal); border-radius:0; background:color-mix(in srgb,var(--paper-2) 70%,transparent); font-family:var(--serif); font-size:16px; line-height:1.9; color:var(--ink-2); }
+.lesson-unit-works { margin:0; padding:0; list-style:none; display:grid; gap:0; border-top:1px solid var(--line); counter-reset:toc; }
+.lesson-unit-works button { display:flex; flex-direction:row; align-items:baseline; gap:10px; width:100%; padding:11px 2px; border:0; border-bottom:1px solid var(--line); border-radius:0; background:transparent; color:var(--ink-2); font-family:var(--serif); font-size:15px; text-align:left; transition:color .2s; }
+.lesson-unit-works button small { margin-left:auto; font-size:12px; color:var(--ink-3); flex:none; }
+.lesson-unit-works button:hover { color:var(--pine); }
+.lesson-unit-works button.active { color:var(--seal); font-weight:600; box-shadow:inset 3px 0 0 var(--seal); padding-left:10px; }
+.lesson-empty { padding:60px; text-align:center; font-family:var(--serif); color:var(--ink-2); }
+.lesson-empty button { margin-left:12px; padding:4px 16px; border:1px solid var(--pine); border-radius:999px; background:none; color:var(--pine); font-family:var(--serif); cursor:pointer; }
 
-/* 上课模式 */
+/* 键盘可见焦点（本页范围） */
+.lesson button:focus-visible, .lesson a:focus-visible, .lesson summary:focus-visible,
+.lesson input:focus-visible, .lesson fieldset:focus-within legend { outline:2px solid var(--pine); outline-offset:2px; }
+.lesson .melody-tempo input:focus-visible { outline-offset:0; }
+
+/* ---- 上课模式（沿用现有品牌纸色体系，微调为书卷质感） ---- */
 .present { position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; background:var(--brand-paper); color:var(--brand-ink); }
 .present-stage { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:3vh 5vw; overflow:auto; overscroll-behavior:contain; animation:present-in var(--motion-slow) var(--ease-out); }
 @keyframes present-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 .present h2 { margin:0 0 2.4vh; font-family:var(--serif); font-size:clamp(28px,3.4vw,48px); font-weight:700; color:var(--brand-sprout-deep); }
 .present-cover { text-align:center; }
 .present-cover small { font-size:clamp(16px,1.6vw,24px); color:var(--text-secondary); }
-.present-cover h1 { margin:2vh 0; font-family:var(--serif); font-size:clamp(56px,8vw,120px); font-weight:700; letter-spacing:.04em; }
+.present-cover h1 { margin:2vh 0; font-family:var(--kai); font-weight:400; font-size:clamp(56px,8vw,120px); letter-spacing:.04em; }
 .present-cover p { font-size:clamp(18px,1.8vw,26px); color:var(--brand-sprout-deep); font-weight:650; }
 .present-score { width:min(1600px,100%); }
 .present-score img { display:block; max-width:100%; max-height:calc(100vh - 190px); margin:0 auto; }
@@ -192,17 +212,28 @@
   .present-score .melody-source { margin-top:6px; }
 }
 
+/* ---- 响应式：手机按阅读顺序单列排 ---- */
 @media (max-width:1100px) {
-  .lesson-layout { grid-template-columns:1fr; }
+  .lesson { padding:16px 24px 72px; }
+  .lesson-layout { grid-template-columns:1fr; gap:40px; }
   .lesson-side { position:static; }
-  .lesson-facts { grid-template-columns:1fr; }
-  .lesson-quiz fieldset>div { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:640px) {
-  .lesson-hero { flex-direction:column; align-items:stretch; gap:20px; padding:24px 0 20px; }
+  .lesson { padding:10px 16px 56px; }
+  .lesson-crumbs { font-size:12px; padding-bottom:14px; }
+  .lesson-hero { padding-bottom:22px; }
+  .lesson-hero h1 { font-size:clamp(30px,9vw,40px); }
   .lesson-hero-actions { flex-direction:row; }
-  .lesson-hero-actions button { flex:1 1 0; padding:0 10px; }
-  .lesson-block { padding:18px 16px; }
+  .lesson-hero-actions button { flex:1 1 0; padding:0 10px; height:40px; font-size:14px; }
+  .lesson-layout { gap:32px; padding-top:24px; }
+  .lesson-block { margin-top:32px; padding-top:20px; }
+  .lesson-block>h2 { font-size:19px; }
+  .lesson-block>h2 em { font-size:24px; min-width:24px; }
+  .lesson-fact-group dl>div { grid-template-columns:96px 1fr; gap:10px; }
+  .lesson-quiz fieldset { padding:12px 14px 16px; }
+  .lesson-quiz fieldset>div { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .lesson-tasks li { grid-template-columns:40px 1fr; padding:14px 0 12px; }
+  .lesson-goals { padding:14px 16px; font-size:15px; }
   .melody-tempo { margin-left:0; }
   .present-stage { align-items:flex-start; padding:18px 14px 24px; }
   .present h2 { font-size:28px; }
@@ -222,15 +253,46 @@
   .melody-player.is-large .melody-score { padding:18px 10px 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .lesson * { animation:none !important; transition:none !important; }
   .present-stage, .present-points li, .present-question span, .melody-digit, .present-nav button, .present .melody-play { animation:none; transition-duration:1ms; }
 }
 
-/* 课程目录卡片徽标 + 首页入口 */
+/* 课程目录卡片徽标 + 首页入口（供目录页与首页使用，保持原样） */
 .work-card-top { justify-content:flex-start !important; }
 .work-card-top small { margin-left:auto; }
 .work-card-star, .work-card-audio { padding:2px 8px; border-radius:999px; font-size:11px; font-weight:650; }
 .work-card-star { background:#FFF1DC; color:#A2560E; }
 .work-card-audio { background:#E6F5EC; color:#16834F; }
+
+/* ---- 旋律播放器共享样式（MelodyPlayer 组件的类名契约，勿改类名） ---- */
+.melody-controls { display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; }
+.melody-play { display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 18px 0 12px; border:0; border-radius:999px; background:var(--accent); color:#fff; font-size:14px; font-weight:650; box-shadow:0 6px 14px #16834F33; cursor:pointer; }
+.melody-play svg { width:20px; height:20px; fill:currentColor; }
+.melody-play:hover { filter:brightness(1.06); }
+.melody-key { font-size:13px; font-weight:650; color:var(--text-secondary); font-variant-numeric:tabular-nums; }
+.melody-tempo { display:inline-flex; align-items:center; gap:8px; margin-left:auto; font-size:12px; color:var(--text-secondary); }
+.melody-tempo input { width:110px; accent-color:var(--accent); }
+.melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }
+.melody-score { display:flex; flex-wrap:wrap; row-gap:14px; margin-top:16px; padding:18px 12px 12px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
+  font-family:"Arial","Microsoft YaHei",sans-serif; }
+.melody-bar { display:inline-flex; align-items:stretch; flex-direction:column; padding:0 10px; border-right:1.5px solid #9AA7A0; }
+.melody-bar:last-child { border-right:3px double #6B7771; }
+.melody-note { display:inline-flex; flex-direction:column; align-items:center; min-width:26px; position:relative; }
+.melody-digit { position:relative; display:inline-block; padding:4px 3px 5px; font-size:20px; font-weight:700; line-height:1; border-radius:6px; transition:opacity var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out); }
+.melody-digit.lines-1 { box-shadow:inset 0 -2px 0 #3C4742; }
+.melody-digit.lines-2 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -6px 0 #FAFCFB, inset 0 -8px 0 #3C4742; padding-bottom:9px; }
+.melody-digit.is-high::before, .melody-digit.is-low::after { content:""; position:absolute; left:50%; width:4px; height:4px; margin-left:-2px; border-radius:50%; background:currentColor; }
+.melody-digit.is-high::before { top:-3px; }
+.melody-digit.is-low::after { bottom:-6px; }
+.melody-digit.lines-2.is-low::after { bottom:-9px; }
+.melody-dot { font-style:normal; margin-left:1px; }
+.melody-dash { position:absolute; top:4px; left:100%; font-size:18px; color:#3C4742; padding-left:6px; }
+.melody-note:has(.melody-dash) { margin-right:22px; }
+.melody-note.is-tie .melody-digit { color:#8A968F; }
+.melody-lyric { margin-top:8px; font-size:14px; color:var(--text-secondary); white-space:nowrap; font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
+.melody-note.is-active .melody-digit { background:transparent; color:var(--brand-amber, #E9A83A); transform:translateY(-3px) scale(1.12); box-shadow:none; }
+.melody-note.is-active .melody-lyric { color:var(--accent); font-weight:700; }
+.melody-source { margin:10px 2px 0; font-size:12px; color:var(--text-tertiary); }
 .melody-accidental { font-size:.6em; font-weight:600; margin-right:1px; vertical-align:.5em; }
 .melody-digit.lines-3 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -6px 0 #FAFCFB, inset 0 -8px 0 #3C4742, inset 0 -12px 0 #FAFCFB, inset 0 -14px 0 #3C4742; padding-bottom:15px; }
 .melody-digit.lines-3.is-low::after { bottom:-9px; }
@@ -238,7 +300,7 @@
 
 /* 多声部 / 多片段谱例 */
 .melody-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
-.melody-tabs button { height:32px; padding:0 14px; border:1px solid var(--border); border-radius:999px; background:var(--surface-soft); color:var(--text-secondary); font-size:13px; font-weight:600; }
+.melody-tabs button { height:32px; padding:0 14px; border:1px solid var(--border); border-radius:999px; background:var(--surface-soft); color:var(--text-secondary); font-size:13px; font-weight:600; cursor:pointer; }
 .melody-tabs button.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 .melody-title { margin:0 0 8px; font-size:14px; font-weight:700; color:var(--text-primary); }
 .melody-draft { margin:0 0 10px; padding:9px 12px; border:1px solid #E8C87E; border-radius:9px; background:#FFF8E8; color:#76530F; font-size:12px; line-height:1.5; }
@@ -248,7 +310,6 @@
 .melody-voices label.voice-1 { color:#2466B8; background:#EEF4FC; }
 .melody-voices label.voice-2 { color:#7A5AB8; background:#F3EFFB; }
 .melody-voices input { accent-color:currentColor; }
-.melody-bar { flex-direction:column; align-items:stretch; }
 .melody-voice { display:flex; align-items:flex-start; }
 .melody-player.is-choral .melody-voice + .melody-voice { margin-top:6px; padding-top:6px; border-top:1px dashed #D5DED9; }
 .melody-player.is-choral .melody-voice.voice-1 .melody-digit { color:#2466B8; }
