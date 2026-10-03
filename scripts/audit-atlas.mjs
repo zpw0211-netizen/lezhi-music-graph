@@ -6,6 +6,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
 const atlasDir = path.join(dataDir, "atlas");
 const booksDir = path.join(dataDir, "books");
+const evidenceDir = path.join(dataDir, "evidence");
 const MIN_MAPPED_WORKS = 80;
 const MAX_ATLAS_DATA_BYTES = 500 * 1024;
 const WORK_TYPES = new Set([
@@ -154,6 +155,155 @@ for (const book of books) {
   }
 }
 
+// ---- 页码独立重算所需的一手材料（全部来自正式数据 books / evidence，不读 atlas.json）----
+// 正式数据里 evidence 的 pdfPage 与 textbookPage 恒差 8；用它给「印刷页 ↔ PDF 页」建立对应。
+const BOOK_PAGE_OFFSET = 8;
+// 正式生卒年谓语 → lifetimeEvidence.kind，用来核对 tripleId 指向的谓词是否真的是生卒年。
+const LIFETIME_PREDICATE_KIND = new Map([
+  ["生卒年", "lifetime"],
+  ["出生年", "birth"],
+  ["出生时间", "birth"],
+  ["生年", "birth"],
+  ["卒年", "death"],
+  ["逝世年", "death"],
+  ["去世年", "death"],
+  ["去世时间", "death"],
+]);
+
+const mediaPrintedPageByKey = new Map(); // "bookKey:entityId" → 最小「教材第N页」或 null
+const triplesByBookSubject = new Map(); // bookKey → Map(subjectId → triple[])
+const entityByBookId = new Map(); // bookKey → Map(id → entity)
+const evidenceByBookTriple = new Map(); // bookKey → Map(tripleId → evidence 条目[])
+for (const book of books) {
+  entityByBookId.set(book.bookKey, new Map(book.entities.map((entity) => [entity.id, entity])));
+  const bySubject = new Map();
+  for (const triple of book.triples ?? []) {
+    if (!bySubject.has(triple.subject)) bySubject.set(triple.subject, []);
+    bySubject.get(triple.subject).push(triple);
+  }
+  triplesByBookSubject.set(book.bookKey, bySubject);
+  for (const entity of book.entities) {
+    const pages = (entity.media ?? [])
+      .map((asset) => String(asset.title ?? "").match(/教材第(\d+)页/)?.[1])
+      .filter(Boolean)
+      .map(Number);
+    mediaPrintedPageByKey.set(book.bookKey + ":" + entity.id, pages.length ? Math.min(...pages) : null);
+  }
+  const byTriple = new Map();
+  try {
+    const raw = await readJson(path.join(evidenceDir, book.bookKey + ".json"));
+    for (const [tripleId, items] of Object.entries(raw.evidenceByTriple ?? {})) {
+      byTriple.set(tripleId, Array.isArray(items) ? items : [items]);
+    }
+  } catch {
+    // 没有 evidence 文件时留空：下面的重算会把本册所有 printedPage 判为「凭空出现」。
+  }
+  evidenceByBookTriple.set(book.bookKey, byTriple);
+}
+
+// 该作品**自己作主语**的三元组在正式 evidence 里的教材页 / PDF 页。
+// 只用作品自身三元组：别处「相关作品→本作品」的引用页不算本作品的页。
+function ownEvidencePages(bookKey, workId) {
+  const found = [];
+  for (const triple of triplesByBookSubject.get(bookKey)?.get(workId) ?? []) {
+    for (const item of evidenceByBookTriple.get(bookKey)?.get(triple.id) ?? []) {
+      const textbookPage = Number(item.textbookPage);
+      if (!Number.isInteger(textbookPage) || item.pdfPage == null) continue;
+      found.push({ textbookPage, pdfPage: item.pdfPage });
+    }
+  }
+  return found;
+}
+
+// 独立重算「这份 work 记录应当是什么页码」。规则与 build-atlas 相同，但材料直接取自
+// books / evidence，两边对不上就报错——这样「未归属作品」也能被覆盖到。
+function expectedPageLabels(bookKey, workId) {
+  const key = bookKey + ":" + workId;
+  const own = ownEvidencePages(bookKey, workId);
+  const fromMedia = mediaPrintedPageByKey.get(key) ?? null;
+  if (fromMedia != null) {
+    const hit = own.find((item) => item.textbookPage === fromMedia);
+    return { printedPage: fromMedia, printedPdfPage: hit ? hit.pdfPage : null, printedPageSource: "media" };
+  }
+  const aligned = [
+    ...new Set(
+      own
+        .filter((item) => item.pdfPage - item.textbookPage === BOOK_PAGE_OFFSET)
+        .map((item) => item.textbookPage),
+    ),
+  ].sort((a, b) => a - b);
+  if (!aligned.length) return { printedPage: null, printedPdfPage: null, printedPageSource: null };
+  const printedPage = aligned[0];
+  const hit = own.find((item) => item.textbookPage === printedPage);
+  return { printedPage, printedPdfPage: hit ? hit.pdfPage : null, printedPageSource: "evidence" };
+}
+
+// 逐条核对 atlas work 的页码字段。**区域作品与未归属作品走同一套检查**（都在 recordAtlasWork 里调），
+// 所以「未归属作品页码没人管」这个洞不会再出现。
+function assertPageLabels(work, key) {
+  const separator = key.indexOf(":");
+  const bookKey = key.slice(0, separator);
+  const workId = key.slice(separator + 1);
+
+  assert(Object.hasOwn(work, "printedPage"), "Atlas work is missing printedPage: " + key);
+  assert(Object.hasOwn(work, "printedPdfPage"), "Atlas work is missing printedPdfPage: " + key);
+  assert(Object.hasOwn(work, "printedPageSource"), "Atlas work is missing printedPageSource: " + key);
+
+  const printed = work.printedPage;
+  const printedPdf = work.printedPdfPage;
+  const source = work.printedPageSource;
+
+  assert(printed === null || (Number.isInteger(printed) && printed > 0), "Invalid atlas printedPage: " + key);
+  assert(printedPdf === null || (Number.isInteger(printedPdf) && printedPdf > 0), "Invalid atlas printedPdfPage: " + key);
+  assert(source === null || source === "media" || source === "evidence", "Invalid printedPageSource: " + key);
+  assert((printed === null) === (source === null), "printedPage and printedPageSource disagree: " + key);
+
+  const own = ownEvidencePages(bookKey, workId);
+  const mediaPage = mediaPrintedPageByKey.get(key) ?? null;
+
+  if (printed != null) {
+    // 来源必须真的是它声称的那个来源，页码不能凭空出现
+    if (source === "media") {
+      assert(printed === mediaPage, "printedPageSource=media but printedPage is not the media page: " + key);
+      assert(
+        own.some((item) => item.textbookPage === printed),
+        "printedPage from media has no matching evidence textbookPage: " + key,
+      );
+    } else {
+      assert(mediaPage === null, "printedPageSource=evidence but media actually has a page: " + key);
+      const alignedOwn = own
+        .filter((item) => item.pdfPage - item.textbookPage === BOOK_PAGE_OFFSET)
+        .map((item) => item.textbookPage);
+      assert(alignedOwn.includes(printed), "printedPageSource=evidence but printedPage is not an evidence page: " + key);
+      assert(printed === Math.min(...alignedOwn), "printedPage from evidence is not the smallest aligned page: " + key);
+    }
+    // 「印刷页 → PDF 页」若给了值，必须是同一份正式证据里的一对，且差值等于正式页差（8）
+    if (printedPdf != null) {
+      assert(
+        own.some((item) => item.textbookPage === printed && item.pdfPage === printedPdf),
+        "printedPdfPage is not the evidence pdfPage of printedPage: " + key,
+      );
+      assert(printedPdf - printed === BOOK_PAGE_OFFSET, "printedPdfPage - printedPage is not the official page offset: " + key);
+    }
+  }
+
+  // 与独立重算的结果逐字段比对
+  const expected = expectedPageLabels(bookKey, workId);
+  assert(printed === expected.printedPage, "printedPage mismatch for " + key + ": atlas=" + printed + " expected=" + expected.printedPage);
+  assert(
+    printedPdf === expected.printedPdfPage,
+    "printedPdfPage mismatch for " + key + ": atlas=" + printedPdf + " expected=" + expected.printedPdfPage,
+  );
+  assert(
+    source === expected.printedPageSource,
+    "printedPageSource mismatch for " + key + ": atlas=" + source + " expected=" + expected.printedPageSource,
+  );
+
+  // 老字段 page 语义不变：仍是 firstPage（该实体首次被提及的 PDF 页），不许被当成印刷页改写
+  const firstPage = entityByBookId.get(bookKey)?.get(workId)?.firstPage ?? null;
+  assert(work.page === firstPage, "Atlas page must stay firstPage for " + key + ": atlas=" + work.page + " books=" + firstPage);
+}
+
 const validRegionIds = new Set([...provinceIds, ...countryIds]);
 const atlasWorks = new Map();
 const assignedWorkKeys = new Set();
@@ -165,6 +315,7 @@ function recordAtlasWork(work, location) {
   assert(Object.hasOwn(work, "genre"), "Atlas work is missing its genre field: " + key);
   assert(work.genre === null || (typeof work.genre === "string" && work.genre.trim().length > 0), "Invalid atlas genre: " + key);
   if (work.genre) genreWorkKeys.add(key);
+  assertPageLabels(work, key);
   if (!atlasWorks.has(key)) atlasWorks.set(key, new Set());
   if (location) atlasWorks.get(key).add(location);
 }
@@ -292,65 +443,70 @@ for (const region of atlas.regions) {
 const worksWithYear = timeline.works.filter((work) => work.year != null).length;
 const peopleWithYears = timeline.people.filter((person) => person.born != null || person.died != null).length;
 
-// 本单新增检查（事实 / 兼容性）：
-// 1) atlas work 必须带 printedPage 字段；有印刷页时必须是正整数，且不能是「page−8」这种推算值
-//    ——printedPage 只来自正式数据 media 标题，拿不到就是 null，不能拿 firstPage 硬减 8 冒充。
-for (const region of atlas.regions ?? []) {
-  for (const work of region.works ?? []) {
-    const key = work.bookKey + ":" + work.id;
-    assert(Object.hasOwn(work, "printedPage"), "Atlas work is missing printedPage: " + key);
-    const printed = work.printedPage;
-    if (printed != null) {
-      assert(Number.isInteger(printed) && printed > 0, "Invalid atlas printedPage: " + key);
-    }
-  }
-}
-for (const work of atlas.unassignedWorks ?? []) {
-  const key = work.bookKey + ":" + work.id;
-  assert(Object.hasOwn(work, "printedPage"), "Unassigned atlas work is missing printedPage: " + key);
-}
-// 页码口径核对：printedPage 必须来自 books 数据里该实体 media 的「教材第N页」，不能凭空出现。
-{
-  const printedByKey = new Map();
-  for (const book of books) {
-    for (const entity of book.entities) {
-      const match = (entity.media ?? [])
-        .map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1])
-        .find(Boolean);
-      if (match != null) printedByKey.set(book.bookKey + ":" + entity.id, Number(match));
-    }
-  }
-  for (const region of atlas.regions ?? []) {
-    for (const work of region.works ?? []) {
-      const key = work.bookKey + ":" + work.id;
-      const expected = printedByKey.get(key) ?? null;
-      assert(
-        work.printedPage === expected,
-        "Atlas printedPage does not match books media title for " + key + ": atlas=" + work.printedPage + " books=" + expected,
-      );
-    }
-  }
-}
+// 本单（T012）新增检查：
+// 1) 页码检查已统一并入 recordAtlasWork → assertPageLabels：区域作品与未归属作品走同一套，
+//    材料直接取自 books / evidence 独立重算，「未归属作品页码漏检」这个洞不会再出现。
+// 2) 年表人物的生卒原文必须逐条回源到正式 books 三元组（下面）。
 
-// 2) 年表人物：只要 born/died 有值，就必须有可追溯的原文（lifetimeText 不能为空、
-//    lifetimeEvidence 不能缺，且每个 text 都能指回 bookKey/tripleId）。
+// 2) 年表人物：只要 born/died 有值，就必须有可追溯的原文；并且每条 lifetimeEvidence 都要
+//    回 books 核对——tripleId 真的存在、主语是本人物、谓语确实是生卒年类、kind 与谓语一致、
+//    取值与 text 逐字相同。反向也要核：本人物在 books 里的生卒年三元组不许漏进 lifetimeEvidence。
 for (const person of timeline.people ?? []) {
+  const evidenceList = Array.isArray(person.lifetimeEvidence) ? person.lifetimeEvidence : [];
   if (person.born == null && person.died == null) continue;
   assert(
     Array.isArray(person.lifetimeText) && person.lifetimeText.length > 0,
     "Timeline person has born/died but empty lifetimeText: " + person.name,
   );
-  assert(
-    Array.isArray(person.lifetimeEvidence) && person.lifetimeEvidence.length > 0,
-    "Timeline person has born/died but empty lifetimeEvidence: " + person.name,
-  );
+  assert(evidenceList.length > 0, "Timeline person has born/died but empty lifetimeEvidence: " + person.name);
   const textSet = new Set(person.lifetimeText);
-  for (const entry of person.lifetimeEvidence) {
+  const seenTripleIds = new Set();
+  for (const entry of evidenceList) {
     assert(
       entry && typeof entry.bookKey === "string" && typeof entry.tripleId === "string" && typeof entry.text === "string",
       "Invalid lifetimeEvidence entry for " + person.name,
     );
     assert(textSet.has(entry.text), "lifetimeEvidence text not in lifetimeText for " + person.name + ": " + entry.text);
+
+    // 注意：同一个人在不同册里是**不同的实体 id**，所以要按 sourceEntities 找到该册自己的 id。
+    const sourceInBook = (person.sourceEntities ?? []).find((item) => item.bookKey === entry.bookKey);
+    assert(sourceInBook, "lifetimeEvidence bookKey is not a source book of the person: " + person.name + " / " + entry.bookKey);
+    const triple = (triplesByBookSubject.get(entry.bookKey)?.get(sourceInBook.id) ?? []).find(
+      (item) => item.id === entry.tripleId,
+    );
+    assert(
+      triple,
+      "lifetimeEvidence tripleId is not a triple of this person in books: " +
+        person.name + " / " + entry.bookKey + " / " + entry.tripleId,
+    );
+    const kind = LIFETIME_PREDICATE_KIND.get(triple.predicate);
+    assert(
+      kind,
+      "lifetimeEvidence tripleId is not a lifetime predicate: " + person.name + " / " + triple.id + " / " + triple.predicate,
+    );
+    assert(
+      kind === entry.kind,
+      "lifetimeEvidence kind does not match the predicate: " + person.name + " / " + triple.id + " / " + kind + " != " + entry.kind,
+    );
+    const objectEntity = entityByBookId.get(entry.bookKey)?.get(triple.objectId);
+    const value = triple.objectId ? objectEntity?.name ?? triple.literal ?? null : triple.literal ?? null;
+    assert(
+      value === entry.text,
+      "lifetimeEvidence text does not match the triple value: " +
+        person.name + " / " + triple.id + " / books=" + value + " evidence=" + entry.text,
+    );
+    seenTripleIds.add(triple.id);
+  }
+
+  // 反向：books 里该人物的每一条生卒年类三元组都必须有对应证据
+  for (const source of person.sourceEntities ?? []) {
+    for (const triple of triplesByBookSubject.get(source.bookKey)?.get(source.id) ?? []) {
+      if (!LIFETIME_PREDICATE_KIND.has(triple.predicate)) continue;
+      assert(
+        seenTripleIds.has(triple.id),
+        "lifetimeEvidence is missing a lifetime triple from books: " + person.name + " / " + source.bookKey + " / " + triple.id,
+      );
+    }
   }
 }
 

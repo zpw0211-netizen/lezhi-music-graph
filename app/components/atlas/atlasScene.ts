@@ -7,10 +7,18 @@ export type AtlasWork = {
   genre: string | null;
   bookKey: string;
   unit: string | null;
-  /** PDF 页（firstPage），向后兼容字段，仍叫 page。 */
+  /**
+   * 该实体**首次被提及**的 PDF 页（firstPage，向后兼容字段，仍叫 page）。
+   * 注意语义：可能是作曲家介绍页、别的作品的「相关作品」引用页，不一定作品正文/谱例所在页，
+   * 所以不能拿它当「教材第 N 页」对应的 PDF 页用。
+   */
   page: number | null;
-  /** 印刷页（教材第 N 页，来自正式数据 media 标题）；无法确定为 null。 */
+  /** 印刷页（教材第 N 页）：来自正式 media 标题或正式 evidence 的教材页；无法确定为 null。 */
   printedPage?: number | null;
+  /** 上面这个印刷页对应的 PDF 页（同一份正式 evidence 里的 pdfPage）；取不到为 null。 */
+  printedPdfPage?: number | null;
+  /** 印刷页来源："media"（media 标题）/ "evidence"（正式证据的教材页）/ null（拿不到）。 */
+  printedPageSource?: "media" | "evidence" | null;
 };
 
 export type AtlasRegion = {

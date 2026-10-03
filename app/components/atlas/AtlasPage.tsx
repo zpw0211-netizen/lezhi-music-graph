@@ -122,16 +122,17 @@ function selectedWorks(region: AtlasRegion, filter: string) {
   return region.works.filter((work) => work[field] === filter);
 }
 
-function labelForPage(bookKey: string, page: number | null, printedPage?: number | null) {
+function labelForPage(bookKey: string, printedPage?: number | null, printedPdfPage?: number | null) {
   const book = BOOK_LABELS[bookKey] ?? bookKey;
-  // 明确区分「教材页」与「PDF 页」：印刷页来自正式数据 media 标题，PDF 页来自 firstPage。
-  // 印刷页拿不到就不冒充，只显示 PDF 页。
-  if (printedPage != null) {
-    return page != null && page !== printedPage
-      ? `${book} · 教材第 ${printedPage} 页（PDF 第 ${page} 页）`
-      : `${book} · 教材第 ${printedPage} 页`;
-  }
-  return page == null ? book : `${book} · PDF 第 ${page} 页`;
+  // 只认可靠印刷页（正式 media 标题，或正式 evidence 里该作品自身三元组的教材页）。
+  // 拿不到就只给册别，不拿 firstPage 充数：firstPage 是「该实体首次被提及的 PDF 页」，
+  // 可能是作曲家介绍页或别处的引用页，与作品正文/谱例页不是一回事。
+  if (printedPage == null) return book;
+  // 括号里只放「该印刷页对应的 PDF 页」（同一份正式证据里的 pdfPage），不放 firstPage，
+  // 否则会出现「教材第 50 页（PDF 第 15 页）」这种自相矛盾的页码。
+  return printedPdfPage != null && printedPdfPage !== printedPage
+    ? `${book} · 教材第 ${printedPage} 页（PDF 第 ${printedPdfPage} 页）`
+    : `${book} · 教材第 ${printedPage} 页`;
 }
 
 function shortUnit(unit: string | null) {
@@ -439,7 +440,7 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
                     <button type="button" className="atlas-work-link" onClick={() => openWork(work)}>
                       <span className="atlas-work-heading">
                         <strong>《{work.name.replace(/[《》]/g, "")}》</strong>
-                        <span>{labelForPage(work.bookKey, work.page, work.printedPage)}</span>
+                        <span>{labelForPage(work.bookKey, work.printedPage, work.printedPdfPage)}</span>
                       </span>
                       <small>
                         {work.type}
