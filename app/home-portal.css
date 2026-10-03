@@ -546,6 +546,11 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
 }
 @keyframes home-scroll-pan { from { transform: scale(1); } to { transform: scale(1.09); } }
 @keyframes home-hero-retreat { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(.94); } }
+@media (min-width: 961px) and (max-width: 1080px) {
+  .home-portal .home-hero-inner { grid-template-columns: minmax(205px, 235px) minmax(245px, 1fr) minmax(280px, 330px); gap: clamp(16px, 2vw, 22px); }
+  .home-portal .home-title-plate { max-width: 235px; }
+  .home-portal .home-wordmark { width: min(100%, 235px); }
+}
 @media (max-width: 1080px) {
   .home-nav-inner { gap: 14px; padding-right: 20px; padding-left: 20px; }
   .home-nav-content { gap: 10px; }

@@ -63,6 +63,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  preload(`${publicBasePath}/fonts/wenkai-display.woff2`, {
+    as: "font",
+    type: "font/woff2",
+    crossOrigin: "anonymous",
+  });
   // Every page needs the graph index; start downloading it with the scripts
   // instead of after hydration. Matches the fetch() in useGraphIndex.
   preload(`${publicBasePath}/data/graph-index.json`, { as: "fetch", crossOrigin: "anonymous" });
