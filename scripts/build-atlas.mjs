@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
 const booksDir = path.join(dataDir, "books");
+const evidenceDir = path.join(dataDir, "evidence");
 const rawDir =
   process.env.ATLAS_RAW_DIR ?? "E:/Projects/.tmp/codex1/T012/raw";
 const admin0RawPath = path.join(rawDir, "ne_110m_admin_0_countries.geojson");
@@ -264,7 +265,56 @@ function workGenre(work, book, entities) {
     .find((value) => value && !UNRELIABLE_GENRES.has(value)) ?? null;
 }
 
-function makeWorkRecord(work, book, entities) {
+// 正式数据里，evidence 的 pdfPage 与 textbookPage 恒差 8（全库 5286/5286 条一致）。
+// 用它给「印刷页 ↔ PDF 页」建立对应关系；不满足这个关系的页码一律不采纳。
+const BOOK_PAGE_OFFSET = 8;
+
+// 该作品**自己作主语**的全部三元组，逐条取出正式 evidence 里的教材页/PDF 页。
+// 只用作品自身的三元组：别人「相关作品→本作品」的引用页不算本作品的页。
+function ownTextbookPages(work, book, evidenceByTriple) {
+  const found = [];
+  for (const triple of book.triples) {
+    if (triple.subject !== work.id) continue;
+    for (const item of evidenceByTriple?.get(triple.id) ?? []) {
+      const textbookPage = Number(item.textbookPage);
+      if (!Number.isInteger(textbookPage) || item.pdfPage == null) continue;
+      found.push({ textbookPage, pdfPage: item.pdfPage, tripleId: triple.id });
+    }
+  }
+  return found;
+}
+
+// 页码：先认教材实体 media 标题里的「教材第N页」（正式数据直接标注）；
+// media 没有时，退回该作品自身三元组在正式 evidence 里的教材页（取最小值，
+// 且必须满足 pdfPage − textbookPage = 8 的正式页差）；两者都拿不到就是 null。
+// 绝不用 firstPage 推算：firstPage 是「该实体首次被提及的 PDF 页」（可能来自作曲家介绍页），
+// 与「作品正文/谱例所在页」不是一回事。
+function pageLabelsOf(work, book, evidenceByTriple) {
+  const mediaPages = (work.media ?? [])
+    .map((asset) => String(asset.title ?? "").match(/教材第(\d+)页/)?.[1])
+    .filter(Boolean)
+    .map(Number);
+  const own = ownTextbookPages(work, book, evidenceByTriple);
+  const fromMedia = mediaPages.length ? Math.min(...mediaPages) : null;
+  if (fromMedia != null) {
+    const hit = own.find((item) => item.textbookPage === fromMedia);
+    return { printedPage: fromMedia, printedPdfPage: hit ? hit.pdfPage : null, printedPageSource: "media" };
+  }
+  const aligned = [
+    ...new Set(
+      own
+        .filter((item) => item.pdfPage - item.textbookPage === BOOK_PAGE_OFFSET)
+        .map((item) => item.textbookPage),
+    ),
+  ].sort((a, b) => a - b);
+  if (!aligned.length) return { printedPage: null, printedPdfPage: null, printedPageSource: null };
+  const printedPage = aligned[0];
+  const hit = own.find((item) => item.textbookPage === printedPage);
+  return { printedPage, printedPdfPage: hit ? hit.pdfPage : null, printedPageSource: "evidence" };
+}
+
+function makeWorkRecord(work, book, entities, evidenceByTriple) {
+  const labels = pageLabelsOf(work, book, evidenceByTriple);
   return {
     id: work.id,
     name: work.name,
@@ -272,7 +322,14 @@ function makeWorkRecord(work, book, entities) {
     genre: workGenre(work, book, entities),
     bookKey: book.bookKey,
     unit: getWorkUnits(work, book, entities)[0] ?? null,
+    // page 保持向后兼容：仍是 firstPage（该实体首次被提及的 PDF 页），已有消费者不受影响。
     page: work.firstPage ?? null,
+    // 可靠印刷页：来自正式 media 标题或正式 evidence 的教材页，无法确定则为 null。
+    printedPage: labels.printedPage,
+    // 该印刷页对应的 PDF 页（同一份正式 evidence 里的 pdfPage）；取不到就是 null。
+    printedPdfPage: labels.printedPdfPage,
+    // "media" / "evidence" / null：印刷页的来源，供审计与回报核对。
+    printedPageSource: labels.printedPageSource,
   };
 }
 
@@ -584,7 +641,7 @@ function getAssignmentsForWork({
   return { assignments: byId, unresolved };
 }
 
-function makeAtlasData(books, provinces, countries, admin0) {
+function makeAtlasData(books, provinces, countries, admin0, evidenceByBookKey) {
   const chinaNameToId = makeChinaNameMap(provinces);
   const countryNameToId = makeCountryNameMap(countries, admin0);
   const regionNamesById = new Map([
@@ -601,7 +658,7 @@ function makeAtlasData(books, provinces, countries, admin0) {
     const entities = sourceEntityMap(book);
     for (const work of book.entities.filter((entity) => WORK_TYPES.has(entity.type))) {
       totalWorks += 1;
-      const record = makeWorkRecord(work, book, entities);
+      const record = makeWorkRecord(work, book, entities, evidenceByBookKey?.get(book.bookKey));
       if (record.genre) worksWithGenre += 1;
       const result = getAssignmentsForWork({ work, book, entities, chinaNameToId, countryNameToId, regionNamesById });
       if (!result.assignments.size) {
@@ -921,15 +978,30 @@ function makeTimeline(books) {
       (deathEntry
         ? { year: deathEntry.parsed.year, range: deathEntry.parsed.range }
         : null);
-    const rawLifetimeTexts = [
-      ...person.lifetimeEntries.map((entry) => entry.text),
-      ...person.birthEntries
-        .filter((entry) => entry.parsed.year == null)
-        .map((entry) => entry.text),
-      ...person.deathEntries
-        .filter((entry) => entry.parsed.year == null)
-        .map((entry) => entry.text),
-    ];
+    // 保留真实原文：birth/death 条目不管有没有解析出年份，原文都要进 lifetimeText，
+    // 否则「出生年=1948年」这类只给出生、可解析的条目会被丢掉（年表里点不出原文）。
+    // 但绝不拼造生卒年，也不把单独出生年写成完整生卒年——原文是什么就存什么。
+    const lifetimeEvidence = [
+      ...person.lifetimeEntries.map((entry) => ({
+        bookKey: entry.bookKey,
+        tripleId: entry.tripleId,
+        kind: "lifetime",
+        text: entry.text,
+      })),
+      ...person.birthEntries.map((entry) => ({
+        bookKey: entry.bookKey,
+        tripleId: entry.tripleId,
+        kind: "birth",
+        text: entry.text,
+      })),
+      ...person.deathEntries.map((entry) => ({
+        bookKey: entry.bookKey,
+        tripleId: entry.tripleId,
+        kind: "death",
+        text: entry.text,
+      })),
+    ].sort((a, b) => a.bookKey.localeCompare(b.bookKey) || a.tripleId.localeCompare(b.tripleId));
+    const rawLifetimeTexts = lifetimeEvidence.map((entry) => entry.text);
     const sourceEntities = person.sourceEntities
       .map(({ id, bookKey }) => ({ id, bookKey }))
       .sort(
@@ -944,6 +1016,7 @@ function makeTimeline(books) {
       died: died?.year ?? null,
       diedRange: died?.range ?? null,
       lifetimeText: [...new Set(rawLifetimeTexts)],
+      lifetimeEvidence,
       sourceEntities,
       works: [...person.works].sort(),
     };
@@ -1038,9 +1111,30 @@ const books = (
 ).sort((a, b) => a.bookKey.localeCompare(b.bookKey));
 if (books.length !== 6) throw new Error("Expected six public/data/books/*.json files.");
 
+// 正式证据：evidenceByTriple[tripleId] → [{ textbookPage, pdfPage, ... }]。
+// 只在 media 没有标注印刷页时用来补页码，来源仍是正式数据（不是推算）。
+const evidenceByBookKey = new Map(
+  (
+    await Promise.all(
+      books.map(async (book) => {
+        const file = path.join(evidenceDir, `${book.bookKey}.json`);
+        if (!(await exists(file))) return [book.bookKey, new Map()];
+        const raw = await readJson(file);
+        const byTriple = new Map(
+          Object.entries(raw.evidenceByTriple ?? {}).map(([tripleId, items]) => [
+            tripleId,
+            Array.isArray(items) ? items : [items],
+          ]),
+        );
+        return [book.bookKey, byTriple];
+      }),
+    )
+  ).map(([bookKey, byTriple]) => [bookKey, byTriple]),
+);
+
 await mkdir(dataDir, { recursive: true });
 await mkdir(atlasPointsDir, { recursive: true });
-const atlas = makeAtlasData(books, provinces, candidateCountries, admin0);
+const atlas = makeAtlasData(books, provinces, candidateCountries, admin0, evidenceByBookKey);
 const timeline = makeTimeline(books);
 const usedForeignIds = new Set(
   atlas.regions.filter((region) => region.type === "country" && region.regionId !== "CHN").map((region) => region.regionId),
