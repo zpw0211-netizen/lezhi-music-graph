@@ -142,19 +142,20 @@ export function LessonPage({
   const index = lesson.unitWorks.findIndex((entity) => entity.id === workId);
   const previous = index > 0 ? lesson.unitWorks[index - 1] : undefined;
   const next = index >= 0 && index < lesson.unitWorks.length - 1 ? lesson.unitWorks[index + 1] : undefined;
+  // 面包屑只渲染真实存在的层级，缺单元归属的作品（如《阿米达》）不留空分隔符
+  const crumbTrail = [lesson.book?.name, lesson.unit?.name].filter((name): name is string => Boolean(name));
 
   return <section className="lesson" aria-labelledby="lesson-title">
     <nav className="lesson-crumbs" aria-label="课程位置">
       <button type="button" onClick={onBack}><WorkbenchIcon name="left" />课程目录</button>
-      <span>{lesson.book?.name}</span><WorkbenchIcon name="right" />
-      <span>{lesson.unit?.name}</span><WorkbenchIcon name="right" />
+      {crumbTrail.map((name) => <span key={name}><WorkbenchIcon name="right" />{name}</span>)}
+      {crumbTrail.length > 0 && <WorkbenchIcon name="right" />}
       <b>{work.name}</b>
     </nav>
 
     <div className="lesson-layout">
       <div className="lesson-main" data-reveal-group>
         <header className="lesson-hero" data-reveal>
-          <p className="lesson-kicker">{[lesson.book?.name, lesson.unit?.name].filter(Boolean).join(" · ")}</p>
           <div>
             <h1 id="lesson-title" data-grade={lesson.book?.name.match(/([七八九])年级/)?.[1] ?? ""}>{work.name}</h1>
             <p className="lesson-meta">

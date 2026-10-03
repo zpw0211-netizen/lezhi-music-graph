@@ -115,6 +115,9 @@
   top:0;
   left:0;
   z-index:30;
+  /* 侧栏内容比 100dvh 略高时（workbench-v5 的 overflow:hidden 会裁掉底部
+     区块），允许滚动，保证「知识模式」等底部区块可达。 */
+  overflow-y:auto;
 }
 .ink-app.theme-light.network-mode > .workspace { padding-left:316px; }
 @media (max-width:800px) {
@@ -122,6 +125,11 @@
 }
 @media (max-width:768px) {
   .ink-app.theme-light.network-mode > .workspace { padding-left:20px; }
+}
+/* 详情抽屉打开时侧栏被压成 56px rail（knowledge-detail.css，1001–1500px
+   视口），预留随之回落为 56+20，否则 rail 右侧空出约 260px、画布被挤窄。 */
+@media (max-width:1500px) and (min-width:1001px) {
+  .ink-app.theme-light.network-mode.detail-open > .workspace { padding-left:76px; }
 }
 
 /* —— 画布与纸面 —— */
@@ -177,6 +185,13 @@
 .ink-app.theme-light.network-mode .explorer-section summary small { color:#62675B; }
 .ink-app.theme-light.network-mode .explorer-controls button,
 .ink-app.theme-light.network-mode .explorer-import { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; transition:border-color .2s,color .2s,background .2s; }
+/* 筛选行内的行式开关（开关/仅此）基线无边框（graph-explorer.css 原规则
+   border:0）；若跟随上面的实线边框，每行 +2px、10 行累计 +20px，会把
+   侧栏底部的「知识模式」推到 controls 滚动折叠边之下，视觉上被
+   「教材数据」块遮住一半。这里维持基线的无边框行式外观。 */
+.ink-app.theme-light.network-mode .explorer-controls .explorer-filter-toggle,
+.ink-app.theme-light.network-mode .explorer-controls .explorer-only { border:0; background:none; }
+.ink-app.theme-light.network-mode .explorer-filter-toggle[aria-pressed=true] { background:#FBF8F0; }
 .ink-app.theme-light.network-mode .explorer-controls button:hover { border-color:#1F4A3C; color:#1F4A3C; background:#F4EEE1; }
 .ink-app.theme-light.network-mode .explorer-perspective button[aria-pressed=true] { background:#1F4A3C; border-color:#1F4A3C; color:#FBF8F0; }
 .ink-app.theme-light.network-mode .explorer-filter-row .explorer-filter-toggle { border-radius:0; color:#44504A; }

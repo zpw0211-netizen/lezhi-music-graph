@@ -19,12 +19,6 @@
 }
 .lesson ::selection { background:var(--amber-hi); }
 
-/* CLS：加载状态框 margin-top:72px（pages-v5.css）经外边距塌陷把 .route-view
-   顶低 72px，数据就绪后状态框卸载、内容根元素（.lesson 等）纵向 margin 为 0，
-   产生 dy=-72 的位移（实测 0.046）。nav-mode 各视图根元素纵向 margin 均为 0，
-   这里把加载框上边距对齐为 0，装载前后 route-view top 恒为 65。 */
-.ink-app.nav-mode .route-view > .app-view-status { margin-top:0; }
-
 /* 面包屑 = 原型的 kicker：细线 + 朱砂字距行 */
 .lesson-crumbs { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:6px 0 0; padding:0 0 18px; font-family:var(--serif); font-size:14px; letter-spacing:.12em; color:var(--ink-2); border-bottom:1px solid var(--line); }
 .lesson-crumbs button { display:inline-flex; align-items:center; gap:4px; padding:2px 0; margin-right:6px; border:0; border-bottom:1.5px solid transparent; background:none; color:var(--pine); font:inherit; letter-spacing:inherit; cursor:pointer; transition:border-color .2s; }
@@ -34,10 +28,8 @@
 
 .lesson-layout { display:grid; grid-template-columns:minmax(0,7fr) minmax(260px,4fr); gap:64px; margin-top:0; padding-top:34px; align-items:start; }
 
-/* ---- 题头：单元引子 + 楷体大标题 + 朱砂影 ---- */
-.lesson-hero { display:block; padding:10px 0 30px; border-bottom:1px solid var(--line); }
-.lesson-kicker { display:flex; align-items:center; gap:12px; margin:0 0 16px; font-family:var(--serif); font-size:14px; letter-spacing:.28em; color:var(--seal); }
-.lesson-kicker::before { content:""; width:36px; height:1px; background:currentColor; }
+/* ---- 题头：楷体大标题 + 朱砂影（下边线去掉：与首节 border-top 形成双横线） ---- */
+.lesson-hero { display:block; padding:10px 0 30px; }
 .lesson-hero h1 { margin:0; font-family:var(--kai); font-weight:400; font-size:clamp(40px,4.6vw,64px); line-height:1.18; letter-spacing:.04em; color:var(--ink); text-shadow:2px 1px 0 rgba(184,57,42,.16); overflow-wrap:anywhere; }
 .lesson-hero h1::after { content:none; }
 .lesson-meta { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 18px; margin:16px 0 0; color:var(--ink-3); font-family:var(--serif); font-size:14px; }
@@ -121,7 +113,8 @@
 .lesson-tasks li { position:relative; display:grid; grid-template-columns:56px 1fr; gap:0 10px; padding:18px 0 16px; border:0; border-top:1px solid var(--line); border-radius:0; background:transparent; font-family:var(--serif); font-size:16px; line-height:1.75; counter-increment:task; }
 .lesson-tasks li:first-child { border-top:0; }
 .lesson-tasks li::before { content:counter(task,decimal-leading-zero); position:static; display:block; padding-top:3px; border:0; border-radius:0; background:none; color:var(--seal); font-family:var(--serif); font-size:15px; }
-.lesson-tasks small { display:block; margin-top:6px; font-family:var(--ui); font-size:12px; color:var(--ink-3); }
+/* small 落在第 2 列：否则它作为第 3 个网格项会被自动放进 56px 序号列，挤成窄条折行 */
+.lesson-tasks small { grid-column:2; display:block; margin-top:6px; font-family:var(--ui); font-size:12px; color:var(--ink-3); }
 
 /* ---- 小练习：谱例纸上的题签 ---- */
 .lesson-quiz { display:grid; gap:18px; }
@@ -282,7 +275,7 @@
 .melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }
 .melody-score { display:flex; flex-wrap:wrap; row-gap:14px; margin-top:16px; padding:18px 12px 12px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
   font-family:"Arial","Microsoft YaHei",sans-serif; }
-.melody-bar { display:inline-flex; align-items:flex-start; flex-direction:column; padding:0 10px; border-right:1.5px solid #9AA7A0; }
+.melody-bar { display:inline-flex; align-items:stretch; flex-direction:column; padding:0 10px; border-right:1.5px solid #9AA7A0; }
 .melody-bar:last-child { border-right:3px double #6B7771; }
 .melody-note { display:inline-flex; flex-direction:column; align-items:center; min-width:26px; position:relative; }
 .melody-digit { position:relative; display:inline-block; padding:4px 3px 5px; font-size:20px; font-weight:700; line-height:1; border-radius:6px; transition:opacity var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out); }
