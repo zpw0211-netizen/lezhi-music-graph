@@ -80,8 +80,8 @@
 .work-graph-card p { margin:0; font-size:13px; line-height:1.7; color:var(--ink-2); }
 .work-graph-card.is-selection { border-color:var(--pine); background:var(--sheet); animation:work-graph-in var(--motion-base) var(--ease-out); }
 @keyframes work-graph-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-/* 类型标签：原型 theme-seal 式朱砂小签 */
-.work-graph-type { display:inline-block; padding:3px 10px; border:1.5px solid var(--seal); border-radius:2px; background:transparent; color:var(--seal); font-family:var(--kai); font-size:13px; letter-spacing:.1em; transform:rotate(-2deg); }
+/* 类型标签：原型 theme-seal 式朱砂小签；与下方楷体作品名留出呼吸空隙 */
+.work-graph-type { display:inline-block; margin-bottom:12px; padding:3px 10px; border:1.5px solid var(--seal); border-radius:2px; background:transparent; color:var(--seal); font-family:var(--kai); font-size:13px; letter-spacing:.1em; transform:rotate(-2deg); }
 .work-graph-source { font-variant-numeric:tabular-nums; }
 .work-graph-card .work-graph-creators { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:10px; color:var(--ink); font-family:var(--serif); }
 .work-graph-creators small { margin-right:5px; color:var(--ink-3); font-size:12px; font-family:var(--font-ui); }
@@ -109,7 +109,8 @@
 .work-graph-scores a { display:block; padding:6px; border:1px solid var(--line); border-radius:2px; background:var(--sheet); box-shadow:0 1px 0 var(--p3); transition:transform var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out); }
 .work-graph-scores a:hover { border-color:var(--pine); transform:translateY(-2px); box-shadow:0 1px 0 var(--p3), 0 12px 18px -14px rgba(40, 30, 10, .55); }
 .work-graph-scores a:focus-visible { outline:2px solid var(--pine); outline-offset:2px; }
-.work-graph-scores img { display:block; width:100%; height:auto; aspect-ratio:707/1000; object-fit:contain; background:var(--sheet); border-radius:2px; }
+/* width/height 属性提供真实宽高比，这里只控制排版，不再强制比例。 */
+.work-graph-scores img { display:block; width:100%; height:auto; background:var(--sheet); border-radius:2px; }
 .work-graph-empty { padding:60px; text-align:center; color:var(--ink-2); font-family:var(--serif); }
 .work-graph-empty button { display:inline-flex; align-items:center; gap:5px; margin-top:12px; height:34px; padding:0 14px; border:1px solid var(--pine); border-radius:2px; background:transparent; color:var(--pine); font-family:var(--serif); }
 @media (max-width:1320px) { .work-graph { grid-template-columns:minmax(0,1fr) 320px; } }

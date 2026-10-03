@@ -100,6 +100,20 @@
 }
 
 /* ---------- 提问区（谱例纸） ---------- */
+/* 覆写 theme-light 的 `.assistant-composer { margin:0 5% 20px }`：
+   提问框必须与标题列同宽同缘（0,2,0 压过全局单类选择器，不靠加载顺序）。 */
+.assistant-page .assistant-composer {
+  margin: 0;
+  text-align: left;
+}
+
+/* 对话态的底部提问框与欢迎屏同一 880px 栏，不横跨整个页面栅格。 */
+.assistant-page > .assistant-composer {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto 16px;
+}
+
 .assistant-composer {
   display: grid;
   gap: 12px;
@@ -111,6 +125,11 @@
 }
 
 .assistant-composer-hero {
+  margin-top: 26px;
+}
+
+/* hero 的 26px 顶距要压过上面的 (0,2,0) margin 简写。 */
+.assistant-page .assistant-composer-hero {
   margin-top: 26px;
 }
 
@@ -310,8 +329,9 @@
 }
 
 /* ---------- 对话篇章 ---------- */
+/* 与标题列/提问框同一 880px 栏（验收：底部输入框不得比正文栏宽）。 */
 .assistant-turn {
-  max-width: 820px;
+  max-width: 880px;
   margin: 0 auto 34px;
   padding: 4px 0 30px;
   border-bottom: 1px solid var(--line);
@@ -505,7 +525,7 @@
 /* ---------- 等待与错误 ---------- */
 .assistant-busy,
 .assistant-page [role="alert"] {
-  max-width: 820px;
+  max-width: 880px;
   margin: 0 auto;
   color: var(--pine);
   font-family: var(--serif);
