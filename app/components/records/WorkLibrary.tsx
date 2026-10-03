@@ -132,7 +132,11 @@ function WorkDetail({
   bookTitle,
   bookData,
   workEntity,
+  bookDataStatus,
+  unitsStatus,
   detailsReady,
+  onRetryBookData,
+  onRetryUnits,
   onClose,
   onLearn,
   dialogRef,
@@ -141,7 +145,11 @@ function WorkDetail({
   bookTitle: string;
   bookData: Book | null;
   workEntity?: Entity;
+  bookDataStatus: BookDataStatus;
+  unitsStatus: "loading" | "ready" | "error";
   detailsReady: boolean;
+  onRetryBookData: () => void;
+  onRetryUnits: () => void;
   onClose: () => void;
   onLearn: (workId: string) => void;
   dialogRef: RefObject<HTMLElement | null>;
@@ -154,8 +162,11 @@ function WorkDetail({
   const score = work?.scores?.[0];
   const melodies = work ? (MELODIES[bareWorkName(work.name)] ?? MELODIES[work.name] ?? []) : [];
   const scoreStyle = work ? ({ viewTransitionName: "work-cover" } as CSSProperties) : undefined;
+  const isLoading = unitsStatus === "loading" || bookDataStatus === "loading" || bookDataStatus === "idle";
+  const hasLoadError = unitsStatus === "error" || bookDataStatus === "error";
 
   return <section
+    aria-busy={isLoading ? true : undefined}
     aria-labelledby="records-detail-title"
     aria-modal="true"
     className="records-detail"
@@ -192,16 +203,30 @@ function WorkDetail({
 
         {(knowledge.length > 0 || !detailsReady) && <section className="records-detail-knowledge" aria-labelledby="records-detail-knowledge-title">
           <h2 id="records-detail-knowledge-title">知识点</h2>
-          {!detailsReady
-            ? <p className="records-detail-loading">正在读取本册作品资料…</p>
+          {bookDataStatus === "error"
+            ? <div className="records-detail-load-error" role="status">
+              <p>本册作品资料读取失败，知识点暂不可用。</p>
+              <button onClick={onRetryBookData} type="button">重试</button>
+            </div>
+            : !detailsReady
+              ? <p className="records-detail-loading">正在读取作品资料…</p>
             : <ul>{knowledge.map((item, index) => <li key={`${item.label}-${item.value}-${index}`}><span>{item.label}</span><strong>{item.value}</strong></li>)}</ul>}
         </section>}
 
         <button className="records-detail-lesson" type="button" disabled={!workEntity} onClick={() => onLearn(work.id)}>进入完整学习页</button>
       </> : <>
         <p className="records-detail-unit">{bookTitle}</p>
-        <h1 className="records-detail-title" id="records-detail-title">没有找到这首作品</h1>
-        <p className="records-detail-loading">请返回本册目录重新选择。</p>
+        <h1 className="records-detail-title" id="records-detail-title">{isLoading ? "正在读取作品资料…" : hasLoadError ? "作品资料读取失败" : "没有找到这首作品"}</h1>
+        {unitsStatus === "error" && <div className="records-detail-load-error" role="status">
+          <p>本册目录读取失败，暂时无法确认这首作品是否存在。</p>
+          <button onClick={onRetryUnits} type="button">重试</button>
+        </div>}
+        {unitsStatus !== "error" && bookDataStatus === "error" && <div className="records-detail-load-error" role="status">
+          <p>本册作品资料读取失败，暂时无法确认这首作品是否存在。</p>
+          <button onClick={onRetryBookData} type="button">重试</button>
+        </div>}
+        {isLoading && <p className="records-detail-loading">请稍候，正在读取本册目录与作品资料。</p>}
+        {!isLoading && !hasLoadError && <p className="records-detail-loading">本册目录与作品资料已读取完成，未找到这首作品。</p>}
       </>}
     </div>
   </section>;
@@ -306,6 +331,7 @@ export function WorkLibrary({
   }, [allWorks, detailWork, unitWorks]);
   const selectedEntity = selectedEntry ? entitiesById.get(selectedEntry.work.id) : undefined;
   const workCount = units.reduce((sum, unit) => sum + unit.works.length, 0);
+  const unitsStatus: "loading" | "ready" | "error" = unitsError ? "error" : unitRows ? "ready" : "loading";
   const bookIndex = Math.max(0, books.findIndex((item) => item.key === directory?.key));
   const bookNumeral = ["一", "二", "三", "四", "五", "六"][bookIndex] ?? String(bookIndex + 1);
   const activeUnit = units.find((unit) => unit.id === activeUnitId) ?? units[0];
@@ -443,6 +469,11 @@ export function WorkLibrary({
     window.setTimeout(() => setSqueezed(false), 140);
     onBook(book);
   };
+  const retryUnitsLoad = () => {
+    setUnitRows(null);
+    setUnitsError(false);
+    setRetryUnits((value) => value + 1);
+  };
 
   const chapterContents = useMemo(() => units.map((unit) => {
     const anchorId = unitAnchorId(directory?.key ?? bookKey, unit.id);
@@ -560,13 +591,13 @@ export function WorkLibrary({
                 <small>{unit.works.length} 首</small>
               </button>)}
             </nav>
-            : !unitsError && <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />}
+            : <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />}
         </div>
       </header>
 
       {unitsError && <div className="records-data-status" role="status">
         <p>本册目录读取失败，请重试。</p>
-        <button type="button" onClick={() => { setUnitRows(null); setUnitsError(false); setRetryUnits((value) => value + 1); }}>重试</button>
+        <button type="button" onClick={retryUnitsLoad}>重试</button>
       </div>}
       {bookDataStatus === "error" && <div className="records-data-status" role="status">
         <p>这一册作品资料读取失败，作品详情中的知识点暂不可用。</p>
@@ -608,12 +639,16 @@ export function WorkLibrary({
 
     {detailWork && <WorkDetail
       bookData={bookData}
+      bookDataStatus={bookDataStatus}
       bookTitle={directory.title}
       detailsReady={detailsReady}
       dialogRef={dialogRef}
       entry={selectedEntry}
       onClose={closeDetails}
       onLearn={onLearn}
+      onRetryBookData={onRetryBookData}
+      onRetryUnits={retryUnitsLoad}
+      unitsStatus={unitsStatus}
       workEntity={selectedEntity}
     />}
   </>;

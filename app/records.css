@@ -173,6 +173,18 @@
 
 .records-book-directory-placeholder { pointer-events: none; }
 
+.records-startup .records-book-picker { pointer-events: none; }
+.records-book-loading-tab {
+  display: block;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 34px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--records-paper-3) 68%, transparent);
+}
+.records-startup .records-book-hero-art { background: var(--records-paper); }
+.records-startup .records-book-hero-copy { user-select: none; }
+
 .records-book-directory > button {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) 42px;
@@ -672,6 +684,10 @@
 .records-detail-knowledge li span { color: var(--ink-3, #7A7F72); }
 .records-detail-knowledge li strong { color: var(--ink, #1B2622); font-weight: 500; }
 .records-detail-loading { margin: 0; color: var(--ink-3, #7A7F72); font: 13px/1.7 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
+.records-detail-load-error { display: grid; justify-items: start; gap: 10px; color: var(--ink-2, #44504A); font: 13px/1.7 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
+.records-detail-load-error p { margin: 0; }
+.records-detail-load-error button { padding: 6px 12px; border: 1px solid var(--line, #CFC4AC); background: transparent; color: var(--pine, #1F4A3C); cursor: pointer; }
+.records-detail-load-error button:focus-visible { outline: 2px solid var(--seal, #B8392A); outline-offset: 3px; }
 
 .records-detail-lesson {
   display: inline-flex;
@@ -712,6 +728,7 @@
   .records-book-picker { gap: 0; padding: 4px; }
   .records-book-picker { top: 122px; }
   .records-book-picker > button { width: 52px; min-height: 32px; font-size: 12px; }
+  .records-book-loading-tab { flex-basis: 52px; width: 52px; height: 32px; }
   .records-book-drop { top: 4px; left: 4px; width: 52px; height: 32px; transform: translateX(calc(var(--book-index, 0) * 52px)); }
   .records-book-hero { min-height: 600px; height: min(700px, calc(100svh - 108px)); margin: 8px -16px 0; }
   .records-book-hero-art::after { background: linear-gradient(90deg, color-mix(in srgb, var(--records-paper) 98%, transparent), color-mix(in srgb, var(--records-paper) 83%, transparent) 60%, color-mix(in srgb, var(--records-paper) 20%, transparent)), linear-gradient(0deg, var(--records-paper) 0%, transparent 28%); }

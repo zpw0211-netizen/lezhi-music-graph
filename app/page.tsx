@@ -38,6 +38,29 @@ const viewLoading = () => (
     正在载入…
   </div>
 );
+function RecordsStartup({ failed = false }: { failed?: boolean }) {
+  return <>
+    <section aria-busy={!failed} aria-labelledby="records-startup-title" className="work-library records-startup">
+      <nav aria-hidden="true" className="records-book-picker">
+        {Array.from({ length: 6 }, (_, index) => <span className="records-book-loading-tab" key={index} />)}
+      </nav>
+      <header className="records-book-hero">
+        <figure aria-hidden="true" className="records-book-hero-art" />
+        <div className="records-book-hero-copy">
+          <p className="records-book-kicker">按课学习 · 正在读取</p>
+          <p aria-hidden="true" className="records-book-brush">音乐 ·</p>
+          <h1 id="records-startup-title">正在读取本册</h1>
+          <p aria-live="polite" className="records-book-intro" role="status">正在读取本册目录与作品资料…</p>
+          <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />
+        </div>
+      </header>
+      {failed && <div className="records-data-status" role="status">
+        <p>六册教材索引读取失败，请检查网络后重试。</p>
+        <button onClick={() => window.location.reload()} type="button">重试</button>
+      </div>}
+    </section>
+  </>;
+}
 const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
   () => import("./components/explorer/GraphExplorer").then((module) => module.GraphExplorer),
   { loading: viewLoading },
@@ -47,7 +70,7 @@ const ExplorerSidebar = nextDynamic<PropsOf<typeof ExplorerSidebarComponent>>(
 );
 const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent>>(
   () => import("./components/records/WorkLibrary").then((module) => module.WorkLibrary),
-  { loading: viewLoading },
+  { loading: () => <RecordsStartup /> },
 );
 const LessonPage = nextDynamic<PropsOf<typeof LessonPageComponent>>(
   () => import("./components/lesson/LessonPage").then((module) => module.LessonPage),
@@ -233,7 +256,7 @@ export default function Home() {
 
   const needsData = view !== "home" && view !== "import" && view !== "atlas";
   const dataStatus =
-    needsData && index.status !== "ready" ? (
+    needsData && view !== "records" && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
         {index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在载入六册教材数据…"}
       </div>
@@ -290,6 +313,7 @@ export default function Home() {
         <div className={`route-view${view === "lab" ? " route-view-lab" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
+          {view === "records" && index.status !== "ready" && <RecordsStartup failed={index.status === "error"} />}
           {view === "home" && (
             <HomePortal
             books={books}
