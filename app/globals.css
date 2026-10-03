@@ -515,6 +515,21 @@ body {
     var(--bg);
 }
 
+/* Keep loading margins inside the shared route frame instead of moving it. */
+.route-view { display: flow-root; }
+
+/* Reserve the graph sidebar column while its lazy component is still loading. */
+@media (min-width: 761px) {
+  .app-shell.network-mode:not(:has(> .explorer-sidebar))::before {
+    content: "";
+    width: 296px;
+    flex: 0 0 296px;
+    align-self: stretch;
+    border-right: 1px solid var(--workspace-border);
+    background: #0f1620;
+  }
+}
+
 .sidebar {
   background: rgba(248,246,239,.88);
   border-right-color: #d5d7cf;
