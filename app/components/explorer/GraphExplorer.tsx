@@ -1062,6 +1062,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
 
   return (
     <>
+      {/* 屏幕阅读器的页面主标题：此前 #/graph 没有 h1，标题层级不完整（最终验收 P3-8）。 */}
+      <h1 className="graph-sr-only">知识图谱</h1>
       {graphMode === "all" ? (
         <div className="graph-rangebar" aria-label="教材范围与画布缩放">
           <div className="book-tabs motion-tabs">{bookTabsContent}</div>
