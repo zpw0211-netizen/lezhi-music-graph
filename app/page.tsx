@@ -41,9 +41,6 @@ const viewLoading = () => (
 function RecordsStartup({ failed = false }: { failed?: boolean }) {
   return <>
     <section aria-busy={!failed} aria-labelledby="records-startup-title" className="work-library records-startup">
-      <nav aria-hidden="true" className="records-book-picker">
-        {Array.from({ length: 6 }, (_, index) => <span className="records-book-loading-tab" key={index} />)}
-      </nav>
       <header className="records-book-hero">
         <figure aria-hidden="true" className="records-book-hero-art" />
         <div className="records-book-hero-copy">
@@ -60,6 +57,47 @@ function RecordsStartup({ failed = false }: { failed?: boolean }) {
       </div>}
     </section>
   </>;
+}
+
+function RecordsBookPicker({
+  books,
+  selectedBookKey,
+  onSelect,
+}: {
+  books: BookDirectory[];
+  selectedBookKey: string;
+  onSelect: (bookKey: string) => void;
+}) {
+  const [squeezed, setSqueezed] = useState(false);
+  const selectedIndex = Math.max(0, books.findIndex((book) => book.key === selectedBookKey));
+  const chooseBook = (book: BookDirectory) => {
+    setSqueezed(true);
+    window.setTimeout(() => setSqueezed(false), 140);
+    onSelect(book.key);
+  };
+
+  return <nav
+    aria-busy={books.length === 0}
+    aria-label="教材分册"
+    className={`records-book-picker records-top-book-picker${squeezed ? " is-squeezed" : ""}`}
+    style={{ "--book-index": selectedIndex } as CSSProperties}
+  >
+    {books.length > 0 && <span aria-hidden="true" className="records-top-book-drop" />}
+    {books.length > 0
+      ? books.map((book) => {
+        const label = `${({ 7: "七", 8: "八", 9: "九" } as Record<number, string>)[book.grade] ?? book.grade}${book.semester.replace(/册$/, "")}`;
+        const active = book.key === selectedBookKey;
+        return <button
+          aria-current={active ? "page" : undefined}
+          aria-label={`${book.grade}年级${book.semester}`}
+          className={active ? "is-active" : ""}
+          key={book.key}
+          onClick={() => chooseBook(book)}
+          type="button"
+        >{label}</button>;
+      })
+      : Array.from({ length: 6 }, (_, index) => <span aria-hidden="true" className="records-book-loading-tab" key={index} />)}
+  </nav>;
 }
 const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
   () => import("./components/explorer/GraphExplorer").then((module) => module.GraphExplorer),
@@ -153,6 +191,7 @@ export default function Home() {
   const { dataset, canonicalGraph } = index;
   const books = dataset?.books ?? EMPTY_BOOKS;
   const selectedRecordsKey = route.book ?? recordsBook;
+  const recordsNavBookKey = books.find((book) => book.key === selectedRecordsKey)?.key ?? books[0]?.key ?? selectedRecordsKey;
   const recordsBookData = useBookData(selectedRecordsKey, books, view === "records");
   const explorer = useGraphExplorer(
     dataset,
@@ -297,6 +336,7 @@ export default function Home() {
             }
             onNavigate={goTo}
             onAbout={() => setResearchInfoOpen(true)}
+            centerSlot={view === "records" ? <RecordsBookPicker books={books} selectedBookKey={recordsNavBookKey} onSelect={openRecordsBook} /> : undefined}
             search={{
               query,
               onQuery: setQuery,
@@ -361,7 +401,6 @@ export default function Home() {
               bookDataStatus={recordsBookData.status}
               onRetryBookData={recordsBookData.retry}
               detailWork={route.view === "records" ? route.work : undefined}
-              onBook={(book) => openRecordsBook(book.key)}
               onOpen={openRecordsWork}
               onClose={() => back({ view: "records", book: selectedRecordsKey })}
               onLearn={(workId) => {

@@ -1,6 +1,6 @@
 // test-lib.mjs — app/lib/app/routing.ts 与 app/lib/app/unit-data.ts 的单元测试。
 // 用法：node scripts/test-lib.mjs                   跑全部测试
-//       node scripts/test-lib.mjs --mutation-check  变异自证：4 个故意 bug 都必须被测试抓到
+//       node scripts/test-lib.mjs --mutation-check  变异自证：6 个故意 bug 都必须被测试抓到
 //       node scripts/test-lib.mjs --run-mutation <id>（内部用，子进程跑单个变异）
 //
 // 被测的是 TS 文件：用仓库自带的 typescript 包 transpileModule 转成临时 .mjs 再
@@ -32,15 +32,17 @@ const MUTATIONS = [
     id: "a",
     label: "(a) formatRoute 对 records 路由漏掉册参数",
     file: "routing",
-    from: "const detail = route.book ?? route.work ?? route.node;",
-    to: "const detail = route.work ?? route.node;",
+    from: 'const book = route.book ? `/${encodeURIComponent(route.book)}` : "";',
+    to: 'const book = "";',
+    expectedFailure: "往返：records（只有册）",
   },
   {
     id: "b",
     label: "(b) 解码不做 decodeURIComponent",
     file: "routing",
-    from: 'rest.length ? decodeURIComponent(rest.join("/")) : undefined',
-    to: 'rest.length ? rest.join("/") : undefined',
+    from: "const [book, ...workParts] = rest.map(decodeURIComponent);",
+    to: "const [book, ...workParts] = rest;",
+    expectedFailure: "中文与特殊字符：records 详情路由",
   },
   {
     id: "c",
@@ -48,6 +50,7 @@ const MUTATIONS = [
     file: "unitData",
     from: "return match ? Number(match) : null;",
     to: "return match ? Number(match) : 1;",
+    expectedFailure: "页码：无 media / 无标题 → null",
   },
   {
     id: "d",
@@ -55,6 +58,23 @@ const MUTATIONS = [
     file: "unitData",
     from: "/（(?=涉及|练习重点：)/",
     to: "/（(?=涉及)/",
+    expectedFailure: "任务解析：只有练习重点、没有涉及 → focus 正常解析（变异 d 靠它抓）",
+  },
+  {
+    id: "e",
+    label: "(e) records 多段作品名只保留第一段",
+    file: "routing",
+    from: 'const work = workParts.join("/");',
+    to: 'const work = workParts[0] ?? "";',
+    expectedFailure: "路由：records 多段作品名保留全部路径段",
+  },
+  {
+    id: "f",
+    label: "(f) 井号路由里的未知 view 不回 home",
+    file: "routing",
+    from: "if (!VIEWS.has(view)) return HOME_ROUTE;",
+    to: "if (!VIEWS.has(view)) return { view };",
+    expectedFailure: "容错：#/nope 回退 home",
   },
 ];
 
@@ -68,10 +88,13 @@ const TRANSPILE_OPTIONS = {
 };
 
 function applyMutation(source, mutation) {
-  if (!source.includes(mutation.from)) {
-    throw new Error(`变异 ${mutation.id} 的定位文本在源文件里找不到：${mutation.from}`);
+  const occurrences = source.split(mutation.from).length - 1;
+  if (occurrences !== 1) {
+    throw new Error(`变异 ${mutation.id} 的定位文本应恰好出现一次，实际 ${occurrences} 次：${mutation.from}`);
   }
-  return source.replace(mutation.from, mutation.to);
+  const mutated = source.replace(mutation.from, mutation.to);
+  if (mutated === source) throw new Error(`变异 ${mutation.id} 没有改变源文件：${mutation.from}`);
+  return mutated;
 }
 
 /** 转译两个模块（可选注入一个变异）到临时目录并 import。import 完成后删临时目录。 */
@@ -130,7 +153,8 @@ const ROUND_TRIP = [
   { name: "research", route: { view: "research" } },
   { name: "import", route: { view: "import" } },
   { name: "graph+节点", route: { view: "graph", node: "CAN_x" } },
-  { name: "records+册", route: { view: "records", book: "g7s1" } },
+  { name: "records（只有册）", route: { view: "records", book: "g7s1" } },
+  { name: "records（册与作品）", route: { view: "records", book: "g7s1", work: "歌唱祖国" } },
   { name: "lesson+作品", route: { view: "lesson", work: "歌唱祖国" } },
   { name: "work+作品", route: { view: "work", work: "义勇军进行曲" } },
 ];
@@ -159,6 +183,21 @@ t("中文与特殊字符：空格、·、括号、&、/、#、% 往返不丢失"
     const route = { view: "lesson", work };
     assert.deepEqual(parseRoute(formatRoute(route)), route, `作品名「${work}」往返失真`);
   }
+});
+
+t("中文与特殊字符：records 详情路由往返保留册别与作品名", () => {
+  const names = ["歌唱祖国", "春 游", "黄河之滨·晨", "春之歌（第二乐章）", "A&B 合唱", "春之歌/第二乐章", "C# 调性探究", "50% 速度练习"];
+  for (const work of names) {
+    const route = { view: "records", book: "g7s1", work };
+    assert.deepEqual(parseRoute(formatRoute(route)), route, `作品名「${work}」的 records 路由往返失真`);
+  }
+});
+
+t("路由：records 多段作品名保留全部路径段", () => {
+  assert.deepEqual(
+    parseRoute("#/records/g7s1/春之歌/第二乐章"),
+    { view: "records", book: "g7s1", work: "春之歌/第二乐章" },
+  );
 });
 
 t("中文与特殊字符：书名号会被 bare() 剥掉（锁定现行设计行为）", () => {
@@ -206,6 +245,20 @@ t("容错：空井号、#、#/ 回退 home", () => {
 
 t("容错：#/records/不存在的册 仍解析为 records 路由（现行代码不校验册号）", () => {
   assert.deepEqual(parseRoute("#/records/不存在的册"), { view: "records", book: "不存在的册" });
+});
+
+t("容错：records 直链中的不存在作品保留原路由", () => {
+  const route = { view: "records", book: "g7s1", work: "不存在的作品" };
+  assert.deepEqual(parseRoute("#/records/g7s1/%E4%B8%8D%E5%AD%98%E5%9C%A8%E7%9A%84%E4%BD%9C%E5%93%81"), route);
+  assert.equal(formatRoute(parseRoute(formatRoute(route))), formatRoute(route));
+});
+
+t("返回路由：作品详情保留当前册别", () => {
+  const detail = parseRoute("#/records/g7s1/%E6%AD%8C%E5%94%B1%E7%A5%96%E5%9B%BD");
+  assert.deepEqual(detail, { view: "records", book: "g7s1", work: "歌唱祖国" });
+  const bookRoute = formatRoute({ view: "records", book: detail.book });
+  assert.equal(bookRoute, "#/records/g7s1");
+  assert.deepEqual(parseRoute(bookRoute), { view: "records", book: "g7s1" });
 });
 
 t("容错：#/lesson 不带作品回退 records", () => {
@@ -331,29 +384,60 @@ t("任务解析：现行代码不会从正文提取《中国》《歌唱祖国�
   });
 });
 
-// ---- 变异检查（父进程）：每个变异在全新子进程里跑全部测试，必须非零退出 ----
+// ---- 变异检查（父进程）：仅完整测试运行中预期用例失败才算捕获 ----
 
 function runMutationCheck() {
   let caughtCount = 0;
+  let checkFailedCount = 0;
   for (const mutation of MUTATIONS) {
-    let caught = false;
-    let failCount = "?";
+    let output = "";
+    let status = 0;
     try {
-      execFileSync(process.execPath, [scriptPath, "--run-mutation", mutation.id], {
+      output = execFileSync(process.execPath, [scriptPath, "--run-mutation", mutation.id], {
         stdio: ["ignore", "pipe", "pipe"],
+        encoding: "utf8",
       });
     } catch (error) {
-      caught = true;
-      const match = `${error.stdout ?? ""}${error.stderr ?? ""}`.match(/# fail (\d+)/);
-      failCount = match ? match[1] : "?";
+      output = `${error.stdout ?? ""}\n${error.stderr ?? ""}`;
+      status = error.status ?? 0;
     }
-    if (caught) caughtCount += 1;
-    console.log(`  ${caught ? "caught" : "SURVIVED"}  ${mutation.label} → ${failCount} 个测试失败`);
+    const tests = output.match(/^# tests (\d+)$/m);
+    const failures = output.match(/^# fail (\d+)$/m);
+    const runSummary = output.match(/测试结果：通过 (\d+)\/(\d+)/);
+    const unescapeTapName = (value) => value.replace(/\\#/g, "#");
+    const expectedAssertionFailed = output.split(/\r?\n/).some((line) =>
+      line.startsWith("not ok ") && unescapeTapName(line).includes(unescapeTapName(mutation.expectedFailure)),
+    );
+    const completeTestFailure = status === 1
+      && Number(tests?.[1]) > 0
+      && Number(failures?.[1]) > 0
+      && runSummary !== null
+      && runSummary[1] === String(Number(tests?.[1]) - Number(failures?.[1]))
+      && runSummary[2] === tests?.[1]
+      && expectedAssertionFailed;
+
+    if (completeTestFailure) {
+      caughtCount += 1;
+      console.log(`  caught       ${mutation.label} → ${failures?.[1]} 个测试失败`);
+    } else if (status === 0 && tests && failures?.[1] === "0" && runSummary?.[1] === tests[1] && runSummary[2] === tests[1]) {
+      checkFailedCount += 1;
+      console.log(`  SURVIVED     ${mutation.label} → 变异未被测试发现`);
+    } else {
+      checkFailedCount += 1;
+      const reason = !tests || !runSummary
+        ? "子进程未完成测试（可能是脚本加载或变异定位失败）"
+        : !expectedAssertionFailed
+          ? `没有触发预期用例「${mutation.expectedFailure}」`
+          : `退出码/汇总不匹配（status=${status}, fail=${failures?.[1] ?? "?"}）`;
+      console.log(`  CHECK_ERROR  ${mutation.label} → ${reason}`);
+      const diagnostic = output.trim().split(/\r?\n/).slice(-4).join(" | ");
+      if (diagnostic) console.log(`               ${diagnostic}`);
+    }
   }
-  if (caughtCount === MUTATIONS.length) {
+  if (caughtCount === MUTATIONS.length && checkFailedCount === 0) {
     console.log(`MUTATION_CHECK_PASSED (${caughtCount}/${MUTATIONS.length} caught)`);
   } else {
-    console.log(`MUTATION_CHECK_FAILED (${caughtCount}/${MUTATIONS.length} caught)`);
+    console.log(`MUTATION_CHECK_FAILED (${caughtCount}/${MUTATIONS.length} caught; ${checkFailedCount} check errors or surviving mutations)`);
     process.exitCode = 1;
   }
 }
