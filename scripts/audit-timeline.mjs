@@ -5,6 +5,7 @@ import ts from "typescript";
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const data = JSON.parse(await read("public/data/timeline.json"));
 const atlas = JSON.parse(await read("public/data/atlas.json"));
+const recordUnits = JSON.parse(await read("public/data/units.json"));
 const compileModule = async path => {
   const source = await read(path);
   const compiled = ts.transpileModule(source, {
@@ -17,6 +18,7 @@ const [{ BOOKS, UNKNOWN, filterWorks, groupWorks, personDates, workHref, withPri
   compileModule("app/lib/app/routing.ts"),
 ]);
 const books = new Map(await Promise.all(Object.keys(BOOKS).map(async key => [key, JSON.parse(await read(`public/data/books/${key}.json`))])));
+const recordWorks = new Map(recordUnits.flatMap(unit => unit.works.map(work => [`${unit.bookKey}:${work.id}`, work])));
 
 const atlasWorks = [...atlas.regions.flatMap(region => region.works), ...atlas.unassignedWorks];
 const atlasById = new Map();
@@ -41,6 +43,8 @@ const enriched = withPrintedPages(data, atlas);
 const enrichedById = new Map(enriched.works.map(work => [work.id, work]));
 let dated = 0;
 let withPrintedPage = 0;
+let linkedWorks = 0;
+let plainTextWorks = 0;
 for (const work of data.works) {
   const book = books.get(work.bookKey);
   assert(book, `作品册别无效 ${work.id}`);
@@ -49,12 +53,21 @@ for (const work of data.works) {
   assert.equal(resolved.printedPage, atlasById.get(work.id)?.printedPage ?? null, `printedPage 未按 DS1 数据接入 ${work.id}`);
   if (resolved.printedPage != null) withPrintedPage += 1;
 
-  const route = parseRoute(workHref(work));
   const bareName = work.name.replace(/^《|》$/g, "");
-  const expectedRoute = BOOKS[work.bookKey]
-    ? { view: "records", book: work.bookKey, work: bareName }
-    : { view: "lesson", work: bareName };
-  assert.deepEqual(route, expectedRoute, `作品链接未解析到正确册别与作品 ${work.id}`);
+  const href = workHref(work);
+  const recordWork = recordWorks.get(`${work.bookKey}:${work.id}`);
+  assert.equal(Boolean(work.unit), Boolean(recordWork), `单元归属与 records 目录不一致 ${work.id}`);
+  if (recordWork) {
+    linkedWorks += 1;
+    assert.equal(recordWork.name, work.name, `records 目录作品名称不符 ${work.id}`);
+    assert.equal(typeof href, "string", `目录内作品缺少年表链接 ${work.id}`);
+    const route = parseRoute(href);
+    assert.deepEqual(route, { view: "records", book: work.bookKey, work: bareName }, `作品链接未解析到正确册别与作品 ${work.id}`);
+    assert(recordWork, `records 未解析到年表作品 ${work.id}`);
+  } else {
+    plainTextWorks += 1;
+    assert.equal(href, null, `单元外作品不应生成链接 ${work.id}`);
+  }
 
   if (!work.yearRange) continue;
   dated += 1;
@@ -67,6 +80,8 @@ for (const work of data.works) {
   assert(book.evidenceByTriple[triple.id]?.length, `教材来源缺失 ${work.id}`);
 }
 assert.equal(dated, 36, "标有年代的作品数量应保持为 36");
+assert.equal(linkedWorks, 212, "records 目录内作品链接数量应为 212");
+assert.equal(plainTextWorks, 150, "单元外作品纯文字数量应为 150");
 
 const groups = groupWorks(data.works);
 assert.equal(groups.flatMap(group => group.works).length, data.works.length);
@@ -86,7 +101,8 @@ assert(filterWorks(data, "g7s1", "《军队进行曲》").some(work => work.year
 assert(filterWorks(data, "", "夏夜圆舞曲").some(work => work.yearText === "20世纪50年代"));
 const fixture = { ...data.works[0], id: "fixture", name: "《同名》", yearRange: null, yearText: null, yearEvidence: null };
 assert.notEqual(workHref({ ...fixture, bookKey: "g7s1" }), workHref({ ...fixture, bookKey: "g8s1" }));
-assert.equal(workHref({ ...fixture, bookKey: "" }), `#/lesson/${encodeURIComponent("同名")}`);
+assert.equal(workHref({ ...fixture, bookKey: "g7s1", unit: null }), null);
+assert.equal(workHref({ ...fixture, bookKey: "" }), null);
 
 assert.equal(data.people.length, 122, "相关人物数量应保持为 122");
 const emptyPerson = { lifetimeEvidence: [], lifetimeText: [], bornRange: null, diedRange: null };
@@ -114,8 +130,10 @@ const page = await read("app/components/timeline/TimelinePage.tsx");
 assert(page.includes('loadJson<TimelineData>("timeline.json")'), "年表未按需读取独立数据");
 assert(page.includes('loadJson<AtlasTimelineData>("atlas.json")'), "作品印刷页码未读取 DS1 Atlas 数据");
 assert(page.includes("work.printedPage != null"), "作品缺失页码时未省略页码文本");
+assert(page.includes("const href = workHref(work);"), "年表作品行/人物相关作品未按可解析路由决定是否生成链接");
 assert(page.includes("Evidence[]"), "证据数组结构未保留");
+assert(page.includes(".timeline-chapter, .timeline-people"), "相关人物区未纳入年表索引观察");
 assert(!/addEventListener\(["']scroll/.test(page), "年表出现 scroll 监听");
 const css = await read("app/timeline.css");
 assert(css.includes("prefers-reduced-motion") && css.includes("overflow-x: auto"));
-console.log(`TIMELINE_AUDIT_PASSED works=${data.works.length} dated=${dated} undated=${data.works.length - dated} people=${data.people.length} groups=${groups.length} printedPages=${withPrintedPage} rawYears=preserved evidence=sourceMatched routes=parsed`);
+console.log(`TIMELINE_AUDIT_PASSED works=${data.works.length} linked=${linkedWorks} plainText=${plainTextWorks} dated=${dated} undated=${data.works.length - dated} people=${data.people.length} groups=${groups.length} printedPages=${withPrintedPage} rawYears=preserved evidence=sourceMatched routes=parsed`);

@@ -149,7 +149,6 @@ export function LessonPage({
     <nav className="lesson-crumbs" aria-label="课程位置">
       <button type="button" onClick={onBack}><WorkbenchIcon name="left" />课程目录</button>
       {crumbTrail.map((name) => <span key={name}><WorkbenchIcon name="right" />{name}</span>)}
-      {crumbTrail.length > 0 && <WorkbenchIcon name="right" />}
       <b>{work.name}</b>
     </nav>
 

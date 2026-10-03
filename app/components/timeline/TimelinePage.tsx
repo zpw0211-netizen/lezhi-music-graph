@@ -48,14 +48,17 @@ function Sources({ work, person, related }: { work?: TimelineWork; person?: Time
 }
 function followWorkLink(event: MouseEvent<HTMLAnchorElement>, work: TimelineWork, onOpenWork: (route: AppRoute) => void) {
   if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const route = workRoute(work);
+  if (!route) return;
   event.preventDefault();
-  onOpenWork(workRoute(work));
+  onOpenWork(route);
 }
 function WorkRow({ work, people, onOpenWork }: { work: TimelineWork; people: TimelinePerson[]; onOpenWork: (route: AppRoute) => void }) {
   const [expanded, setExpanded] = useState(false);
+  const href = workHref(work);
   return <li className="timeline-work">
     <p className="timeline-date">{work.yearText ?? UNKNOWN}</p>
-    <div><h3><a href={workHref(work)} onClick={event => followWorkLink(event, work, onOpenWork)}>{work.name}</a></h3><p className="timeline-meta">{BOOKS[work.bookKey]} · {work.unit ?? "教材未归入单元"}{work.printedPage != null && <> · 教材第{work.printedPage}页</>}</p>
+    <div><h3>{href ? <a href={href} onClick={event => followWorkLink(event, work, onOpenWork)}>{work.name}</a> : work.name}</h3><p className="timeline-meta">{BOOKS[work.bookKey]} · {work.unit ?? "教材未归入单元"}{work.printedPage != null && <> · 教材第{work.printedPage}页</>}</p>
       {people.length > 0 && <p className="timeline-meta">相关人物：{people.map(person => person.name).join("、")}</p>}
       <details onToggle={event => setExpanded(event.currentTarget.open)}><summary>年代依据与教材来源</summary>{expanded && <Sources work={work} />}</details>
     </div>
@@ -63,7 +66,20 @@ function WorkRow({ work, people, onOpenWork }: { work: TimelineWork; people: Tim
 }
 function PersonRow({ person, works, onOpenWork }: { person: TimelinePerson; works: TimelineWork[]; onOpenWork: (route: AppRoute) => void }) {
   const [expanded, setExpanded] = useState(false);
-  return <li className="timeline-person"><h3>{person.name}</h3><p className="timeline-date">{personDates(person)}</p><p className="timeline-meta">相关作品：{works.map((work, index) => <span key={`${work.bookKey}:${work.id}`}>{index > 0 ? "、" : ""}<a href={workHref(work)} onClick={event => followWorkLink(event, work, onOpenWork)}>{work.name}<small>（{BOOKS[work.bookKey]}）</small></a></span>)}</p><details onToggle={event => setExpanded(event.currentTarget.open)}><summary>人物年代依据与教材来源</summary>{expanded && <Sources person={person} related={works} />}</details></li>;
+  return <li className="timeline-person">
+    <h3>{person.name}</h3>
+    <p className="timeline-date">{personDates(person)}</p>
+    <p className="timeline-meta">相关作品：{works.map((work, index) => {
+      const href = workHref(work);
+      return <span key={`${work.bookKey}:${work.id}`}>
+        {index > 0 ? "、" : ""}
+        {href
+          ? <a href={href} onClick={event => followWorkLink(event, work, onOpenWork)}>{work.name}<small>（{BOOKS[work.bookKey]}）</small></a>
+          : <>{work.name}<small>（{BOOKS[work.bookKey]}）</small></>}
+      </span>;
+    })}</p>
+    <details onToggle={event => setExpanded(event.currentTarget.open)}><summary>人物年代依据与教材来源</summary>{expanded && <Sources person={person} related={works} />}</details>
+  </li>;
 }
 export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => void }) {
   const [data, setData] = useState<TimelineData | null>(null);
@@ -129,7 +145,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   const undatedPeople = people.filter(person => !person.bornRange && !person.diedRange);
   useEffect(() => {
     const observer = new IntersectionObserver(entries => { for (const entry of entries) if (entry.isIntersecting) setActiveEra(entry.target.id); }, { rootMargin: "-18% 0px -65% 0px" });
-    root.current?.querySelectorAll(".timeline-chapter").forEach(section => observer.observe(section));
+    root.current?.querySelectorAll(".timeline-chapter, .timeline-people").forEach(section => observer.observe(section));
     return () => observer.disconnect();
   }, [groups]);
   function jump(id: string) {
@@ -142,7 +158,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
     <header className="timeline-opening"><p className="timeline-kicker">六册教材 · 作品年表</p><h1 id="timeline-title">循着年代<br />翻阅作品</h1><p className="timeline-lede">从教材记载的创作年代出发，找到作品与相关人物。每一条年代都保留原文，展开即可查阅教材依据。</p><p className="timeline-total">{data ? `${data.works.length} 条作品记录 · ${data.works.filter(work => work.yearRange).length} 条标有年代 · ${data.people.length} 位相关人物` : "正在读取年表资料…"}</p></header>
     <section className="timeline-controls" aria-label="年表筛选"><div role="group" aria-label="按教材册别筛选">{["", ...Object.keys(BOOKS)].map(key => <button key={key} type="button" aria-pressed={book === key} onClick={() => setBook(key)}>{key ? BOOKS[key].replace("年级", "").replace("册", "") : "六册"}</button>)}</div><label>查找作品<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="输入作品名" /></label></section>
     {error ? <p role="alert">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>重试</button></p> : !data ? <div className="timeline-loading" role="status">正在载入作品与人物…</div> : <><p className="timeline-result" role="status">找到 {works.length} 条作品记录，其中 {works.filter(work => work.yearRange).length} 条标有年代。人物随相关作品筛选。</p>
-      {works.length === 0 ? <section className="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看六册教材。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section> : <div className="timeline-book"><nav className="timeline-rail" aria-label="年代跳转">{groups.map(group => <button key={group.id} type="button" aria-current={activeEra === group.id ? "location" : undefined} onClick={() => jump(group.id)}>{group.label === UNKNOWN ? "未标注年代" : group.label}<small>{group.works.length}</small></button>)}<button type="button" onClick={() => jump("timeline-people")}>相关人物<small>{people.length}</small></button></nav>
+      {works.length === 0 ? <section className="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看六册教材。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section> : <div className="timeline-book"><nav className="timeline-rail" aria-label="年代跳转">{groups.map(group => <button key={group.id} type="button" aria-current={activeEra === group.id ? "location" : undefined} onClick={() => jump(group.id)}>{group.label === UNKNOWN ? "未标注年代" : group.label}<small>{group.works.length}</small></button>)}<button type="button" aria-current={activeEra === "timeline-people" ? "location" : undefined} onClick={() => jump("timeline-people")}>相关人物<small>{people.length}</small></button></nav>
         <div className="timeline-chapters">{groups.map(group => <section className={`timeline-chapter${group.label === UNKNOWN ? " is-undated" : ""}`} key={group.id} id={group.id} tabIndex={-1} aria-labelledby={`${group.id}-title`}><header><p className="timeline-kicker">作品 · {group.works.length} 条记录</p><h2 id={`${group.id}-title`}>{group.label === UNKNOWN ? <>{UNKNOWN}</> : <><span>{group.label.replace("年代", "")}</span>年代</>}</h2><p className="timeline-group-note">{group.label === UNKNOWN ? "这些作品的创作年代未在年表源数据中标注。" : "按教材年代范围起点归组；作品旁保留教材年代原文。"}</p></header><ol>{group.works.map(work => <WorkRow key={`${work.bookKey}:${work.id}`} work={work} people={data.people.filter(person => person.works.includes(work.id))} onOpenWork={openWork} />)}</ol></section>)}
           <section id="timeline-people" className="timeline-people" tabIndex={-1} aria-labelledby="timeline-people-title"><p className="timeline-kicker">作品里的名字</p><h2 id="timeline-people-title">相关人物</h2><p>生卒年代来自教材数据；按已知生年排序，缺少生年时按卒年排序。</p><ol>{datedPeople.map(person => <PersonRow key={person.id} person={person} works={works.filter(work => person.works.includes(work.id))} onOpenWork={openWork} />)}</ol><h3 className="timeline-undated-people">{UNKNOWN}</h3><p>{undatedPeople.length} 位人物</p><ol>{undatedPeople.map(person => <PersonRow key={person.id} person={person} works={works.filter(work => person.works.includes(work.id))} onOpenWork={openWork} />)}</ol></section>
         </div></div>}

@@ -28,7 +28,7 @@ import { useKnowledgeSearch, type SearchResult } from "./hooks/useKnowledgeSearc
 import { useScrollReveal } from "./hooks/useScrollReveal";
 import { publicAssetUrl } from "./lib/app/assets";
 import type { AppView } from "./lib/app/routing";
-import { bareWorkName, DEFAULT_BOOK_KEY, isWorkType, type BookDirectory, type Entity } from "./lib/app/types";
+import { bareWorkName, isWorkType, type BookDirectory, type Entity } from "./lib/app/types";
 
 // Only the home page ships in the first script. Every other page is its own
 // chunk, loaded when opened and prefetched in the background once the data is in.
@@ -196,7 +196,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [assistantEntry, setAssistantEntry] = useState({ question: "", token: 0 });
   const [researchInfoOpen, setResearchInfoOpen] = useState(false);
-  const [recordsBook, setRecordsBook] = useState(DEFAULT_BOOK_KEY);
+  const [recordsBook, setRecordsBook] = useState("g7s1");
 
   const openAssistant = (question = "") => {
     setAssistantEntry((current) => ({ question, token: current.token + 1 }));

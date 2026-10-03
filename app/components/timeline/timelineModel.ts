@@ -32,17 +32,17 @@ export function withPrintedPages(data: TimelineData, atlas: AtlasTimelineData): 
     works: data.works.map(work => ({ ...work, printedPage: printedPages.get(work.id) ?? null })),
   };
 }
-export function workRoute(work: TimelineWork): AppRoute {
+export function workRoute(work: TimelineWork): AppRoute | null {
   const title = work.name.replace(/^《|》$/g, "");
-  return work.bookKey && Object.hasOwn(BOOKS, work.bookKey)
+  return work.unit && Object.hasOwn(BOOKS, work.bookKey)
     ? { view: "records", book: work.bookKey, work: title }
-    : { view: "lesson", work: title };
+    : null;
 }
 export function workHref(work: TimelineWork) {
   const route = workRoute(work);
-  return route.view === "records"
+  return route
     ? `#/records/${encodeURIComponent(route.book ?? "")}/${encodeURIComponent(route.work ?? "")}`
-    : `#/lesson/${encodeURIComponent(route.work ?? "")}`;
+    : null;
 }
 export function personDates(person: TimelinePerson) {
   const originalTexts = [...new Set((person.lifetimeEvidence ?? []).map(evidence => evidence.text).filter(Boolean))];
