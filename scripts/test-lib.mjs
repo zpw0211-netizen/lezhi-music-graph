@@ -1,4 +1,4 @@
-// test-lib.mjs — app/lib/app/routing.ts 与 app/lib/app/unit-data.ts 的单元测试。
+// test-lib.mjs — app/lib/app/routing.ts、unit-data.ts 与 timelineModel.ts 的测试。
 // 用法：node scripts/test-lib.mjs                   跑全部测试
 //       node scripts/test-lib.mjs --mutation-check  变异自证：6 个故意 bug 都必须被测试抓到
 //       node scripts/test-lib.mjs --run-mutation <id>（内部用，子进程跑单个变异）
@@ -24,6 +24,7 @@ const repoRoot = path.resolve(path.dirname(scriptPath), "..");
 const SOURCES = {
   routing: path.join(repoRoot, "app", "lib", "app", "routing.ts"),
   unitData: path.join(repoRoot, "app", "lib", "app", "unit-data.ts"),
+  timelineModel: path.join(repoRoot, "app", "components", "timeline", "timelineModel.ts"),
 };
 
 // ---- 变异定义：每条都是「源码文本替换」，替换必须真的发生（否则视为脚本自身出错） ----
@@ -76,6 +77,14 @@ const MUTATIONS = [
     to: "if (!VIEWS.has(view)) return { view };",
     expectedFailure: "容错：#/nope 回退 home",
   },
+  {
+    id: "g",
+    label: "(g) timeline 不再注册为可用路由",
+    file: "routing",
+    from: '  "timeline",',
+    to: '  "disabled-timeline",',
+    expectedFailure: "往返：timeline",
+  },
 ];
 
 // ---- 转译与加载 ------------------------------------------------------------
@@ -97,7 +106,7 @@ function applyMutation(source, mutation) {
   return mutated;
 }
 
-/** 转译两个模块（可选注入一个变异）到临时目录并 import。import 完成后删临时目录。 */
+/** 转译模块（可选注入一个变异）到临时目录并 import。import 完成后删临时目录。 */
 async function loadModules(mutation) {
   const tmpDir = path.join(process.env.TEMP ?? tmpdir(), `yapu-test-lib-${process.pid}`);
   mkdirSync(tmpDir, { recursive: true });
@@ -125,10 +134,14 @@ function mutationFromArgv() {
   return mutation;
 }
 
-// 顶层 await：动态 import 返回 promise，等两个模块都就位再注册测试。
+// 顶层 await：动态 import 返回 promise，等被测模块都就位再注册测试。
 const loaded = await loadModules(mutationFromArgv());
 const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, parseUnitTask } = await loaded.unitData;
+const { workHref } = await loaded.timelineModel;
+const timelineData = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "timeline.json"), "utf8"));
+const recordUnits = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "units.json"), "utf8"));
+const recordWorks = new Map(recordUnits.flatMap((unit) => unit.works.map((work) => [`${unit.bookKey}:${work.id}`, work])));
 
 // ---- 测试登记（顶层 test()；node:test 在进程退出前执行，失败置非零退出码） ----
 
@@ -157,6 +170,7 @@ const ROUND_TRIP = [
   { name: "records（册与作品）", route: { view: "records", book: "g7s1", work: "歌唱祖国" } },
   { name: "lesson+作品", route: { view: "lesson", work: "歌唱祖国" } },
   { name: "work+作品", route: { view: "work", work: "义勇军进行曲" } },
+  { name: "timeline", route: { view: "timeline" } },
 ];
 
 for (const { name, route } of ROUND_TRIP) {
@@ -221,6 +235,10 @@ t("旧链接兼容：?view=graph&node=CAN_x", () => {
   assert.deepEqual(parseRoute("", "?view=graph&node=CAN_x"), { view: "graph", node: "CAN_x" });
 });
 
+t("旧链接兼容：?view=timeline", () => {
+  assert.deepEqual(parseRoute("", "?view=timeline"), { view: "timeline" });
+});
+
 t("旧链接兼容：旧 work 参数同样会被剥书名号", () => {
   assert.deepEqual(parseRoute("", "?view=work&work=《歌唱祖国》"), { view: "work", work: "歌唱祖国" });
 });
@@ -267,6 +285,43 @@ t("容错：#/lesson 不带作品回退 records", () => {
 
 t("容错：井号里的多余段会拼回详情（现行行为）", () => {
   assert.deepEqual(parseRoute("#/graph/CAN_x/extra"), { view: "graph", node: "CAN_x/extra" });
+});
+
+t("容错：timeline 忽略不使用的多余路径段", () => {
+  assert.deepEqual(parseRoute("#/timeline/extra"), { view: "timeline" });
+});
+
+t("年表作品链接：全量 362 条只链接 records 中可解析的 212 条", () => {
+  assert.equal(timelineData.works.length, 362);
+  let linked = 0;
+  let plainText = 0;
+  for (const work of timelineData.works) {
+    const href = workHref(work);
+    const target = recordWorks.get(`${work.bookKey}:${work.id}`);
+    assert.equal(Boolean(work.unit), Boolean(target), `单元归属与 records 目录不一致：${work.id}`);
+    if (!target) {
+      plainText += 1;
+      assert.equal(href, null, `单元外作品应为纯文字：${work.id}`);
+      continue;
+    }
+    linked += 1;
+    assert.equal(target.name, work.name, `records 目录作品名称不符：${work.id}`);
+    assert.equal(typeof href, "string", `目录内作品缺少年表链接：${work.id}`);
+    assert.deepEqual(parseRoute(href), {
+      view: "records",
+      book: work.bookKey,
+      work: work.name.replace(/^《|》$/g, ""),
+    }, `作品链接未解析到正确册别与作品：${work.id}`);
+  }
+  assert.equal(linked, 212);
+  assert.equal(plainText, 150);
+});
+
+t("records 默认册改为七上且不改图谱使用的全局默认册", () => {
+  const page = readFileSync(path.join(repoRoot, "app", "page.tsx"), "utf8");
+  const types = readFileSync(path.join(repoRoot, "app", "lib", "app", "types.ts"), "utf8");
+  assert.match(page, /const \[recordsBook, setRecordsBook\] = useState\("g7s1"\)/);
+  assert.match(types, /DEFAULT_BOOK_KEY\s*=\s*"g8s2"/);
 });
 
 t("幂等与稳定：format(parse(format(route))) 等于 format(route)", () => {

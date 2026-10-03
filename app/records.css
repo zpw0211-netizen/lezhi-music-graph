@@ -645,7 +645,7 @@
 }
 
 .records-detail:focus { outline: none; }
-.records-detail:focus-visible { outline: 3px solid var(--seal, #B8392A); outline-offset: -4px; }
+.records-detail:focus-visible { outline: none; }
 
 .records-detail-score {
   display: flex;
