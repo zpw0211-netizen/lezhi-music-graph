@@ -11,10 +11,27 @@
 .sigma-scene-host{position:absolute;inset:0;width:100%;height:100%}
 .pending-knowledge{border:1px dashed #d4d4d8;padding:14px;font-size:12px;margin:14px 0}.pending-knowledge dl{display:grid;grid-template-columns:60px 1fr;gap:8px}.pending-knowledge dd{margin:0}.pending-knowledge p{color:#71717a}
 
-/* Keep the graph page's shared navigation brand aligned with the other app pages. */
-.ink-app.network-mode .home-nav .home-nav-inner{padding:0 32px}
-.ink-app.network-mode .home-nav .home-brand{align-self:center;flex:0 0 auto;margin:0;padding:0;transform:none}
-.ink-app.network-mode .home-nav .home-brand img{display:block;width:142px;height:auto;max-height:52px;object-fit:contain}
+/* The graph workspace reserves room for its absolute sidebar. Extend only its
+   shared top navigation back across that reserved space. */
+.ink-app.theme-light.network-mode > .workspace {
+  --graph-nav-left-inset:316px;
+  --graph-nav-right-inset:20px;
+}
+.ink-app.theme-light.network-mode > .workspace > .home-nav {
+  width:calc(100% + var(--graph-nav-left-inset) + var(--graph-nav-right-inset));
+  margin-left:calc(-1 * var(--graph-nav-left-inset));
+  margin-right:calc(-1 * var(--graph-nav-right-inset));
+}
+.ink-app.theme-light.network-mode > .workspace > .home-nav .home-nav-inner {
+  padding-left:clamp(18px,3vw,44px);
+  padding-right:clamp(18px,3vw,44px);
+}
+@media(max-width:1080px) and (min-width:901px) {
+  .ink-app.theme-light.network-mode > .workspace > .home-nav .home-nav-inner { padding-left:20px; padding-right:20px; }
+}
+@media(max-width:900px) {
+  .ink-app.theme-light.network-mode > .workspace > .home-nav .home-nav-inner { padding-left:12px; padding-right:12px; }
+}
 
 /* Graph category colors come from the shared semantic palette. */
 .ink-app.network-mode .neo-canvas .svg-node.schema-textbook circle{fill:var(--semantic-textbook);stroke:var(--semantic-textbook-stroke)}
@@ -65,7 +82,6 @@
 .ink-app.network-mode .explorer-dataset-summary p{margin:0;color:var(--text-secondary);font-size:11px;line-height:1.6}
 
 @media(max-width:760px){
-  .ink-app.network-mode .home-nav .home-nav-inner{padding:8px 12px}
   .ink-app.network-mode .graph-rangebar{gap:4px;min-width:0;padding:4px 8px}
   .ink-app.network-mode .graph-rangebar .book-tabs{flex:1 1 0;width:0;min-width:0;padding:5px 8px 7px}
   .ink-app.network-mode .graph-rangebar .book-tab{padding:5px 8px}
@@ -83,6 +99,13 @@
 @media(max-width:480px){
   .ink-app.network-mode .neo-card .graph-filter-group-label{display:none}
   .ink-app.network-mode .graph-rangebar .zoom-slider{width:46px}
+}
+@media(max-width:768px){
+  .ink-app.theme-light.network-mode .neo-canvas{
+    height:max(55svh,calc(100dvh - 200px));
+    min-height:55svh;
+    flex:0 0 max(55svh,calc(100dvh - 200px));
+  }
 }
 @media(max-width:800px){.theme-light .explorer-sidebar{width:250px;flex-basis:250px}.explorer-brand small{font-size:10px}}
 @media(max-width:760px){.theme-light .explorer-sidebar,.theme-light .explorer-sidebar.is-collapsed{width:100%;flex-basis:auto;min-height:0;max-height:230px}.explorer-sidebar .explorer-brand{min-height:58px;padding:10px 12px}.explorer-sidebar .explorer-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px;gap:3px}.explorer-sidebar .explorer-nav button{font-size:10px;padding:7px 2px;gap:4px;justify-content:center}.explorer-sidebar.is-collapsed{max-height:110px!important}.is-collapsed .explorer-brand{flex-wrap:nowrap;justify-content:space-between}.explorer-brand strong{font-size:18px}}
@@ -112,24 +135,25 @@
    恢复常规 padding。 */
 .ink-app.theme-light.network-mode > .explorer-sidebar {
   position:absolute;
-  top:0;
+  top:69px;
   left:0;
   z-index:30;
+  height:calc(100dvh - 69px);
   /* 侧栏内容比 100dvh 略高时（workbench-v5 的 overflow:hidden 会裁掉底部
      区块），允许滚动，保证「知识模式」等底部区块可达。 */
   overflow-y:auto;
 }
 .ink-app.theme-light.network-mode > .workspace { padding-left:316px; }
 @media (max-width:800px) {
-  .ink-app.theme-light.network-mode > .workspace { padding-left:270px; }
+  .ink-app.theme-light.network-mode > .workspace { padding-left:270px; --graph-nav-left-inset:270px; }
 }
 @media (max-width:768px) {
-  .ink-app.theme-light.network-mode > .workspace { padding-left:20px; }
+  .ink-app.theme-light.network-mode > .workspace { padding-left:20px; --graph-nav-left-inset:20px; --graph-nav-right-inset:0px; }
 }
 /* 详情抽屉打开时侧栏被压成 56px rail（knowledge-detail.css，1001–1500px
    视口），预留随之回落为 56+20，否则 rail 右侧空出约 260px、画布被挤窄。 */
 @media (max-width:1500px) and (min-width:1001px) {
-  .ink-app.theme-light.network-mode.detail-open > .workspace { padding-left:76px; }
+  .ink-app.theme-light.network-mode.detail-open > .workspace { padding-left:76px; --graph-nav-left-inset:76px; }
 }
 
 /* —— 画布与纸面 —— */

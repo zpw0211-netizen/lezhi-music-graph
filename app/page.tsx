@@ -179,18 +179,6 @@ export default function Home() {
   const { route, routeRef, navigate, pushQuietly, back, replaceQuietly } = useAppRoute(() => workspaceRef.current);
   useScrollReveal();
   const view = route.view;
-  useEffect(() => {
-    const onTimelineNavigation = (event: globalThis.MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      const target = event.target;
-      if (!(target instanceof Element)) return;
-      if (!target.closest('a[href="#/timeline"]')) return;
-      event.preventDefault();
-      if (routeRef.current.view !== "timeline") navigate({ view: "timeline" });
-    };
-    document.addEventListener("click", onTimelineNavigation, true);
-    return () => document.removeEventListener("click", onTimelineNavigation, true);
-  }, [navigate, routeRef]);
   const routeTransitionKey = `${route.view}:${route.book ?? ""}:${route.work ?? ""}`;
   const previousRouteTransitionKey = useRef<string | null>(null);
   const [query, setQuery] = useState("");
