@@ -330,6 +330,7 @@ body::before {
 .home-portal .home-section-overline { margin: 0 0 7px; color: var(--seal); font-size: 13px; letter-spacing: .16em; }
 .home-portal .home-section-head h2,
 .home-portal .home-lab-heading h2 { margin: 0; font: clamp(32px, 4vw, 48px)/1.35 var(--kai); letter-spacing: .04em; }
+.home-portal .home-section-head h2 { text-wrap: balance; }
 .home-portal .home-section-head p:not(.home-section-overline) { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; }
 .home-portal .home-section-mark { color: var(--seal); font: 52px/1 var(--kai); }
 .home-portal .home-scrolls { padding: 0 clamp(20px, 2.8vw, 40px); }
@@ -443,6 +444,8 @@ body::before {
   background: var(--paper-2);
 }
 .home-portal .home-lab-heading { max-width: 410px; }
+.home-portal .home-lab-enter { white-space: nowrap; }
+.home-portal .home-lab-enter .workbench-icon { display: inline-block; vertical-align: middle; }
 .home-portal .home-lab-heading p:not(.home-section-overline) { max-width: 390px; margin: 14px 0 0; color: var(--ink-2); font-size: 14px; }
 .home-portal .home-lab-phrase {
   margin-top: 22px;

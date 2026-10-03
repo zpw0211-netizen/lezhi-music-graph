@@ -4,7 +4,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const output = path.join(root, "public", "fonts", "wenkai-display.woff2");
-const approvedBytes = 220752;
+const approvedBytes = 344180;
 // Ordinary builds only validate and reuse the approved subset. Rebuilding is explicit.
 if (process.env.WENKAI_REBUILD !== "1") {
   if (!existsSync(output)) throw new Error("Approved display font is missing; set WENKAI_REBUILD=1 to rebuild it explicitly.");
@@ -16,9 +16,15 @@ if (process.env.WENKAI_REBUILD !== "1") {
 const python = process.env.WENKAI_PYTHON;
 if (!python || !existsSync(python)) throw new Error("Set WENKAI_PYTHON to an E: or D: Python executable for an explicit font rebuild.");
 if (/^C:[\\/]/i.test(path.resolve(python))) throw new Error("Font rebuild Python must be on E: or D:.");
+const pythonPathEntries = (process.env.WENKAI_PYTHONPATH ?? "")
+  .split(path.delimiter)
+  .filter(Boolean)
+  .map(entry => path.resolve(entry));
+if (pythonPathEntries.some(entry => !/^[DE]:[\\/]/i.test(entry)))
+  throw new Error("WENKAI_PYTHONPATH entries must be on E: or D:.");
 const env = {
   ...process.env,
-  PYTHONPATH: "",
+  PYTHONPATH: pythonPathEntries.join(path.delimiter),
   PYTHONNOUSERSITE: "1",
   PYTHONDONTWRITEBYTECODE: "1",
 };
@@ -29,8 +35,9 @@ const probe = spawnSync(python, ["-c", "import fontTools, fontTools.subset, font
 });
 if (probe.error) throw probe.error;
 if (probe.status !== 0) throw new Error("The selected E:/D: Python must provide fontTools and brotli without using a C: site-packages directory.");
-if (probe.stdout.split(/\r?\n/).some(modulePath => /^C:[\\/]/i.test(modulePath.trim())))
-  throw new Error("FontTools and brotli must resolve from E: or D:, not C: site-packages.");
+const modulePaths = probe.stdout.split(/\r?\n/).map(modulePath => modulePath.trim()).filter(Boolean);
+if (modulePaths.some(modulePath => !/^[DE]:[\\/]/i.test(modulePath)))
+  throw new Error("FontTools and brotli must resolve from E: or D: paths.");
 const result = spawnSync(python, [path.join(root, "scripts", "brand", "subset-display-font.py")], {
   cwd: root,
   env,
