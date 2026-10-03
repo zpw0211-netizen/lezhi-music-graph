@@ -484,41 +484,45 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
       </section>
 
       <section className="atlas-map-column" aria-label="地图与地点列表">
-        <section
-          className="atlas-stage"
-          ref={stageRef}
-          aria-label="三维音乐地图，可拖动旋转；中国地势视图可倾斜、缩放"
-        >
-          <canvas ref={canvasRef} className="atlas-map-canvas" aria-label="三维地形地图画布" />
-          <canvas ref={overlayRef} className="atlas-marker-canvas" aria-hidden="true" />
-          <div className="atlas-stage-heading" aria-hidden="true">
-            {mode === "world" ? "世界" : "中国 · 地势浮雕"}
-          </div>
-          <div className="atlas-stage-caption atlas-stage-caption-left" aria-hidden="true">
-            <span className="atlas-light-key" />光柱越高，来自这里的作品越多
-          </div>
-          <div className="atlas-stage-caption atlas-stage-caption-right" aria-hidden="true">
-            拖动旋转{mode === "china" ? " · 滚轮缩放" : ""} · 点击光柱
-          </div>
-          {hoverCard && (
-            <div
-              className="atlas-tooltip"
-              style={{ left: hoverCard.x, top: hoverCard.y }}
-              role="status"
-            >
-              {hoverCard.region.name} · {selectedWorks(hoverCard.region, filter).length} 首
+        <div className="atlas-map-sticky">
+          <section
+            className="atlas-stage"
+            ref={stageRef}
+            aria-label="三维音乐地图，可拖动旋转；中国地势视图可倾斜、缩放"
+          >
+            <canvas ref={canvasRef} className="atlas-map-canvas" aria-label="三维地形地图画布" />
+            <canvas ref={overlayRef} className="atlas-marker-canvas" aria-hidden="true" />
+            <div className="atlas-stage-heading" aria-hidden="true">
+              {mode === "world" ? "世界" : "中国 · 地势浮雕"}
             </div>
-          )}
-          {webglAvailable === false && (
-            <div className="atlas-fallback" role="status">
-              当前浏览器不能显示三维地图。可用下方地点按钮查看作品。
-            </div>
-          )}
-          {webglAvailable === null && assets && !loadError && (
-            <div className="atlas-loading" role="status">正在准备地形画布…</div>
-          )}
-          {loadError && <div className="atlas-fallback" role="alert">{loadError}</div>}
-        </section>
+            {hoverCard && (
+              <div
+                className="atlas-tooltip"
+                style={{ left: hoverCard.x, top: hoverCard.y }}
+                role="status"
+              >
+                {hoverCard.region.name} · {selectedWorks(hoverCard.region, filter).length} 首
+              </div>
+            )}
+            {webglAvailable === false && (
+              <div className="atlas-fallback" role="status">
+                当前浏览器不能显示三维地图。可用下方地点按钮查看作品。
+              </div>
+            )}
+            {webglAvailable === null && assets && !loadError && (
+              <div className="atlas-loading" role="status">正在准备地形画布…</div>
+            )}
+            {loadError && <div className="atlas-fallback" role="alert">{loadError}</div>}
+          </section>
+          <div className="atlas-map-key" aria-hidden="true">
+            <p className="atlas-map-key-legend">
+              <span className="atlas-light-key" />光柱越高，来自这里的作品越多
+            </p>
+            <p className="atlas-map-key-help">
+              拖动旋转{mode === "china" ? " · 滚轮缩放" : ""} · 点击光柱
+            </p>
+          </div>
+        </div>
         <section className="atlas-places" aria-labelledby="atlas-places-title">
           <div className="atlas-places-heading">
             <h2 id="atlas-places-title">{mode === "world" ? "国家" : "省区标点"}</h2>
