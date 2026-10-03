@@ -130,6 +130,10 @@ const LabPage = nextDynamic<PropsOf<typeof LabPageComponent>>(
   () => import("./components/lab/LabPage").then((module) => module.LabPage),
   { loading: viewLoading },
 );
+const TimelinePage = nextDynamic(
+  () => import("./components/timeline/TimelinePage").then((module) => module.TimelinePage),
+  { loading: () => <div className="timeline-loading" role="status">正在载入年表…</div> },
+);
 const ResearchAnalysis = nextDynamic<PropsOf<typeof ResearchAnalysisComponent>>(
   () => import("./components/ResearchAnalysis").then((module) => module.ResearchAnalysis),
   { loading: viewLoading },
@@ -154,6 +158,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   home: "",
   atlas: "音乐地图",
   lab: "五声实验室",
+  timeline: "作品年表",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
@@ -174,6 +179,18 @@ export default function Home() {
   const { route, routeRef, navigate, pushQuietly, back, replaceQuietly } = useAppRoute(() => workspaceRef.current);
   useScrollReveal();
   const view = route.view;
+  useEffect(() => {
+    const onTimelineNavigation = (event: globalThis.MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest('a[href="#/timeline"]')) return;
+      event.preventDefault();
+      if (routeRef.current.view !== "timeline") navigate({ view: "timeline" });
+    };
+    document.addEventListener("click", onTimelineNavigation, true);
+    return () => document.removeEventListener("click", onTimelineNavigation, true);
+  }, [navigate, routeRef]);
   const routeTransitionKey = `${route.view}:${route.book ?? ""}:${route.work ?? ""}`;
   const previousRouteTransitionKey = useRef<string | null>(null);
   const [query, setQuery] = useState("");
@@ -293,7 +310,7 @@ export default function Home() {
     if (entity) navigate({ view: "graph", node: entity.id });
   };
 
-  const needsData = view !== "home" && view !== "import" && view !== "atlas";
+  const needsData = view !== "home" && view !== "import" && view !== "atlas" && view !== "timeline";
   const dataStatus =
     needsData && view !== "records" && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
@@ -330,7 +347,7 @@ export default function Home() {
             active={
               view === "lesson" || view === "work"
                 ? "records"
-                : view === "import" || view === "atlas"
+                : view === "import" || view === "atlas" || view === "timeline"
                   ? null
                   : view
             }
@@ -446,6 +463,7 @@ export default function Home() {
           {view === "import" && <ImportView />}
           {view === "atlas" && <AtlasPage onOpenWork={(work) => navigate({ view: "lesson", work })} />}
           {view === "lab" && canonicalGraph && <LabPage graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+          {view === "timeline" && <TimelinePage onOpenWork={destination => navigate(destination)} />}
         </div>
       </section>
       <ResearchInfo

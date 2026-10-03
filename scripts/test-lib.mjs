@@ -76,6 +76,14 @@ const MUTATIONS = [
     to: "if (!VIEWS.has(view)) return { view };",
     expectedFailure: "容错：#/nope 回退 home",
   },
+  {
+    id: "g",
+    label: "(g) timeline 不再注册为可用路由",
+    file: "routing",
+    from: '  "timeline",',
+    to: '  "disabled-timeline",',
+    expectedFailure: "往返：timeline",
+  },
 ];
 
 // ---- 转译与加载 ------------------------------------------------------------
@@ -157,6 +165,7 @@ const ROUND_TRIP = [
   { name: "records（册与作品）", route: { view: "records", book: "g7s1", work: "歌唱祖国" } },
   { name: "lesson+作品", route: { view: "lesson", work: "歌唱祖国" } },
   { name: "work+作品", route: { view: "work", work: "义勇军进行曲" } },
+  { name: "timeline", route: { view: "timeline" } },
 ];
 
 for (const { name, route } of ROUND_TRIP) {
@@ -221,6 +230,10 @@ t("旧链接兼容：?view=graph&node=CAN_x", () => {
   assert.deepEqual(parseRoute("", "?view=graph&node=CAN_x"), { view: "graph", node: "CAN_x" });
 });
 
+t("旧链接兼容：?view=timeline", () => {
+  assert.deepEqual(parseRoute("", "?view=timeline"), { view: "timeline" });
+});
+
 t("旧链接兼容：旧 work 参数同样会被剥书名号", () => {
   assert.deepEqual(parseRoute("", "?view=work&work=《歌唱祖国》"), { view: "work", work: "歌唱祖国" });
 });
@@ -267,6 +280,10 @@ t("容错：#/lesson 不带作品回退 records", () => {
 
 t("容错：井号里的多余段会拼回详情（现行行为）", () => {
   assert.deepEqual(parseRoute("#/graph/CAN_x/extra"), { view: "graph", node: "CAN_x/extra" });
+});
+
+t("容错：timeline 忽略不使用的多余路径段", () => {
+  assert.deepEqual(parseRoute("#/timeline/extra"), { view: "timeline" });
 });
 
 t("幂等与稳定：format(parse(format(route))) 等于 format(route)", () => {

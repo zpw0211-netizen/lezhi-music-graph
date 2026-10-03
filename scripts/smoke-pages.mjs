@@ -275,6 +275,7 @@ async function main() {
     ["智能问答", "#/assistant", ".assistant-page"],
     ["研究分析", "#/research", ".research-analysis"],
     ["音乐地图", "#/atlas", ".atlas-page"],
+    ["作品年表", "#/timeline", ".timeline-page"],
   ];
   let mobileCase = 0;
   for (const width of [375, 768]) {

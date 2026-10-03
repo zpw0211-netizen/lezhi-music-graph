@@ -42,7 +42,8 @@
     "audit:contrast": "node scripts/audit-contrast.mjs",
     "test:lib": "node scripts/test-lib.mjs",
     "audit:palette": "node scripts/audit-palette-usage.mjs",
-    "build:font": "node scripts/brand/build-display-font.mjs"
+    "build:font": "node scripts/brand/build-display-font.mjs",
+    "quality:timeline": "node scripts/audit-timeline.mjs"
   },
   "dependencies": {
     "@react-sigma/core": "^5.0.6",
