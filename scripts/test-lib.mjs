@@ -1,6 +1,6 @@
 // test-lib.mjs — app/lib/app/routing.ts 与 app/lib/app/unit-data.ts 的单元测试。
 // 用法：node scripts/test-lib.mjs                   跑全部测试
-//       node scripts/test-lib.mjs --mutation-check  变异自证：4 个故意 bug 都必须被测试抓到
+//       node scripts/test-lib.mjs --mutation-check  变异自证：6 个故意 bug 都必须被测试抓到
 //       node scripts/test-lib.mjs --run-mutation <id>（内部用，子进程跑单个变异）
 //
 // 被测的是 TS 文件：用仓库自带的 typescript 包 transpileModule 转成临时 .mjs 再
@@ -59,6 +59,22 @@ const MUTATIONS = [
     from: "/（(?=涉及|练习重点：)/",
     to: "/（(?=涉及)/",
     expectedFailure: "任务解析：只有练习重点、没有涉及 → focus 正常解析（变异 d 靠它抓）",
+  },
+  {
+    id: "e",
+    label: "(e) records 多段作品名只保留第一段",
+    file: "routing",
+    from: 'const work = workParts.join("/");',
+    to: 'const work = workParts[0] ?? "";',
+    expectedFailure: "路由：records 多段作品名保留全部路径段",
+  },
+  {
+    id: "f",
+    label: "(f) 井号路由里的未知 view 不回 home",
+    file: "routing",
+    from: "if (!VIEWS.has(view)) return HOME_ROUTE;",
+    to: "if (!VIEWS.has(view)) return { view };",
+    expectedFailure: "容错：#/nope 回退 home",
   },
 ];
 
@@ -175,6 +191,13 @@ t("中文与特殊字符：records 详情路由往返保留册别与作品名", 
     const route = { view: "records", book: "g7s1", work };
     assert.deepEqual(parseRoute(formatRoute(route)), route, `作品名「${work}」的 records 路由往返失真`);
   }
+});
+
+t("路由：records 多段作品名保留全部路径段", () => {
+  assert.deepEqual(
+    parseRoute("#/records/g7s1/春之歌/第二乐章"),
+    { view: "records", book: "g7s1", work: "春之歌/第二乐章" },
+  );
 });
 
 t("中文与特殊字符：书名号会被 bare() 剥掉（锁定现行设计行为）", () => {
@@ -381,8 +404,9 @@ function runMutationCheck() {
     const tests = output.match(/^# tests (\d+)$/m);
     const failures = output.match(/^# fail (\d+)$/m);
     const runSummary = output.match(/测试结果：通过 (\d+)\/(\d+)/);
+    const unescapeTapName = (value) => value.replace(/\\#/g, "#");
     const expectedAssertionFailed = output.split(/\r?\n/).some((line) =>
-      line.startsWith("not ok ") && line.includes(mutation.expectedFailure),
+      line.startsWith("not ok ") && unescapeTapName(line).includes(unescapeTapName(mutation.expectedFailure)),
     );
     const completeTestFailure = status === 1
       && Number(tests?.[1]) > 0

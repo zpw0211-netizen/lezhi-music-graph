@@ -312,6 +312,20 @@ export function WorkLibrary({
   }, []);
 
   const directory = books.find((item) => item.key === bookKey) ?? books[0];
+  useEffect(() => {
+    const selectedBook = document.querySelector<HTMLButtonElement>(
+      ".records-top-book-picker > button.is-active",
+    );
+    if (!selectedBook) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    selectedBook.scrollIntoView({
+      behavior: reducedMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [bookKey, books]);
+
   const units = useMemo(
     () => (unitRows ?? []).filter((unit) => unit.bookKey === directory?.key).sort((left, right) => left.order - right.order),
     [directory?.key, unitRows],
