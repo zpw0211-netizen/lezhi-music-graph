@@ -1,6 +1,6 @@
-// test-lib.mjs — app/lib/app/routing.ts、unit-data.ts 与 timelineModel.ts 的测试。
+// test-lib.mjs — 共享应用模型、年表模型与五声实验室调式数据的测试。
 // 用法：node scripts/test-lib.mjs                   跑全部测试
-//       node scripts/test-lib.mjs --mutation-check  变异自证：6 个故意 bug 都必须被测试抓到
+//       node scripts/test-lib.mjs --mutation-check  变异自证：所有故意 bug 都必须被测试抓到
 //       node scripts/test-lib.mjs --run-mutation <id>（内部用，子进程跑单个变异）
 //
 // 被测的是 TS 文件：用仓库自带的 typescript 包 transpileModule 转成临时 .mjs 再
@@ -25,6 +25,7 @@ const SOURCES = {
   routing: path.join(repoRoot, "app", "lib", "app", "routing.ts"),
   unitData: path.join(repoRoot, "app", "lib", "app", "unit-data.ts"),
   timelineModel: path.join(repoRoot, "app", "components", "timeline", "timelineModel.ts"),
+  labScales: path.join(repoRoot, "app", "components", "lab", "heptatonic.ts"),
 };
 
 // ---- 变异定义：每条都是「源码文本替换」，替换必须真的发生（否则视为脚本自身出错） ----
@@ -85,6 +86,14 @@ const MUTATIONS = [
     to: '  "disabled-timeline",',
     expectedFailure: "往返：timeline",
   },
+  {
+    id: "h",
+    label: "(h) 雅乐变徵的半音数偏移",
+    file: "labScales",
+    from: 'name: "变徵", solfege: "♯fa", degree: "♯4", semitone: 6',
+    to: 'name: "变徵", solfege: "♯fa", degree: "♯4", semitone: 7',
+    expectedFailure: "七声音阶半音数：雅乐（正声调式）",
+  },
 ];
 
 // ---- 转译与加载 ------------------------------------------------------------
@@ -139,6 +148,7 @@ const loaded = await loadModules(mutationFromArgv());
 const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, parseUnitTask } = await loaded.unitData;
 const { workHref } = await loaded.timelineModel;
+const { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, heptatonicPhrase, transposePitchClass } = await loaded.labScales;
 const timelineData = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "timeline.json"), "utf8"));
 const recordUnits = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "units.json"), "utf8"));
 const recordWorks = new Map(recordUnits.flatMap((unit) => unit.works.map((work) => [`${unit.bookKey}:${work.id}`, work])));
@@ -178,6 +188,60 @@ for (const { name, route } of ROUND_TRIP) {
     assert.deepEqual(parseRoute(formatRoute(route)), route, `路由 ${JSON.stringify(route)} 往返失真`);
   });
 }
+
+// --- lab/heptatonic.ts --------------------------------------------------------
+
+const EXPECTED_HEPTATONIC_INTERVALS = {
+  qingyue: [0, 2, 4, 5, 7, 9, 11],
+  yayue: [0, 2, 4, 6, 7, 9, 11],
+  yanyue: [0, 2, 4, 5, 7, 9, 10],
+};
+
+t("七声音阶半音数：清乐（下徵调式 / 新音阶）", () => {
+  const scale = HEPTATONIC_MODES.qingyue;
+  assert.equal(scale.name, "清乐");
+  assert.match(scale.alias, /下徵调式.*新音阶/);
+  assert.deepEqual(scale.notes.map((note) => note.semitone), EXPECTED_HEPTATONIC_INTERVALS.qingyue);
+  assert.deepEqual(scale.notes.filter((note) => note.altered).map((note) => note.name), ["清角", "变宫"]);
+});
+
+t("七声音阶半音数：雅乐（正声调式）", () => {
+  const scale = HEPTATONIC_MODES.yayue;
+  assert.equal(scale.name, "雅乐");
+  assert.match(scale.alias, /正声调式.*古音阶/);
+  assert.deepEqual(scale.notes.map((note) => note.semitone), EXPECTED_HEPTATONIC_INTERVALS.yayue);
+  assert.deepEqual(scale.notes.filter((note) => note.altered).map((note) => note.name), ["变徵", "变宫"]);
+});
+
+t("七声音阶半音数：燕乐（清商调式）", () => {
+  const scale = HEPTATONIC_MODES.yanyue;
+  assert.equal(scale.name, "燕乐");
+  assert.equal(scale.alias, "清商调式");
+  assert.deepEqual(scale.notes.map((note) => note.semitone), EXPECTED_HEPTATONIC_INTERVALS.yanyue);
+  assert.deepEqual(scale.notes.filter((note) => note.altered).map((note) => note.name), ["清角", "闰"]);
+});
+
+t("偏音关系：清角=5、变徵=6、变宫=11、闰=10 半音", () => {
+  const noteAt = (mode, name) => HEPTATONIC_MODES[mode].notes.find((note) => note.name === name)?.semitone;
+  assert.equal(noteAt("qingyue", "清角"), 5);
+  assert.equal(noteAt("yayue", "变徵"), 6);
+  assert.equal(noteAt("qingyue", "变宫"), 11);
+  assert.equal(noteAt("yanyue", "闰"), 10);
+});
+
+t("十二音高圆盘：移宫后偏音仍落在正确半音位置", () => {
+  assert.equal(CHROMATIC_PITCH_NAMES.length, 12);
+  assert.equal(transposePitchClass(2, HEPTATONIC_MODES.qingyue.notes.find((note) => note.name === "清角").semitone), 7);
+  assert.equal(transposePitchClass(2, HEPTATONIC_MODES.yayue.notes.find((note) => note.name === "变徵").semitone), 8);
+  assert.equal(transposePitchClass(2, HEPTATONIC_MODES.yanyue.notes.find((note) => note.name === "闰").semitone), 0);
+});
+
+t("七声音阶示例走句：一组上行、八度宫音与完整下行", () => {
+  const phrase = heptatonicPhrase("qingyue", 62);
+  assert.equal(phrase.length, 15);
+  assert.deepEqual(phrase.map((note) => note.midi), [62, 64, 66, 67, 69, 71, 73, 74, 73, 71, 69, 67, 66, 64, 62]);
+  assert.equal(phrase[7].name, "宫");
+});
 
 t("往返：home 的 format 是空串", () => {
   assert.equal(formatRoute({ view: "home" }), "");
