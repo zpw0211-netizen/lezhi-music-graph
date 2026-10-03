@@ -2,7 +2,7 @@
 
 export const dynamic = "force-static";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { CSSProperties, FormEvent } from "react";
 import nextDynamic from "next/dynamic";
 import { designTokenCssVariables } from "./design-tokens";
@@ -38,6 +38,29 @@ const viewLoading = () => (
     正在载入…
   </div>
 );
+function RecordsStartup({ failed = false }: { failed?: boolean }) {
+  return <>
+    <section aria-busy={!failed} aria-labelledby="records-startup-title" className="work-library records-startup">
+      <nav aria-hidden="true" className="records-book-picker">
+        {Array.from({ length: 6 }, (_, index) => <span className="records-book-loading-tab" key={index} />)}
+      </nav>
+      <header className="records-book-hero">
+        <figure aria-hidden="true" className="records-book-hero-art" />
+        <div className="records-book-hero-copy">
+          <p className="records-book-kicker">按课学习 · 正在读取</p>
+          <p aria-hidden="true" className="records-book-brush">音乐 ·</p>
+          <h1 id="records-startup-title">正在读取本册</h1>
+          <p aria-live="polite" className="records-book-intro" role="status">正在读取本册目录与作品资料…</p>
+          <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />
+        </div>
+      </header>
+      {failed && <div className="records-data-status" role="status">
+        <p>六册教材索引读取失败，请检查网络后重试。</p>
+        <button onClick={() => window.location.reload()} type="button">重试</button>
+      </div>}
+    </section>
+  </>;
+}
 const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
   () => import("./components/explorer/GraphExplorer").then((module) => module.GraphExplorer),
   { loading: viewLoading },
@@ -45,9 +68,9 @@ const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
 const ExplorerSidebar = nextDynamic<PropsOf<typeof ExplorerSidebarComponent>>(
   () => import("./components/explorer/GraphExplorer").then((module) => module.ExplorerSidebar),
 );
-const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent<Entity, BookDirectory>>>(
+const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent>>(
   () => import("./components/records/WorkLibrary").then((module) => module.WorkLibrary),
-  { loading: viewLoading },
+  { loading: () => <RecordsStartup /> },
 );
 const LessonPage = nextDynamic<PropsOf<typeof LessonPageComponent>>(
   () => import("./components/lesson/LessonPage").then((module) => module.LessonPage),
@@ -110,10 +133,10 @@ export default function Home() {
   );
   const workspaceRef = useRef<HTMLElement>(null);
   const viewContainerRef = useRef<HTMLDivElement>(null);
-  const { route, routeRef, navigate, back, replaceQuietly } = useAppRoute(() => workspaceRef.current);
+  const { route, routeRef, navigate, pushQuietly, back, replaceQuietly } = useAppRoute(() => workspaceRef.current);
   useScrollReveal();
   const view = route.view;
-  const routeTransitionKey = `${route.view}:${route.work ?? ""}`;
+  const routeTransitionKey = `${route.view}:${route.book ?? ""}:${route.work ?? ""}`;
   const previousRouteTransitionKey = useRef<string | null>(null);
   const [query, setQuery] = useState("");
   const [assistantEntry, setAssistantEntry] = useState({ question: "", token: 0 });
@@ -221,10 +244,19 @@ export default function Home() {
     setRecordsBook(bookKey);
     navigate({ view: "records", book: bookKey }, { replace });
   };
+  const openRecordsWork = useCallback((routeTitle: string, bookKey: string) => {
+    setRecordsBook(bookKey);
+    pushQuietly({ view: "records", book: bookKey, work: routeTitle });
+  }, [pushQuietly]);
+  const openRecordsKnowledge = (name: string, type?: string) => {
+    const candidates = canonicalGraph?.entities.filter((item) => item.name === name || item.aliases?.includes(name)) ?? [];
+    const entity = candidates.find((item) => item.type === type || item.rawTypes?.includes(type ?? "")) ?? candidates[0];
+    if (entity) navigate({ view: "graph", node: entity.id });
+  };
 
   const needsData = view !== "home" && view !== "import" && view !== "atlas";
   const dataStatus =
-    needsData && index.status !== "ready" ? (
+    needsData && view !== "records" && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
         {index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在载入六册教材数据…"}
       </div>
@@ -281,6 +313,7 @@ export default function Home() {
         <div className={`route-view${view === "lab" ? " route-view-lab" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
+          {view === "records" && index.status !== "ready" && <RecordsStartup failed={index.status === "error"} />}
           {view === "home" && (
             <HomePortal
             books={books}
@@ -327,9 +360,15 @@ export default function Home() {
               bookData={recordsBookData.book}
               bookDataStatus={recordsBookData.status}
               onRetryBookData={recordsBookData.retry}
-              isWork={isWorkType}
-              onBook={(book) => openRecordsBook(book.key, true)}
-              onOpen={(work: Entity) => explorer.openLesson(work)}
+              detailWork={route.view === "records" ? route.work : undefined}
+              onBook={(book) => openRecordsBook(book.key)}
+              onOpen={openRecordsWork}
+              onClose={() => back({ view: "records", book: selectedRecordsKey })}
+              onLearn={(workId) => {
+                const work = recordsBookData.book?.entities.find((entity) => entity.id === workId);
+                if (work && isWorkType(work.type)) openLessonPage(work);
+              }}
+              onKnowledge={openRecordsKnowledge}
             />
           )}
           {view === "lesson" && canonicalGraph && routeWork && (
