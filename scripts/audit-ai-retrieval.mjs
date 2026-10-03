@@ -47,6 +47,10 @@ const mockModel = async (_url, options) => {
   return Response.json({ output: [{ content: [{ type: "output_text", text: JSON.stringify({ answer: "《保卫黄河》的作曲家是冼星海。", shortAnswer: "冼星海。", auxiliaryExplanation: "", usedEvidenceIds: [retrieval.evidence[0].id], confidence: "supported" }) }] }] });
 };
 assert.equal((await generateAnswer(retrieval, questions[2], [], { apiKey: "mock-key", model: "gpt-5.6-terra" }, mockModel)).poweredBy, "gpt");
-await mkdir("../../output/v4-local-acceptance", { recursive: true });
-await writeFile("../../output/v4-local-acceptance/retrieval-results.json", JSON.stringify({ mode: "local-rule-based-not-live-GPT", results }, null, 2));
+const auditOutputDirectory = new URL("../.tmp-audit/", import.meta.url);
+await mkdir(auditOutputDirectory, { recursive: true });
+await writeFile(
+  new URL("retrieval-results.json", auditOutputDirectory),
+  JSON.stringify({ mode: "local-rule-based-not-live-GPT", results }, null, 2),
+);
 console.log(`AI_RETRIEVAL_AUDIT_PASSED questions=${results.length} canonical=${graph.entities.length}/${graph.relationships.length} readonly=true model=mock_only`);
