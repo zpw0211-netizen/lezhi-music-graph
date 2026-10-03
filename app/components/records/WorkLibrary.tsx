@@ -42,7 +42,6 @@ type TextbookUnit = {
 };
 type WorkEntry = { unit: TextbookUnit; work: UnitWork };
 
-const GRADE_SHORT_NAMES: Record<number, string> = { 7: "七", 8: "八", 9: "九" };
 const UNIT_NUMERALS = ["壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖", "拾"];
 const KNOWLEDGE_PREDICATES = new Set([
   "演唱形式", "调号", "拍号", "速度", "表情术语", "节奏特点", "旋律特点", "曲式结构",
@@ -240,7 +239,6 @@ export function WorkLibrary({
   bookDataStatus,
   onRetryBookData,
   detailWork,
-  onBook,
   onOpen,
   onClose,
   onLearn,
@@ -252,7 +250,6 @@ export function WorkLibrary({
   bookDataStatus: BookDataStatus;
   onRetryBookData: () => void;
   detailWork?: string;
-  onBook: (book: BookDirectory) => void;
   onOpen: (routeTitle: string, bookKey: string) => void;
   onClose: () => void;
   onLearn: (workId: string) => void;
@@ -262,7 +259,6 @@ export function WorkLibrary({
   const [unitsError, setUnitsError] = useState(false);
   const [retryUnits, setRetryUnits] = useState(0);
   const [activeUnitId, setActiveUnitId] = useState("");
-  const [squeezed, setSqueezed] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
   const openedWorkId = useRef("");
 
@@ -464,11 +460,6 @@ export function WorkLibrary({
     });
   }, [allWorks, bookKey, directory?.key, onOpen]);
 
-  const chooseBook = (book: BookDirectory) => {
-    setSqueezed(true);
-    window.setTimeout(() => setSqueezed(false), 140);
-    onBook(book);
-  };
   const retryUnitsLoad = () => {
     setUnitRows(null);
     setUnitsError(false);
@@ -556,22 +547,6 @@ export function WorkLibrary({
   const detailsReady = bookDataStatus === "ready" && Boolean(bookData);
   return <>
     <section aria-hidden={detailWork ? true : undefined} className="work-library" data-book={directory.key} data-grade={directory.grade}>
-      <nav aria-label="选择教材册" className={`records-book-picker${squeezed ? " is-squeezed" : ""}`} style={{ "--book-index": bookIndex } as CSSProperties}>
-        <span aria-hidden="true" className="records-book-drop" />
-        {books.map((book) => {
-          const label = `${GRADE_SHORT_NAMES[book.grade] ?? book.grade}${book.semester.replace(/册$/, "")}`;
-          const active = book.key === directory.key;
-          return <button
-            aria-label={`${book.grade}年级${book.semester}`}
-            aria-pressed={active}
-            className={active ? "is-active" : ""}
-            key={book.key}
-            onClick={() => chooseBook(book)}
-            type="button"
-          >{label}</button>;
-        })}
-      </nav>
-
       <header className="records-book-hero" aria-labelledby="records-book-title">
         <figure className="records-book-hero-art">
           <img alt={`${directory.title}插画`} decoding="async" fetchPriority="high" height="750" loading="eager" src={publicAssetUrl(`art/${directory.key}.webp`)} width="1200" />

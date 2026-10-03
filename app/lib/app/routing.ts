@@ -59,7 +59,8 @@ export function parseRoute(hash: string, search = ""): AppRoute {
     if (!VIEWS.has(view)) return HOME_ROUTE;
     if (view === "records") {
       const [book, ...workParts] = rest.map(decodeURIComponent);
-      return { view, book: book || undefined, work: workParts.length ? workParts.join("/") : undefined };
+      const work = workParts.join("/");
+      return { view, ...(book ? { book } : {}), ...(work ? { work } : {}) };
     }
     const detail = rest.length ? decodeURIComponent(rest.join("/")) : undefined;
     return buildRoute(view, detail || undefined);
