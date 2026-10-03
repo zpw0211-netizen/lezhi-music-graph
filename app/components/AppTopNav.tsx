@@ -1,23 +1,40 @@
 "use client";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { publicAssetUrl } from "../lib/app/assets";
 import { WorkbenchIcon } from "./WorkbenchIcon";
-export type NavView = "home" | "records" | "graph" | "assistant" | "research" | "lab";
+export type NavView = "home" | "records" | "graph" | "assistant" | "research" | "lab" | "atlas";
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
-type NavItem = { label: string; view?: NavView; href?: string };
+type NavItem = { label: string; view: NavView; href?: string } | { label: string; view: "timeline"; href: string };
+
+function subscribeToLocation(onChange: () => void) {
+  window.addEventListener("hashchange", onChange);
+  window.addEventListener("popstate", onChange);
+  return () => {
+    window.removeEventListener("hashchange", onChange);
+    window.removeEventListener("popstate", onChange);
+  };
+}
+
+const getLocationHash = () => window.location.hash;
+const getServerHash = () => "";
 export function AppTopNav({ active, onNavigate, search, trailing, centerSlot }: {
   active: NavView | null; onNavigate: (view: NavView) => void; onAbout: () => void;
   search?: { query: string; onQuery: (value: string) => void; onSubmit: (event: FormEvent) => void; hits: SearchHit[] };
   trailing?: ReactNode; centerSlot?: ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const locationHash = useSyncExternalStore(subscribeToLocation, getLocationHash, getServerHash);
   const items: NavItem[] = [
     { label: "按课学习", view: "records" },
-    { label: "音乐地图", href: "#/atlas" }, { label: "作品年表", href: "#/timeline" },
-    { label: "五声实验室", href: "#/lab" }, { label: "知识图谱", view: "graph" },
+    { label: "音乐地图", view: "atlas", href: "#/atlas" }, { label: "作品年表", view: "timeline", href: "#/timeline" },
+    { label: "五声实验室", view: "lab", href: "#/lab" }, { label: "知识图谱", view: "graph" },
     { label: "智能问答", view: "assistant" },
   ];
+  const hashView = locationHash.startsWith("#/")
+    ? items.find(item => item.view === locationHash.slice(2).split("/")[0])?.view
+    : undefined;
+  const currentView = hashView ?? active;
   const closeMenu = () => setMenuOpen(false);
   return <nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
@@ -31,9 +48,15 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot }: 
       <div className={"home-nav-content " + (menuOpen ? "is-open" : "")}>
         <div className="home-nav-links">
           {items.map(item => {
-            const current = item.view === active;
-            if (item.href) return <a key={item.label} href={item.href} onClick={closeMenu}>{item.label}</a>;
-            return <button key={item.label} type="button" className={current ? "is-active" : ""} aria-current={current ? "page" : undefined} onClick={() => { onNavigate(item.view ?? "home"); closeMenu(); }}>{item.label}</button>;
+            const current = item.view === currentView;
+            if (item.href) return <a key={item.label} className={current ? "is-active" : ""} href={item.href} aria-current={current ? "page" : undefined} onClick={event => {
+              closeMenu();
+              if (item.view === "atlas" || item.view === "lab") {
+                event.preventDefault();
+                onNavigate(item.view);
+              }
+            }}>{item.label}</a>;
+            return <button key={item.label} type="button" className={current ? "is-active" : ""} aria-current={current ? "page" : undefined} onClick={() => { onNavigate(item.view as NavView); closeMenu(); }}>{item.label}</button>;
           })}
         </div>
         <div className="home-nav-actions">
