@@ -110,8 +110,10 @@
 .atlas-filters {
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 6px;
   margin: 18px 0 0;
+  min-height: 102px;
 }
 
 .atlas-filters button {
@@ -380,6 +382,7 @@
 .atlas-stage {
   position: sticky;
   top: 78px;
+  flex: 0 0 auto;
   height: min(82svh, 800px);
   min-height: 480px;
   overflow: hidden;
@@ -511,6 +514,7 @@
   grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 2px 12px;
   margin: 0;
+  min-height: 228px;
   padding: 0;
   list-style: none;
 }
@@ -574,7 +578,17 @@
   }
 
   .atlas-panel {
-    min-height: 0;
+    min-height: 96px;
+  }
+
+  .atlas-location-list {
+    min-height: 342px;
+  }
+}
+
+@media (max-width: 575px) {
+  .atlas-location-list {
+    min-height: 456px;
   }
 }
 
@@ -589,6 +603,7 @@
 
   .atlas-location-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 646px;
   }
 }
 
