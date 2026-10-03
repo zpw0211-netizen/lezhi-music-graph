@@ -107,9 +107,11 @@
   text-align: left;
 }
 
-/* 对话态的底部提问框与欢迎屏同一 880px 栏，不横跨整个页面栅格。 */
+/* 对话态的底部提问框与欢迎屏同一 880px 栏，不横跨整个页面栅格。
+   宽度按滚动区内容列同源扣减 max(20px,5%)：回答态与正文栏（.assistant-turn）
+   在 1024 等宽度下逐像素同缘（此前正文栏被外壳内边距压到 864，框仍 880）。 */
 .assistant-page > .assistant-composer {
-  width: 100%;
+  width: calc(100% - 2 * max(20px, 5%));
   max-width: 880px;
   margin: 0 auto 16px;
 }
@@ -284,23 +286,34 @@
   line-height: 1.9;
 }
 
-/* ---------- 建议问题：篇目式列表（细线分隔，朱砂小签） ---------- */
-.assistant-suggestions {
+/* ---------- 常用问题：学生常问 / 备课常用（篇目式两组，细线分隔，朱砂小签） ---------- */
+.assistant-samples {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 32px;
-  max-width: 720px;
-  margin: 30px 0 0;
-  padding: 0;
-  border-top: 1px solid var(--ink-2);
+  gap: 8px 44px;
+  max-width: 880px;
+  margin: 34px 0 0;
 }
 
-.assistant-suggestions button {
+.assistant-sample-group h2 {
+  margin: 0;
+  padding: 10px 0 9px;
+  border-bottom: 1px solid var(--ink-2);
+  color: var(--seal);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .2em;
+}
+
+.assistant-sample-group button {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: baseline;
   gap: 12px;
-  padding: 13px 0;
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 0;
   border: 0;
   border-bottom: 1px solid var(--line);
   background: transparent;
@@ -311,11 +324,11 @@
   transition: color .2s;
 }
 
-.assistant-suggestions button:hover:not(:disabled) {
+.assistant-sample-group button:hover:not(:disabled) {
   color: var(--pine);
 }
 
-.assistant-suggestions button:disabled {
+.assistant-sample-group button:disabled {
   color: var(--ink-3);
   cursor: not-allowed;
 }
@@ -593,18 +606,25 @@
   }
 
   .assistant-composer > small {
-    font-size: 11px;
+    font-size: 12px;
   }
 
-  .assistant-suggestions {
+  .assistant-samples {
     grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+    gap: 8px;
     margin-top: 22px;
   }
 
-  .assistant-suggestions button {
-    padding: 11px 0;
+  .assistant-sample-group button {
+    min-height: 40px;
+    padding: 10px 0;
     font-size: 13px;
+  }
+
+  /* 移动端滚动区横向内边距为 0，底部提问框恢复全内容宽 */
+  .assistant-page > .assistant-composer {
+    width: 100%;
+    max-width: none;
   }
 
   .assistant-turn {

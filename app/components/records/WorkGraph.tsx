@@ -385,7 +385,9 @@ type EgoLink = { id: string; source: string; target: string; labels: string[]; d
 type SimNode = { x: number; y: number; vx: number; vy: number; r: number; w: number; h: number; fx?: number; fy?: number; phase: number };
 type RenderNode = { x: number; y: number; r: number };
 // Rendered label length drives the collision box, so neighbours never overprint.
+// (depth-2 labels render at 12px, depth-1 at 12.5px per char.)
 const labelText = (name: string, depth: number) => name.length > (depth === 2 ? 9 : 14) ? `${name.slice(0, depth === 2 ? 8 : 13)}…` : name;
+const LABEL_CHAR_WIDTH = (depth: number) => depth === 2 ? 12 : 12.5;
 
 function buildEgo(workId: string, entities: Map<string, WorkGraphEntity>, relationships: WorkGraphRelation[]) {
   const nodes = new Map<string, EgoNode>();
@@ -509,7 +511,7 @@ export function WorkGraph({
     for (const node of nodes) {
       const previous = sim.current.get(node.id);
       const r = node.depth === 0 ? 30 : node.depth === 1 ? 13 + Math.min(6, Math.log2((node.entity.degree ?? 1) + 1)) : 9;
-      const w = Math.max(r * 2, labelText(node.entity.name, node.depth).length * (node.depth === 2 ? 11 : 12.5) + 8);
+      const w = Math.max(r * 2, labelText(node.entity.name, node.depth).length * LABEL_CHAR_WIDTH(node.depth) + 8);
       const h = r * 2 + 22;
       next.set(node.id, previous ? { ...previous, r, w, h } : { x: (Math.random() - 0.5) * 20, y: (Math.random() - 0.5) * 20, vx: 0, vy: 0, r, w, h, phase: Math.random() * Math.PI * 2 });
     }
@@ -722,6 +724,7 @@ export function WorkGraph({
     </div>
     <aside className="work-graph-panel">
       <div className="work-graph-card">
+        <h1 className="work-graph-sr">作品图谱</h1>
         <span className="work-graph-kicker">作品图谱</span>
         <span className="work-graph-type">{work.type}</span>
         <h2>{work.name}</h2>
