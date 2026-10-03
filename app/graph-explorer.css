@@ -86,3 +86,185 @@
 }
 @media(max-width:800px){.theme-light .explorer-sidebar{width:250px;flex-basis:250px}.explorer-brand small{font-size:10px}}
 @media(max-width:760px){.theme-light .explorer-sidebar,.theme-light .explorer-sidebar.is-collapsed{width:100%;flex-basis:auto;min-height:0;max-height:230px}.explorer-sidebar .explorer-brand{min-height:58px;padding:10px 12px}.explorer-sidebar .explorer-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px;gap:3px}.explorer-sidebar .explorer-nav button{font-size:10px;padding:7px 2px;gap:4px;justify-content:center}.explorer-sidebar.is-collapsed{max-height:110px!important}.is-collapsed .explorer-brand{flex-wrap:nowrap;justify-content:space-between}.explorer-brand strong{font-size:18px}}
+
+/* ============================================================
+   T006 书卷皮肤（仅知识图谱页：network-mode 不含 research）。
+   对照 proto/index.html：宣纸 / 谱例纸 / 墨色 / 松绿 / 朱砂 / 细线。
+   节点语义色（--semantic-*）保持不变，只换界面纸墨。
+   选择器统一用 .ink-app.theme-light.network-mode 前缀（4 类）
+   以盖过 globals / workbench-v5 的深色规则。 */
+.ink-app.theme-light.network-mode {
+  --workspace-bg:#F4EEE1;
+  --workspace-panel:#FBF8F0;
+  --workspace-panel-raised:#F4EEE1;
+  --workspace-border:#CFC4AC;
+  --workspace-text:#1B2622;
+  --workspace-muted:#62675B;
+  --workspace-accent:#1F4A3C;
+}
+/* CLS 修复：图谱索引（约 2MB）加载完成前侧栏不渲染。侧栏挂载时若留在
+   flex 流内，会把 .workspace 整体挤右 296px（实测 CLS=0.2056）。用
+   :has() 条件预留也不行——:has() 失效与 DOM 插入不同步（实测延迟约
+   460ms，往返两次位移 CLS=0.3568），且无论哪种预留都挡不住 .workspace
+   元素自身被挤动的位移。因此让侧栏在桌面端脱离文档流（绝对定位覆盖
+   左列），.workspace 恒定预留左列 padding：侧栏挂载前后任何元素几何
+   都不变化，CLS=0。≤768px 时侧栏本就脱离文档流（mobile-layout.css），
+   恢复常规 padding。 */
+.ink-app.theme-light.network-mode > .explorer-sidebar {
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:30;
+  /* 侧栏内容比 100dvh 略高时（workbench-v5 的 overflow:hidden 会裁掉底部
+     区块），允许滚动，保证「知识模式」等底部区块可达。 */
+  overflow-y:auto;
+}
+.ink-app.theme-light.network-mode > .workspace { padding-left:316px; }
+@media (max-width:800px) {
+  .ink-app.theme-light.network-mode > .workspace { padding-left:270px; }
+}
+@media (max-width:768px) {
+  .ink-app.theme-light.network-mode > .workspace { padding-left:20px; }
+}
+/* 详情抽屉打开时侧栏被压成 56px rail（knowledge-detail.css，1001–1500px
+   视口），预留随之回落为 56+20，否则 rail 右侧空出约 260px、画布被挤窄。 */
+@media (max-width:1500px) and (min-width:1001px) {
+  .ink-app.theme-light.network-mode.detail-open > .workspace { padding-left:76px; }
+}
+
+/* —— 画布与纸面 —— */
+.ink-app.theme-light.network-mode .workspace { background:#F4EEE1; }
+.ink-app.theme-light.network-mode .neo-card { position:relative; background:#FBF8F0; border:1px solid #CFC4AC; border-radius:2px; box-shadow:0 1px 0 #E1D6BF,0 10px 22px -18px rgba(40,30,10,.5); }
+.ink-app.theme-light.network-mode .neo-canvas { background:#F7F2E6; }
+.ink-app.theme-light.network-mode .neo-canvas:before { opacity:.08; }
+.ink-app.theme-light.network-mode .neo-toolbar { min-height:52px; border-color:#CFC4AC; background:#FBF8F0; }
+.ink-app.theme-light.network-mode .neo-toolbar h3 { margin:0; color:#1B2622; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; font-weight:600; letter-spacing:.04em; }
+.ink-app.theme-light.network-mode .neo-actions button { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; transition:border-color .2s,color .2s,background .2s; }
+.ink-app.theme-light.network-mode .neo-actions button:hover,
+.ink-app.theme-light.network-mode .neo-actions button.active { border-color:#1F4A3C; background:#F4EEE1; color:#1F4A3C; }
+.ink-app.theme-light.network-mode .graph-toolbar-menu summary,
+.ink-app.theme-light.network-mode .graph-toolbar-menu-content button { border-color:#CFC4AC; background:#FBF8F0; color:#44504A; }
+.ink-app.theme-light.network-mode .graph-toolbar-menu summary:hover,
+.ink-app.theme-light.network-mode .graph-toolbar-menu-content button:hover { border-color:#1F4A3C; color:#1F4A3C; }
+.ink-app.theme-light.network-mode .canvas-hint { color:#62675B; }
+.ink-app.theme-light.network-mode .graph-statusbar { color:#62675B; }
+.ink-app.theme-light.network-mode .graph-statusbar .status-mode { color:#44504A; }
+.ink-app.theme-light.network-mode .graph-empty-overlay { color:#44504A; background:#F4EEE1; border:1px solid #CFC4AC; }
+.ink-app.theme-light.network-mode .app-view-status { margin-top:12px; background:#FBF8F0; border:1px solid #CFC4AC; color:#44504A; }
+/* CLS：pages-v5.css 给加载状态框 margin:72px auto，经外边距塌陷把
+   .route-view 顶低 60px，图谱内容装载后又弹回（实测 dy=-60、
+   CLS=0.0292）。对齐为 12px 后初始/最终 top 一致，内容向下生长不再位移。 */
+.ink-app.theme-light.network-mode .app-view-status p { color:#1B2622; }
+.ink-app.theme-light.network-mode .app-view-status button { border:1px solid #1F4A3C; border-radius:999px; background:none; color:#1F4A3C; }
+.ink-app.theme-light.network-mode .app-view-status button:hover { background:#1F4A3C; color:#FBF8F0; }
+.ink-app.theme-light.network-mode .graph-minimap { border:1px solid #CFC4AC; background:#FBF8F0; }
+.ink-app.theme-light.network-mode .graph-path-finder { background:#FBF8F0; border:1px solid #CFC4AC; box-shadow:0 12px 28px -20px rgba(40,30,10,.55); }
+.ink-app.theme-light.network-mode .graph-path-finder > header { border-bottom:1px solid #CFC4AC; }
+.ink-app.theme-light.network-mode .graph-path-finder header span { color:#62675B; }
+.ink-app.theme-light.network-mode .graph-path-finder header button { border-color:#CFC4AC; background:#F4EEE1; color:#44504A; }
+.ink-app.theme-light.network-mode .graph-path-finder select,
+.ink-app.theme-light.network-mode .graph-path-finder input { border-color:#CFC4AC; background:#FBF8F0; color:#1B2622; }
+
+/* —— 左侧栏：纸面工具区 —— */
+.ink-app.theme-light.network-mode > .explorer-sidebar { background:#EAE2D0; border-right:1px solid #CFC4AC; }
+.ink-app.theme-light.network-mode .explorer-brand { border-bottom:1px solid #CFC4AC; }
+.ink-app.theme-light.network-mode .explorer-brand strong { font-family:"LXGW WenKai","STKaiti","KaiTi","楷体",serif; font-size:22px; font-weight:400; letter-spacing:.08em; color:#1B2622; }
+.ink-app.theme-light.network-mode .explorer-brand small { color:#62675B; }
+.ink-app.theme-light.network-mode .explorer-brand-mark { color:#1F4A3C; }
+.ink-app.theme-light.network-mode .explorer-brand > button,
+.ink-app.theme-light.network-mode .explorer-nav button { color:#44504A; }
+.ink-app.theme-light.network-mode .explorer-brand > button:hover { color:#B8392A; }
+.ink-app.theme-light.network-mode .explorer-nav { border-bottom:1px solid #CFC4AC; }
+.ink-app.theme-light.network-mode .explorer-nav button { border-radius:0; transition:color .2s; }
+.ink-app.theme-light.network-mode .explorer-nav button.active { background:none; color:#B8392A; font-weight:650; }
+.ink-app.theme-light.network-mode .explorer-nav button:hover:not(.active) { color:#1F4A3C; }
+.ink-app.theme-light.network-mode .explorer-perspective h3,
+.ink-app.theme-light.network-mode .explorer-section summary,
+.ink-app.theme-light.network-mode .explorer-dataset-summary h3 { color:#1B2622; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; letter-spacing:.14em; }
+.ink-app.theme-light.network-mode .explorer-section { border-top:1px solid #D8CDB4; }
+.ink-app.theme-light.network-mode .explorer-section summary small { color:#62675B; }
+.ink-app.theme-light.network-mode .explorer-controls button,
+.ink-app.theme-light.network-mode .explorer-import { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; transition:border-color .2s,color .2s,background .2s; }
+/* 筛选行内的行式开关（开关/仅此）基线无边框（graph-explorer.css 原规则
+   border:0）；若跟随上面的实线边框，每行 +2px、10 行累计 +20px，会把
+   侧栏底部的「知识模式」推到 controls 滚动折叠边之下，视觉上被
+   「教材数据」块遮住一半。这里维持基线的无边框行式外观。 */
+.ink-app.theme-light.network-mode .explorer-controls .explorer-filter-toggle,
+.ink-app.theme-light.network-mode .explorer-controls .explorer-only { border:0; background:none; }
+.ink-app.theme-light.network-mode .explorer-filter-toggle[aria-pressed=true] { background:#FBF8F0; }
+.ink-app.theme-light.network-mode .explorer-controls button:hover { border-color:#1F4A3C; color:#1F4A3C; background:#F4EEE1; }
+.ink-app.theme-light.network-mode .explorer-perspective button[aria-pressed=true] { background:#1F4A3C; border-color:#1F4A3C; color:#FBF8F0; }
+.ink-app.theme-light.network-mode .explorer-filter-row .explorer-filter-toggle { border-radius:0; color:#44504A; }
+.ink-app.theme-light.network-mode .explorer-filter-toggle[aria-pressed=true] { background:#FBF8F0; }
+.ink-app.theme-light.network-mode .explorer-count { color:#62675B; }
+.ink-app.theme-light.network-mode .explorer-section input:not([type=checkbox]),
+.ink-app.theme-light.network-mode .explorer-section textarea,
+.ink-app.theme-light.network-mode .explorer-section select { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#1B2622; }
+.ink-app.theme-light.network-mode .explorer-hint { color:#62675B; }
+.ink-app.theme-light.network-mode .explorer-reset { border:1px solid #B8392A; border-radius:0; background:none; color:#B8392A; }
+.ink-app.theme-light.network-mode .explorer-reset:hover { background:#B8392A; color:#FBF8F0; }
+.ink-app.theme-light.network-mode .explorer-dataset-summary p { color:#62675B; }
+.ink-app.theme-light.network-mode .smart-answer { border-top:1px solid #D8CDB4; color:#44504A; }
+.ink-app.theme-light.network-mode .node-ai-interpretation { border-top:1px solid #D8CDB4; }
+.ink-app.theme-light.network-mode .node-ai-interpretation p { color:#62675B; }
+.ink-app.theme-light.network-mode .node-ai-interpretation button { background:#F4EEE1; border-color:#CFC4AC; color:#44504A; }
+.ink-app.theme-light.network-mode .pending-knowledge { border:1px dashed #CFC4AC; background:#FBF8F0; color:#44504A; }
+.ink-app.theme-light.network-mode .pending-knowledge p { color:#62675B; }
+
+/* —— 范围条 / 筛选条：细线 + 松绿选中 —— */
+.ink-app.theme-light.network-mode .graph-rangebar { border-bottom:1px solid #CFC4AC; background:#F4EEE1; }
+.ink-app.theme-light.network-mode .graph-rangebar .book-tab { border:1px solid transparent; border-radius:0; background:none; color:#62675B; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; }
+.ink-app.theme-light.network-mode .graph-rangebar .book-tab:hover { color:#1F4A3C; }
+.ink-app.theme-light.network-mode .graph-rangebar .book-tab.active { color:#B8392A; }
+.ink-app.theme-light.network-mode .graph-toolbar-tools button { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; }
+.ink-app.theme-light.network-mode .graph-toolbar-tools button:hover { background:#F4EEE1; color:#1F4A3C; }
+.ink-app.theme-light.network-mode .graph-rangebar .zoom-slider,
+.ink-app.theme-light.network-mode .neo-toolbar .zoom-slider { accent-color:#1F4A3C; }
+.ink-app.theme-light.network-mode .zoom-value { color:#62675B; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-filterbar { border-bottom:1px solid #D8CDB4; }
+.ink-app.theme-light.network-mode .neo-card .graph-filter-group-label { color:#62675B; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; letter-spacing:.1em; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-layout-tabs button,
+.ink-app.theme-light.network-mode .neo-card .full-graph-view-tabs button { border:1px solid transparent; border-radius:0; background:none; color:#62675B; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-layout-tabs button:hover,
+.ink-app.theme-light.network-mode .neo-card .full-graph-view-tabs button:hover { color:#1F4A3C; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-layout-tabs button.active,
+.ink-app.theme-light.network-mode .neo-card .full-graph-view-tabs button.active { color:#B8392A; }
+.ink-app.theme-light.network-mode .neo-card .graph-filter-more summary { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; }
+.ink-app.theme-light.network-mode .neo-card .graph-filter-more summary:hover { border-color:#1F4A3C; color:#1F4A3C; }
+.ink-app.theme-light.network-mode .neo-card .graph-filter-more .full-graph-operations { background:#FBF8F0; border:1px solid #CFC4AC; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-operations button { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-operations button:hover { border-color:#1F4A3C; color:#1F4A3C; background:#F4EEE1; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-operations span { color:#62675B; }
+.ink-app.theme-light.network-mode .source-layer-toggle { color:#44504A; }
+.ink-app.theme-light.network-mode .source-layer-toggle input { accent-color:#1F4A3C; }
+.ink-app.theme-light.network-mode .mobile-filter-panel-heading strong { font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; letter-spacing:.14em; color:#1B2622; }
+
+/* —— 键盘可见焦点（原型 rail 同款：细外框） —— */
+.ink-app.theme-light.network-mode button:focus-visible,
+.ink-app.theme-light.network-mode a:focus-visible,
+.ink-app.theme-light.network-mode input:focus-visible,
+.ink-app.theme-light.network-mode select:focus-visible,
+.ink-app.theme-light.network-mode textarea:focus-visible,
+.ink-app.theme-light.network-mode summary:focus-visible { outline:2px solid #1F4A3C; outline-offset:2px; }
+
+/* —— 节点检查器（右侧详情面板）同入书卷 —— */
+.ink-app.theme-light.network-mode .inspector { border:1px solid #CFC4AC; border-radius:2px; background:#FBF8F0; box-shadow:0 1px 0 #E1D6BF,0 12px 26px -20px rgba(40,30,10,.55); }
+.ink-app.theme-light.network-mode .inspector-titlebar { border-bottom:1px solid #D8CDB4; color:#1B2622; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; }
+.ink-app.theme-light.network-mode .inspector-close { border-color:#CFC4AC; background:#FBF8F0; color:#44504A; }
+.ink-app.theme-light.network-mode .inspector-close:hover { border-color:#B8392A; color:#B8392A; }
+.ink-app.theme-light.network-mode .inspector-card { background:#FBF8F0; border:0; border-bottom:1px solid #D8CDB4; box-shadow:none; }
+.ink-app.theme-light.network-mode .inspector-header h2,
+.ink-app.theme-light.network-mode .inspector-body h2 { color:#1B2622; font-family:"LXGW WenKai","STKaiti","KaiTi","楷体",serif; font-weight:400; }
+.ink-app.theme-light.network-mode .inspector-tabs { border-bottom:1px solid #D8CDB4; }
+.ink-app.theme-light.network-mode .inspector-tabs button { border-radius:0; color:#62675B; }
+.ink-app.theme-light.network-mode .inspector-tabs button.active { background:#F4EEE1; color:#B8392A; }
+.ink-app.theme-light.network-mode .inspector-tabs em { color:#B8392A; font-style:normal; }
+.ink-app.theme-light.network-mode .inspector-body p { color:#62675B; }
+.ink-app.theme-light.network-mode .inspector-body dl div { border:1px solid #E6DECB; border-radius:0; background:#FBF8F0; }
+.ink-app.theme-light.network-mode .inspector-body dt { color:#62675B; }
+.ink-app.theme-light.network-mode .inspector-body dd { color:#1B2622; }
+.ink-app.theme-light.network-mode .inspector .evidence-list { color:#44504A; }
+.ink-app.theme-light.network-mode .inspector .evidence-item { border:1px solid #E6DECB; border-radius:0; background:#F4EEE1; }
+.ink-app.theme-light.network-mode .inspector .evidence-item p { color:#44504A; }
+.ink-app.theme-light.network-mode .empty-state { color:#62675B; }
+.ink-app.theme-light.network-mode .inspector-relations .relation-direction { color:#B8392A; }
