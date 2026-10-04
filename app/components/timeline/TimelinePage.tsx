@@ -33,8 +33,9 @@ type DragState = { startX: number; startLeft: number };
 const cache = new Map<string, Promise<unknown>>();
 const TIMELINE_HORIZONTAL_KEY = "yapu.timeline.horizontalLeft";
 const TIMELINE_VERTICAL_KEY = "yapu.timeline.scrollTop";
-const TIER_COUNT = 3;
-const COLUMN_WIDTH = 212;
+const DEFAULT_TIER_COUNT = 3;
+const DENSE_TIER_COUNT = 4;
+const COLUMN_WIDTH = 184;
 
 function loadJson<T>(path: string): Promise<T> {
   if (!cache.has(path)) cache.set(path, fetch(publicAssetUrl(`data/${path}`)).then(response => {
@@ -93,12 +94,6 @@ function evidencePageText(evidence?: Evidence) {
   return pages.join(" · ");
 }
 
-function confidenceLabel(confidence?: string | number) {
-  if (confidence === "high") return "高";
-  if (confidence === "medium") return "中";
-  return confidence == null || confidence === "" ? "未标注" : String(confidence);
-}
-
 function TimelineNote({
   work,
   position,
@@ -134,7 +129,7 @@ function TimelineNote({
     previousWork.current = work.id;
   }, [work.id]);
 
-  return <aside className={`timeline-note${work.hasSupplementYear ? " is-supplement" : ""}`} style={position} id="timeline-note" role="dialog" aria-label={`${work.name}的年代依据`}>
+  return <aside className={`timeline-note${work.hasSupplementYear && !work.hasTextbookYear ? " is-supplement" : ""}`} style={position} id="timeline-note" role="dialog" aria-label={`${work.name}的年代来源`}>
     <button ref={closeRef} className="timeline-note-close" type="button" aria-label="关闭史料笺" data-close-timeline-note onClick={onClose}>×</button>
     <span className={`timeline-note-stamp${work.hasSupplementYear && !work.hasTextbookYear ? " is-blue" : ""}`} aria-hidden="true">{work.hasSupplementYear && !work.hasTextbookYear ? "补遗" : "原典"}</span>
     <p className="timeline-note-kicker">
@@ -144,7 +139,7 @@ function TimelineNote({
     </p>
     <h2>{work.name}</h2>
     <p className="timeline-note-books">{work.bookKeys.map(key => BOOKS[key] ?? key).join("、")}</p>
-    {error ? <p className="timeline-note-error" role="alert">{error} <button type="button" onClick={() => { setError(""); setAttempt(value => value + 1); }}>重试</button></p> : rows === null ? <p className="timeline-note-loading" role="status">正在读取出处…</p> : <div className="timeline-note-sources">
+    {error ? <p className="timeline-note-error" role="alert">{error} <button type="button" onClick={() => { setError(""); setAttempt(value => value + 1); }}>重试</button></p> : rows === null ? <p className="timeline-note-loading" role="status">正在读取教材出处…</p> : <div className="timeline-note-sources">
       {rows.map(({ work: record, evidence }) => {
         const supplement = record.supplement;
         const href = workHref(record);
@@ -155,17 +150,15 @@ function TimelineNote({
             {supplement?.event ? ` · ${supplement.event}` : ""}
           </blockquote>
           {record.yearSource === "textbook" ? <dl>
-            <dt>出处</dt><dd>人民音乐出版社 · {BOOKS[record.bookKey] ?? record.bookKey}</dd>
+            <dt>教材出处</dt><dd>人民音乐出版社 · {BOOKS[record.bookKey] ?? record.bookKey}</dd>
             <dt>页码</dt><dd>{evidencePageText(evidence)}</dd>
-            {record.yearEvidence && <><dt>证据编号</dt><dd><code>{record.yearEvidence.tripleId}</code></dd></>}
             {record.unit && <><dt>单元</dt><dd>{record.unit}</dd></>}
           </dl> : record.yearSource === "supplement" && supplement ? <dl>
             <dt>所指</dt><dd>{supplement.subject ?? "未标注"}</dd>
             <dt>教材</dt><dd>{BOOKS[record.bookKey] ?? record.bookKey}{record.unit ? ` · ${record.unit}` : ""}</dd>
-            <dt>出处</dt><dd className="timeline-note-links">{supplement.sources.length ? supplement.sources.map((source, index) => <a key={`${source.url}:${index}`} href={source.url} target="_blank" rel="noopener noreferrer">{source.publisher || source.title}</a>) : "未提供外部出处"}</dd>
-            <dt>可信度</dt><dd>{confidenceLabel(supplement.confidence)}</dd>
+            <dt>来源</dt><dd className="timeline-note-links">{supplement.sources.length ? supplement.sources.map((source, index) => <a key={`${source.url}:${index}`} href={source.url} target="_blank" rel="noopener noreferrer">{source.publisher || source.title}</a>) : "未提供外部来源"}</dd>
             {supplement.note && <><dt>说明</dt><dd>{supplement.note}</dd></>}
-          </dl> : <p className="timeline-note-undated">教材未标注年代。年表仅收录高或中可信度的补充年代。</p>}
+          </dl> : <p className="timeline-note-undated">教材未标注年代。年表只采用核对后的补充年代。</p>}
           <p className="timeline-note-record">
             {href ? <a href={href} onClick={event => onOpenRecord(event, record)}>打开{bookShortName(record.bookKey)}作品详情 →</a> : <span>本册目录暂无作品详情链接</span>}
           </p>
@@ -178,33 +171,31 @@ function TimelineNote({
 function TimelineSlip({
   work,
   index,
-  startLeft,
+  tierCount,
+  isSelected,
   onSelect,
-  onOpenRecord,
 }: {
   work: TimelineDisplayWork;
   index: number;
-  startLeft: number;
+  tierCount: number;
+  isSelected: boolean;
   onSelect: (work: TimelineDisplayWork, trigger: HTMLButtonElement) => void;
-  onOpenRecord: (event: MouseEvent<HTMLAnchorElement>, work: TimelineWork) => void;
 }) {
-  const linkWork = work.records.find(record => workHref(record));
-  const href = linkWork ? workHref(linkWork) : null;
+  const tier = index % tierCount;
+  const title = work.name.replace(/^《|》$/g, "");
   const style = {
-    left: `${startLeft + Math.floor(index / TIER_COUNT) * COLUMN_WIDTH + (index % TIER_COUNT) * 14}px`,
-    "--timeline-tier": index % TIER_COUNT,
+    left: `calc(var(--timeline-slip-start) + ${Math.floor(index / tierCount) * COLUMN_WIDTH}px + ${tier * 14}px)`,
+    "--timeline-tier": tier,
     "--timeline-slip-index": index,
   } as CSSProperties;
   return <div className={`timeline-hanger${work.hasTextbookYear ? " has-textbook" : ""}${work.hasSupplementYear ? " has-supplement" : ""}`} style={style}>
     <span className="timeline-hanger-thread" aria-hidden="true" />
     <span className="timeline-hanger-knot" aria-hidden="true" />
-    <div className="timeline-slip-tag">
+    <button className="timeline-slip-tag" type="button" aria-label={`查看《${title}》的年代来源`} aria-haspopup="dialog" aria-controls="timeline-note" aria-expanded={isSelected} onClick={event => onSelect(work, event.currentTarget)}>
       <span className="timeline-slip-year">{workYearMark(work)}</span>
-      <span className="timeline-slip-origin">{work.hasTextbookYear ? "教材原文" : "补充资料（非教材）"}{work.hasTextbookYear && work.hasSupplementYear ? " · 补充资料（非教材）" : ""}</span>
-      {href && linkWork ? <a className="timeline-slip-title" href={href} onClick={event => onOpenRecord(event, linkWork)}>{work.name.replace(/^《|》$/g, "")}</a> : <span className="timeline-slip-title">{work.name.replace(/^《|》$/g, "")}</span>}
+      <span className="timeline-slip-title">{title}</span>
       <span className="timeline-slip-books">{work.bookKeys.map(bookShortName).join("·")}</span>
-      <button className="timeline-note-trigger" type="button" aria-label={`查看${work.name}的年代依据`} aria-haspopup="dialog" aria-controls="timeline-note" onClick={event => onSelect(work, event.currentTarget)}>笺</button>
-    </div>
+    </button>
   </div>;
 }
 
@@ -231,12 +222,9 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   const [unrolling, setUnrolling] = useState(true);
   const [dragging, setDragging] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const ruler = useRef<HTMLDivElement>(null);
   const drag = useRef<DragState | null>(null);
-  const [rollHeight, setRollHeight] = useState(520);
-
   const rootWorks = useMemo(() => pageData?.timeline.works ?? [], [pageData]);
   const works = useMemo(() => pageData ? filterWorks(pageData.timeline, book, query) : [], [pageData, book, query]);
   const groups = useMemo(() => groupTimelineWorks(works), [works]);
@@ -245,7 +233,6 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   const tailPeople = useMemo(() => people.filter(person => person.lifetimeText.length > 0), [people]);
   const datedCount = rootWorks.filter(work => work.yearRange).length;
   const supplementCount = rootWorks.filter(work => work.yearSource === "supplement").length;
-  const artWidth = Math.max(0, Math.min(rollHeight * 0.66, rollHeight - 250)) * 2.5;
   const tailWidth = 220 + Math.ceil(tailPeople.length / 2) * 62 + 120;
 
   const onOpenRecord = useCallback((event: MouseEvent<HTMLAnchorElement>, work: TimelineWork) => {
@@ -271,16 +258,13 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
 
   useEffect(() => {
     const navigation = root.current?.closest(".workspace")?.querySelector<HTMLElement>('nav[aria-label="主导航"]');
-    const stageElement = stage.current;
-    if (!navigation || !stageElement) return;
+    if (!navigation) return;
     const measure = () => {
       root.current?.style.setProperty("--timeline-nav-height", `${navigation.getBoundingClientRect().height}px`);
-      if (window.matchMedia("(min-width: 761px)").matches) setRollHeight(Math.max(1, stageElement.clientHeight - 48));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(navigation);
-    observer.observe(stageElement);
     window.addEventListener("resize", measure);
     return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
   }, []);
@@ -374,7 +358,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
 
   const closeNoteFromOutside = (event: PointerEvent<HTMLDivElement>) => {
     const target = event.target;
-    if (!(target instanceof Element) || target.closest(".timeline-note, .timeline-note-trigger")) return;
+    if (!(target instanceof Element) || target.closest(".timeline-note, .timeline-slip-tag")) return;
     if (selectedWork) setSelectedWork(null);
   };
 
@@ -435,9 +419,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   }, [activeEra, groups]);
   const usedArt = new Set<string>();
   const decoratedGroups = groups.map((group, index) => ({ group, image: artForEra(group, pageData?.units ?? [], usedArt, index) }));
-  const cssVars = { "--timeline-roll-height": `${rollHeight}px`, "--timeline-band-height": `${Math.max(0, Math.min(rollHeight * 0.66, rollHeight - 250))}px` } as CSSProperties;
-
-  return <div className="timeline-page" ref={root} style={cssVars} onPointerDown={closeNoteFromOutside} aria-labelledby="timeline-title">
+  return <div className="timeline-page" ref={root} onPointerDown={closeNoteFromOutside} aria-labelledby="timeline-title">
     <div className="timeline-toolbar" aria-label="作品年表筛选">
       <div className="timeline-book-filter" role="group" aria-label="按教材册别筛选">
         {bookOptions.map(key => <button key={key || "all"} type="button" aria-pressed={book === key} onClick={() => { setSelectedWork(null); setBook(key); }}>{key ? bookShortName(key) : "六册"}</button>)}
@@ -452,11 +434,11 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
       </div>
       <span className="timeline-ruler-hint">向右展卷<i aria-hidden="true" /></span>
     </nav>
-    {error ? <p className="timeline-error" role="alert">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>重试</button></p> : <div className="timeline-stage" ref={stage}>
+    {error ? <p className="timeline-error" role="alert">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>重试</button></p> : <div className="timeline-stage">
       <div className={`timeline-scroller${dragging ? " is-dragging" : ""}`} ref={scroller} tabIndex={0} role="region" aria-label="作品年表长卷，使用方向键或拖动浏览" onKeyDown={handleKeyDown} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
         <div className="timeline-scroll-track">
           <i className="timeline-roll-rod timeline-roll-rod-start" aria-hidden="true" />
-          <div className="timeline-roll" style={{ "--timeline-intro-width": "min(74vw, 1080px)", "--timeline-art-width": `${artWidth}px`, "--timeline-tail-width": `${tailWidth}px` } as CSSProperties}>
+          <div className="timeline-roll" style={{ "--timeline-intro-width": "min(74vw, 1080px)", "--timeline-tail-width": `${tailWidth}px` } as CSSProperties}>
             <section className="timeline-opening" id="timeline-opening" aria-labelledby="timeline-title">
               <span className="timeline-seal timeline-opening-seal" aria-hidden="true">芽谱</span>
               <div className="timeline-opening-copy">
@@ -467,29 +449,28 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
             </section>
             <div className="timeline-axis" aria-hidden="true" />
             {pageData && decoratedGroups.map(({ group, image }) => {
-              const totalRecords = group.works.reduce((total, work) => total + work.records.length, 0);
               const textbookCount = group.works.reduce((total, work) => total + work.records.filter(record => record.yearSource === "textbook").length, 0);
               const extraCount = group.works.reduce((total, work) => total + work.records.filter(record => record.yearSource === "supplement").length, 0);
               const units = [...new Set(group.works.flatMap(work => work.records.map(record => record.unit?.replace(/^第.单元\s*/, "")).filter((unit): unit is string => Boolean(unit))))].slice(0, 3);
-              const slipsWidth = Math.ceil(group.works.length / TIER_COUNT) * COLUMN_WIDTH + 120;
-              const sectionWidth = Math.max(artWidth * 0.96, artWidth * 0.42 + slipsWidth, 580);
-              const slipStart = Math.max(artWidth * 0.36, 380);
-              const sectionVars = { "--timeline-era-width": `${sectionWidth}px`, "--timeline-art-width": `${artWidth}px`, "--timeline-slip-start": `${slipStart}px` } as CSSProperties;
+              const tierCount = group.works.length >= 7 ? DENSE_TIER_COUNT : DEFAULT_TIER_COUNT;
+              const slipsWidth = Math.ceil(group.works.length / tierCount) * COLUMN_WIDTH + 80;
+              const sectionWidth = `max(calc(var(--timeline-band-height) * 2.4), calc(var(--timeline-slip-start) + ${slipsWidth}px), 580px)`;
+              const sectionVars = { "--timeline-era-width": sectionWidth, "--timeline-art-width": "var(--timeline-era-width)" } as CSSProperties;
               return <section className={`timeline-era-section${group.undated ? " is-undated" : ""}`} id={group.id} key={group.id} style={sectionVars} aria-labelledby={`${group.id}-title`}>
                 <div className="timeline-artwork" aria-hidden="true"><div className="timeline-art-reveal">{image && <Image src={publicAssetUrl(image)} alt="" aria-hidden="true" fill sizes="(max-width: 760px) 100vw, 1100px" unoptimized loading={group.id === "era-ancient" ? "eager" : "lazy"} />}</div></div>
                 <header className="timeline-era-title">
                   <p className="timeline-era-subtitle">{group.subtitle}</p>
                   <h2 id={`${group.id}-title`} className={group.ancient ? "is-ancient" : ""}>{group.undated ? "未标注" : group.ancient ? "古调" : group.label}<small>{group.undated ? "年代" : group.from != null && group.from >= 1930 ? "年代" : ""}</small></h2>
-                  <p>{group.works.length} 项作品{totalRecords > group.works.length && <> · {totalRecords} 条册别记录</>}{textbookCount > 0 && <> · <em>{`教材原文 ${textbookCount}`}</em></>}{extraCount > 0 && <> · <em className="is-blue">{`补充资料 ${extraCount}`}</em></>}{units.length > 0 && <><br />多见于「{units.join("」「")}」</>}</p>
+                  <p>{group.works.length} 首作品{textbookCount > 0 && <> · <em>{`教材原文 ${textbookCount}`}</em></>}{extraCount > 0 && <> · <em className="is-blue">{`补充资料 ${extraCount}`}</em></>}{units.length > 0 && <><br />多见于「{units.join("」「")}」</>}</p>
                 </header>
-                <span className="timeline-axis-tick" style={{ left: `${Math.max(24, slipStart - 30)}px` }} aria-hidden="true"><b>{group.undated ? "年代未标注" : group.ancient ? "1700 以前" : group.from}</b></span>
-                {group.works.length > 0 ? <div className="timeline-hangers">{group.works.map((work, index) => <TimelineSlip key={work.id} work={work} index={index} startLeft={slipStart} onSelect={(selected, trigger) => {
+                <span className="timeline-axis-tick" aria-hidden="true"><b>{group.undated ? "年代未标注" : group.ancient ? "1700 以前" : group.from}</b></span>
+                {group.works.length > 0 ? <div className="timeline-hangers">{group.works.map((work, index) => <TimelineSlip key={work.id} work={work} index={index} tierCount={tierCount} isSelected={selectedWork?.id === work.id} onSelect={(selected, trigger) => {
                   const rect = trigger.getBoundingClientRect();
                   const width = Math.min(420, window.innerWidth - 24);
                   setNotePosition({ left: Math.max(12, Math.min(window.innerWidth - width - 12, rect.left)), top: Math.max(96, Math.min(window.innerHeight - 400, rect.top - 250)) });
                   selectedNoteTrigger.current = trigger;
                   setSelectedWork(selected);
-                }} onOpenRecord={onOpenRecord} />)}</div> : <p className="timeline-empty-era">没有找到相符的作品。</p>}
+                }} />)}</div> : <p className="timeline-empty-era">没有找到相符的作品。</p>}
               </section>;
             })}
             {pageData && !groups.length && <section className="timeline-empty-era" id="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看六册教材。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section>}
