@@ -334,3 +334,33 @@
   .explorer-sidebar .explorer-nav button{font-size:12px;padding:9px 2px}
   .ink-app.network-mode .graph-rangebar .graph-toolbar-tools button{min-width:32px;width:32px;min-height:32px}
 }
+
+/* —— T010 检查器（选中节点、打开检查器之后）：文字 ≥12px（跨册摘要 ≥13px）、
+   可点击元素 ≥32px。globals.css 的 .cross-book-inspector-summary>p 带 !important，
+   这里同样用 !important 压过；标签页按钮用 .inspector 提一级特异性，
+   压过其后加载的 workbench-v5.css（.theme-light .inspector .inspector-tabs button 11px）。 —— */
+.ink-app.network-mode .inspector .inspector-tabs button{font-size:12px;min-height:32px;box-sizing:border-box}
+.ink-app.network-mode .inspector-close{min-width:32px;min-height:32px;box-sizing:border-box;align-items:center;justify-content:center;padding:4px}
+.ink-app.network-mode .knowledge-open-button,.ink-app.network-mode .inspector-actions-grid button,.ink-app.network-mode .inspector-fact-grid button{min-height:32px;box-sizing:border-box}
+.ink-app.network-mode .inspector-relations button{min-height:32px;box-sizing:border-box}
+.ink-app.network-mode .inspector-relations b,.ink-app.network-mode .inspector-relations small,.ink-app.network-mode .inspector-relations em{font-size:12px}
+.ink-app.network-mode .inspector-body p{font-size:12px}
+.ink-app.network-mode .inspector-body dt,.ink-app.network-mode .inspector-body dd{font-size:12px}
+.ink-app.network-mode .inspector-scores small{font-size:12px}
+.ink-app.network-mode .inspector-fact-grid .fact-extended{font-size:12px}
+.ink-app.network-mode .occurrence-list li>b{font:700 12px var(--font-geist-mono),monospace}
+.ink-app.network-mode .occurrence-list strong,.ink-app.network-mode .occurrence-list small{font-size:12px}
+.ink-app.network-mode .related-knowledge-summary button{font-size:12px;min-height:32px;box-sizing:border-box}
+.ink-app.network-mode .evidence-item p,.ink-app.network-mode .evidence-item small{font-size:12px}
+.ink-app.network-mode .media-item small{font-size:12px}
+.ink-app.network-mode .cross-book-inspector-summary h3{font-size:13px}
+.ink-app.network-mode .cross-book-metrics span{font-size:12px}
+.ink-app.network-mode .cross-book-metrics b{font-size:13px}
+.ink-app.network-mode .cross-book-inspector-summary li{font-size:12px}
+.ink-app.network-mode .cross-book-inspector-summary>p{font-size:13px !important}
+/* 缩放滑块：点击热区 ≥32px（原生 range 轨道自动居中，轨道保持细） */
+.ink-app.network-mode .graph-rangebar .zoom-slider{height:32px}
+/* checkbox：本体提到 16px，热区用 label 行扩大到 ≥32px（含教材/年级/学期筛选与「显示教材来源」） */
+.ink-app.network-mode .property-fields input[type=checkbox],.ink-app.network-mode .source-layer-toggle input[type=checkbox]{width:16px;height:16px;margin:0}
+.property-fields label{display:flex;align-items:center;min-height:32px;box-sizing:border-box}
+.ink-app.network-mode .source-layer-toggle{display:inline-flex;align-items:center;min-height:32px;gap:6px;box-sizing:border-box}

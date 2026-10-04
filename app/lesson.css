@@ -349,3 +349,22 @@
 .melody-digit.is-double.is-low::after { bottom:-12px; box-shadow:0 -6px 0 currentColor; }
 .melody-digit.lines-4 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -5px 0 #FAFCFB, inset 0 -7px 0 #3C4742, inset 0 -10px 0 #FAFCFB, inset 0 -12px 0 #3C4742, inset 0 -15px 0 #FAFCFB, inset 0 -17px 0 #3C4742; padding-bottom:18px; }
 .melody-note.is-active .melody-digit.lines-4 { box-shadow:none; }
+
+/* —— T010 旋律页：上课模式「看谱 · 听旋律」页此前随 fit 整页缩放，
+   1280×720 下速度/出处标签有效字号被压到 9–10px。改法：
+   ① 该页退出 fit 缩放（:has 限定只作用于旋律页，其他页仍走 React 缩放）；
+   ② 谱例块（音数字号/行距）改用视口单位自适应高度，不需要整页缩放；
+   ③ 速度与出处标签保持固定字号 ≥14px，排在谱例块外，不随谱例缩小。 —— */
+.present-fit:has(.present-score) { zoom:1 !important; padding:0; }
+.present-score .melody-key { font-size:14px; }
+.present-score .melody-tempo { font-size:14px; }
+.present-score .melody-tempo b { font-size:15px; }
+.present-score .melody-tempo input { height:24px; }
+.present-score .melody-source { font-size:14px; line-height:1.6; }
+/* 谱例块视口自适应：高度紧张时音数字号随 vh 收缩，宽度随之收紧让每行容纳更多小节 */
+.melody-player.is-large .melody-digit { font-size:clamp(40px,5.5vh,80px); }
+.melody-player.is-large .melody-lyric { font-size:clamp(14px,1.9vh,24px); }
+.melody-player.is-large .melody-note { min-width:clamp(26px,2.8vh,48px); }
+.melody-player.is-large .melody-dash { font-size:clamp(22px,3vh,38px); }
+.melody-player.is-large .melody-score { row-gap:clamp(8px,1.2vh,22px); padding:clamp(10px,1.5vh,20px) clamp(10px,1.4vw,18px); }
+.present-score .melody-note:has(.melody-dash) { margin-right:14px; }
