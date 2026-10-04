@@ -145,7 +145,7 @@ function mutationFromArgv() {
 const loaded = await loadModules(mutationFromArgv());
 const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, parseUnitTask } = await loaded.unitData;
-const { workHref } = await loaded.timelineModel;
+const { eraForYear, filterWorks, groupTimelineWorks, workHref, withSupplementalYears } = await loaded.timelineModel;
 const timelineData = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "timeline.json"), "utf8"));
 const recordUnits = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "units.json"), "utf8"));
 const recordWorks = new Map(recordUnits.flatMap((unit) => unit.works.map((work) => [`${unit.bookKey}:${work.id}`, work])));
@@ -612,6 +612,93 @@ t("年代补充：写入源数据与发布数据不改教材数据且字节稳�
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
+});
+
+// --- timeline long-roll model -------------------------------------------------
+
+function timelineWorkFixture(overrides = {}) {
+  return {
+    id: "T034_TEST_WORK",
+    name: "《测试作品》",
+    year: null,
+    yearRange: null,
+    yearText: null,
+    yearEvidence: null,
+    bookKey: "g7s1",
+    unit: "第一单元 测试",
+    ...overrides,
+  };
+}
+
+t("年表：只把 found 且 high/medium 的补充年代放上长卷", () => {
+  const base = { works: [
+    timelineWorkFixture({ id: "high" }),
+    timelineWorkFixture({ id: "medium", name: "《中可信作品》" }),
+    timelineWorkFixture({ id: "low", name: "《低可信作品》" }),
+    timelineWorkFixture({ id: "traditional", name: "《传统曲目》" }),
+    timelineWorkFixture({ id: "not-found", name: "《未找到作品》" }),
+    timelineWorkFixture({ id: "missing-range", name: "《缺少年代范围》" }),
+  ], people: [] };
+  const result = withSupplementalYears(base, [
+    { id: "high", status: "found", confidence: "high", yearText: "1951年", yearRange: [1951, 1951] },
+    { id: "medium", status: "found", confidence: "medium", yearText: "20世纪50年代", yearRange: [1950, 1959] },
+    { id: "low", status: "found", confidence: "low", yearText: "1952年", yearRange: [1952, 1952] },
+    { id: "traditional", status: "traditional", confidence: "medium", yearText: "傳統曲目", yearRange: null },
+    { id: "not-found", status: "not_found", confidence: "high", yearText: null, yearRange: null },
+    { id: "missing-range", status: "found", confidence: "high", yearText: "年代待考", yearRange: null },
+  ]);
+  assert.deepEqual(result.works.filter(work => work.yearRange).map(work => work.id), ["high", "medium"]);
+  assert.deepEqual(result.works.filter(work => work.yearSource === "supplement").map(work => work.id), ["high", "medium"]);
+  assert.equal(result.works.find(work => work.id === "low").yearSource, undefined);
+});
+
+t("年表：教材原文年代优先，保留原始证据", () => {
+  const source = timelineWorkFixture({
+    id: "textbook",
+    yearRange: [1935, 1935],
+    yearText: "1935年",
+    yearEvidence: { tripleId: "T034_TRIPLE", relation: "创作年代" },
+  });
+  const result = withSupplementalYears({ works: [source], people: [] }, [
+    { id: "textbook", status: "found", confidence: "high", yearText: "1940年", yearRange: [1940, 1940] },
+  ]).works[0];
+  assert.equal(result.yearSource, "textbook");
+  assert.equal(result.yearText, "1935年");
+  assert.deepEqual(result.yearEvidence, source.yearEvidence);
+});
+
+t("年表：同年代同名作品合并册别，跨年代与未标注作品分别保留", () => {
+  const groups = groupTimelineWorks([
+    timelineWorkFixture({ id: "a", bookKey: "g7s1", yearRange: [1951, 1951], yearText: "1951年", yearSource: "textbook" }),
+    timelineWorkFixture({ id: "b", bookKey: "g8s1", yearRange: [1958, 1958], yearText: "1958年", yearSource: "supplement" }),
+    timelineWorkFixture({ id: "c", bookKey: "g9s1", yearRange: [1961, 1961], yearText: "1961年", yearSource: "textbook" }),
+    timelineWorkFixture({ id: "d", bookKey: "g9s2" }),
+  ]);
+  assert.equal(groups.length, 3);
+  const fifties = groups.find(group => group.from === 1950);
+  assert.equal(fifties.works.length, 1);
+  assert.deepEqual(fifties.works[0].bookKeys, ["g7s1", "g8s1"]);
+  assert.equal(fifties.works[0].records.length, 2);
+  assert.equal(fifties.works[0].hasTextbookYear, true);
+  assert.equal(fifties.works[0].hasSupplementYear, true);
+  assert.equal(groups.at(-1).undated, true);
+  assert.equal(groups.at(-1).works[0].yearText, "教材未标注年代");
+});
+
+t("年表：历史分段边界与六册筛选/书名检索", () => {
+  assert.equal(eraForYear(1699).id, "era-ancient");
+  assert.equal(eraForYear(1700).id, "era-1700");
+  assert.equal(eraForYear(1899).id, "era-1850");
+  assert.equal(eraForYear(1900).id, "era-1900");
+  assert.equal(eraForYear(1929).id, "era-1900");
+  assert.equal(eraForYear(1930).id, "era-1930");
+  const works = [
+    timelineWorkFixture({ id: "a", name: "《歌唱祖国》", bookKey: "g7s1" }),
+    timelineWorkFixture({ id: "b", name: "《歌唱祖国》", bookKey: "g8s1" }),
+  ];
+  assert.equal(filterWorks({ works, people: [] }, "g7s1", "歌唱祖国").length, 1);
+  assert.equal(filterWorks({ works, people: [] }, "", "《歌唱祖国》").length, 2);
+  assert.notEqual(workHref(works[0]), workHref(works[1]));
 });
 
 // ---- 变异检查（父进程）：仅完整测试运行中预期用例失败才算捕获 ----
