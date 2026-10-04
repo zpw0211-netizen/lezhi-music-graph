@@ -33,6 +33,7 @@ const SOURCES = {
   unitData: path.join(repoRoot, "app", "lib", "app", "unit-data.ts"),
   timelineModel: path.join(repoRoot, "app", "components", "timeline", "timelineModel.ts"),
   labScales: path.join(repoRoot, "app", "components", "lab", "heptatonic.ts"),
+  lupanModel: path.join(repoRoot, "app", "components", "lab", "lupan-model.ts"),
 };
 
 // ---- 变异定义：每条都是「源码文本替换」，替换必须真的发生（否则视为脚本自身出错） ----
@@ -101,6 +102,14 @@ const MUTATIONS = [
     to: 'name: "变徵", solfege: "♯fa", degree: "♯4", semitone: 7',
     expectedFailure: "七声音阶半音数：雅乐（正声调式）",
   },
+  {
+    id: "i",
+    label: "(i) 律盘顺时针拖动反转半音方向",
+    file: "lupanModel",
+    from: "return normalizePitchClass(startPitchClass - steps);",
+    to: "return normalizePitchClass(startPitchClass + steps);",
+    expectedFailure: "律盘：顺时针拖动使宫位下移半音",
+  },
 ];
 
 // ---- 转译与加载 ------------------------------------------------------------
@@ -156,6 +165,7 @@ const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, parseUnitTask } = await loaded.unitData;
 const { workHref } = await loaded.timelineModel;
 const { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, heptatonicPhrase, transposePitchClass } = await loaded.labScales;
+const { makeLupanPhrase, normalizePitchClass, transposeTonicFromDrag } = await loaded.lupanModel;
 const timelineData = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "timeline.json"), "utf8"));
 const recordUnits = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "units.json"), "utf8"));
 const recordWorks = new Map(recordUnits.flatMap((unit) => unit.works.map((work) => [`${unit.bookKey}:${work.id}`, work])));
@@ -241,6 +251,34 @@ t("十二音高圆盘：移宫后偏音仍落在正确半音位置", () => {
   assert.equal(transposePitchClass(2, HEPTATONIC_MODES.qingyue.notes.find((note) => note.name === "清角").semitone), 7);
   assert.equal(transposePitchClass(2, HEPTATONIC_MODES.yayue.notes.find((note) => note.name === "变徵").semitone), 8);
   assert.equal(transposePitchClass(2, HEPTATONIC_MODES.yanyue.notes.find((note) => note.name === "闰").semitone), 0);
+});
+
+t("律盘：顺时针拖动使宫位下移半音，并在十二音位内循环", () => {
+  assert.equal(transposeTonicFromDrag(0, 30), 11);
+  assert.equal(transposeTonicFromDrag(11, -30), 0);
+  assert.equal(transposeTonicFromDrag(4, 360), 4);
+  assert.equal(normalizePitchClass(-1), 11);
+});
+
+t("律盘：五声自编走句上行、经过高八度宫音并回到宫", () => {
+  const phrase = makeLupanPhrase([
+    { name: "宫", degree: "1", semitone: 0 },
+    { name: "商", degree: "2", semitone: 2 },
+    { name: "角", degree: "3", semitone: 4 },
+    { name: "徵", degree: "5", semitone: 7 },
+    { name: "羽", degree: "6", semitone: 9 },
+  ], 60, true);
+  assert.deepEqual(phrase.map((note) => note.midi), [60, 62, 64, 67, 69, 72, 67, 64, 62, 60]);
+  assert.equal(phrase[5].octave, true);
+  assert.equal(phrase.at(-1)?.name, "宫");
+});
+
+t("律盘：七声示范走句保留全部偏音并回到宫", () => {
+  const phrase = makeLupanPhrase(HEPTATONIC_MODES.qingyue.notes, 60, false);
+  assert.equal(phrase.length, 15);
+  assert.deepEqual(phrase.filter((note) => note.altered).map((note) => note.name), ["清角", "变宫", "变宫", "清角"]);
+  assert.equal(phrase[7].midi, 72);
+  assert.equal(phrase.at(-1)?.midi, 60);
 });
 
 t("七声音阶示例走句：一组上行、八度宫音与完整下行", () => {
