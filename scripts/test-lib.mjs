@@ -10,13 +10,20 @@
 // 变异检查用子进程实现：node:test 的套件一个进程只能跑一遍，每个变异在全新
 // 子进程里跑全部测试，用退出码判断「至少有一个测试失败」。
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import ts from "typescript";
+import {
+  mergeYearSupplement,
+  missingManifestIds,
+  serializeYearSupplement,
+  writeYearSupplementFiles,
+} from "./build-year-supplement.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(scriptPath), "..");
@@ -437,6 +444,174 @@ t("任务解析：现行代码不会从正文提取《中国》《歌唱祖国�
     works: [],
     focus: [],
   });
+});
+
+// --- supplementary work-year pipeline ---------------------------------------
+
+const YEAR_SUPPLEMENT_MANIFEST = [
+  { id: "TEST_WORK_FOUND", name: "《测试作品甲》" },
+  { id: "TEST_WORK_TRADITIONAL", name: "《测试作品乙》" },
+  { id: "TEST_WORK_NOT_FOUND", name: "《测试作品丙》" },
+];
+const YEAR_SUPPLEMENT_SOURCE_A = {
+  title: "作品资料页",
+  url: "https://example.org/work-a",
+  publisher: "音乐资料库",
+};
+const YEAR_SUPPLEMENT_SOURCE_B = {
+  title: "馆藏目录",
+  url: "https://example.org/catalog-b",
+  publisher: "公共图书馆",
+};
+const YEAR_SUPPLEMENT_RESULTS = [
+  [
+    {
+      id: "TEST_WORK_FOUND",
+      name: "《测试作品甲》",
+      status: "found",
+      event: "作品形成",
+      yearText: "20 世纪前期",
+      yearRange: [1900, 1949],
+      subject: "作品创作",
+      sources: [YEAR_SUPPLEMENT_SOURCE_A],
+      confidence: "medium",
+      note: "交叉核对来源。",
+    },
+    {
+      id: "TEST_WORK_TRADITIONAL",
+      name: "《测试作品乙》",
+      status: "traditional",
+      event: "传统曲目",
+      yearText: "传统佳美兰曲目",
+      yearRange: null,
+      subject: "曲目流传",
+      sources: [YEAR_SUPPLEMENT_SOURCE_B],
+      confidence: 0.72,
+      note: null,
+    },
+  ],
+  [
+    {
+      id: "TEST_WORK_FOUND",
+      name: "《测试作品甲》",
+      status: "found",
+      event: "作品形成",
+      yearText: "20 世纪前期",
+      yearRange: [1900, 1949],
+      subject: "作品创作",
+      sources: [YEAR_SUPPLEMENT_SOURCE_B],
+      confidence: "medium",
+      note: "交叉核对来源。",
+    },
+    {
+      id: "TEST_WORK_NOT_FOUND",
+      name: "《测试作品丙》",
+      status: "not_found",
+      event: null,
+      yearText: null,
+      yearRange: null,
+      subject: null,
+      sources: [],
+      confidence: "low",
+      note: "暂未找到可靠年代来源。",
+    },
+  ],
+];
+
+function hashTextbookData() {
+  const dataRoot = path.join(repoRoot, "public", "data");
+  const protectedPaths = ["books", "details", "evidence", "timeline.json"];
+  const files = [];
+  const visit = (absolutePath) => {
+    for (const entry of readdirSync(absolutePath, { withFileTypes: true })) {
+      const childPath = path.join(absolutePath, entry.name);
+      if (entry.isDirectory()) visit(childPath);
+      else if (entry.isFile()) files.push(childPath);
+    }
+  };
+  for (const relativePath of protectedPaths) {
+    const absolutePath = path.join(dataRoot, relativePath);
+    if (relativePath.endsWith(".json")) files.push(absolutePath);
+    else visit(absolutePath);
+  }
+  const hash = createHash("sha256");
+  for (const file of files.sort((left, right) => left < right ? -1 : left > right ? 1 : 0)) {
+    hash.update(path.relative(dataRoot, file));
+    hash.update("\0");
+    hash.update(readFileSync(file));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
+}
+
+function yearSupplementFixture() {
+  return mergeYearSupplement(YEAR_SUPPLEMENT_RESULTS, {
+    manifest: YEAR_SUPPLEMENT_MANIFEST,
+  });
+}
+
+t("年代补充：合并与序列化对批次顺序保持确定", () => {
+  const forward = yearSupplementFixture();
+  const reversed = mergeYearSupplement(
+    YEAR_SUPPLEMENT_RESULTS.slice().reverse().map((group) => group.slice().reverse()),
+    { manifest: YEAR_SUPPLEMENT_MANIFEST },
+  );
+  assert.equal(serializeYearSupplement(forward), serializeYearSupplement(reversed));
+  assert.deepEqual(missingManifestIds(forward, YEAR_SUPPLEMENT_MANIFEST), []);
+});
+
+t("年代补充：保留 not_found 状态且不带年代", () => {
+  const record = yearSupplementFixture().find((work) => work.id === "TEST_WORK_NOT_FOUND");
+  assert.ok(record);
+  assert.equal(record.status, "not_found");
+  assert.equal(record.yearText, null);
+  assert.equal(record.yearRange, null);
+});
+
+t("年代补充：每条记录保留完整字段、出处与置信度", () => {
+  const records = yearSupplementFixture();
+  const expectedKeys = [
+    "id",
+    "name",
+    "status",
+    "event",
+    "yearText",
+    "yearRange",
+    "subject",
+    "sources",
+    "confidence",
+    "note",
+    "kind",
+    "label",
+  ];
+  assert.deepEqual(Object.keys(records[0]), expectedKeys);
+  const testWork = records.find((work) => work.id === "TEST_WORK_FOUND");
+  assert.ok(testWork);
+  assert.equal(testWork.kind, "supplement");
+  assert.equal(testWork.label, "补充资料（非教材）");
+  assert.equal(testWork.confidence, "medium");
+  assert.deepEqual(testWork.sources, [YEAR_SUPPLEMENT_SOURCE_A, YEAR_SUPPLEMENT_SOURCE_B]);
+  assert.deepEqual(Object.keys(testWork.sources[0]), ["title", "url", "publisher"]);
+});
+
+t("年代补充：写入源数据与发布数据不改教材数据且字节稳定", async () => {
+  const records = yearSupplementFixture();
+  const before = hashTextbookData();
+  const scratch = mkdtempSync(
+    path.join(process.env.TEMP ?? tmpdir(), "yapu-year-supplement-test-"),
+  );
+  try {
+    const sourcePath = path.join(scratch, "source", "work-years.json");
+    const publicPath = path.join(scratch, "public", "work-years.json");
+    const first = await writeYearSupplementFiles(records, { sourcePath, publicPath });
+    const second = await writeYearSupplementFiles(records, { sourcePath, publicPath });
+    assert.equal(first, second);
+    assert.equal(readFileSync(sourcePath, "utf8"), readFileSync(publicPath, "utf8"));
+    assert.equal(readFileSync(sourcePath, "utf8"), serializeYearSupplement(records));
+    assert.equal(hashTextbookData(), before);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
 });
 
 // ---- 变异检查（父进程）：仅完整测试运行中预期用例失败才算捕获 ----
