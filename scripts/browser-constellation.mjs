@@ -35,7 +35,7 @@ try {
       await page.getByRole("button", { name: "查看知识 ↗", exact: true }).click();
       await page.waitForFunction(() => document.querySelector(".knowledge-detail-drawer")?.dataset.detailStatus === "loaded");
       assert((await page.locator(".knowledge-header h2").innerText()).includes(name));
-      for (const section of ["核心属性", "教材位置", "教材证据", "知识关系", "跨册关联", "教学应用", "AI 问答入口"]) assert(await drawer().getByRole("heading", { name: section, exact: true }).isVisible());
+      for (const section of ["核心属性", "教材位置", "教材出处", "知识联系", "跨册关联", "教学应用", "AI 问答入口"]) assert(await drawer().getByRole("heading", { name: section, exact: true }).isVisible());
       assert(detailRequests.length <= before + 1); assert.equal(await graphId(), initialBuild);
       await page.getByRole("button", { name: "关闭知识详情", exact: true }).click();
     }

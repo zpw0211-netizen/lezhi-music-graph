@@ -77,5 +77,5 @@ export function planGraphQuery(question: string, graph: RagGraph) {
     if (ids.size) actions.push({ type: "focus_entities", entityIds: [...ids].slice(0, 500), isolate: true });
     if (edges.size) actions.push({ type: "highlight_relationships", relationshipIds: [...edges].slice(0, 500) });
   }
-  return { actions, bookKeys, explanation: actions.length ? "已将问题转换为受校验的图谱探索动作。仅改变筛选、聚焦与高亮，不修改知识数据。" : "没有识别到可执行的图谱动作，请说明作品、人物、类型或教材。" };
+  return { actions, bookKeys, explanation: actions.length ? "已将问题转换为受校验的图谱动作。仅改变筛选、聚焦与高亮，不修改知识数据。" : "没有识别到可执行的图谱动作，请说明作品、人物、类型或教材。" };
 }

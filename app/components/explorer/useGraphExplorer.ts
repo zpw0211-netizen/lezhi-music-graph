@@ -160,7 +160,7 @@ export function useGraphExplorer(
     );
     return {
       key: "canonical",
-      title: "六册教材规范知识网络",
+      title: "六册教材知识网络",
       grade: 0,
       semester: "跨册",
       pages: books.reduce((total, book) => total + book.pages, 0),

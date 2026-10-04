@@ -121,16 +121,16 @@ try {
   });
   await record("Canvas 2D 兼容模式", async () => {
     await page.locator(".graph-toolbar-menu summary").click();
-    await page.getByRole("button", { name: "WebGL 图谱", exact: true }).click(); assert(await page.locator("canvas.full-graph-canvas").isVisible());
+    await page.getByRole("button", { name: "流畅模式", exact: true }).click(); assert(await page.locator("canvas.full-graph-canvas").isVisible());
     assert.equal(await page.locator(".sigma-scene-host").count(), 0);
-    await page.getByRole("button", { name: "Canvas 回退", exact: true }).click(); await page.locator(".sigma-scene-host canvas").first().waitFor();
+    await page.getByRole("button", { name: "兼容模式", exact: true }).click(); await page.locator(".sigma-scene-host canvas").first().waitFor();
     await page.locator(".graph-toolbar-menu summary").click();
   });
   await record("单册、六册和小屏幕", async () => {
     await page.getByRole("button", { name: "7年级上册", exact: true }).click(); assert(await page.getByRole("img", { name: "教材知识图谱" }).isVisible());
     await section("实体类型").getByRole("button", { name: "全部隐藏", exact: true }).click();
     assert.equal(await page.locator(".neo-canvas .svg-node:visible").count(), 0); await reset();
-    await page.getByRole("button", { name: "六册叠加", exact: true }).click(); await checkFull(); await reset();
+    await page.getByRole("button", { name: "六册总览", exact: true }).click(); await checkFull(); await reset();
     const finder = page.locator(".graph-path-finder"); if (await finder.count()) await finder.getByRole("button").first().click();
     await page.getByRole("button", { name: "适配画布", exact: true }).click(); await page.waitForTimeout(350);
     await page.screenshot({ path: path.join(output, "explorer-1920.png") });

@@ -45,17 +45,17 @@ export function NodeInspector({
   const selectedCategory = schemaCategoryMeta(selectedType);
   const tabs: Array<[InspectorTab, string]> = [
     ["overview", "概览"],
-    ["relations", `关系 ${directTriples.length}`],
+    ["relations", `知识联系 ${directTriples.length}`],
     ["occurrences", `跨册 ${selected?.textbookCount ?? 1}/6`],
-    ["evidence", `教材证据 ${evidence.length}`],
+    ["evidence", `教材出处 ${evidence.length}`],
     ["teaching", "教学应用"],
   ];
 
   return (
-    <aside className="inspector" aria-label="节点检查器">
+    <aside className="inspector" aria-label="知识点详情">
       <div className="inspector-titlebar">
         <span>知识档案</span>
-        <button className="inspector-close" aria-label="关闭节点检查器" onClick={() => explorer.setInspectorOpen(false)}>
+        <button className="inspector-close" aria-label="关闭知识点详情" onClick={() => explorer.setInspectorOpen(false)}>
           <WorkbenchIcon name="close" />
         </button>
       </div>
@@ -66,8 +66,8 @@ export function NodeInspector({
           </div>
           <div>
             <span className="inspector-category-label" style={{ color: selectedCategory.color, borderColor: selectedCategory.color }}>{selectedCategory.label}</span>
-            <h2>{selected?.name ?? "未选择实体"}</h2>
-            <small>{selected?.type ?? "实体"}</small>
+            <h2>{selected?.name ?? "未选择知识点"}</h2>
+            <small>{selected?.type ?? "知识点"}</small>
           </div>
         </header>
         <button
@@ -87,7 +87,7 @@ export function NodeInspector({
         </div>
         {panel === "overview" && (
           <div className="inspector-body">
-            <p>{formatPageReferences(selected?.description || "该节点来自教材知识图谱，可继续查看关系、来源证据与教学应用。")}</p>
+            <p>{formatPageReferences(selected?.description || "该知识点来自教材知识图谱，可继续查看知识联系、教材出处与教学应用。")}</p>
             {!!selected?.media?.some((asset) => asset.kind === "score") && (
               <section className="inspector-scores" aria-label="教材谱例">
                 <h3>教材谱例</h3>
@@ -113,7 +113,7 @@ export function NodeInspector({
                 <dd>PDF 第 {selected?.firstPage ?? "—"} 页</dd>
               </div>
               <div>
-                <dt>关系数量</dt>
+                <dt>知识联系数量</dt>
                 <dd>{directTriples.length} 条</dd>
               </div>
               <div>
@@ -125,7 +125,7 @@ export function NodeInspector({
                 </dd>
               </div>
               <div>
-                <dt>可信度</dt>
+                <dt>资料可靠度</dt>
                 <dd>{selected?.confidence ? `${Math.round(selected.confidence * 100)}%` : "教材已收录"}</dd>
               </div>
             </dl>
@@ -169,21 +169,21 @@ export function NodeInspector({
                     <li key={occurrence.id}>
                       <strong>{occurrence.textbookTitle}</strong>
                       <span>
-                        {formatPageReferences(occurrence.unit ?? "所属单元待细化")} · PDF 第 {occurrence.page ?? "—"} 页
+                        {formatPageReferences(occurrence.unit ?? "教材单元")} · PDF 第 {occurrence.page ?? "—"} 页
                       </span>
                     </li>
                   ))}
                 </ol>
-                <p>前置、复现、深化和扩展关系仅在具备教材证据或人工确认后显示；当前不会自动推断创建。</p>
+                <p>前置、复现、深化和扩展的知识联系，仅在具备教材出处或人工确认后显示；不会自动推断创建。</p>
               </section>
             )}
-            <NodeAIInterpretation name={selected?.name ?? "当前节点"} onAsk={explorer.ask} />
+            <NodeAIInterpretation name={selected?.name ?? "当前知识点"} onAsk={explorer.ask} />
             <div className="inspector-actions-grid">
-              <button onClick={() => selected && explorer.expandNode(selected, inspectionBook, 1)}>展开 1 跳</button>
-              <button onClick={() => selected && explorer.expandNode(selected, inspectionBook, 2)}>展开 2 跳</button>
+              <button onClick={() => selected && explorer.expandNode(selected, inspectionBook, 1)}>展开一层</button>
+              <button onClick={() => selected && explorer.expandNode(selected, inspectionBook, 2)}>展开两层</button>
               <button onClick={() => selected && explorer.openPathFinder(selected)}>查找路径</button>
-              <button onClick={() => selected && explorer.selectEntity(selected, inspectionBook, true)}>定位节点</button>
-              <button onClick={() => setPanel("evidence")}>查看证据</button>
+              <button onClick={() => selected && explorer.selectEntity(selected, inspectionBook, true)}>定位知识点</button>
+              <button onClick={() => setPanel("evidence")}>查看教材出处</button>
               {selected && isWorkType(selected.type) ? (
                 <button onClick={() => explorer.openLesson(selected)}>学习这一课</button>
               ) : (
@@ -211,7 +211,7 @@ export function NodeInspector({
                 );
               })
             ) : (
-              <p className="empty-state">当前节点暂无正式关系。</p>
+              <p className="empty-state">该知识点暂无正式的知识联系。</p>
             )}
           </div>
         )}
@@ -228,7 +228,7 @@ export function NodeInspector({
                   <b>{selected?.occurrenceCount ?? 1}</b>出现次数
                 </span>
                 <span>
-                  <b>{directTriples.length}</b>相关关系
+                  <b>{directTriples.length}</b>相关知识联系
                 </span>
               </div>
             </section>
@@ -239,7 +239,7 @@ export function NodeInspector({
                   <span>
                     <strong>{occurrence.textbookTitle}</strong>
                     <small>
-                      {formatPageReferences(occurrence.unit ?? "所属单元待细化")} · PDF 第 {occurrence.page ?? "—"} 页
+                      {formatPageReferences(occurrence.unit ?? "教材单元")} · PDF 第 {occurrence.page ?? "—"} 页
                     </small>
                   </span>
                 </li>
@@ -279,7 +279,7 @@ export function NodeInspector({
                     <strong>
                       {relationLabel(item.triple)} · {objectLabel(item.triple)}
                     </strong>
-                    <p>{formatPageReferences(item.summary || "教材关系证据记录")}</p>
+                    <p>{formatPageReferences(item.summary || "教材出处记录")}</p>
                     <small>
                       {item.bookTitle ?? inspectionBook.title} · {citationPageLabel(item.textbookPage, item.pdfPage)}
                     </small>
@@ -287,7 +287,7 @@ export function NodeInspector({
                 </div>
               ))
             ) : (
-              <p className="empty-state">该节点暂未绑定可显示的教材证据。</p>
+              <p className="empty-state">该知识点暂无可显示的教材出处。</p>
             )}
           </div>
         )}
@@ -297,15 +297,15 @@ export function NodeInspector({
               <span className="eyebrow muted">课堂路径</span>
               <h3>从作品事实到音乐理解</h3>
               <ol>
-                <li>观察节点的作品、人物与教材位置</li>
-                <li>展开体裁、乐器和音乐要素关系</li>
-                <li>结合教材证据组织欣赏或实践活动</li>
+                <li>观察知识点的作品、人物与教材位置</li>
+                <li>展开体裁、乐器和音乐要素的知识联系</li>
+                <li>结合教材出处组织欣赏或实践活动</li>
               </ol>
             </section>
             <section className="media-card">
               <div className="media-head">
                 <div>
-                  <span className="eyebrow muted">多模态资料</span>
+                  <span className="eyebrow muted">视听资料</span>
                   <h3>音频 · 视频 · 乐谱</h3>
                 </div>
                 <b>{selected?.media?.length ?? 0}</b>

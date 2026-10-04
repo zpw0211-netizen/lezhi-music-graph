@@ -69,7 +69,7 @@ assert(
 
 const indexHtml = await readFile(path.join(root, "index.html"), "utf8");
 assert(
-  indexHtml.includes("芽谱——中小学音乐教育知识图谱与智能分析平台"),
+  indexHtml.includes("芽谱 · 人音版初中音乐教材"),
   "页面标题没有同步为芽谱",
 );
 assert(
