@@ -355,7 +355,7 @@
    ① 该页退出 fit 缩放（:has 限定只作用于旋律页，其他页仍走 React 缩放）；
    ② 谱例块（音数字号/行距）改用视口单位自适应高度，不需要整页缩放；
    ③ 速度与出处标签保持固定字号 ≥14px，排在谱例块外，不随谱例缩小。 —— */
-.present-fit:has(.present-score) { zoom:1 !important; padding:0; }
+.present-fit:has(.present-score) { zoom:1 !important; }
 .present-score .melody-key { font-size:14px; }
 .present-score .melody-tempo { font-size:14px; }
 .present-score .melody-tempo b { font-size:15px; }
