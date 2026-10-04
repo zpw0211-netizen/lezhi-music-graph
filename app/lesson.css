@@ -166,7 +166,12 @@
    教室投影场景（1920×1080 / 1280×720）：局部加深次级文字提高对比，
    内容字号全部随视口 clamp 放大，后排可读。 */
 .present { position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; background:var(--brand-paper); color:var(--brand-ink); --text-secondary:#3D463F; }
-.present-stage { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:3vh 5vw; overflow:auto; overscroll-behavior:contain; animation:present-in var(--motion-slow) var(--ease-out); }
+/* 安全居中：justify-content:safe center 在内容高于舞台时自动退回
+   顶部对齐，滚动从顶部开始；不会出现 align-items:center 那种
+   顶部溢出不可达。内边距放在内容包层上——滚动容器自身无 padding，
+   scrollHeight 不会把 padding-bottom 记成虚假的 6px 可滚动量。 */
+.present-stage { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:safe center; overflow:auto; overscroll-behavior:contain; animation:present-in var(--motion-slow) var(--ease-out); }
+.present-fit { flex:0 0 auto; padding:3vh 5vw; }
 @keyframes present-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 .present h2 { margin:0 0 2.4vh; font-family:var(--serif); font-size:clamp(28px,3.4vw,48px); font-weight:700; color:var(--brand-sprout-deep); }
 .present-cover { text-align:center; }
@@ -198,7 +203,9 @@
 .present .melody-player.is-large .melody-controls { align-items:center; }
 .present-points { width:min(1100px,100%); }
 .present-points ul { margin:0; padding:0; list-style:none; display:grid; }
-.present-points li { display:flex; gap:24px; align-items:baseline; padding:1.6vh 0; border-bottom:1px solid var(--brand-paper-deep); font-size:clamp(20px,2.2vw,34px); opacity:0; transform:translateY(8px); transition:opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out); }
+/* 要点较多（≥6 条）时分两栏，1280×720 投影也能一屏放下 */
+.present-points.is-two-col ul { grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:3vw; }
+.present-points li { display:flex; gap:24px; align-items:baseline; padding:1.6vh 0; border-bottom:1px solid var(--brand-paper-deep); font-size:min(clamp(20px,2.2vw,34px),4.4vh); opacity:0; transform:translateY(8px); transition:opacity var(--motion-base) var(--ease-out), transform var(--motion-base) var(--ease-out); }
 .present-points li.is-shown { opacity:1; transform:none; }
 .present-points li b { flex:none; min-width:5.5em; color:var(--text-secondary); font-weight:600; font-size:.8em; }
 /* 课堂活动页的「练习重点」独立成行，不与任务文本挤在一行 */
@@ -227,7 +234,7 @@
 .present-nav button span { white-space:nowrap; }
 
 @media (max-height:800px) and (min-width:641px) {
-  .present-stage { align-items:flex-start; padding:12px 5vw; }
+  .present-fit { padding:12px 5vw; }
   .present-score h2 { margin-bottom:12px; font-size:clamp(26px,3.2vw,40px); }
   .melody-player.is-large .melody-score { row-gap:8px; padding:10px 16px 8px; }
   .present-score .melody-source { margin-top:6px; }
@@ -256,7 +263,7 @@
   .lesson-tasks li { grid-template-columns:40px 1fr; padding:14px 0 12px; }
   .lesson-goals { padding:14px 16px; font-size:15px; }
   .melody-tempo { margin-left:0; }
-  .present-stage { align-items:flex-start; padding:18px 14px 24px; }
+  .present-fit { padding:18px 14px 24px; }
   .present h2 { font-size:28px; }
   .present-score { width:100%; }
   .present-points li { gap:12px; font-size:20px; }

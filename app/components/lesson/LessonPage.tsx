@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { MELODIES } from "../../lib/lesson/melodies";
 import { VocalDemo } from "./VocalDemo";
@@ -311,7 +311,7 @@ function PresentMode({ work, melody, groups, tasks, questions, valueOf, assetUrl
         {scorePage && <span><b>教材</b>第 {scorePage} 页</span>}
       </div>}
     </div> },
-    ...(points.length ? [{ key: "points", steps: points.length + 1, render: (step: number) => <div className="present-points"><h2>知识要点</h2><ul>{points.map((point, index) => <li key={point.id} className={index < step ? "is-shown" : ""}><b>{point.label}</b>{point.value}</li>)}</ul></div> }] : []),
+    ...(points.length ? [{ key: "points", steps: points.length + 1, render: (step: number) => <div className={`present-points${points.length >= 6 ? " is-two-col" : ""}`}><h2>知识要点</h2><ul>{points.map((point, index) => <li key={point.id} className={index < step ? "is-shown" : ""}><b>{point.label}</b>{point.value}</li>)}</ul></div> }] : []),
     ...(melody ? [{ key: "melody", steps: 1, render: () => <div className="present-score"><h2>看谱 · 听旋律</h2><MelodySet melodies={melody} large /></div> }] : []),
     ...(scoreMedia.length ? [{ key: "scores", steps: scoreMedia.length, render: (step: number) => <div className="present-score-figure">
       <h2>教材谱例原图<small>{step + 1} / {scoreMedia.length}</small></h2>
@@ -323,7 +323,7 @@ function PresentMode({ work, melody, groups, tasks, questions, valueOf, assetUrl
         <button type="button" disabled={step === scoreMedia.length - 1} onClick={() => goStep(1)}>下一张</button>
       </div>}
     </div> }] : []),
-    ...(tasks.length ? [{ key: "tasks", steps: 1, render: () => <div className="present-points"><h2>课堂活动</h2><ul>{tasks.map((task) => { const parsed = parseUnitTask(task); return <li key={task} className="is-shown">{parsed.text}{parsed.focus.length > 0 && <small>练习重点：{parsed.focus.join("、")}</small>}</li>; })}</ul></div> }] : []),
+    ...(tasks.length ? [{ key: "tasks", steps: 1, render: () => <div className={`present-points${tasks.length >= 6 ? " is-two-col" : ""}`}><h2>课堂活动</h2><ul>{tasks.map((task) => { const parsed = parseUnitTask(task); return <li key={task} className="is-shown">{parsed.text}{parsed.focus.length > 0 && <small>练习重点：{parsed.focus.join("、")}</small>}</li>; })}</ul></div> }] : []),
     ...questions.map((question, index): Slide => ({ key: question.id, steps: 2, render: (step) => <div className="present-question"><small>小练习 {index + 1} / {questions.length}</small><h2>{question.prompt}</h2>
       <div>{question.options.map((option, k) => <span key={option} className={step >= 1 && option === question.answer ? "is-answer" : step >= 1 ? "is-other" : ""}><em>{"ABCD"[k]}</em>{option}</span>)}</div></div> })),
   ];
@@ -376,8 +376,41 @@ function PresentMode({ work, melody, groups, tasks, questions, valueOf, assetUrl
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { dialogRef.current?.focus(); }, []);
   const slide = slides[position.slide];
+  // 内容自适应：某页内容高于舞台时，按可用高度等比缩小（zoom，下限 0.5，
+  // 对应投影可读下限）；缩到下限仍放不下则由舞台从顶部开始滚动
+  // （.present-stage 的 justify-content:safe center 保证溢出时顶部可达、不被裁）。
+  const fitRef = useRef<HTMLDivElement | null>(null);
+  const [fit, setFit] = useState(1);
+  const appliedFit = useRef(1);
+  const slideKey = slide.key;
+  const step = position.step;
+  useLayoutEffect(() => {
+    const stage = stageRef.current, content = fitRef.current;
+    if (!stage || !content) return;
+    let raf = 0;
+    const measure = () => {
+      const style = getComputedStyle(stage);
+      const avail = stage.clientHeight - parseFloat(style.paddingTop || "0") - parseFloat(style.paddingBottom || "0");
+      if (!(avail > 0)) return;
+      const rect = content.getBoundingClientRect();
+      const current = appliedFit.current;
+      const natural = current < 1 ? rect.height / current : rect.height;
+      if (!(natural > 0)) return;
+      // 留 12px 余量：图片解码 / 字体度量会让最终布局比测量值略高，
+      // 不留余量会出现 3~6px 的残余滚动。
+      const target = Math.max(0.5, Math.min(1, (avail - 12) / natural));
+      if (Math.abs(target - current) > 0.01) { appliedFit.current = target; setFit(target); }
+    };
+    measure();
+    const observer = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); });
+    observer.observe(content);
+    observer.observe(stage);
+    return () => { observer.disconnect(); cancelAnimationFrame(raf); };
+  }, [slideKey, step]);
   return <div ref={dialogRef} className="present" role="dialog" aria-modal="true" aria-label="上课模式" tabIndex={-1}>
-    <div className="present-stage" key={slide.key} ref={stageRef}>{slide.render(position.step)}</div>
+    <div className="present-stage" key={slide.key} ref={stageRef}>
+      <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(position.step)}</div>
+    </div>
     <footer className="present-bar">
       <span>{work.name} · 上课模式</span>
       <div className="present-dots">{slides.map((item, index) => <i key={item.key} className={index === position.slide ? "active" : ""} />)}</div>

@@ -293,19 +293,23 @@
 .ink-app.theme-light.network-mode .empty-state { color:#62675B; }
 .ink-app.theme-light.network-mode .inspector-relations .relation-direction { color:#B8392A; }
 
-/* —— T008 可读性（P3-5/P3-8）：小于 12px 的文字提到 12px、
-   小于 32px 高的可点击元素加高；侧栏已脱流，不影响画布 CLS。 —— */
+/* —— T008/T009 可读性（P3-5/P3-8）：小于 12px 的文字提到 12px、
+   小于 32px 高的可点击元素加高。
+   注意：workbench-v5.css / mobile-layout.css 在本文件之后加载，同特异性
+   规则后来居上（T008 首版覆写因此被压住失效）；这里统一改用更高特异性。
+   侧栏已脱流，不影响画布 CLS。 —— */
 .graph-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.explorer-brand small{font-size:12px}
+.explorer-sidebar .explorer-brand small{font-size:12px}
 .explorer-controls button,.explorer-import{font-size:12px;padding:8px 10px}
-.explorer-section summary small{font-size:12px}
-.explorer-tools button{font-size:12px;padding:6px 9px}
-.explorer-controls .explorer-filter-toggle{padding:9px 4px}
+.explorer-controls .explorer-tools button{font-size:12px;min-height:32px;box-sizing:border-box;padding:5px 9px}
+.explorer-controls button.explorer-only{font-size:12px;min-height:32px;box-sizing:border-box;padding:5px 8px}
+.explorer-controls .explorer-section summary{min-height:32px;box-sizing:border-box}
+.explorer-controls .explorer-section summary small{font-size:12px}
 .explorer-count{font-size:12px}
-.explorer-controls .explorer-only{font-size:12px;padding:7px 6px}
+.explorer-sidebar .explorer-dataset h3 small,.explorer-sidebar .explorer-dataset dt{font-size:12px}
 .explorer-section input:not([type=checkbox]),.explorer-section textarea,.explorer-section select{font-size:12px;padding:8px}
 .property-fields legend,.property-fields label{font-size:12px}
-.explorer-hint{font-size:12px}
+.explorer-controls .explorer-hint{font-size:12px}
 .smart-answer,.smart-answer strong{font-size:12px}
 .schema-heading p,.schema-edge-table p{font-size:12px}
 .schema-edge-table table{font-size:12px}
@@ -313,16 +317,20 @@
 .ink-app.network-mode .inspector-header .inspector-category-label{font-size:12px}
 .ink-app.network-mode .graph-rangebar .zoom-value{font-size:12px}
 .ink-app.network-mode .neo-card .graph-filter-group-label{font-size:12px}
-.ink-app.network-mode .neo-card .full-graph-layout-tabs button,.ink-app.network-mode .neo-card .full-graph-view-tabs button{min-height:32px}
-.ink-app.network-mode .neo-card .graph-filter-more summary{min-height:32px}
 .ink-app.network-mode .graph-statusbar{font-size:12px}
+.ink-app.network-mode .canvas-hint{font-size:12px}
 .ink-app.network-mode .explorer-dataset-summary p{font-size:12px}
+/* 画布筛选条页签与「更多」：压过 mobile-layout.css 的 11px/30px（480/760 媒体查询） */
+.ink-app.network-mode .neo-card .full-graph-filterbar .full-graph-layout-tabs button,
+.ink-app.network-mode .neo-card .full-graph-filterbar .full-graph-view-tabs button,
+.ink-app.network-mode .neo-card .full-graph-filterbar .graph-filter-more summary{font-size:12px;min-height:32px;box-sizing:border-box}
+/* 缩略图/复位（globals.css 7px）：恢复可读字号与可点击高度 */
+.graph-first .neo-canvas .graph-minimap>div{font-size:12px}
+.graph-first .neo-canvas .graph-minimap button{font-size:12px;min-height:32px;box-sizing:border-box;padding:4px 6px}
 @media(max-width:800px){
-  .explorer-brand small{font-size:12px}
+  .explorer-sidebar .explorer-brand small{font-size:12px}
 }
 @media(max-width:760px){
   .explorer-sidebar .explorer-nav button{font-size:12px;padding:9px 2px}
-  .ink-app.network-mode .neo-card .full-graph-layout-tabs button,.ink-app.network-mode .neo-card .full-graph-view-tabs button{min-height:32px;font-size:12px}
-  .ink-app.network-mode .neo-card .graph-filter-more summary{min-height:32px;font-size:12px}
   .ink-app.network-mode .graph-rangebar .graph-toolbar-tools button{min-width:32px;width:32px;min-height:32px}
 }
