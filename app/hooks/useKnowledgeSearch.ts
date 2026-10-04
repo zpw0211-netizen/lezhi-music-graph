@@ -48,11 +48,11 @@ export function useKnowledgeSearch(canonicalGraph: CanonicalGraph | null, query:
       const matchedBy = fields.name.includes(terms[0])
         ? "名称/别名"
         : fields.type.includes(terms[0])
-          ? "实体类型"
+          ? "知识点类型"
           : fields.book.includes(terms[0])
             ? "教材"
             : fields.relation.includes(terms[0])
-              ? "关系"
+              ? "知识联系"
               : "描述";
       out.push({ entity, book, relationCount: adjacent.length, matchedBy, score });
     }

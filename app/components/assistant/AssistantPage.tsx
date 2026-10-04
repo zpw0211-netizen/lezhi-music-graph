@@ -29,7 +29,7 @@ export function AssistantPage({ graph, assetUrl, initialQuestion = "", onGraphFo
   const load = (key: string) => {
     let promise = cache.current.get(key);
     if (!promise) {
-      promise = fetch(assetUrl(`data/evidence/${key}.json`)).then(async response => { if (!response.ok) throw new Error("教材证据读取失败"); return response.json() as Promise<EvidencePayload>; });
+      promise = fetch(assetUrl(`data/evidence/${key}.json`)).then(async response => { if (!response.ok) throw new Error("教材出处读取失败"); return response.json() as Promise<EvidencePayload>; });
       cache.current.set(key, promise); promise.catch(() => cache.current.delete(key));
     }
     return promise;

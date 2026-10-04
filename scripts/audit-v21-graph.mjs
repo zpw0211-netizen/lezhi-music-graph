@@ -102,8 +102,8 @@ if (quality.canonical.sharedEntityCount < 1)
   failures.push("no shared cross-textbook entities found");
 
 for (const marker of [
-  "全部知识联系",
-  "跨册知识联系",
+  "全部",
+  "跨册",
   "教材归属",
   "知识联系",
   "展开三层相关知识点",

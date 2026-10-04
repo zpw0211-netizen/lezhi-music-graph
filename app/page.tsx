@@ -349,7 +349,7 @@ export default function Home() {
               hits: searchResults.slice(0, 8).map(({ entity, book, relationCount }) => ({
                 key: `${book.key}-${entity.id}`,
                 title: entity.name,
-                meta: `${book.grade}年级${book.semester} · ${entity.type} · ${relationCount} 条关系`,
+                meta: `${book.grade}年级${book.semester} · ${entity.type} · ${relationCount} 条知识联系`,
                 onPick: () => pickSearchResult(entity),
               })),
             }}

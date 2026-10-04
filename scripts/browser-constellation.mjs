@@ -68,11 +68,11 @@ try {
     const elapsed = Date.now() - time, frames = Number((await stats()).renderCount) - paints;
     await page.mouse.up(); await page.waitForTimeout(400); const moved = JSON.parse((await stats()).selectedPosition);
     assert(Math.abs(moved.x - original.x) > 1); assert(Number((await stats()).pinnedCount) > 0);
-    await menu(); await page.locator(".graph-context-menu").getByRole("button", { name: "取消固定节点", exact: true }).click();
+    await menu(); await page.locator(".graph-context-menu").getByRole("button", { name: "取消固定知识点", exact: true }).click();
     assert.deepEqual(JSON.parse((await stats()).selectedPosition), moved);
     await page.getByRole("button", { name: "恢复全部筛选", exact: true }).click(); await select("保卫黄河");
     assert.deepEqual(JSON.parse((await stats()).selectedPosition), moved); assert.equal(await graphId(), initialBuild);
-    await menu(); await page.locator(".graph-context-menu").getByRole("button", { name: "固定节点", exact: true }).click();
+    await menu(); await page.locator(".graph-context-menu").getByRole("button", { name: "固定知识点", exact: true }).click();
     await menu(); await page.locator(".graph-context-menu").getByRole("button", { name: "恢复布局位置", exact: true }).click(); await page.waitForTimeout(200);
     const restored = JSON.parse((await stats()).selectedPosition); assert(Math.abs(restored.x - original.x) < .001 && Math.abs(restored.y - original.y) < .001);
     return { dragRenderFps: Number((frames * 1000 / elapsed).toFixed(1)), elapsedMs: elapsed, frames, positionRetained: true };

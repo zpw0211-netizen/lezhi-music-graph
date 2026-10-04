@@ -66,10 +66,10 @@ const LAYOUT_TABS: Array<[FullGraphLayoutMode, string, string]> = [
   ["schema", "知识模式", "Schema"],
 ];
 const VIEW_TABS: Array<[FullGraphView, string]> = [
-  ["all", "全部知识联系"],
-  ["cross", "跨册知识联系"],
+  ["all", "全部"],
+  ["cross", "跨册"],
   ["ownership", "教材归属"],
-  ["knowledge", "知识联系"],
+  ["knowledge", "联系"],
 ];
 const TEXTBOOK_POSITIONS: Record<string, { x: number; y: number }> = {
   g7s1: { x: 360, y: 260 },
@@ -1170,7 +1170,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
               </div>
             </div>}
             {graphMode === "all" && (
-              <div className="full-graph-filterbar" aria-label="六册关系视图">
+              <div className="full-graph-filterbar" aria-label="六册知识联系视图">
                 <div className="graph-filter-primary">
                   <div className="graph-filter-group" aria-label="布局">
                     <span className="graph-filter-group-label">布局</span>
@@ -1194,8 +1194,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                       ))}
                     </div>
                   </div>
-                  <div className="graph-filter-group" aria-label="关系">
-                    <span className="graph-filter-group-label">关系</span>
+                  <div className="graph-filter-group" aria-label="知识联系">
+                    <span className="graph-filter-group-label">知识联系</span>
                     <div className="full-graph-view-tabs motion-tabs">
                       <SlidingIndicator activeKey={fullGraphView} />
                       {VIEW_TABS.map(([key, label]) => (

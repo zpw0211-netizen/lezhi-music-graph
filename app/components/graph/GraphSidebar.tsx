@@ -53,6 +53,6 @@ export function GraphSidebar({ view, onView, graph, books, scopeBook, filters, p
       <button className="explorer-reset" onClick={onReset}>恢复全部筛选</button>
     </div>}
     {!collapsed && <section className="explorer-dataset explorer-dataset-summary" aria-label="教材数据"><h3>教材数据</h3><p>{(graph?.entities.length ?? 0).toLocaleString("en-US")} 个知识点 · {(graph?.relationships.length ?? 0).toLocaleString("en-US")} 条知识联系</p></section>}
-    {!collapsed && <details className="explorer-section explorer-import-section"><summary>研究说明（供研究者使用）</summary><p>以下为面向研究者的数据整理工具，日常学习无需打开。</p><button className="explorer-import" onClick={() => onView("import")}>数据导入与校验</button></details>}
+    {!collapsed && <details className="explorer-section explorer-import-section"><summary>研究说明（供研究者使用）</summary><p className="explorer-hint">以下为面向研究者的数据整理工具，日常学习无需打开。</p><button className="explorer-import" onClick={() => onView("import")}>数据导入与校验</button></details>}
   </aside>;
 }
