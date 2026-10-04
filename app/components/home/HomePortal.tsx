@@ -175,8 +175,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
                 <div className="home-scroll-copy">
                   <p className="home-scroll-overline">卷 {volume} · 人音版</p>
                   <h3>{shortTitle}</h3>
-                  <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，按篇章读这册教材。` : "按单元篇章阅读教材内容与关联作品。"}</p>
-                  <p className="home-scroll-countline">{bookUnits.length} 个篇章 · {fmt(book.workCount)} 首作品</p>
+                  <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
+                  <p className="home-scroll-countline">{bookUnits.length} 个单元 · {fmt(book.workCount)} 首作品</p>
                   <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>
                     <button type="button" aria-label={`${unit.numeral || unit.order}，${unit.name || unit.title}，进入${book.title}`} onClick={() => openUnit(book, unit)}>
                       <span className="home-unit-number">{unit.numeral || unit.order}</span><span className="home-unit-title">{unit.title || unit.name}</span>
