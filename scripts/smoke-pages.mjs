@@ -169,7 +169,7 @@ async function main() {
     await page.locator(".home-portal .home-search input").waitFor({ state: "visible", timeout: 10_000 });
     const scrollCount = await page.locator(".home-portal .home-scroll-trigger").count();
     if (scrollCount !== 6) fail(`首页教材画卷数量不正确：${scrollCount}`);
-    if (!(await page.locator(".home-portal .home-view-teasers").count())) fail("首页专属视图入口未显示");
+    if ((await page.locator(".home-portal .home-bookmark-list .home-bookmark-item").count()) !== 3) fail("首页书签入口数量不正确");
   });
 
   await step("桌面：按课学习导航到 #/records", async () => {

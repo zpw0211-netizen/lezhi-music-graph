@@ -10,6 +10,7 @@ import { MelodySet } from "../lesson/MelodyPlayer";
 import { MELODIES } from "../../lib/lesson/melodies";
 import { bareWorkName, type Book, type BookDirectory, type Entity, type Triple } from "../../lib/app/types";
 import { publicAssetUrl } from "../../lib/app/assets";
+import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import type { BookDataStatus } from "../../hooks/useGraphIndex";
 
 type UnitWork = {
@@ -463,6 +464,34 @@ export function WorkLibrary({
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
   }, [bookKey, directory?.key]);
+
+  // The home page can ask for a specific unit ("<bookKey>:<unitId>") before navigating here.
+  useEffect(() => {
+    if (!units.length) return;
+    let requested: string | null = null;
+    try {
+      requested = window.sessionStorage.getItem(RECORDS_FOCUS_UNIT_KEY);
+      if (requested) window.sessionStorage.removeItem(RECORDS_FOCUS_UNIT_KEY);
+    } catch {
+      return;
+    }
+    if (!requested) return;
+    const [requestedBook, requestedUnit] = requested.split(":");
+    if (requestedBook !== (directory?.key ?? bookKey)) return;
+    const unit = units.find((item) => item.id === requestedUnit);
+    if (!unit) return;
+    // Landing on a page, so jump instantly (a smooth scroll gets cut short while the page settles).
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      setActiveUnitId(unit.id);
+      const anchorId = unitAnchorId(directory?.key ?? bookKey, unit.id);
+      document.getElementById(anchorId)?.scrollIntoView({ behavior: "auto", block: "start" });
+      const title = document.getElementById(`${anchorId}-title`);
+      if (title) {
+        title.tabIndex = -1;
+        title.focus({ preventScroll: true });
+      }
+    }));
+  }, [bookKey, directory?.key, units]);
 
   const openWork = useCallback((work: UnitWork, sourceCard?: HTMLButtonElement) => {
     const routeTitle = routeTitleFor(work, allWorks);
