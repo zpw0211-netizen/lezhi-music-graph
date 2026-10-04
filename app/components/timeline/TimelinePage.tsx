@@ -1,167 +1,487 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
+import Image from "next/image";
 import { publicAssetUrl } from "../../lib/app/assets";
 import type { AppRoute } from "../../lib/app/routing";
-import { BOOKS, UNKNOWN, filterWorks, groupWorks, personDates, withPrintedPages, workHref, workRoute, type AtlasTimelineData, type TimelineData, type TimelinePerson, type TimelineWork } from "./timelineModel";
+import { loadYearSupplement } from "../../lib/timeline/yearSupplement";
+import {
+  BOOKS,
+  BOOK_ORDER,
+  UNKNOWN,
+  filterWorks,
+  groupTimelineWorks,
+  personDates,
+  withPrintedPages,
+  withSupplementalYears,
+  workHref,
+  workRoute,
+  type AtlasTimelineData,
+  type TimelineData,
+  type TimelineDisplayWork,
+  type TimelineEraGroup,
+  type TimelinePerson,
+  type TimelineUnit,
+  type TimelineWork,
+} from "./timelineModel";
 
 type Evidence = { textbookPage?: string; pdfPage?: number; summary?: string };
 type EvidenceFile = { evidenceByTriple: Record<string, Evidence[]> };
-type BookFile = { triples: { id: string; subject: string; predicate: string; literal?: string; objectId?: string }[]; entities: { id: string; name: string }[]; evidenceByTriple: Record<string, Evidence[]> };
-type SourceRow = { book: string; tripleId: string; text: string; evidence?: Evidence };
+type SourceRow = { work: TimelineWork; evidence?: Evidence };
+type PageData = { timeline: TimelineData; units: TimelineUnit[] };
+type DragState = { startX: number; startLeft: number };
 const cache = new Map<string, Promise<unknown>>();
-const TIMELINE_SCROLL_KEY = "yapu.timeline.scrollTop";
+const TIMELINE_HORIZONTAL_KEY = "yapu.timeline.horizontalLeft";
+const TIMELINE_VERTICAL_KEY = "yapu.timeline.scrollTop";
+const DEFAULT_TIER_COUNT = 3;
+const DENSE_TIER_COUNT = 4;
+const COLUMN_WIDTH = 184;
+
 function loadJson<T>(path: string): Promise<T> {
   if (!cache.has(path)) cache.set(path, fetch(publicAssetUrl(`data/${path}`)).then(response => {
-    if (!response.ok) throw new Error("教材来源读取失败，请重试。");
+    if (!response.ok) throw new Error("年表资料读取失败，请重试。");
     return response.json();
   }).catch(error => { cache.delete(path); throw error; }));
   return cache.get(path) as Promise<T>;
 }
-function sourceText(book: string, evidence?: Evidence) {
-  const pages = [evidence?.textbookPage ? `教材第 ${evidence.textbookPage} 页` : "教材页码未标注", evidence?.pdfPage != null ? `PDF 第 ${evidence.pdfPage} 页` : ""];
-  return `人民音乐出版社 · ${BOOKS[book] ?? book} · ${pages.filter(Boolean).join(" · ")}`;
+
+function bookShortName(bookKey: string) {
+  return (BOOKS[bookKey] ?? bookKey).replace("年级", "").replace("册", "");
 }
-async function personSources(person: TimelinePerson): Promise<SourceRow[]> {
-  return (await Promise.all((person.lifetimeEvidence ?? []).map(async source => {
-    const file = await loadJson<BookFile>(`books/${source.bookKey}.json`);
-    return (file.evidenceByTriple[source.tripleId]?.length ? file.evidenceByTriple[source.tripleId] : [undefined])
-      .map(evidence => ({ book: source.bookKey, tripleId: source.tripleId, text: source.text, evidence }));
-  }))).flat();
+
+function workYearMark(work: TimelineDisplayWork) {
+  const match = work.yearText.match(/\d{3,4}/);
+  if (match) return `${match[0]}${/年代/.test(work.yearText) ? "s" : ""}`;
+  return work.yearRange?.[0] ?? "年代未标注";
 }
-function Sources({ work, person, related }: { work?: TimelineWork; person?: TimelinePerson; related?: TimelineWork[] }) {
-  const [rows, setRows] = useState<SourceRow[] | null>(null);
-  const [error, setError] = useState("");
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    let active = true;
-    const request = work?.yearEvidence ? loadJson<EvidenceFile>(`evidence/${work.bookKey}.json`).then(file =>
-      (file.evidenceByTriple[work.yearEvidence!.tripleId]?.length ? file.evidenceByTriple[work.yearEvidence!.tripleId] : [undefined]).map(evidence => ({ book: work.bookKey, tripleId: work.yearEvidence!.tripleId, text: `${work.yearEvidence!.relation}：${work.yearText}`, evidence }))) : person ? personSources(person) : Promise.resolve([]);
-    request.then(rows => { if (active) { setRows(rows); setError(""); } }).catch(error => { if (active) setError(error instanceof Error ? error.message : "教材来源读取失败。"); });
-    return () => { active = false; };
-  }, [work, person, attempt]);
-  return <div className="timeline-evidence">
-    {error ? <p role="alert">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>重试</button></p> : rows === null ? <p role="status">正在读取教材来源…</p> : rows.length ? rows.map((row, index) => <div key={`${row.book}:${row.tripleId}:${index}`}><p>{row.text}</p><p>{sourceText(row.book, row.evidence)}</p><p>证据编号：<code>{row.tripleId}</code></p></div>) : <p>{UNKNOWN}，没有可展示的年代证据编号。</p>}
-    {work && <p>章节：{work.unit ?? "教材未归入单元"} · 人民音乐出版社 · {BOOKS[work.bookKey]}</p>}
-    {person && <><p>教材来源：{person.sourceEntities.map(source => BOOKS[source.bookKey] ?? source.bookKey).join("、")}</p><p>相关作品章节：{[...new Set(related?.map(work => `${BOOKS[work.bookKey]} · ${work.unit ?? "教材未归入单元"}`))].join("；") || "教材未标注"}</p></>}
-  </div>;
+
+function getUnitArt(work: TimelineWork, units: TimelineUnit[]) {
+  const unit = units.find(candidate => candidate.bookKey === work.bookKey && candidate.name === work.unit);
+  return unit && unit.order <= 6 ? `art/units/${unit.bookKey}-u${unit.order}.webp` : null;
 }
-function followWorkLink(event: MouseEvent<HTMLAnchorElement>, work: TimelineWork, onOpenWork: (route: AppRoute) => void) {
+
+function artForEra(era: TimelineEraGroup, units: TimelineUnit[], used: Set<string>, index: number) {
+  const candidates = [...new Set(era.works.flatMap(work => work.records.map(record => getUnitArt(record, units)).filter((path): path is string => Boolean(path))))];
+  const available = units.filter(unit => unit.order <= 6).map(unit => `art/units/${unit.bookKey}-u${unit.order}.webp`);
+  const selected = candidates.find(path => !used.has(path)) ?? candidates[0] ?? available[(index * 5) % Math.max(1, available.length)] ?? null;
+  if (selected) used.add(selected);
+  return selected;
+}
+
+function saveTimelinePosition(scroller: HTMLDivElement | null, root: HTMLDivElement | null) {
+  const workspace = root?.closest<HTMLElement>(".workspace");
+  try {
+    if (scroller) window.sessionStorage.setItem(TIMELINE_HORIZONTAL_KEY, String(scroller.scrollLeft));
+    const vertical = workspace?.scrollTop || window.scrollY;
+    window.sessionStorage.setItem(TIMELINE_VERTICAL_KEY, String(vertical));
+  } catch { /* Position restoration stays best-effort when storage is unavailable. */ }
+}
+
+function openWorkLink(event: MouseEvent<HTMLAnchorElement>, work: TimelineWork, onOpenWork: (route: AppRoute) => void, scroller: HTMLDivElement | null, root: HTMLDivElement | null) {
   if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   const route = workRoute(work);
   if (!route) return;
   event.preventDefault();
+  saveTimelinePosition(scroller, root);
   onOpenWork(route);
 }
-function WorkRow({ work, people, onOpenWork }: { work: TimelineWork; people: TimelinePerson[]; onOpenWork: (route: AppRoute) => void }) {
-  const [expanded, setExpanded] = useState(false);
-  const href = workHref(work);
-  return <li className="timeline-work">
-    <p className="timeline-date">{work.yearText ?? UNKNOWN}</p>
-    <div><h3>{href ? <a href={href} onClick={event => followWorkLink(event, work, onOpenWork)}>{work.name}</a> : work.name}</h3><p className="timeline-meta">{BOOKS[work.bookKey]} · {work.unit ?? "教材未归入单元"}{work.printedPage != null && <> · 教材第{work.printedPage}页</>}</p>
-      {people.length > 0 && <p className="timeline-meta">相关人物：{people.map(person => person.name).join("、")}</p>}
-      <details onToggle={event => setExpanded(event.currentTarget.open)}><summary>年代依据与教材来源</summary>{expanded && <Sources work={work} />}</details>
-    </div>
-  </li>;
+
+function evidencePageText(evidence?: Evidence) {
+  const pages = [
+    evidence?.textbookPage ? `教材第 ${evidence.textbookPage} 页` : "教材页码未标注",
+    evidence?.pdfPage != null ? `PDF 第 ${evidence.pdfPage} 页` : "",
+  ].filter(Boolean);
+  return pages.join(" · ");
 }
-function PersonRow({ person, works, onOpenWork }: { person: TimelinePerson; works: TimelineWork[]; onOpenWork: (route: AppRoute) => void }) {
-  const [expanded, setExpanded] = useState(false);
-  return <li className="timeline-person">
-    <h3>{person.name}</h3>
-    <p className="timeline-date">{personDates(person)}</p>
-    <p className="timeline-meta">相关作品：{works.map((work, index) => {
-      const href = workHref(work);
-      return <span key={`${work.bookKey}:${work.id}`}>
-        {index > 0 ? "、" : ""}
-        {href
-          ? <a href={href} onClick={event => followWorkLink(event, work, onOpenWork)}>{work.name}<small>（{BOOKS[work.bookKey]}）</small></a>
-          : <>{work.name}<small>（{BOOKS[work.bookKey]}）</small></>}
-      </span>;
-    })}</p>
-    <details onToggle={event => setExpanded(event.currentTarget.open)}><summary>人物年代依据与教材来源</summary>{expanded && <Sources person={person} related={works} />}</details>
-  </li>;
+
+function TimelineNote({
+  work,
+  position,
+  onOpenRecord,
+  onClose,
+}: {
+  work: TimelineDisplayWork;
+  position: { left: number; top: number };
+  onOpenRecord: (event: MouseEvent<HTMLAnchorElement>, work: TimelineWork) => void;
+  onClose: () => void;
+}) {
+  const [rows, setRows] = useState<SourceRow[] | null>(null);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const previousWork = useRef("");
+
+  useEffect(() => {
+    let active = true;
+    Promise.all(work.records.map(async record => {
+      if (record.yearSource === "textbook" && record.yearEvidence) {
+        const file = await loadJson<EvidenceFile>(`evidence/${record.bookKey}.json`);
+        return { work: record, evidence: file.evidenceByTriple[record.yearEvidence.tripleId]?.[0] };
+      }
+      return { work: record };
+    })).then(result => { if (active) setRows(result); })
+      .catch(reason => { if (active) setError(reason instanceof Error ? reason.message : "教材来源读取失败。"); });
+    return () => { active = false; };
+  }, [work, attempt]);
+
+  useEffect(() => {
+    if (previousWork.current !== work.id) closeRef.current?.focus({ preventScroll: true });
+    previousWork.current = work.id;
+  }, [work.id]);
+
+  return <aside className={`timeline-note${work.hasSupplementYear && !work.hasTextbookYear ? " is-supplement" : ""}`} style={position} id="timeline-note" role="dialog" aria-label={`${work.name}的年代来源`}>
+    <button ref={closeRef} className="timeline-note-close" type="button" aria-label="关闭史料笺" data-close-timeline-note onClick={onClose}>×</button>
+    <span className={`timeline-note-stamp${work.hasSupplementYear && !work.hasTextbookYear ? " is-blue" : ""}`} aria-hidden="true">{work.hasSupplementYear && !work.hasTextbookYear ? "补遗" : "原典"}</span>
+    <p className="timeline-note-kicker">
+      {work.hasTextbookYear && <span className="timeline-origin is-textbook">教材原文</span>}
+      {work.hasSupplementYear && <span className="timeline-origin is-supplement">补充资料（非教材）</span>}
+      {!work.hasTextbookYear && !work.hasSupplementYear && <span>教材未标注年代</span>}
+    </p>
+    <h2>{work.name}</h2>
+    <p className="timeline-note-books">{work.bookKeys.map(key => BOOKS[key] ?? key).join("、")}</p>
+    {error ? <p className="timeline-note-error" role="alert">{error} <button type="button" onClick={() => { setError(""); setAttempt(value => value + 1); }}>重试</button></p> : rows === null ? <p className="timeline-note-loading" role="status">正在读取教材出处…</p> : <div className="timeline-note-sources">
+      {rows.map(({ work: record, evidence }) => {
+        const supplement = record.supplement;
+        const href = workHref(record);
+        return <section className={`timeline-note-source${record.yearSource === "supplement" ? " is-supplement" : ""}`} key={`${record.bookKey}:${record.id}`}>
+          <blockquote>
+            {record.yearSource === "textbook" && record.yearEvidence ? `${record.yearEvidence.relation}：` : ""}
+            {record.yearText ?? UNKNOWN}
+            {supplement?.event ? ` · ${supplement.event}` : ""}
+          </blockquote>
+          {record.yearSource === "textbook" ? <dl>
+            <dt>教材出处</dt><dd>人民音乐出版社 · {BOOKS[record.bookKey] ?? record.bookKey}</dd>
+            <dt>页码</dt><dd>{evidencePageText(evidence)}</dd>
+            {record.unit && <><dt>单元</dt><dd>{record.unit}</dd></>}
+          </dl> : record.yearSource === "supplement" && supplement ? <dl>
+            <dt>所指</dt><dd>{supplement.subject ?? "未标注"}</dd>
+            <dt>教材</dt><dd>{BOOKS[record.bookKey] ?? record.bookKey}{record.unit ? ` · ${record.unit}` : ""}</dd>
+            <dt>来源</dt><dd className="timeline-note-links">{supplement.sources.length ? supplement.sources.map((source, index) => <a key={`${source.url}:${index}`} href={source.url} target="_blank" rel="noopener noreferrer">{source.publisher || source.title}</a>) : "未提供外部来源"}</dd>
+            {supplement.note && <><dt>说明</dt><dd>{supplement.note}</dd></>}
+          </dl> : <p className="timeline-note-undated">教材未标注年代。年表只采用核对后的补充年代。</p>}
+          <p className="timeline-note-record">
+            {href ? <a href={href} onClick={event => onOpenRecord(event, record)}>打开{bookShortName(record.bookKey)}作品详情 →</a> : <span>本册目录暂无作品详情链接</span>}
+          </p>
+        </section>;
+      })}
+    </div>}
+  </aside>;
 }
+
+function TimelineSlip({
+  work,
+  index,
+  tierCount,
+  isSelected,
+  onSelect,
+}: {
+  work: TimelineDisplayWork;
+  index: number;
+  tierCount: number;
+  isSelected: boolean;
+  onSelect: (work: TimelineDisplayWork, trigger: HTMLButtonElement) => void;
+}) {
+  const tier = index % tierCount;
+  const title = work.name.replace(/^《|》$/g, "");
+  const style = {
+    left: `calc(var(--timeline-slip-start) + ${Math.floor(index / tierCount) * COLUMN_WIDTH}px + ${tier * 14}px)`,
+    "--timeline-tier": tier,
+    "--timeline-slip-index": index,
+  } as CSSProperties;
+  return <div className={`timeline-hanger${work.hasTextbookYear ? " has-textbook" : ""}${work.hasSupplementYear ? " has-supplement" : ""}`} style={style}>
+    <span className="timeline-hanger-thread" aria-hidden="true" />
+    <span className="timeline-hanger-knot" aria-hidden="true" />
+    <button className="timeline-slip-tag" type="button" aria-label={`查看《${title}》的年代来源`} aria-haspopup="dialog" aria-controls="timeline-note" aria-expanded={isSelected} onClick={event => onSelect(work, event.currentTarget)}>
+      <span className="timeline-slip-year">{workYearMark(work)}</span>
+      <span className="timeline-slip-title">{title}</span>
+      <span className="timeline-slip-books">{work.bookKeys.map(bookShortName).join("·")}</span>
+    </button>
+  </div>;
+}
+
+function TimelinePeople({ people, width }: { people: TimelinePerson[]; width: number }) {
+  return <section className="timeline-tail" id="timeline-tail" aria-labelledby="timeline-tail-title" style={{ "--timeline-tail-width": `${width}px` } as CSSProperties}>
+    <span className="timeline-tail-rule" aria-hidden="true" />
+    <h2 id="timeline-tail-title">拖尾 · 人物</h2>
+    <p className="timeline-tail-sub">生卒依教材原文 · {people.length} 位</p>
+    <div className="timeline-people-list">{people.map(person => <span className="timeline-person" key={person.id} title={personDates(person)}>{person.name}<small>{personDates(person)}</small></span>)}</div>
+    <span className="timeline-colophon" aria-label="芽谱藏">芽谱藏</span>
+  </section>;
+}
+
 export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => void }) {
-  const [data, setData] = useState<TimelineData | null>(null);
+  const [pageData, setPageData] = useState<PageData | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [book, setBook] = useState("");
   const [query, setQuery] = useState("");
-  const [activeEra, setActiveEra] = useState("");
+  const [activeEra, setActiveEra] = useState("timeline-opening");
+  const [selectedWork, setSelectedWork] = useState<TimelineDisplayWork | null>(null);
+  const selectedNoteTrigger = useRef<HTMLButtonElement | null>(null);
+  const [notePosition, setNotePosition] = useState({ left: 16, top: 120 });
+  const [unrolling, setUnrolling] = useState(true);
+  const [dragging, setDragging] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  const openWork = useCallback((route: AppRoute) => {
-    const workspace = root.current?.closest<HTMLElement>(".workspace");
-    const scrollTop = workspace?.scrollTop || window.scrollY;
-    try { window.sessionStorage.setItem(TIMELINE_SCROLL_KEY, String(scrollTop)); } catch { /* Scroll restoration remains best-effort when storage is blocked. */ }
-    onOpenWork(route);
+  const scroller = useRef<HTMLDivElement>(null);
+  const ruler = useRef<HTMLDivElement>(null);
+  const drag = useRef<DragState | null>(null);
+  const rootWorks = useMemo(() => pageData?.timeline.works ?? [], [pageData]);
+  const works = useMemo(() => pageData ? filterWorks(pageData.timeline, book, query) : [], [pageData, book, query]);
+  const groups = useMemo(() => groupTimelineWorks(works), [works]);
+  const visibleWorkIds = useMemo(() => new Set(works.map(work => work.id)), [works]);
+  const people = useMemo(() => pageData?.timeline.people.filter(person => person.works.some(id => visibleWorkIds.has(id))) ?? [], [pageData, visibleWorkIds]);
+  const tailPeople = useMemo(() => people.filter(person => person.lifetimeText.length > 0), [people]);
+  const datedCount = rootWorks.filter(work => work.yearRange).length;
+  const supplementCount = rootWorks.filter(work => work.yearSource === "supplement").length;
+  const tailWidth = 220 + Math.ceil(tailPeople.length / 2) * 62 + 120;
+
+  const onOpenRecord = useCallback((event: MouseEvent<HTMLAnchorElement>, work: TimelineWork) => {
+    openWorkLink(event, work, onOpenWork, scroller.current, root.current);
   }, [onOpenWork]);
-  useEffect(() => {
-    const navigation = root.current?.closest("main")?.querySelector('nav[aria-label="主导航"]');
-    if (!navigation) return;
-    const measure = () => root.current?.style.setProperty("--timeline-nav-height", `${navigation.getBoundingClientRect().height}px`);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(navigation);
-    return () => observer.disconnect();
-  }, []);
+
   useEffect(() => {
     let active = true;
     Promise.all([
       loadJson<TimelineData>("timeline.json"),
+      loadJson<TimelineUnit[]>("units.json"),
+      loadYearSupplement(),
       loadJson<AtlasTimelineData>("atlas.json").catch(() => null),
-    ]).then(([timeline, atlas]) => {
-      if (active) { setData(atlas ? withPrintedPages(timeline, atlas) : timeline); setError(""); }
-    }).catch(error => { if (active) setError(error instanceof Error ? error.message : "年表资料读取失败。"); });
+    ]).then(([timeline, units, supplements, atlas]) => {
+      if (!active) return;
+      let enriched = withSupplementalYears(timeline, supplements);
+      if (atlas) enriched = withPrintedPages(enriched, atlas);
+      setPageData({ timeline: enriched, units });
+      setError("");
+    }).catch(reason => { if (active) setError(reason instanceof Error ? reason.message : "年表资料读取失败。"); });
     return () => { active = false; };
   }, [attempt]);
+
   useEffect(() => {
-    if (!data) return;
-    let saved: string | null = null;
-    try { saved = window.sessionStorage.getItem(TIMELINE_SCROLL_KEY); } catch { /* Ignore unavailable session storage. */ }
-    if (saved === null) return;
-    const scrollTop = Number(saved);
-    if (!Number.isFinite(scrollTop) || scrollTop < 0) {
-      try { window.sessionStorage.removeItem(TIMELINE_SCROLL_KEY); } catch { /* Ignore unavailable session storage. */ }
-      return;
-    }
+    const navigation = root.current?.closest(".workspace")?.querySelector<HTMLElement>('nav[aria-label="主导航"]');
+    if (!navigation) return;
+    const measure = () => {
+      root.current?.style.setProperty("--timeline-nav-height", `${navigation.getBoundingClientRect().height}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(navigation);
+    window.addEventListener("resize", measure);
+    return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
+  }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setTimeout(() => setUnrolling(false), 2600);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!pageData || !scroller.current) return;
+    let savedHorizontal: string | null = null;
+    let savedVertical: string | null = null;
+    try {
+      savedHorizontal = window.sessionStorage.getItem(TIMELINE_HORIZONTAL_KEY);
+      savedVertical = window.sessionStorage.getItem(TIMELINE_VERTICAL_KEY);
+    } catch { /* Ignore unavailable session storage. */ }
+    const horizontal = Number(savedHorizontal);
+    const vertical = Number(savedVertical);
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
       secondFrame = window.requestAnimationFrame(() => {
-        const workspace = root.current?.closest<HTMLElement>(".workspace");
-        if (workspace) workspace.scrollTop = scrollTop;
-        window.scrollTo(0, scrollTop);
-        try { window.sessionStorage.removeItem(TIMELINE_SCROLL_KEY); } catch { /* Ignore unavailable session storage. */ }
+        if (savedHorizontal !== null && Number.isFinite(horizontal) && horizontal >= 0 && scroller.current) scroller.current.scrollLeft = horizontal;
+        if (savedVertical !== null && Number.isFinite(vertical) && vertical >= 0) {
+          const workspace = root.current?.closest<HTMLElement>(".workspace");
+          if (workspace && workspace.scrollHeight > workspace.clientHeight) workspace.scrollTop = vertical;
+          else window.scrollTo(0, vertical);
+        }
+        try {
+          window.sessionStorage.removeItem(TIMELINE_HORIZONTAL_KEY);
+          window.sessionStorage.removeItem(TIMELINE_VERTICAL_KEY);
+        } catch { /* Ignore unavailable session storage. */ }
       });
     });
-    return () => {
-      window.cancelAnimationFrame(firstFrame);
-      if (secondFrame) window.cancelAnimationFrame(secondFrame);
-    };
-  }, [data]);
-  const works = useMemo(() => data ? filterWorks(data, book, query) : [], [data, book, query]);
-  const groups = useMemo(() => groupWorks(works), [works]);
-  const people = useMemo(() => data?.people.filter(person => person.works.some(id => works.some(work => work.id === id))) ?? [], [data, works]);
-  const datedPeople = useMemo(() => people.filter(person => person.bornRange || person.diedRange).sort((a, b) => (a.bornRange?.[0] ?? a.diedRange?.[0] ?? Infinity) - (b.bornRange?.[0] ?? b.diedRange?.[0] ?? Infinity)), [people]);
-  const undatedPeople = people.filter(person => !person.bornRange && !person.diedRange);
+    return () => { window.cancelAnimationFrame(firstFrame); if (secondFrame) window.cancelAnimationFrame(secondFrame); };
+  }, [pageData]);
+
   useEffect(() => {
-    const observer = new IntersectionObserver(entries => { for (const entry of entries) if (entry.isIntersecting) setActiveEra(entry.target.id); }, { rootMargin: "-18% 0px -65% 0px" });
-    root.current?.querySelectorAll(".timeline-chapter, .timeline-people").forEach(section => observer.observe(section));
-    return () => observer.disconnect();
+    const node = scroller.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      if (window.matchMedia("(max-width: 760px)").matches || event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      event.preventDefault();
+      node.scrollLeft += event.deltaY;
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, []);
+
+  useEffect(() => {
+    const node = scroller.current;
+    if (!node) return;
+    const sections = [...node.querySelectorAll<HTMLElement>("#timeline-opening, .timeline-era-section, #timeline-tail")];
+    if (!sections.length) return;
+    const mobileLayout = window.matchMedia("(max-width: 760px)").matches;
+    const observerRoot = mobileLayout ? null : node;
+    const centerRootMargin = mobileLayout ? "0px" : "0px -48% 0px -48%";
+    const revealRootMargin = mobileLayout ? "0px" : "0px 12% 0px 12%";
+    const centerObserver = new IntersectionObserver(entries => {
+      const current = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (current) {
+        setActiveEra(current.target.id);
+        const button = ruler.current?.querySelector<HTMLButtonElement>(`[data-target="${CSS.escape(current.target.id)}"]`);
+        button?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    }, { root: observerRoot, rootMargin: centerRootMargin, threshold: [0, 0.25, 0.5, 0.75, 1] });
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("is-in"); });
+    }, { root: observerRoot, rootMargin: revealRootMargin, threshold: 0.01 });
+    sections.forEach(section => centerObserver.observe(section));
+    sections.filter(section => section.classList.contains("timeline-era-section")).forEach(section => revealObserver.observe(section));
+    return () => { centerObserver.disconnect(); revealObserver.disconnect(); };
   }, [groups]);
-  function jump(id: string) {
+
+  useEffect(() => {
+    if (!selectedWork) return;
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelectedWork(null);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [selectedWork]);
+
+  useEffect(() => {
+    if (!selectedWork) selectedNoteTrigger.current?.focus({ preventScroll: true });
+  }, [selectedWork]);
+
+  const closeNoteFromOutside = (event: PointerEvent<HTMLDivElement>) => {
+    const target = event.target;
+    if (!(target instanceof Element) || target.closest(".timeline-note, .timeline-slip-tag")) return;
+    if (selectedWork) setSelectedWork(null);
+  };
+
+  const jumpTo = (id: string) => {
     const section = document.getElementById(id);
-    section?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
-    section?.focus({ preventScroll: true });
+    if (!section) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (window.matchMedia("(max-width: 760px)").matches) section.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+    else scroller.current?.scrollTo({ left: Math.max(0, section.offsetLeft - (id === "timeline-opening" ? 0 : 40)), behavior: reducedMotion ? "instant" : "smooth" });
     setActiveEra(id);
-  }
-  return <div className="timeline-page" ref={root} aria-labelledby="timeline-title">
-    <header className="timeline-opening"><p className="timeline-kicker">六册教材 · 作品年表</p><h1 id="timeline-title">循着年代<br />翻阅作品</h1><p className="timeline-lede">从教材记载的创作年代出发，找到作品与相关人物。每一条年代都保留原文，展开即可查阅教材依据。</p><p className="timeline-total">{data ? `${data.works.length} 条作品记录 · ${data.works.filter(work => work.yearRange).length} 条标有年代 · ${data.people.length} 位相关人物` : "正在读取年表资料…"}</p></header>
-    <section className="timeline-controls" aria-label="年表筛选"><div role="group" aria-label="按教材册别筛选">{["", ...Object.keys(BOOKS)].map(key => <button key={key} type="button" aria-pressed={book === key} onClick={() => setBook(key)}>{key ? BOOKS[key].replace("年级", "").replace("册", "") : "六册"}</button>)}</div><label>查找作品<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="输入作品名" /></label></section>
-    {error ? <p role="alert">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>重试</button></p> : !data ? <div className="timeline-loading" role="status">正在载入作品与人物…</div> : <><p className="timeline-result" role="status">找到 {works.length} 条作品记录，其中 {works.filter(work => work.yearRange).length} 条标有年代。人物随相关作品筛选。</p>
-      {works.length === 0 ? <section className="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看六册教材。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section> : <div className="timeline-book"><nav className="timeline-rail" aria-label="年代跳转">{groups.map(group => <button key={group.id} type="button" aria-current={activeEra === group.id ? "location" : undefined} onClick={() => jump(group.id)}>{group.label === UNKNOWN ? "未标注年代" : group.label}<small>{group.works.length}</small></button>)}<button type="button" aria-current={activeEra === "timeline-people" ? "location" : undefined} onClick={() => jump("timeline-people")}>相关人物<small>{people.length}</small></button></nav>
-        <div className="timeline-chapters">{groups.map(group => <section className={`timeline-chapter${group.label === UNKNOWN ? " is-undated" : ""}`} key={group.id} id={group.id} tabIndex={-1} aria-labelledby={`${group.id}-title`}><header><p className="timeline-kicker">作品 · {group.works.length} 条记录</p><h2 id={`${group.id}-title`}>{group.label === UNKNOWN ? <>{UNKNOWN}</> : <><span>{group.label.replace("年代", "")}</span>年代</>}</h2><p className="timeline-group-note">{group.label === UNKNOWN ? "这些作品的创作年代未在年表源数据中标注。" : "按教材年代范围起点归组；作品旁保留教材年代原文。"}</p></header><ol>{group.works.map(work => <WorkRow key={`${work.bookKey}:${work.id}`} work={work} people={data.people.filter(person => person.works.includes(work.id))} onOpenWork={openWork} />)}</ol></section>)}
-          <section id="timeline-people" className="timeline-people" tabIndex={-1} aria-labelledby="timeline-people-title"><p className="timeline-kicker">作品里的名字</p><h2 id="timeline-people-title">相关人物</h2><p>生卒年代来自教材数据；按已知生年排序，缺少生年时按卒年排序。</p><ol>{datedPeople.map(person => <PersonRow key={person.id} person={person} works={works.filter(work => person.works.includes(work.id))} onOpenWork={openWork} />)}</ol><h3 className="timeline-undated-people">{UNKNOWN}</h3><p>{undatedPeople.length} 位人物</p><ol>{undatedPeople.map(person => <PersonRow key={person.id} person={person} works={works.filter(work => person.works.includes(work.id))} onOpenWork={openWork} />)}</ol></section>
-        </div></div>}
-    </>}
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest("input, textarea, select, button, a, summary, [contenteditable='true']")) return;
+    const node = scroller.current;
+    if (!node) return;
+    const page = node.clientWidth * 0.8;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior = reducedMotion ? "instant" : "smooth";
+    const movements: Record<string, number> = { ArrowRight: 160, ArrowLeft: -160, PageDown: page, PageUp: -page };
+    if (event.key in movements) {
+      event.preventDefault();
+      node.scrollBy({ left: movements[event.key], behavior });
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      node.scrollTo({ left: 0, behavior });
+    } else if (event.key === "End") {
+      event.preventDefault();
+      node.scrollTo({ left: node.scrollWidth, behavior });
+    }
+  };
+
+  const beginDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0 || window.matchMedia("(max-width: 760px)").matches || (event.target instanceof Element && event.target.closest("a, button, input"))) return;
+    drag.current = { startX: event.clientX, startLeft: scroller.current?.scrollLeft ?? 0 };
+    setDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const moveDrag = (event: PointerEvent<HTMLDivElement>) => {
+    if (drag.current && scroller.current) scroller.current.scrollLeft = drag.current.startLeft - (event.clientX - drag.current.startX);
+  };
+  const endDrag = () => { drag.current = null; setDragging(false); };
+
+  const bookOptions = ["", ...BOOK_ORDER];
+  const indexItems = [
+    { id: "timeline-opening", label: "引首" },
+    ...groups.map(group => ({ id: group.id, label: group.undated ? "未标年代" : group.ancient ? "古调" : group.from != null && group.from >= 1930 ? `${group.label}s` : group.label })),
+    { id: "timeline-tail", label: "拖尾" },
+  ];
+  useEffect(() => {
+    const track = ruler.current;
+    const button = [...(track?.querySelectorAll<HTMLButtonElement>("button") ?? [])].find(item => item.dataset.target === activeEra);
+    const marker = track?.querySelector<HTMLElement>(".timeline-ruler-mark");
+    if (!button || !marker) return;
+    marker.style.width = `${Math.max(0, button.offsetWidth - 26)}px`;
+    marker.style.transform = `translateX(${button.offsetLeft + 13}px)`;
+  }, [activeEra, groups]);
+  const usedArt = new Set<string>();
+  const decoratedGroups = groups.map((group, index) => ({ group, image: artForEra(group, pageData?.units ?? [], usedArt, index) }));
+  return <div className="timeline-page" ref={root} onPointerDown={closeNoteFromOutside} aria-labelledby="timeline-title">
+    <div className="timeline-toolbar" aria-label="作品年表筛选">
+      <div className="timeline-book-filter" role="group" aria-label="按教材册别筛选">
+        {bookOptions.map(key => <button key={key || "all"} type="button" aria-pressed={book === key} onClick={() => { setSelectedWork(null); setBook(key); }}>{key ? bookShortName(key) : "六册"}</button>)}
+      </div>
+      <label className="timeline-search">查找作品<input type="search" value={query} onChange={event => { setSelectedWork(null); setQuery(event.target.value); }} placeholder="输入作品名" aria-label="查找作品" /></label>
+      <p className="timeline-count" role="status">{pageData ? `${rootWorks.length} 首作品 · ${datedCount} 首标有年代 · ${supplementCount} 条补充资料` : "正在读取年表资料…"}</p>
+    </div>
+    <nav className="timeline-ruler" aria-label="年代索引">
+      <div className="timeline-ruler-track" ref={ruler}>
+        {indexItems.map(item => <button key={item.id} type="button" data-target={item.id} aria-current={activeEra === item.id ? "location" : undefined} onClick={() => jumpTo(item.id)}>{item.label}</button>)}
+        <span className="timeline-ruler-mark" aria-hidden="true" />
+      </div>
+      <span className="timeline-ruler-hint">向右展卷<i aria-hidden="true" /></span>
+    </nav>
+    {error ? <p className="timeline-error" role="alert">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>重试</button></p> : <div className="timeline-stage">
+      <div className={`timeline-scroller${dragging ? " is-dragging" : ""}`} ref={scroller} tabIndex={0} role="region" aria-label="作品年表长卷，使用方向键或拖动浏览" onKeyDown={handleKeyDown} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+        <div className="timeline-scroll-track">
+          <i className="timeline-roll-rod timeline-roll-rod-start" aria-hidden="true" />
+          <div className="timeline-roll" style={{ "--timeline-intro-width": "min(74vw, 1080px)", "--timeline-tail-width": `${tailWidth}px` } as CSSProperties}>
+            <section className="timeline-opening" id="timeline-opening" aria-labelledby="timeline-title">
+              <span className="timeline-seal timeline-opening-seal" aria-hidden="true">芽谱</span>
+              <div className="timeline-opening-copy">
+                <p>六册教材里的作品，依年代展成一卷。<b>从左往右读</b>：每一段配一幅教材插画，作品挂在下方的时间轴上。</p>
+                <div className="timeline-legend"><span><i className="timeline-legend-seal is-red">1935</i>教材原文写明的年代</span><span><i className="timeline-legend-seal is-blue">1950</i>补充资料（非教材）</span></div>
+              </div>
+              <h1 className="timeline-title-vertical" id="timeline-title"><span>循着年代</span><span>翻阅作品</span></h1>
+            </section>
+            <div className="timeline-axis" aria-hidden="true" />
+            {pageData && decoratedGroups.map(({ group, image }) => {
+              const textbookCount = group.works.reduce((total, work) => total + work.records.filter(record => record.yearSource === "textbook").length, 0);
+              const extraCount = group.works.reduce((total, work) => total + work.records.filter(record => record.yearSource === "supplement").length, 0);
+              const units = [...new Set(group.works.flatMap(work => work.records.map(record => record.unit?.replace(/^第.单元\s*/, "")).filter((unit): unit is string => Boolean(unit))))].slice(0, 3);
+              const tierCount = group.works.length >= 7 ? DENSE_TIER_COUNT : DEFAULT_TIER_COUNT;
+              const slipsWidth = Math.ceil(group.works.length / tierCount) * COLUMN_WIDTH + 80;
+              const sectionWidth = `max(calc(var(--timeline-band-height) * 2.4), calc(var(--timeline-slip-start) + ${slipsWidth}px), 580px)`;
+              const sectionVars = { "--timeline-era-width": sectionWidth, "--timeline-art-width": "var(--timeline-era-width)" } as CSSProperties;
+              return <section className={`timeline-era-section${group.undated ? " is-undated" : ""}`} id={group.id} key={group.id} style={sectionVars} aria-labelledby={`${group.id}-title`}>
+                <div className="timeline-artwork" aria-hidden="true"><div className="timeline-art-reveal">{image && <Image src={publicAssetUrl(image)} alt="" aria-hidden="true" fill sizes="(max-width: 760px) 100vw, 1100px" unoptimized loading={group.id === "era-ancient" ? "eager" : "lazy"} />}</div></div>
+                <header className="timeline-era-title">
+                  <p className="timeline-era-subtitle">{group.subtitle}</p>
+                  <h2 id={`${group.id}-title`} className={group.ancient ? "is-ancient" : ""}>{group.undated ? "未标注" : group.ancient ? "古调" : group.label}<small>{group.undated ? "年代" : group.from != null && group.from >= 1930 ? "年代" : ""}</small></h2>
+                  <p>{group.works.length} 首作品{textbookCount > 0 && <> · <em>{`教材原文 ${textbookCount}`}</em></>}{extraCount > 0 && <> · <em className="is-blue">{`补充资料 ${extraCount}`}</em></>}{units.length > 0 && <><br />多见于「{units.join("」「")}」</>}</p>
+                </header>
+                <span className="timeline-axis-tick" aria-hidden="true"><b>{group.undated ? "年代未标注" : group.ancient ? "1700 以前" : group.from}</b></span>
+                {group.works.length > 0 ? <div className="timeline-hangers">{group.works.map((work, index) => <TimelineSlip key={work.id} work={work} index={index} tierCount={tierCount} isSelected={selectedWork?.id === work.id} onSelect={(selected, trigger) => {
+                  const rect = trigger.getBoundingClientRect();
+                  const width = Math.min(420, window.innerWidth - 24);
+                  setNotePosition({ left: Math.max(12, Math.min(window.innerWidth - width - 12, rect.left)), top: Math.max(96, Math.min(window.innerHeight - 400, rect.top - 250)) });
+                  selectedNoteTrigger.current = trigger;
+                  setSelectedWork(selected);
+                }} />)}</div> : <p className="timeline-empty-era">没有找到相符的作品。</p>}
+              </section>;
+            })}
+            {pageData && !groups.length && <section className="timeline-empty-era" id="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看六册教材。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section>}
+            {pageData && <TimelinePeople people={tailPeople} width={tailWidth} />}
+            {!pageData && <section className="timeline-loading" role="status">正在载入作品与人物…</section>}
+          </div>
+          <i className="timeline-roll-rod timeline-roll-rod-end" aria-hidden="true" />
+        </div>
+      </div>
+      {unrolling && <div className="timeline-unroll" aria-hidden="true" onAnimationEnd={() => setUnrolling(false)}><i className="timeline-roll-rod" /><span /></div>}
+    </div>}
+    {selectedWork && <TimelineNote key={selectedWork.id} work={selectedWork} position={notePosition} onOpenRecord={onOpenRecord} onClose={() => setSelectedWork(null)} />}
   </div>;
 }
