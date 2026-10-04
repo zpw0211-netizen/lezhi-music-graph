@@ -56,3 +56,11 @@
 .ink-app.theme-light.network-mode .knowledge-body img{display:block;max-width:100%;max-height:300px;object-fit:contain;mix-blend-mode:multiply;filter:sepia(.2) contrast(1.04)}
 @media(max-width:1500px) and (min-width:1001px){.detail-open .explorer-sidebar{width:56px!important;flex-basis:56px!important}.detail-open .explorer-sidebar .explorer-controls,.detail-open .explorer-sidebar .explorer-brand>div,.detail-open .explorer-sidebar .explorer-import{display:none}.detail-open .explorer-sidebar .explorer-nav button{font-size:0;justify-content:center;padding:8px}.detail-open .explorer-sidebar .explorer-brand{padding:12px 4px;flex-wrap:wrap;justify-content:center}}
 @media(max-width:1000px){.theme-light.detail-open .neo-layout{grid-template-columns:minmax(0,1fr);height:auto}.ink-app.theme-light.network-mode .knowledge-detail-drawer{width:100%;height:65vh;min-height:360px}.detail-open .neo-canvas{min-height:45vh}.ink-app.theme-light.network-mode .knowledge-header{padding:16px}.ink-app.theme-light.network-mode .knowledge-body{padding:0 16px 20px}.knowledge-navigation{flex-wrap:wrap}}
+
+/* —— T008 可读性：抽屉内 <12px 文字提到 12px、按钮加高到 ≥32px —— */
+.ink-app.theme-light.network-mode .knowledge-detail-drawer button{padding:8px 10px}
+.ink-app.theme-light.network-mode .knowledge-meta dt{font-size:12px}
+.ink-app.theme-light.network-mode .knowledge-facts button{padding:4px 0}
+.ink-app.theme-light.network-mode .knowledge-evidence small,
+.ink-app.theme-light.network-mode .knowledge-evidence>span{font-size:12px}
+.ink-app.theme-light.network-mode .knowledge-body figcaption{font-size:12px}
