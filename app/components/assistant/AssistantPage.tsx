@@ -30,6 +30,26 @@ const citationPageLabel = (textbookPage: string | number, pdfPage: number | null
     ? `教材第 ${printedPage} 页`
     : `PDF 第 ${pdfPage ?? "—"} 页`;
 };
+// 教材单元目录（public/data/units.json，与按课学习页同一数据源）的最小类型。
+type UnitCatalog = { bookKey: string; id: string; name: string; title: string; works: { id: string; name: string; pdfPage?: number | null; summary?: string | null }[] };
+// 「某单元有哪些作品」必须按正式单元目录完整列出（T010）：图谱检索沿知识关系
+// 边走，只答出有联系的作品，会误导教师以为单元只有这几首。此函数为纯函数，
+// scripts/test-sample-questions.mjs 会从本文件提取它，断言"回答作品数 =
+// 单元目录作品数"；修改签名或内部依赖时必须同步该脚本的提取逻辑。
+export const unitWorksAnswer = (question: string, units: UnitCatalog[], books: { key: string; title: string }[], base: AnswerResult): AnswerResult | null => {
+  const key = (value: string) => String(value ?? "").toLowerCase().replace(/[《》“”"'\s，。！？、：；·（）()]/g, "");
+  if (!/单元/.test(question) || !/作品|曲目|歌曲/.test(question) || !Array.isArray(units) || !units.length) return null;
+  const term = key(question);
+  const matched = units
+    .filter(unit => (unit.title && term.includes(key(unit.title))) || (unit.name && term.includes(key(unit.name))))
+    .sort((a, b) => key(b.title).length - key(a.title).length)[0];
+  const works = matched?.works ?? [];
+  if (!matched || !works.length) return null;
+  const bookTitle = books.find(book => book.key === matched.bookKey)?.title ?? matched.bookKey;
+  const shortAnswer = `${matched.name}（${bookTitle}）按教材单元目录共收录 ${works.length} 首作品：${works.map((work, index) => `${index + 1}.${work.name}`).join("；")}。`;
+  const unitEvidence = works.map(work => ({ id: `unit:${matched.id}:${work.id}`, bookKey: matched.bookKey, bookTitle, pdfPage: work.pdfPage ?? null, textbookPage: "", summary: work.summary ?? "", sourceType: "textbook_explicit" as const }));
+  return { ...base, answer: shortAnswer, shortAnswer, evidence: [...unitEvidence, ...base.evidence.filter(item => !unitEvidence.some(unit => unit.id === item.id))], confidence: "supported", missingKnowledge: base.missingKnowledge.filter(item => !/没有找到足够的相关教材内容|没有找到教材明确说明/.test(item)) };
+};
 export function AssistantPage({ graph, assetUrl, initialQuestion = "", onGraphFocus }: { graph: RagGraph; assetUrl: (path: string) => string; initialQuestion?: string; onGraphFocus: (result: AnswerResult) => void }) {
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,6 +67,13 @@ export function AssistantPage({ graph, assetUrl, initialQuestion = "", onGraphFo
     }
     return promise;
   };
+  // 单元目录懒加载：只在遇到单元类问题时请求一次，失败则退回常规图谱问答。
+  const unitsCache = useRef<Promise<UnitCatalog[]> | null>(null);
+  const loadUnits = () => {
+    if (!unitsCache.current) unitsCache.current = fetch(assetUrl("data/units.json")).then(async response => response.ok ? await response.json() as UnitCatalog[] : [] as UnitCatalog[]).catch(() => [] as UnitCatalog[]);
+    return unitsCache.current;
+  };
+  const bookTitles = graph.books.map(book => ({ key: book.key, title: book.title }));
   const submit = async (value = question) => {
     const q = value.trim(); if (!q || busy) return;
     setBusy(true); setError(""); setQuestion("");
@@ -54,6 +81,9 @@ export function AssistantPage({ graph, assetUrl, initialQuestion = "", onGraphFo
     try {
       const retrieval = await enrichGraph(graph, q, history, load);
       let result = graphAnswer(retrieval, q);
+      // 单元类问题按正式单元目录完整列出作品（T010），未命中则保持原回答。
+      const unitResult = unitWorksAnswer(q, await loadUnits(), bookTitles, result);
+      if (unitResult) result = unitResult;
       const endpoint = process.env.NEXT_PUBLIC_AI_API_URL?.trim();
       if (endpoint) {
         try {
