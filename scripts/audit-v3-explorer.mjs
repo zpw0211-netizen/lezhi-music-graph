@@ -2,10 +2,23 @@ import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
-const [packageText, page, sigmaScene, algorithms, pathFinder, graphIndexText] =
+const [
+  packageText,
+  explorerState,
+  explorer,
+  rendererBoundary,
+  sidebar,
+  sigmaScene,
+  algorithms,
+  pathFinder,
+  graphIndexText,
+] =
   await Promise.all([
     read("package.json"),
-    read("app/page.tsx"),
+    read("app/components/explorer/useGraphExplorer.ts"),
+    read("app/components/explorer/GraphExplorer.tsx"),
+    read("app/components/graph/GraphRendererBoundary.tsx"),
+    read("app/components/graph/GraphSidebar.tsx"),
     read("app/components/graph/SigmaGraphScene.tsx"),
     read("app/lib/graph/graph-algorithms.ts"),
     read("app/components/graph/GraphPathFinder.tsx"),
@@ -21,11 +34,55 @@ const requireText = (source, token, label) => {
 
 if (!pkg.dependencies?.sigma || !pkg.dependencies?.["@react-sigma/core"])
   failures.push("Sigma WebGL dependencies are missing");
-requireText(page, 'useState<FullGraphRenderer>("sigma")', "Sigma is not the default full-graph renderer");
-requireText(page, "GraphRendererBoundary", "Canvas fallback boundary is missing");
-requireText(page, "graphPerspective", "graph perspectives are missing");
-requireText(page, "GraphPathFinder", "path finder is missing");
-requireText(page, "canonicalEntityBySearchKey", "canonical search mapping is missing");
+requireText(
+  explorerState,
+  'useState<FullGraphRenderer>("sigma")',
+  "Sigma is not the default full-graph renderer",
+);
+requireText(
+  rendererBoundary,
+  "static getDerivedStateFromError(): State",
+  "Canvas error boundary does not catch renderer errors",
+);
+requireText(
+  rendererBoundary,
+  "this.state.failed ? this.props.fallback : this.props.children",
+  "Canvas fallback boundary does not render its fallback",
+);
+requireText(
+  explorer,
+  "<GraphRendererBoundary fallback=",
+  "Graph renderer is not wrapped by the Canvas fallback boundary",
+);
+requireText(
+  explorerState,
+  'useState<GraphPerspective>("comprehensive")',
+  "graph perspective state is missing",
+);
+requireText(explorerState, "const handlePerspective = useCallback", "graph perspective action is missing");
+requireText(sidebar, "图谱观察方式", "graph perspective controls are missing");
+requireText(explorer, "perspective={explorer.graphPerspective}", "graph perspective state is not connected to the UI");
+requireText(
+  explorer,
+  'import { GraphPathFinder } from "../graph/GraphPathFinder"',
+  "path finder is not imported by the graph explorer",
+);
+requireText(explorer, "<GraphPathFinder", "path finder is not rendered by the graph explorer");
+requireText(
+  explorerState,
+  "const canonicalEntityBySearchKey = useMemo(() => {",
+  "canonical search mapping is missing",
+);
+requireText(
+  explorerState,
+  "canonicalEntityBySearchKey.get(searchKey(entity))",
+  "canonical search mapping is not used to resolve entities",
+);
+requireText(
+  explorer,
+  "canonicalEntityBySearchKey.get(",
+  "graph explorer does not consume the canonical search mapping",
+);
 requireText(sigmaScene, "nodeReducer", "Bloom focus node reducer is missing");
 requireText(sigmaScene, "edgeReducer", "edge focus reducer is missing");
 requireText(sigmaScene, "...data", "Sigma reducers must preserve coordinates and program type");
