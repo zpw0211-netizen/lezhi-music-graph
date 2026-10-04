@@ -33,6 +33,20 @@
   background: transparent;
 }
 
+/* 屏幕阅读器的页面级 h1（视觉隐藏，补全 h1→h2→h3 层级） */
+.research-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ---------- 卷首：题引 + 楷体章题 + 导读 ---------- */
 .research-analysis-header {
   display: block;
@@ -371,7 +385,7 @@
   padding: 8px 4px 8px;
   border-bottom: 1px solid var(--ink-2);
   color: var(--ink-3);
-  font-size: 11px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -437,12 +451,12 @@
 .core-ranking-panel li span small {
   margin-top: 2px;
   color: var(--ink-3);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .core-ranking-panel li em {
   color: var(--ink-2);
-  font-size: 11px;
+  font-size: 12px;
   font-style: normal;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -553,7 +567,7 @@
 .source-layer-panel tbody th small {
   margin-left: 8px;
   color: var(--ink-3);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -690,13 +704,13 @@
   }
 
   .matrix-panel th {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .matrix-panel td button {
     min-height: 38px;
     padding: 0 2px;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .matrix-legend-diagonal {
@@ -705,7 +719,7 @@
 
   .core-ranking-head {
     grid-template-columns: minmax(0, 1fr) repeat(4, 28px);
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .core-ranking-panel li button {
@@ -715,11 +729,11 @@
   }
 
   .core-ranking-panel li span strong {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .core-ranking-panel li em {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .quality-panel dl {
