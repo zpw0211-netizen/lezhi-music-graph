@@ -32,7 +32,7 @@ export function validateGraphActions(input: unknown, graph: RagGraph): { valid: 
       : a.type === "find_path" ? entityIds.has(String(a.sourceId)) && entityIds.has(String(a.targetId)) && typeof a.sourceId === "string" && typeof a.targetId === "string"
       : a.type === "expand_neighbors" ? typeof a.entityId === "string" && entityIds.has(a.entityId) && [1, 2].includes(Number(a.hops)) && typeof a.hops === "number"
       : typeof a.perspective === "string" && ["comprehensive", "textbook", "music", "progression"].includes(a.perspective);
-    if (!ok) return { valid: false, error: "拒绝无效实体、关系、教材或参数；未执行任何动作" };
+    if (!ok) return { valid: false, error: "拒绝无效知识点、知识联系、教材或参数；未执行任何动作" };
   }
   return { valid: true, actions: input as GraphAction[] };
 }
@@ -77,5 +77,5 @@ export function planGraphQuery(question: string, graph: RagGraph) {
     if (ids.size) actions.push({ type: "focus_entities", entityIds: [...ids].slice(0, 500), isolate: true });
     if (edges.size) actions.push({ type: "highlight_relationships", relationshipIds: [...edges].slice(0, 500) });
   }
-  return { actions, bookKeys, explanation: actions.length ? "已将问题转换为受校验的图谱探索动作。仅改变筛选、聚焦与高亮，不修改知识数据。" : "没有识别到可执行的图谱动作，请说明作品、人物、类型或教材。" };
+  return { actions, bookKeys, explanation: actions.length ? "已将问题转换为受校验的图谱动作。仅改变筛选、聚焦与高亮，不修改知识数据。" : "没有识别到可执行的图谱动作，请说明作品、人物、类型或教材。" };
 }

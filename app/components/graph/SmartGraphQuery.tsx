@@ -19,7 +19,7 @@ export function SmartGraphQuery({ graph, execute, assetUrl, onGraphFocus, notice
       const scoped = plan.bookKeys.length ? { ...graph, books: graph.books.filter(book => plan.bookKeys.includes(book.key)), entities: graph.entities.filter(entity => entity.bookKeys?.some(key => plan.bookKeys.includes(key))), relationships: graph.relationships.filter(edge => edge.bookKeys?.some(key => plan.bookKeys.includes(key))), occurrences: graph.occurrences?.filter(item => plan.bookKeys.includes(item.textbook)) } : graph;
       const retrieval = await enrichGraph(scoped, q, [], key => {
         let request = cache.current.get(key);
-        if (!request) { request = fetch(assetUrl(`data/evidence/${key}.json`)).then(response => { if (!response.ok) throw Error("教材证据加载失败"); return response.json() as Promise<EvidencePayload>; }); cache.current.set(key, request); request.catch(() => cache.current.delete(key)); }
+        if (!request) { request = fetch(assetUrl(`data/evidence/${key}.json`)).then(response => { if (!response.ok) throw Error("教材出处加载失败"); return response.json() as Promise<EvidencePayload>; }); cache.current.set(key, request); request.catch(() => cache.current.delete(key)); }
         return request;
       });
       setAnswer(graphAnswer(retrieval, q));

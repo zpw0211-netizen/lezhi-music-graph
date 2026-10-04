@@ -120,10 +120,10 @@ export function ResearchAnalysis({
           <h1 className="research-sr">研究分析</h1>
           <span className="research-kicker">研究分析 · 数据与口径</span>
           <h2 id="research-analysis-title">六册教材知识结构研究分析</h2>
-          <p className="research-lede">基于规范实体融合、教材出现记录与图谱审计结果进行关联查询。</p>
+          <p className="research-lede">基于知识融合、教材出现记录与质量审计结果进行关联查询。</p>
           <p className="research-method-note">
             <b>研究口径</b>
-            <span>同名同类型实体先融合，再计算教材覆盖与网络结构。</span>
+            <span>同名同类型的知识点先融合，再计算教材覆盖与网络结构。</span>
           </p>
         </div>
       </header>
@@ -136,7 +136,7 @@ export function ResearchAnalysis({
             </div>
             <div className="matrix-metric-toggle motion-tabs" aria-label="关联指标">
               <SlidingIndicator activeKey={metric} />
-              <button className={metric === "shared" ? "active" : ""} onClick={() => setMetric("shared")}>共享实体</button>
+              <button className={metric === "shared" ? "active" : ""} onClick={() => setMetric("shared")}>共享知识点</button>
               <button className={metric === "jaccard" ? "active" : ""} onClick={() => setMetric("jaccard")}>Jaccard</button>
             </div>
           </header>
@@ -161,7 +161,7 @@ export function ResearchAnalysis({
                         <td key={right.key}>
                           <button
                             className={diagonal ? "is-diagonal" : ""}
-                            title={diagonal ? `${left.title}：本册共 ${cell.shared} 个规范实体` : `${left.title} × ${right.title}：${cell.shared} 个共享规范实体，Jaccard ${cell.jaccard.toFixed(3)}`}
+                            title={diagonal ? `${left.title}：本册共 ${cell.shared} 个知识点` : `${left.title} × ${right.title}：${cell.shared} 个共享知识点，Jaccard ${cell.jaccard.toFixed(3)}`}
                             style={diagonal ? undefined : { backgroundColor: MATRIX_RAMP[step], color: step >= 3 ? "#FFFFFF" : "var(--brand-ink)" }}
                             onClick={() => onSelectPair(left.key, right.key, cell.sharedIds)}
                           >
@@ -179,7 +179,7 @@ export function ResearchAnalysis({
             <span>关联弱</span>
             <span className="matrix-legend-ramp">{MATRIX_RAMP.map((color) => <i key={color} style={{ background: color }} />)}</span>
             <span>关联强</span>
-            <span className="matrix-legend-diagonal"><i />对角线：本册实体总数</span>
+            <span className="matrix-legend-diagonal"><i />对角线：本册知识点总数</span>
           </div>
           <p>点击任一单元格，进入两册教材共享知识子图。</p>
         </section>
@@ -192,7 +192,7 @@ export function ResearchAnalysis({
             <small>覆盖册数优先</small>
           </header>
           <div className="core-ranking-head">
-            <span>知识 / 类型</span><span>教材</span><span>出现</span><span>度</span><span>关系</span>
+            <span>知识 / 类型</span><span>教材</span><span>出现</span><span>度</span><span>联系</span>
           </div>
           <ol>
             {topKnowledge.map((entity, index) => {

@@ -66,10 +66,10 @@ const LAYOUT_TABS: Array<[FullGraphLayoutMode, string, string]> = [
   ["schema", "知识模式", "Schema"],
 ];
 const VIEW_TABS: Array<[FullGraphView, string]> = [
-  ["all", "全部关系"],
-  ["cross", "跨册关系"],
+  ["all", "全部"],
+  ["cross", "跨册"],
   ["ownership", "教材归属"],
-  ["knowledge", "知识关系"],
+  ["knowledge", "联系"],
 ];
 const TEXTBOOK_POSITIONS: Record<string, { x: number; y: number }> = {
   g7s1: { x: 360, y: 260 },
@@ -339,7 +339,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
         relationByEntity.set(relationship.objectId, relationship);
     }
     const nodes = canonicalBook.entities.map((entity) => {
-      const triple = relationByEntity.get(entity.id) ?? { id: `canonical-node-${entity.id}`, subject: entity.id, predicate: "规范实体" };
+      const triple = relationByEntity.get(entity.id) ?? { id: `canonical-node-${entity.id}`, subject: entity.id, predicate: "教材收录" };
       const activeLayout = entity.layouts?.[fullGraphLayout] ?? entity.layout;
       if (activeLayout) return { entity, triple, x: activeLayout.x, y: activeLayout.y };
       const textbookKey = entity.bookKeys?.[0] ?? "g7s1";
@@ -364,7 +364,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
       }
       return { entity, triple, x, y };
     });
-    return { book: canonicalBook, center: { id: "CANONICAL_NETWORK_CENTER", name: "六册规范知识网络", type: "教材" }, nodes };
+    return { book: canonicalBook, center: { id: "CANONICAL_NETWORK_CENTER", name: "六册教材知识网络", type: "教材" }, nodes };
   }, [canonicalBook, fullGraphLayout]);
   const perspectiveEntityIds = useMemo(() => {
     const ids = new Set<string>();
@@ -1018,7 +1018,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
     <>
       <SlidingIndicator activeKey={graphMode === "all" ? "all" : explorer.bookKey ?? "all"} />
       <button className={`book-tab ${graphMode === "all" ? "active" : ""}`} onClick={explorer.chooseFullGraph}>
-        六册叠加
+        六册总览
       </button>
       {books.map((book) => (
         <button
@@ -1037,7 +1037,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
       <>
         <div className="book-tabs motion-tabs">
           <SlidingIndicator activeKey={explorer.bookKey ?? "all"} />
-          <button className="book-tab" onClick={explorer.chooseFullGraph}>六册叠加</button>
+          <button className="book-tab" onClick={explorer.chooseFullGraph}>六册总览</button>
           {books.map((book) => (
             <button
               key={book.key}
@@ -1092,8 +1092,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
               <div>
                 <h3>
                   {graphMode === "focus"
-                    ? (selected?.name ?? "知识点") + " · 聚焦关系网络"
-                    : currentBook.title + " · 局部探索"}
+                    ? (selected?.name ?? "知识点") + " · 相关知识联系"
+                    : currentBook.title + " · 单册视图"}
                 </h3>
               </div>
               <div className="neo-actions" role="toolbar" aria-label="图谱操作">
@@ -1139,7 +1139,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                         } else explorer.chooseFullGraph();
                       }}
                     >
-                      {graphMode === "focus" ? "返回单册" : "返回六册叠加"}
+                      {graphMode === "focus" ? "返回单册" : "返回六册总览"}
                     </button>
                   </div>
                 </details>
@@ -1172,7 +1172,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
               </div>
             </div>}
             {graphMode === "all" && (
-              <div className="full-graph-filterbar" aria-label="六册关系视图">
+              <div className="full-graph-filterbar" aria-label="六册知识联系视图">
                 <div className="graph-filter-primary">
                   <div className="graph-filter-group" aria-label="布局">
                     <span className="graph-filter-group-label">布局</span>
@@ -1196,8 +1196,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                       ))}
                     </div>
                   </div>
-                  <div className="graph-filter-group" aria-label="关系">
-                    <span className="graph-filter-group-label">关系</span>
+                  <div className="graph-filter-group" aria-label="知识联系">
+                    <span className="graph-filter-group-label">知识联系</span>
                     <div className="full-graph-view-tabs motion-tabs">
                       <SlidingIndicator activeKey={fullGraphView} />
                       {VIEW_TABS.map(([key, label]) => (
@@ -1221,7 +1221,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                   </summary>
                   <div className="full-graph-operations">
                     <button onClick={fitCanvas}>适配画布</button>
-                    <button onClick={fitSelection} disabled={!selected}>定位选中节点</button>
+                    <button onClick={fitSelection} disabled={!selected}>定位选中知识点</button>
                     <button
                       type="button"
                       ref={mobileFilterTriggerRef}
@@ -1240,14 +1240,14 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                       路径查询
                     </button>
                     <button onClick={explorer.resetEverything}>重置视图与筛选</button>
-                    <button onClick={() => explorer.setShowLabels((value) => !value)}>{showLabels ? "隐藏节点名称" : "显示节点名称"}</button>
+                    <button onClick={() => explorer.setShowLabels((value) => !value)}>{showLabels ? "隐藏知识点名称" : "显示知识点名称"}</button>
                     {fullGraphLayout !== "schema" && (
                       <>
                         <button
-                          title="Sigma WebGL 为主渲染器，Canvas 2D 保留为兼容回退"
+                          title="流畅模式渲染更快；兼容模式用于较旧的浏览器"
                           onClick={() => explorer.setFullGraphRenderer((value) => (value === "sigma" ? "canvas" : "sigma"))}
                         >
-                          {fullGraphRenderer === "sigma" ? "WebGL 图谱" : "Canvas 回退"}
+                          {fullGraphRenderer === "sigma" ? "流畅模式" : "兼容模式"}
                         </button>
                         <button onClick={() => explorer.setMotionEnabled((value) => !value)}>{motionEnabled ? "停止动态" : "动态演示"}</button>
                       </>
@@ -1261,7 +1261,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                         } else explorer.chooseFullGraph();
                       }}
                     >
-                      进入单册
+                      进入单册视图
                     </button>
                     <label className="source-layer-toggle">
                       <input
@@ -1276,7 +1276,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                       撤销展开
                     </button>
                     <button onClick={explorer.collapseExpansion}>收起子图</button>
-                    <span>规范实体 {fmt(canonicalBook?.entityCount ?? 0)} · 跨册实体 {fmt(canonicalGraph?.quality.canonical.sharedEntityCount ?? 0)}</span>
+                    <span>知识点 {fmt(canonicalBook?.entityCount ?? 0)} 个 · 跨册共享 {fmt(canonicalGraph?.quality.canonical.sharedEntityCount ?? 0)} 个</span>
                   </div>
                 </details>
               </div>
@@ -1317,12 +1317,12 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                   {fullGraphScene}
                   {fullGraphLayout !== "schema" && graphPerspective !== "progression" && fullGraphVisibleIds.size === 0 && (
                     <p className="graph-empty-overlay" role="status">
-                      当前组合筛选没有匹配实体。可清除部分条件或恢复全部筛选；平台不会补造不存在的数据。
+                      当前组合筛选没有匹配的知识点。可清除部分条件或恢复全部筛选；不会补造不存在的数据。
                     </p>
                   )}
                   {graphPerspective === "progression" && fullGraphVisibleIds.size === 0 && (
                     <p className="graph-empty-overlay">
-                      当前数据没有经教材证据或人工确认的学习进阶关系。请切换其他视角；平台不会自动创建前置或深化关系。
+                      当前数据没有经教材出处或人工确认的学习进阶知识联系。请切换其他视角；不会自动创建前置或深化的知识联系。
                     </p>
                   )}
                 </>
@@ -1332,7 +1332,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                 </GraphRendererBoundary>
               )}
               {graphMode === "all" && canonicalGroup && fullGraphLayout !== "schema" && (
-                <div className="graph-minimap" aria-label="六册知识网络缩略图">
+                <div className="graph-minimap" aria-label="六册总览缩略图">
                   <div>
                     <strong>缩略图</strong>
                     <button
@@ -1359,15 +1359,15 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
               <GraphContextMenu explorer={explorer} />
               <div className="canvas-hint">
                 {graphMode === "focus"
-                  ? "查询结果已固定 · 节点仍可拖拽 · 滚轮或滑杆放大"
+                  ? "查询结果已固定 · 知识点仍可拖拽 · 滚轮或滑杆放大"
                   : motionEnabled
-                    ? "动态演示已开启 · 节点可拖拽 · 滚轮缩放"
-                    : "稳定研究模式 · 节点可拖拽 · 滚轮缩放 · 点击检查三元组"}
+                    ? "动态演示已开启 · 知识点可拖拽 · 滚轮缩放"
+                    : "稳定研究模式 · 知识点可拖拽 · 滚轮缩放 · 点击查看教材出处"}
               </div>
               <div className="graph-statusbar">
-                <span>{fmt(displayedGraphStats.nodes)} 个节点 · {fmt(displayedGraphStats.relationships)} 条关系</span>
+                <span>{fmt(displayedGraphStats.nodes)} 个知识点 · {fmt(displayedGraphStats.relationships)} 条知识联系</span>
                 <span className="status-mode">
-                  当前视图：{graphMode === "all" ? "教材全景" : graphMode === "focus" ? "节点聚焦" : "单册探索"}
+                  当前视图：{graphMode === "all" ? "六册总览" : graphMode === "focus" ? "选中知识点" : "单册视图"}
                 </span>
               </div>
             </div>

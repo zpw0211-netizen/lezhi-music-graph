@@ -667,7 +667,7 @@ export function WorkGraph({
 
   if (!work) return <section className="work-graph-empty"><p>没有找到这首作品。</p><button type="button" onClick={onBack}>返回</button></section>;
 
-  return <section className="work-graph" aria-label={`${work.name}作品知识图谱`}>
+  return <section className="work-graph" aria-label={`${work.name}作品图谱`}>
     <div className="work-graph-stage" ref={stageRef}>
       <header className="work-graph-toolbar">
         <button type="button" className="work-graph-back" onClick={onBack}><WorkbenchIcon name="left" />返回学习页</button>
@@ -719,7 +719,7 @@ export function WorkGraph({
           {counts.map((facet) => <span key={facet.key}><i style={{ background: SEMANTIC_PALETTE[facet.categories[0]].fill }} />{facet.label}<b>{facet.count}</b></span>)}
           {showSecond && nodes.some((node) => node.depth === 2) && <span className="is-second"><i />延伸作品<b>{nodes.filter((node) => node.depth === 2).length}</b></span>}
         </div>
-        <p className="work-graph-hint">拖动节点可拉开，松手弹回；点击节点查看关系</p>
+        <p className="work-graph-hint">拖动知识点可拉开，松手弹回；点击知识点查看知识联系</p>
       </footer>
     </div>
     <aside className="work-graph-panel">

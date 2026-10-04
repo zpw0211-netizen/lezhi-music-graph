@@ -153,7 +153,7 @@ const prefetchPages = () => {
 };
 
 const EMPTY_BOOKS: BookDirectory[] = [];
-const SITE_TITLE = "芽谱——中小学音乐教育知识图谱与智能分析平台";
+const SITE_TITLE = "芽谱 · 人音版初中音乐教材";
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
   atlas: "音乐地图",
@@ -164,7 +164,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   research: "研究分析",
   records: "按课学习",
   lesson: "按课学习",
-  work: "作品知识图谱",
+  work: "作品图谱",
   import: "教材数据导入",
 };
 
@@ -349,7 +349,7 @@ export default function Home() {
               hits: searchResults.slice(0, 8).map(({ entity, book, relationCount }) => ({
                 key: `${book.key}-${entity.id}`,
                 title: entity.name,
-                meta: `${book.grade}年级${book.semester} · ${entity.type} · ${relationCount} 条关系`,
+                meta: `${book.grade}年级${book.semester} · ${entity.type} · ${relationCount} 条知识联系`,
                 onPick: () => pickSearchResult(entity),
               })),
             }}

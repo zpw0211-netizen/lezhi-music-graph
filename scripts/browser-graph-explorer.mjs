@@ -35,22 +35,22 @@ try {
   await record("实体多选、仅此、全部隐藏与恢复", async () => {
     await page.getByRole("button", { name: "仅显示音乐人物", exact: true }).click();
     assert(Number((await stats()).visibleNodes) > 0); assert.equal((await stats()).visibleEdges, "0");
-    await section("实体类型").getByRole("button", { name: "全部隐藏", exact: true }).click(); assert.equal((await stats()).visibleNodes, "0");
-    await section("实体类型").getByRole("button", { name: "全部显示", exact: true }).click();
+    await section("知识点类型").getByRole("button", { name: "全部隐藏", exact: true }).click(); assert.equal((await stats()).visibleNodes, "0");
+    await section("知识点类型").getByRole("button", { name: "全部显示", exact: true }).click();
     assert.equal((await stats()).graphBuildId, originalBuild); await reset();
   });
   await record("关系仅此与恢复（不重建图）", async () => {
-    await section("关系类型").locator("summary").click();
-    await page.getByRole("button", { name: "只看作曲关系", exact: true }).click();
+    await section("知识联系类型").locator("summary").click();
+    await page.getByRole("button", { name: "只看作曲知识联系", exact: true }).click();
     assert(Number((await stats()).visibleEdges) > 0); assert.equal((await stats()).graphBuildId, originalBuild); await reset();
   });
   await record("属性组合交集与证据按需读取", async () => {
     await section("属性筛选").locator("summary").click(); const p = page.locator(".property-fields");
-    await p.getByLabel("8 年级", { exact: true }).check(); await p.getByLabel("属性实体类型", { exact: true }).selectOption("work");
+    await p.getByLabel("8 年级", { exact: true }).check(); await p.getByLabel("属性知识点类型", { exact: true }).selectOption("work");
     await p.getByLabel("属性相关知识", { exact: true }).fill("蒙古族");
-    assert.equal((await stats()).visibleNodes, "0"); assert(await page.getByText("当前组合筛选没有匹配实体。", { exact: false }).isVisible());
+    assert.equal((await stats()).visibleNodes, "0"); assert(await page.getByText("当前组合筛选没有匹配的知识点。", { exact: false }).isVisible());
     await p.getByLabel("属性相关知识", { exact: true }).fill("节奏"); assert(Number((await stats()).visibleNodes) > 0);
-    await reset(); await p.getByLabel("教材明确证据", { exact: true }).selectOption("yes");
+    await reset(); await p.getByLabel("教材明确出处", { exact: true }).selectOption("yes");
     await page.waitForFunction(() => Number(document.querySelector(".sigma-scene-host")?.dataset.visibleNodes) > 0);
     assert.equal((await stats()).graphBuildId, originalBuild); await reset();
   });
@@ -69,7 +69,7 @@ try {
   });
   await record("Schema 聚合类别与返回实例", async () => {
     await section("知识模式").locator("summary").click();
-    await page.getByRole("button", { name: "查看实体与关系模式" }).click();
+    await page.getByRole("button", { name: "查看知识点与知识联系模式" }).click();
     assert.equal(await page.locator("[data-schema-category]").count(), 10); assert.equal(await page.locator(".sigma-scene-host").count(), 0);
     await page.locator("[data-schema-category=work]").click(); assert(Number((await stats()).visibleNodes) > 0); await reset();
   });
@@ -79,7 +79,7 @@ try {
       const id = (await stats()).graphBuildId; await smart.getByRole("button", { name: q, exact: true }).click();
       await smart.locator("button[type=submit]:not([disabled])").waitFor();
       await checkFull(); assert.equal((await stats()).graphBuildId, id);
-      if (q.includes("牧歌")) { assert((await page.locator(".graph-path-finder").textContent()).includes("1 跳")); }
+      if (q.includes("牧歌")) { assert((await page.locator(".graph-path-finder").textContent()).includes("1 步")); }
     });
   }
   await record("回答联动与 Inspector AI 自动提问", async () => {
@@ -94,13 +94,13 @@ try {
     const id = (await stats()).graphBuildId;
     await page.mouse.move(x, y); await page.mouse.click(x, y, { button: "right" });
     assert((await page.locator(".graph-context-menu").textContent()).includes("保卫黄河"));
-    await page.locator(".graph-context-menu").getByRole("button", { name: "固定节点", exact: true }).click();
+    await page.locator(".graph-context-menu").getByRole("button", { name: "固定知识点", exact: true }).click();
     await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + 55, y + 35, { steps: 10 }); await page.mouse.up(); await page.waitForTimeout(300);
     const guard = graph.entities.find(e => e.name.includes("保卫黄河"));
     assert.equal(await page.locator("[data-last-dragged-node]").first().getAttribute("data-last-dragged-node"), guard.id);
     await page.mouse.click(x + 55, y + 35, { button: "right" });
     assert((await page.locator(".graph-context-menu").textContent()).includes("保卫黄河"));
-    await page.locator(".graph-context-menu").getByRole("button", { name: "展开全部 2 跳邻居", exact: true }).click(); await page.waitForTimeout(350);
+    await page.locator(".graph-context-menu").getByRole("button", { name: "展开两层相关知识点", exact: true }).click(); await page.waitForTimeout(350);
     assert.equal((await stats()).graphBuildId, id); await checkFull(); await reset();
   });
   await record("背景恢复与双击展开", async () => {
@@ -117,20 +117,20 @@ try {
     await page.getByRole("button", { name: "路径查询", exact: true }).click(); const finder = page.locator(".graph-path-finder");
     await finder.getByLabel("起点", { exact: true }).fill("保卫黄河"); await finder.locator(".path-entity-results button").filter({ hasText: "保卫黄河" }).first().click();
     await finder.getByLabel("终点", { exact: true }).fill("冼星海"); await finder.locator(".path-entity-results button").filter({ hasText: "冼星海" }).first().click();
-    assert((await finder.textContent()).includes("1 跳")); await finder.getByRole("button", { name: "在图中突出此路径", exact: true }).click(); await checkFull(); await reset();
+    assert((await finder.textContent()).includes("1 步")); await finder.getByRole("button", { name: "在图中突出此路径", exact: true }).click(); await checkFull(); await reset();
   });
   await record("Canvas 2D 兼容模式", async () => {
     await page.locator(".graph-toolbar-menu summary").click();
-    await page.getByRole("button", { name: "WebGL 图谱", exact: true }).click(); assert(await page.locator("canvas.full-graph-canvas").isVisible());
+    await page.getByRole("button", { name: "流畅模式", exact: true }).click(); assert(await page.locator("canvas.full-graph-canvas").isVisible());
     assert.equal(await page.locator(".sigma-scene-host").count(), 0);
-    await page.getByRole("button", { name: "Canvas 回退", exact: true }).click(); await page.locator(".sigma-scene-host canvas").first().waitFor();
+    await page.getByRole("button", { name: "兼容模式", exact: true }).click(); await page.locator(".sigma-scene-host canvas").first().waitFor();
     await page.locator(".graph-toolbar-menu summary").click();
   });
   await record("单册、六册和小屏幕", async () => {
     await page.getByRole("button", { name: "7年级上册", exact: true }).click(); assert(await page.getByRole("img", { name: "教材知识图谱" }).isVisible());
-    await section("实体类型").getByRole("button", { name: "全部隐藏", exact: true }).click();
+    await section("知识点类型").getByRole("button", { name: "全部隐藏", exact: true }).click();
     assert.equal(await page.locator(".neo-canvas .svg-node:visible").count(), 0); await reset();
-    await page.getByRole("button", { name: "六册叠加", exact: true }).click(); await checkFull(); await reset();
+    await page.getByRole("button", { name: "六册总览", exact: true }).click(); await checkFull(); await reset();
     const finder = page.locator(".graph-path-finder"); if (await finder.count()) await finder.getByRole("button").first().click();
     await page.getByRole("button", { name: "适配画布", exact: true }).click(); await page.waitForTimeout(350);
     await page.screenshot({ path: path.join(output, "explorer-1920.png") });

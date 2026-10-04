@@ -56,7 +56,7 @@ function EntityPicker<E extends GraphEntity>({
       <span>{label}</span>
       <input
         value={query}
-        placeholder="输入实体名称"
+        placeholder="输入知识点名称"
         onChange={(event) => setQuery(event.target.value)}
         onFocus={() => setQuery(selected?.name ?? query)}
       />
@@ -75,7 +75,7 @@ function EntityPicker<E extends GraphEntity>({
               <small>{entity.type}</small>
             </button>
           ))}
-          {!matches.length && <p>未找到匹配实体</p>}
+          {!matches.length && <p>未找到匹配的知识点</p>}
         </div>
       )}
     </label>
@@ -130,13 +130,13 @@ export function GraphPathFinder<E extends GraphEntity>({
       </div>
       <div className="path-result-summary">
         {!startId || !endId ? (
-          <p>选择两个实体后，系统会在当前规范知识网络中计算最短路径。</p>
+          <p>选择两个知识点后，会在当前知识网络中计算最短路径。</p>
         ) : !paths.length ? (
           <p>当前筛选范围内未找到可达路径。</p>
         ) : (
           <>
             <div>
-              <strong>{path.nodeIds.length - 1} 跳</strong>
+              <strong>{path.nodeIds.length - 1} 步</strong>
               <span>{paths.length} 条等长路径</span>
             </div>
             {paths.length > 1 && (

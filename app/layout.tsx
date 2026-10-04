@@ -40,21 +40,21 @@ const publicOrigin = isGitHubPages
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicOrigin),
-  title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
+  title: "芽谱 · 人音版初中音乐教材",
   description:
-    "面向中小学音乐教育的跨教材知识图谱、教材证据、多模态资源与智能分析平台。",
+    "人音版七至九年级六册音乐教材的知识图谱：作品、人物、音乐要素与教材出处，一册一册看清楚。",
   icons: {
     icon: `${publicBasePath}/favicon.svg`,
   },
   openGraph: {
-    title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
-    description: "探索六册教材共同构成的中小学音乐知识网络与跨册关联。",
+    title: "芽谱 · 人音版初中音乐教材",
+    description: "六册教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。",
     images: [`${publicBasePath}/og.jpg`],
   },
   twitter: {
     card: "summary_large_image",
-    title: "芽谱——中小学音乐教育知识图谱与智能分析平台",
-    description: "探索六册教材共同构成的中小学音乐知识网络与跨册关联。",
+    title: "芽谱 · 人音版初中音乐教材",
+    description: "六册教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。",
     images: [`${publicBasePath}/og.jpg`],
   },
 };
