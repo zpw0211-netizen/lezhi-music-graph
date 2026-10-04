@@ -40,7 +40,7 @@ export function ResearchInfo({ open, version, generatedAt, onClose }: Props) {
         </header>
         <dl>
           <div><dt>站点名称</dt><dd>芽谱 · 人音版初中音乐教材</dd></div>
-          <div><dt>研究对象</dt><dd>中小学音乐教材中的作品、人物、体裁、音乐要素、理论、文化与教学活动关系</dd></div>
+          <div><dt>研究对象</dt><dd>中小学音乐教材中的作品、人物、体裁、音乐要素、理论、文化，以及教学活动方面的知识联系</dd></div>
           <div><dt>教材范围</dt><dd>人民音乐出版社七至九年级上下册，共六册教材</dd></div>
           <div><dt>数据版本</dt><dd>{version}</dd></div>
           <div><dt>更新时间</dt><dd>{updated}</dd></div>
