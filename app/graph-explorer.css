@@ -379,3 +379,17 @@
    （T008 块只覆盖 .explorer-controls 内的 hint）；summary 21px 加到 32px 与其他折叠区一致 */
 .explorer-section .explorer-hint { font-size:12px; }
 .explorer-import-section summary { min-height:32px; display:flex; align-items:center; box-sizing:border-box; }
+
+/* —— T013 跨册出现分析区文字对比度（T012 验收遗留）：globals.css 的
+   .graph-first .cross-book-* 把暗色主题值漏进浅色检查器（底 #FBF8F0）：
+   h3 #dce5eb≈1.2:1、指标 span #82909c≈3.0:1、li #c3ccd3≈1.6:1、
+   li span #84929e≈2.9:1、说明 p #7b8790≈3.3:1(!important)。
+   按 DESIGN-v2.md 色板改 --ink 系（此处取字面值，图谱页未定义这些变量）：
+   正文/数字 --ink #1B2622、次级 --ink-2 #44504A、辅助 --ink-3 #62675B，
+   边线用浅色主题既有色 #D8CDB4；p 的 !important 同规格对压。 —— */
+.ink-app.network-mode .cross-book-inspector-summary h3 { color: var(--ink, #1B2622); }
+.ink-app.network-mode .cross-book-metrics span { color: var(--ink-2, #44504A); border-color: #D8CDB4; }
+.ink-app.network-mode .cross-book-metrics b { color: var(--ink, #1B2622); }
+.ink-app.network-mode .cross-book-inspector-summary li { color: var(--ink-2, #44504A); border-color: #D8CDB4; }
+.ink-app.network-mode .cross-book-inspector-summary li span { color: var(--ink-3, #62675B); }
+.ink-app.network-mode .cross-book-inspector-summary > p { color: var(--ink-3, #62675B) !important; }
