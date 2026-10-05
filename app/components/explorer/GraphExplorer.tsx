@@ -209,9 +209,22 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
   const evidenceRequestCache = useRef(new Map<string, Promise<EvidencePayload>>());
   const explorerRef = useRef(explorer);
   const mobileFilterTriggerRef = useRef<HTMLButtonElement>(null);
+  const canvasStageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     explorerRef.current = explorer;
   });
+  // T012 #8：检查器打开时按 Esc 关闭，并把焦点还给画布（tabIndex=-1 的容器，
+  // 程序化聚焦不显示焦点圈）。抽屉打开时 Esc 交给抽屉自己的关闭逻辑处理。
+  useEffect(() => {
+    if (!inspectorOpen || knowledgeDetailOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      explorerRef.current.setInspectorOpen(false);
+      canvasStageRef.current?.focus({ preventScroll: true });
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [inspectorOpen, knowledgeDetailOpen]);
 
   useEffect(() => {
     const closeFilters = () => {
@@ -1302,6 +1315,8 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
             />
             <div
               className="neo-canvas"
+              ref={canvasStageRef}
+              tabIndex={-1}
               onClick={() => explorer.setContextMenu(null)}
               onWheel={
                 svgActive

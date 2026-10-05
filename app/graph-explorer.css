@@ -367,3 +367,15 @@
 .ink-app.network-mode .property-fields input[type=checkbox],.ink-app.network-mode .source-layer-toggle input[type=checkbox]{width:16px;height:16px;margin:0}
 .property-fields label{display:flex;align-items:center;min-height:32px;box-sizing:border-box}
 .ink-app.network-mode .source-layer-toggle{display:inline-flex;align-items:center;min-height:32px;gap:6px;box-sizing:border-box}
+
+/* —— T012 图谱页无障碍（T011 巡检 #13/#14；#2 检查器字号已随 T010 合入、#8 Esc 见 GraphExplorer.tsx） —— */
+/* #13 「稳定研究模式…」画布提示 11px → 12px（压过 globals.css 的 .graph-first .canvas-hint 11px） */
+.graph-first .neo-canvas .canvas-hint { font-size:12px; }
+/* #14 「显示延伸作品」checkbox（作品图谱视图的 WorkGraph.tsx 不在授权文件内，
+   改用其容器类从本文件扩大热区：label 行 ≥32px，checkbox 本体 16px） */
+.work-graph-actions label { display:inline-flex; align-items:center; min-height:32px; box-sizing:border-box; gap:6px; font-size:12px; }
+.work-graph-actions input[type=checkbox] { width:16px; height:16px; margin:0; }
+/* 扫描发现的同类残留：「研究说明」折叠区里的 hint 被后加载的 workbench-v5.css 11px 压住
+   （T008 块只覆盖 .explorer-controls 内的 hint）；summary 21px 加到 32px 与其他折叠区一致 */
+.explorer-section .explorer-hint { font-size:12px; }
+.explorer-import-section summary { min-height:32px; display:flex; align-items:center; box-sizing:border-box; }
