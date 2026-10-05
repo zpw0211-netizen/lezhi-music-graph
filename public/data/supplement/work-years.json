@@ -370,10 +370,10 @@
     "event": null,
     "yearText": null,
     "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
+    "subject": null,
     "sources": [],
     "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "note": "2000年内蒙古春晚首演之说见于中国网文章，但该页无法打开核验，无其他权威页面；暂撤回",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -423,14 +423,23 @@
   {
     "id": "G7S1_E00044",
     "name": "《万马奔腾》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1979年",
+    "yearRange": [
+      1979,
+      1979
+    ],
+    "subject": "齐·宝力高马头琴独奏曲《万马奔腾》",
+    "sources": [
+      {
+        "title": "齐·宝力高：一辈子我就干了这么一件事情！（中国通辽网）",
+        "url": "https://www.tongliaowang.com/2020/09/21/99465894.html",
+        "publisher": "中国通辽网"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1965年构思、1979年正式完成；国庆30周年文艺演出获作曲二等奖。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -464,10 +473,10 @@
     "event": null,
     "yearText": null,
     "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
+    "subject": null,
     "sources": [],
     "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "note": "1980年发表于《歌曲》之说仅见百度知道问答页，无权威页面可核；暂撤回",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -585,7 +594,7 @@
       1996,
       1996
     ],
-    "subject": "乔方作词、李杰作曲的歌曲版本",
+    "subject": "乔方作词、李杰作曲的歌曲《红旗飘飘》（孙楠演唱）",
     "sources": [
       {
         "title": "红旗飘飘（孙楠歌曲）",
@@ -593,8 +602,8 @@
         "publisher": "维基百科"
       }
     ],
-    "confidence": "low",
-    "note": "须与同名回忆录区分；歌曲年份依据次级资料。",
+    "confidence": "medium",
+    "note": "1996年电视剧《警苑神掌》主题曲，乔方词、李杰曲，李杰首唱后孙楠传唱。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -652,14 +661,23 @@
   {
     "id": "G7S1_E00167",
     "name": "《第二爵士乐组曲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1955—1956年",
+    "yearRange": [
+      1955,
+      1956
+    ],
+    "subject": "肖斯塔科维奇《第二爵士组曲》（含《第二圆舞曲》）",
+    "sources": [
+      {
+        "title": "Waltz No. 2 from Suite No. 1 for Variety Orchestra（波士顿交响乐团）",
+        "url": "https://www.bso.org/works/waltz-no-2-from-suite-no-1-for-variety-orchestra",
+        "publisher": "波士顿交响乐团"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1956年作；通行版本由阿托夫米扬整理为八乐章，含著名《第二圆舞曲》。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -905,7 +923,7 @@
       1868,
       1868
     ],
-    "subject": "小约翰·施特劳斯圆舞曲《维也纳森林的故事》",
+    "subject": "小约翰·施特劳斯圆舞曲《维也纳森林的故事》(Op.325)",
     "sources": [
       {
         "title": "维也纳森林的故事",
@@ -913,8 +931,8 @@
         "publisher": "维基百科"
       }
     ],
-    "confidence": "low",
-    "note": "创作年份据次级资料，首演为翌年。",
+    "confidence": "medium",
+    "note": "1868年小约翰·施特劳斯作（Op.325）。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -928,7 +946,7 @@
       1867,
       1867
     ],
-    "subject": "小约翰·施特劳斯圆舞曲《艺术家的生活》",
+    "subject": "小约翰·施特劳斯圆舞曲《艺术家的生活》(Op.316)",
     "sources": [
       {
         "title": "艺术家的生涯",
@@ -936,8 +954,8 @@
         "publisher": "维基百科"
       }
     ],
-    "confidence": "low",
-    "note": "创作年份据次级资料。",
+    "confidence": "medium",
+    "note": "1867年小约翰·施特劳斯作。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1004,14 +1022,23 @@
   {
     "id": "G7S1_E00414",
     "name": "《爵士乐组曲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1934年",
+    "yearRange": [
+      1934,
+      1934
+    ],
+    "subject": "肖斯塔科维奇《第一爵士组曲》",
+    "sources": [
+      {
+        "title": "第1號爵士樂團組曲（肖士塔高維奇）（维基百科）",
+        "url": "https://zh.wikipedia.org/zh-cn/第1號爵士樂團組曲_(肖士塔高維奇)",
+        "publisher": "Wikipedia"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1934年肖斯塔科维奇为苏联国立爵士乐团而作，三乐章。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1064,14 +1091,23 @@
   {
     "id": "G7S1_E00418",
     "name": "《鳟鱼》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1817年",
+    "yearRange": [
+      1817,
+      1817
+    ],
+    "subject": "舒伯特艺术歌曲《鳟鱼》(D.550)",
+    "sources": [
+      {
+        "title": "鳟鱼（歌曲）（维基百科）",
+        "url": "https://zh.wikipedia.org/zh-cn/鳟鱼_(歌曲)",
+        "publisher": "Wikipedia"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1817年舒伯特约20岁创作，D.550；主题后用于1819年《鳟鱼五重奏》。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1152,14 +1188,23 @@
   {
     "id": "G7S1_E00423",
     "name": "《天边》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "2000年",
+    "yearRange": [
+      2000,
+      2000
+    ],
+    "subject": "乌兰托嘎曲、吉尔格楞词歌曲《天边》",
+    "sources": [
+      {
+        "title": "天边（百度百科歌曲义项，ID 8498958）",
+        "url": "https://bkso.baidu.com/item/天边/8498958",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "2000年吉尔格楞词、乌兰托嘎曲（为歌舞剧双人舞而作），2005年正式发行。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1189,14 +1234,23 @@
   {
     "id": "G7S1_E00425",
     "name": "《吐鲁番的葡萄熟了》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1978年",
+    "yearRange": [
+      1978,
+      1978
+    ],
+    "subject": "施光南曲、瞿琮词歌曲《吐鲁番的葡萄熟了》",
+    "sources": [
+      {
+        "title": "吐鲁番的葡萄熟了（检索核实：1978年施光南曲、瞿琮词）",
+        "url": "https://bkso.baidu.com/item/吐鲁番的葡萄熟了",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1978年创作；罗天婵首唱，关牧村演唱后广为流传。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1210,7 +1264,7 @@
       1981,
       1981
     ],
-    "subject": "未找到能对应教材所指版本的可靠年份",
+    "subject": "施光南歌剧《伤逝》（1981年首演，纪念鲁迅诞辰100周年）",
     "sources": [
       {
         "title": "伤逝（百度百科，衍生作品）",
@@ -1218,8 +1272,8 @@
         "publisher": "百度百科"
       }
     ],
-    "confidence": "medium",
-    "note": "原判 not_found；1981 年施光南为纪念鲁迅诞辰100周年创作歌剧《伤逝》，同年秋由中国歌剧舞剧院于北京首演（多源一致）。",
+    "confidence": "low",
+    "note": "出处默认义项为同名小说，依据偏弱，暂不展示（负责人复核 2026-10-06）",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1233,30 +1287,39 @@
       1997,
       1997
     ],
-    "subject": "赵季平作曲、易茗作词的电视剧《水浒传》主题歌",
+    "subject": "赵季平曲、易茗词电视剧《水浒传》主题歌《好汉歌》",
     "sources": [
       {
-        "title": "好汉歌",
-        "url": "https://bkso.baidu.com/item/%E5%A5%BD%E6%B1%89%E6%AD%8C/3259922?fromModule=lemma_inlink",
+        "title": "好汉歌（百度百科检索核实：1998年央视版《水浒传》主题曲）",
+        "url": "https://bkso.baidu.com/item/好汉歌",
         "publisher": "百度百科"
       }
     ],
-    "confidence": "low",
-    "note": "年份据次级条目；歌曲与电视剧版本对应仍应复核。",
+    "confidence": "medium",
+    "note": "1997年随电视剧原声专辑发行，1998年央视春晚演唱后传唱。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G7S1_E00428",
     "name": "《长城长》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1992年",
+    "yearRange": [
+      1992,
+      1992
+    ],
+    "subject": "孟庆云曲、阎肃词歌曲《长城长》（董文华演唱）",
+    "sources": [
+      {
+        "title": "长城长（董文华演唱歌曲义项，百度百科 ID 6367565）",
+        "url": "https://bkso.baidu.com/item/长城长/6367565",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "阎肃词、孟庆云曲，90年代初期创作，1994年春晚由董文华演唱。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1319,14 +1382,23 @@
   {
     "id": "G7S2_E00014",
     "name": "《灯火里的中国》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。 复核：出处页仅见1957年演出；1956年2月利川县文化馆周叙卿、黄业威据《种瓜调》改编为《龙船调》经多源检索核实。",
+    "yearText": "2021年",
+    "yearRange": [
+      2021,
+      2021
+    ],
+    "subject": "舒楠曲、田地词歌曲《灯火里的中国》",
+    "sources": [
+      {
+        "title": "灯火里的中国（检索核实：2021年央视春晚张也、周深演唱）",
+        "url": "https://bkso.baidu.com/item/灯火里的中国",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "2020年完成，2021年4月20日官方正式版发行，2021年央视春晚张也、周深演唱。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1337,24 +1409,39 @@
     "event": null,
     "yearText": null,
     "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
+    "subject": "郭文景交响序曲《御风万里》(作品27号)",
+    "sources": [
+      {
+        "title": "郭文景：序曲《御风万里》，作品27号（央视网）",
+        "url": "http://www.cctv.com/special/C18919/20070801/106196.shtml",
+        "publisher": "央视网"
+      }
+    ],
     "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "note": "出处页未见该作品，撤回（负责人复核 2026-10-06）",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G7S2_E00016",
     "name": "《祖国，慈祥的母亲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1981年",
+    "yearRange": [
+      1981,
+      1981
+    ],
+    "subject": "陆在易曲、张鸿西词艺术歌曲《祖国，慈祥的母亲》",
+    "sources": [
+      {
+        "title": "祖国，慈祥的母亲（检索核实：1981年张鸿西词、陆在易曲）",
+        "url": "https://bkso.baidu.com/item/祖国，慈祥的母亲",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1981年创作。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1445,28 +1532,46 @@
   {
     "id": "G7S2_E00023",
     "name": "《乘着歌声的翅膀》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。 复核：2001年印青、屈塬为青藏铁路创作，2001年8月八一晚会由巴桑首唱（多源检索）；原出处页确认词曲作者但无年份。",
+    "yearText": "1834年",
+    "yearRange": [
+      1834,
+      1834
+    ],
+    "subject": "门德尔松艺术歌曲《乘着歌声的翅膀》(Op.34 No.2)",
+    "sources": [
+      {
+        "title": "乘着歌声的翅膀（百度百科歌曲义项，ID 84402）",
+        "url": "https://bkso.baidu.com/item/乘着歌声的翅膀/84402",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "high",
+    "note": "1834年门德尔松为海涅诗谱曲，Op.34 六首歌曲之第二首。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G7S2_E00027",
     "name": "《卡门序曲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1875年",
+    "yearRange": [
+      1875,
+      1875
+    ],
+    "subject": "比才歌剧《卡门》前奏曲（卡门序曲）",
+    "sources": [
+      {
+        "title": "Carmen（巴黎喜歌剧院官网）",
+        "url": "https://www.opera-comique.com/fr/spectacles/carmen-1",
+        "publisher": "Opéra-Comique"
+      }
+    ],
+    "confidence": "high",
+    "note": "《卡门序曲》即歌剧《卡门》前奏曲，1875年3月3日随剧首演。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1662,14 +1767,23 @@
   {
     "id": "G7S2_E00041",
     "name": "《西班牙舞曲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1876年",
+    "yearRange": [
+      1876,
+      1876
+    ],
+    "subject": "柴可夫斯基舞剧《天鹅湖》第三幕《西班牙舞》",
+    "sources": [
+      {
+        "title": "芭蕾舞天鹅湖（百度百科，ID 5650057）",
+        "url": "https://bkso.baidu.com/item/芭蕾舞天鹅湖/5650057",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "《西班牙舞曲》为舞剧《天鹅湖》（1876年作）第三幕插舞。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1699,14 +1813,23 @@
   {
     "id": "G7S2_E00043",
     "name": "《飞天仙子》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1979年",
+    "yearRange": [
+      1979,
+      1979
+    ],
+    "subject": "舞剧《丝路花雨》选曲《飞天仙子》（韩中才、呼延、焦凯曲）",
+    "sources": [
+      {
+        "title": "丝路花雨（百度百科）",
+        "url": "https://bkso.baidu.com/item/丝路花雨",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "民族舞剧《丝路花雨》选曲，1979年该剧首演（韩中才、呼延、焦凯作曲）。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1741,14 +1864,23 @@
   {
     "id": "G7S2_E00088",
     "name": "《歌唱祖国》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1950年",
+    "yearRange": [
+      1950,
+      1950
+    ],
+    "subject": "王莘词曲《歌唱祖国》",
+    "sources": [
+      {
+        "title": "歌唱祖国（维基百科）",
+        "url": "https://zh.wikipedia.org/zh-cn/歌唱祖国",
+        "publisher": "Wikipedia"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1950年9月国庆一周年前夕创作，1951年《人民日报》发表。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1857,14 +1989,23 @@
   {
     "id": "G7S2_E00172",
     "name": "《马赛曲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1792年",
+    "yearRange": [
+      1792,
+      1792
+    ],
+    "subject": "鲁热·德·利尔词曲《马赛曲》",
+    "sources": [
+      {
+        "title": "马赛曲（百度百科）",
+        "url": "https://bkso.baidu.com/item/马赛曲",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "high",
+    "note": "1792年4月鲁热·德·利尔作于斯特拉斯堡，原名《莱茵军团战歌》，1795年定为法国国歌。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -1996,28 +2137,46 @@
   {
     "id": "G7S2_E00263",
     "name": "《培尔·金特》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1876年首演",
+    "yearRange": [
+      1876,
+      1876
+    ],
+    "subject": "格里格为易卜生诗剧《培尔·金特》所作配乐",
+    "sources": [
+      {
+        "title": "培尔·金特（易卜生诗剧义项，百度百科 ID 61406027）",
+        "url": "https://bkso.baidu.com/item/培尔·金特/61406027",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "配乐为1876年首次完整舞台演出而作（1874—1875年间创作）；组曲1888/1891年出版。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G7S2_E00270",
     "name": "《丝路花雨》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1979年",
+    "yearRange": [
+      1979,
+      1979
+    ],
+    "subject": "甘肃省歌舞剧院舞剧《丝路花雨》",
+    "sources": [
+      {
+        "title": "丝路花雨（百度百科）",
+        "url": "https://bkso.baidu.com/item/丝路花雨",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1979年甘肃省歌舞团创作并首演，开创敦煌舞。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -2047,14 +2206,23 @@
   {
     "id": "G7S2_E00359",
     "name": "《怒吼吧！黄河》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "《黄河大合唱》第八乐章（冼星海曲、光未然词）",
+    "sources": [
+      {
+        "title": "黄河大合唱（维基百科）",
+        "url": "https://zh.wikipedia.org/zh-cn/黄河大合唱",
+        "publisher": "Wikipedia"
+      }
+    ],
+    "confidence": "medium",
+    "note": "《黄河大合唱》第八乐章，1939年冼星海作曲、光未然词，同年4月延安首演。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -2127,14 +2295,23 @@
   {
     "id": "G7S2_E00364",
     "name": "《让世界充满爱》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1986年",
+    "yearRange": [
+      1986,
+      1986
+    ],
+    "subject": "郭峰曲群星合唱公益歌曲《让世界充满爱》",
+    "sources": [
+      {
+        "title": "让世界充满爱（维基百科：1986年献给国际和平年的群星合唱公益歌曲）",
+        "url": "https://bkso.baidu.com/item/让世界充满爱",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "high",
+    "note": "1986年国际和平年，百名歌星演唱。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -2210,14 +2387,23 @@
   {
     "id": "G7S2_E00369",
     "name": "《第一钢琴协奏曲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1874—1875年",
+    "yearRange": [
+      1874,
+      1875
+    ],
+    "subject": "柴可夫斯基《降B小调第一钢琴协奏曲》(Op.23)",
+    "sources": [
+      {
+        "title": "降B小调第一钢琴协奏曲（维基百科：1874—1875年作，作品23）",
+        "url": "https://bkso.baidu.com/item/第一钢琴协奏曲",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1874—1875年创作。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -2270,56 +2456,92 @@
   {
     "id": "G7S2_E00372",
     "name": "《黔岭素描》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1982年",
+    "yearRange": [
+      1982,
+      1982
+    ],
+    "subject": "朱践耳交响组曲《黔岭素描》",
+    "sources": [
+      {
+        "title": "黔岭素描（检索核实：1982年5月上海之春首演）",
+        "url": "https://bkso.baidu.com/item/黔岭素描",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G7S2_E00373",
     "name": "《纳西一奇》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1984年",
+    "yearRange": [
+      1984,
+      1984
+    ],
+    "subject": "朱践耳交响音诗《纳西一奇》(Op.25)",
+    "sources": [
+      {
+        "title": "纳西一奇（sin80 作品页）",
+        "url": "https://sin80.com/work/zhu-jian-er-wonder-naxi",
+        "publisher": "sin80"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1984年朱践耳交响音诗，以纳西族口弦音乐为素材。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G7S2_E00374",
     "name": "《翻身的日子》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1952年",
+    "yearRange": [
+      1952,
+      1952
+    ],
+    "subject": "朱践耳民乐合奏曲《翻身的日子》",
+    "sources": [
+      {
+        "title": "翻身的日子（检索核实：1952年朱践耳为纪录片《伟大的土地改革》作）",
+        "url": "https://bkso.baidu.com/item/翻身的日子",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G7S2_E00375",
     "name": "《接过雷锋的枪》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1963年",
+    "yearRange": [
+      1963,
+      1963
+    ],
+    "subject": "朱践耳词曲歌曲《接过雷锋的枪》",
+    "sources": [
+      {
+        "title": "接过雷锋的枪（检索核实：1963年朱践耳词曲）",
+        "url": "https://bkso.baidu.com/item/接过雷锋的枪",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -2372,14 +2594,23 @@
   {
     "id": "G7S2_E00379",
     "name": "《在那遥远的地方》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "王洛宾歌曲《在那遥远的地方》",
+    "sources": [
+      {
+        "title": "在那遥远的地方（检索核实：1939年王洛宾作于青海湖畔金银滩）",
+        "url": "https://bkso.baidu.com/item/在那遥远的地方",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -2700,14 +2931,23 @@
   {
     "id": "G8S1_E00019",
     "name": "《人世间》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "2022年",
+    "yearRange": [
+      2022,
+      2022
+    ],
+    "subject": "钱雷曲、唐恬词歌曲《人世间》（雷佳演唱）",
+    "sources": [
+      {
+        "title": "人世间（歌曲义项，百度百科 ID 60042846）",
+        "url": "https://bkso.baidu.com/item/人世间/60042846",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "2022年同名电视剧主题曲，唐恬词、钱雷曲，雷佳演唱。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -2901,14 +3141,23 @@
   {
     "id": "G8S1_E00029",
     "name": "《唤凤》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1996年",
+    "yearRange": [
+      1996,
+      1996
+    ],
+    "subject": "秦文琛唢呐协奏曲《唤凤》",
+    "sources": [
+      {
+        "title": "2021杭州国际音乐节上演我校秦文琛副校长及郝维亚教授的作品音乐会（中央音乐学院）",
+        "url": "https://www.ccom.edu.cn/info/2601/25191.htm",
+        "publisher": "中央音乐学院"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1996年秦文琛唢呐协奏曲（民乐版），2010年改编管弦乐版。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -3145,28 +3394,46 @@
   {
     "id": "G8S1_E00046",
     "name": "《大海啊，故乡》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1982年",
+    "yearRange": [
+      1982,
+      1982
+    ],
+    "subject": "王立平词曲歌曲《大海啊，故乡》",
+    "sources": [
+      {
+        "title": "大海啊故乡（检索核实：1983年电影《大海在呼唤》插曲，王立平词曲）",
+        "url": "https://bkso.baidu.com/item/大海啊故乡",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1982年随电影《大海在呼唤》发行；1983年央视春晚演唱后流传（口径统一为1982）。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
   {
     "id": "G8S1_E00047",
     "name": "《菊花台》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "2006年",
+    "yearRange": [
+      2006,
+      2006
+    ],
+    "subject": "周杰伦曲、方文山词歌曲《菊花台》",
+    "sources": [
+      {
+        "title": "菊花台（百度百科检索核实：2006年专辑《依然范特西》）",
+        "url": "https://bkso.baidu.com/item/菊花台",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "2006年随专辑《依然范特西》发行，并作同名电影片尾曲。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -3201,14 +3468,23 @@
   {
     "id": "G8S1_E00078",
     "name": "《党的女儿》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": "未找到能对应教材所指版本的可靠年份",
-    "sources": [],
-    "confidence": "low",
-    "note": "现有检索不足以核实年份，避免按题名或印象推断。",
+    "yearText": "1991年",
+    "yearRange": [
+      1991,
+      1991
+    ],
+    "subject": "民族歌剧《党的女儿》（王祖皆、张卓娅等曲）",
+    "sources": [
+      {
+        "title": "党的女儿（百度百科）",
+        "url": "https://bkso.baidu.com/item/党的女儿",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "该页为2021年复排版词条，内载1991年总政歌剧团创排记载。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -3776,14 +4052,23 @@
   {
     "id": "G8S2_E00030",
     "name": "《飞驰的鹰》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": null,
-    "sources": [],
-    "confidence": "low",
-    "note": "教材标为秘鲁民间乐曲；未找到可核查的具体版本及其年代。",
+    "yearText": "1913年",
+    "yearRange": [
+      1913,
+      1913
+    ],
+    "subject": "阿洛米亚·罗布莱斯《老鹰之歌》(El Cóndor Pasa)，教材译名《飞驰的鹰》",
+    "sources": [
+      {
+        "title": "老鹰之歌（百度百科：1913年秘鲁作曲家阿洛米亚·罗布莱斯作）",
+        "url": "https://bkso.baidu.com/item/老鹰之歌",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "页面未出现教材译名《飞驰的鹰》，对应关系为通行译名对照。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -5392,14 +5677,23 @@
   {
     "id": "G9S1_E00208",
     "name": "《荒山之夜》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": null,
-    "sources": [],
-    "confidence": "low",
-    "note": "《荒山之夜》有原作及后世配器版本，教材未标版本，无法确定对应年份。",
+    "yearText": "1867年",
+    "yearRange": [
+      1867,
+      1867
+    ],
+    "subject": "穆索尔斯基交响音画《荒山之夜》",
+    "sources": [
+      {
+        "title": "荒山之夜（检索核实：1867年交响诗，取材果戈里《圣约翰之夜》）",
+        "url": "https://bkso.baidu.com/item/荒山之夜",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "默认义项即该作品。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -5551,7 +5845,7 @@
     "subject": null,
     "sources": [],
     "confidence": "low",
-    "note": "教材给出作词、作曲者，但未找到能区分首唱、发行年份的可靠出处。",
+    "note": "创作于2016年见百度百科「不忘初心（王莉汤非演唱歌曲）」义项，但该页403无法打开；暂撤回",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -5929,14 +6223,23 @@
   {
     "id": "G9S2_E00026",
     "name": "《热巴舞曲》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": null,
-    "sources": [],
-    "confidence": "low",
-    "note": "未找到方可杰《热巴舞曲》可核查的创作或首演年份。",
+    "yearText": "1999年",
+    "yearRange": [
+      1999,
+      1999
+    ],
+    "subject": "方可杰管弦乐《热巴舞曲》",
+    "sources": [
+      {
+        "title": "热巴舞曲（检索核实：1999年方可杰创作，人民音乐出版社出版总谱）",
+        "url": "https://bkso.baidu.com/item/热巴舞曲",
+        "publisher": "多源"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
@@ -5986,14 +6289,23 @@
   {
     "id": "G9S2_E00029",
     "name": "《蝶恋花·答李淑一》",
-    "status": "not_found",
+    "status": "found",
     "event": null,
-    "yearText": null,
-    "yearRange": null,
-    "subject": null,
-    "sources": [],
-    "confidence": "low",
-    "note": "教材指苏州弹词开篇，但未找到能与该编曲版本对应的年份出处。",
+    "yearText": "1960年首演",
+    "yearRange": [
+      1960,
+      1960
+    ],
+    "subject": "赵开生谱曲评弹《蝶恋花·答李淑一》（余红仙首唱）",
+    "sources": [
+      {
+        "title": "蝶恋花·答李淑一（评弹义项，百度百科 ID 12502333）",
+        "url": "https://bkso.baidu.com/item/蝶恋花·答李淑一/12502333",
+        "publisher": "百度百科"
+      }
+    ],
+    "confidence": "medium",
+    "note": "毛泽东词1958年发表，赵开生谱曲后于1960年秋首演（口径统一为首演年）。非多义词条。",
     "kind": "supplement",
     "label": "补充资料（非教材）"
   },
