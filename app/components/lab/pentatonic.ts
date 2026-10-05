@@ -7,7 +7,11 @@ export const PENTATONIC = [
   { name: "徵", solfege: "sol", degree: 5, semitone: 7 },
   { name: "羽", solfege: "la", degree: 6, semitone: 9 },
 ] as const;
-export const LAB_KEYS = { C: 60, D: 62, F: 65, G: 67 } as const;
+/** Gong pitches in MIDI. Keep one octave per key so the scale can be moved by semitone. */
+export const LAB_KEYS = {
+  C: 60, "C♯": 61, D: 62, "E♭": 63, E: 64, F: 65,
+  "F♯": 66, G: 67, "A♭": 68, A: 69, "B♭": 70, B: 71,
+} as const;
 export type LabKey = keyof typeof LAB_KEYS;
 
 /** One octave from the selected tonic, then return to it. */
