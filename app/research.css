@@ -732,14 +732,17 @@
     background: var(--paper, #F4EEE1);
   }
 
-  /* 首列右缘一道淡影，滚动时提示下方还有列 */
+  /* 固定列右缘：1px 纸色系细线 + 淡影，滚动时提示下方还有列 */
+  .matrix-panel thead th:first-child,
   .matrix-panel tbody th {
-    box-shadow: 8px 0 8px -8px rgba(27, 38, 34, .38);
+    box-shadow:
+      1px 0 0 0 var(--line, #CFC4AC),
+      8px 0 8px -8px rgba(27, 38, 34, .38);
   }
 
   .theme-light .matrix-panel thead th:first-child,
   .theme-light .matrix-panel tbody th {
-    background: #fff;
+    background: var(--paper, #F4EEE1);
   }
 
   .matrix-scroll-hint {
