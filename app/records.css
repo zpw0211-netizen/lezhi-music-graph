@@ -536,55 +536,84 @@
 
 .records-score-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   align-items: stretch;
-  gap: 20px;
+  gap: 28px 22px;
 }
 
 .records-score-card {
-  display: grid;
+  display: flex;
   min-width: 0;
-  grid-template-rows: auto 1fr;
-  align-content: start;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--records-line);
-  background: transparent;
+  flex-direction: column;
   color: var(--records-ink);
-  text-align: left;
-  cursor: pointer;
-  transform: translateY(0);
-  transition: transform 500ms var(--records-ease);
 }
 
-.records-score-card:hover { transform: translateY(-6px) rotate(-.22deg); }
-.records-score-card:focus-visible { outline: 2px solid var(--records-seal); outline-offset: 4px; }
+.records-score-open {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--records-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.records-score-open:focus-visible,
+.records-score-play .melody-play:focus-visible { outline: 2px solid var(--records-seal); outline-offset: 4px; }
 
 .records-score-image-wrap {
   position: relative;
   display: block;
-  aspect-ratio: 1.38;
+  width: 100%;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--records-paper-2);
+  border: 1px solid var(--records-line);
+  background: var(--records-sheet);
+  box-shadow: 0 1px 0 var(--records-paper-3), 0 8px 18px -14px rgba(40, 30, 10, .5);
+  transition: transform 500ms var(--records-ease), box-shadow 500ms var(--records-ease);
+}
+
+.records-score-image-wrap::after {
+  position: absolute;
+  z-index: 1;
+  inset: auto 0 0;
+  height: 40%;
+  background: linear-gradient(0deg, var(--records-sheet) 10%, transparent);
+  content: "";
+  pointer-events: none;
 }
 
 .records-score-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   mix-blend-mode: multiply;
-  filter: sepia(.12);
-  transform: translateY(0) scale(1.005);
+  filter: sepia(.25) contrast(1.05);
+  transform: translateY(0);
   transition: transform 1.6s var(--records-ease);
 }
 
-.records-score-card:hover .records-score-image { transform: translateY(-18%) scale(1.08); }
+.records-score-card:hover .records-score-image-wrap,
+.records-score-card:focus-within .records-score-image-wrap {
+  transform: translateY(-6px) rotate(-.4deg);
+  box-shadow: 0 1px 0 var(--records-paper-3), 0 22px 30px -18px rgba(40, 30, 10, .55);
+}
+
+.records-score-card:hover .records-score-image,
+.records-score-card:focus-within .records-score-image { transform: translateY(-18%); }
 
 .records-score-placeholder {
+  position: absolute;
+  inset: 0;
   display: grid;
-  width: 100%;
-  height: 100%;
   place-items: center;
   padding: 20px;
   background: var(--records-sheet);
@@ -595,21 +624,24 @@
 
 .records-star-seal {
   position: absolute;
+  z-index: 2;
   top: 14px;
   right: 14px;
   display: grid;
-  width: 58px;
-  height: 58px;
+  width: 54px;
+  height: 54px;
   place-items: center;
-  border: 2px solid var(--records-seal);
+  border: 1px solid var(--records-seal);
   color: var(--records-seal);
-  background: color-mix(in srgb, var(--records-paper) 76%, transparent);
-  font: 13px/1.2 var(--records-kai);
+  background: color-mix(in srgb, var(--records-sheet) 60%, transparent);
+  font: 18px/1.05 var(--records-kai);
   transform: rotate(8deg);
+  text-align: center;
 }
 
 .records-score-page {
   position: absolute;
+  z-index: 2;
   right: 8px;
   bottom: 8px;
   padding: 3px 6px;
@@ -619,24 +651,40 @@
   font-variant-numeric: lining-nums tabular-nums;
 }
 
-.records-score-copy { display: grid; justify-items: start; gap: 5px; padding: 12px 2px 16px; }
-.records-score-type { color: var(--records-ink-3); font: 11px/1.4 var(--records-ui); }
-.records-score-copy strong { color: var(--records-ink); font: 20px/1.45 var(--records-kai); }
-.records-score-authors { color: var(--records-ink-2); font: 12px/1.6 var(--records-ui); }
-.records-has-melody { color: var(--records-pine); font: 11px/1.4 var(--records-ui); }
+.records-score-copy { display: grid; min-height: 100px; align-content: start; justify-items: start; gap: 4px; box-sizing: border-box; padding: 14px 0 0; }
+.records-score-copy strong { color: var(--records-ink); font: 600 19px/1.35 var(--records-serif); }
+.records-score-authors { color: var(--records-ink-3); font: 13px/1.5 var(--records-ui); }
 
 .records-score-card.is-featured {
-  min-height: 270px;
   grid-column: span 2;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
-  grid-template-rows: 1fr;
-  gap: 0 20px;
-  border-bottom: 1px solid var(--records-seal);
+  grid-row: span 2;
 }
 
-.records-score-card.is-featured .records-score-image-wrap { height: 100%; min-height: 270px; aspect-ratio: auto; }
-.records-score-card.is-featured .records-score-copy { align-content: center; padding: 22px 8px; }
-.records-score-card.is-featured .records-score-copy strong { font-size: clamp(26px, 3.3vw, 42px); }
+.records-score-card.is-featured .records-score-image-wrap { min-height: 360px; flex: 1 1 360px; aspect-ratio: auto; }
+.records-score-card.is-featured .records-score-copy { min-height: 0; padding-top: 14px; }
+.records-score-card.is-featured .records-score-copy strong { font: 400 30px/1.35 var(--records-kai); }
+
+.records-score-play { display: block; margin-top: 10px; }
+.records-score-play .melody-controls { display: block; margin: 0; }
+.records-score-play .melody-key,
+.records-score-play .melody-voices,
+.records-score-play .melody-tempo,
+.records-score-play .melody-score,
+.records-score-play .melody-source { display: none; }
+.records-score-play .melody-play {
+  height: 34px;
+  padding: 5px 12px 5px 8px;
+  border: 1px solid var(--records-pine);
+  background: transparent;
+  color: var(--records-pine);
+  font-size: 0;
+  font-weight: 400;
+  box-shadow: none;
+}
+.records-score-play .melody-play::after { content: "听旋律"; font: 13px/1.4 var(--records-ui); }
+.records-score-play .melody-play.is-playing::after { content: "停止"; }
+.records-score-play .melody-play svg { width: 12px; height: 12px; }
+.records-score-play .melody-play:hover { filter: none; background: var(--records-pine); color: var(--records-paper); }
 
 .records-chapter-tasks { margin: 0 0 12px; }
 .records-chapter-tasks ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; margin: 0; padding: 0; list-style: none; counter-reset: records-task; }
@@ -837,13 +885,10 @@
   .records-chapter-primary { width: 100%; }
   .records-section-heading { align-items: baseline; margin-bottom: 14px; }
   .records-section-heading p { font-size: 10px; }
-  .records-score-grid { gap: 14px 12px; }
-  .records-score-card.is-featured { min-height: 190px; gap: 0 12px; }
-  .records-score-card.is-featured .records-score-image-wrap { min-height: 190px; }
-  .records-score-copy { gap: 3px; padding: 9px 1px 12px; }
-  .records-score-copy strong { font-size: 16px; }
-  .records-score-type, .records-score-authors { font-size: 10px; }
-  .records-star-seal { top: 8px; right: 7px; width: 46px; height: 46px; font-size: 11px; }
+  .records-score-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; gap: 22px 14px; }
+  .records-score-card.is-featured { grid-column: span 2; grid-row: auto; }
+  .records-score-card.is-featured .records-score-image-wrap { min-height: 240px; flex: 0 0 auto; aspect-ratio: 4 / 3; }
+  .records-star-seal { top: 8px; right: 7px; width: 46px; height: 46px; font-size: 14px; }
   .records-score-page { right: 5px; bottom: 5px; padding: 2px 4px; font-size: 9px; }
   .records-chapter-tasks ol { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .records-chapter-tasks li p { font-size: 13px; }
