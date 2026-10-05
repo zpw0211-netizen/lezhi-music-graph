@@ -216,10 +216,14 @@
 .lupan-disc-edge { fill: url(#lupan-bronze-edge); stroke: #695035; stroke-width: 1.2; }
 .lupan-disc-bevel { fill: #D6C08F; stroke: #80603B; stroke-width: 1; }
 .lupan-disc-face { fill: url(#lupan-paper-face); stroke: var(--lupan-bronze); stroke-width: 1.5; filter: url(#lupan-disc-grain); }
+.lupan-disc-lacquer { fill: url(#lupan-lacquer-depth); pointer-events: none; }
+.lupan-disc-rimlight { fill: none; stroke: #F3D9A4; stroke-width: 1; opacity: .86; pointer-events: none; }
 .lupan-disc-etched { fill: none; stroke: rgba(184,150,96,.82); stroke-width: 1.5; }
 .lupan-disc-faint { fill: none; stroke: rgba(184,150,96,.42); stroke-width: 1; }
 .lupan-disc-inner { fill: none; stroke: rgba(31,74,60,.3); stroke-width: 1; }
+.lupan-disc-inner-rim { fill: none; stroke: rgba(31,74,60,.22); stroke-width: .8; }
 .lupan-pitch-ring { transform-box: view-box; transform-origin: center; transition: transform .8s var(--lupan-ease); }
+.lupan-pitch-tick-shadow { stroke: rgba(68,58,42,.24); stroke-width: 3; opacity: .5; }
 .lupan-pitch-tick { stroke: var(--lupan-ink-2); stroke-width: 1; opacity: .58; }
 .lupan-pitch-tick.is-major { stroke: var(--lupan-seal); stroke-width: 1.5; opacity: .84; }
 .lupan-pitch-name {
@@ -241,7 +245,6 @@
   stroke: var(--lupan-pine-deep);
   stroke-width: var(--brush-width, 3.2px);
   opacity: .86;
-  filter: url(#lupan-ink-ragged);
 }
 .lupan-ink-stroke.is-tracing {
   stroke-dasharray: 100;

@@ -38,10 +38,18 @@ function createInkPath(start: { x: number; y: number }, end: { x: number; y: num
   const dx = end.x - start.x;
   const dy = end.y - start.y;
   const length = Math.hypot(dx, dy) || 1;
-  const bend = index % 2 === 0 ? 1.5 : -1.2;
-  const controlX = (start.x + end.x) / 2 - dy / length * bend;
-  const controlY = (start.y + end.y) / 2 + dx / length * bend;
-  return `M${start.x.toFixed(2)} ${start.y.toFixed(2)} Q${controlX.toFixed(2)} ${controlY.toFixed(2)} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+  const normalX = -dy / length;
+  const normalY = dx / length;
+  const direction = index % 2 === 0 ? 1 : -1;
+  const amplitude = 2.4 + (index % 3) * .35;
+  const pointAt = (progress: number, offset: number) => ({
+    x: start.x + dx * progress + normalX * offset,
+    y: start.y + dy * progress + normalY * offset,
+  });
+  const firstBend = pointAt(.27, amplitude * direction);
+  const middle = pointAt(.52, amplitude * direction * .2);
+  const secondBend = pointAt(.78, -amplitude * direction * .55);
+  return `M${start.x.toFixed(2)} ${start.y.toFixed(2)} Q${firstBend.x.toFixed(2)} ${firstBend.y.toFixed(2)} ${middle.x.toFixed(2)} ${middle.y.toFixed(2)} Q${secondBend.x.toFixed(2)} ${secondBend.y.toFixed(2)} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
 }
 
 function wrapAngle(angle: number) {
@@ -132,10 +140,17 @@ function LupanWheel({
         aria-label={`律盘，${modeTitle}，当前宫音 1=${currentKey}`}
       >
         <defs>
-          <radialGradient id="lupan-paper-face" cx="43%" cy="34%" r="72%">
+          <radialGradient id="lupan-paper-face" cx="42%" cy="33%" r="73%">
             <stop offset="0" stopColor="#FFFCF4" />
-            <stop offset=".7" stopColor="#F3EBDD" />
-            <stop offset="1" stopColor="#E5D7BE" />
+            <stop offset=".48" stopColor="#F7F0E3" />
+            <stop offset=".82" stopColor="#E8DCC5" />
+            <stop offset="1" stopColor="#C9B48A" />
+          </radialGradient>
+          <radialGradient id="lupan-lacquer-depth" cx="36%" cy="28%" r="82%">
+            <stop offset="0" stopColor="#FFFDF6" stopOpacity=".27" />
+            <stop offset=".52" stopColor="#E9D7B4" stopOpacity=".06" />
+            <stop offset=".82" stopColor="#8C693C" stopOpacity=".08" />
+            <stop offset="1" stopColor="#563A20" stopOpacity=".28" />
           </radialGradient>
           <linearGradient id="lupan-bronze-edge" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#6B4A2E" />
@@ -151,14 +166,11 @@ function LupanWheel({
           <filter id="lupan-disc-grain" x="-2%" y="-2%" width="104%" height="104%" colorInterpolationFilters="sRGB">
             <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="5" result="grain" />
             <feColorMatrix in="grain" values="0 0 0 0 .62 0 0 0 0 .49 0 0 0 0 .31 0 0 0 .11 0" result="tinted-grain" />
-            <feBlend in="SourceGraphic" in2="tinted-grain" mode="multiply" />
+            <feComposite in="tinted-grain" in2="SourceAlpha" operator="in" result="masked-grain" />
+            <feBlend in="SourceGraphic" in2="masked-grain" mode="multiply" />
           </filter>
           <filter id="lupan-ink-soft" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
             <feGaussianBlur stdDeviation="1.1" />
-          </filter>
-          <filter id="lupan-ink-ragged" x="-7%" y="-7%" width="114%" height="114%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7" result="brush-grain" />
-            <feDisplacementMap in="SourceGraphic" in2="brush-grain" scale="1.2" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </defs>
 
@@ -166,9 +178,12 @@ function LupanWheel({
         <circle className="lupan-disc-edge" cx="300" cy="300" r="264" />
         <circle className="lupan-disc-bevel" cx="300" cy="300" r="258" />
         <circle className="lupan-disc-face" cx="300" cy="300" r="253" />
+        <circle className="lupan-disc-lacquer" cx="300" cy="300" r="252" />
+        <circle className="lupan-disc-rimlight" cx="300" cy="300" r="255.4" />
         <circle className="lupan-disc-etched" cx="300" cy="300" r="240" />
         <circle className="lupan-disc-inner" cx="300" cy="300" r="226" />
         <circle className="lupan-disc-faint" cx="300" cy="300" r="205" />
+        <circle className="lupan-disc-inner-rim" cx="300" cy="300" r="190" />
         <circle className="lupan-disc-inner" cx="300" cy="300" r="179" />
 
         <g className="lupan-pitch-ring" style={{ transform: `rotate(${-tonicPitchClass * 30}deg)` }}>
@@ -180,6 +195,7 @@ function LupanWheel({
             const label = { x: 300 + Math.cos(angle) * 205, y: 300 + Math.sin(angle) * 205 };
             const isTonic = pitchClass === tonicPitchClass;
             return <g key={pitchName}>
+              <line className="lupan-pitch-tick-shadow" x1={inner.x + 1} y1={inner.y + 1} x2={outer.x + 1} y2={outer.y + 1} />
               <line className={`lupan-pitch-tick${pitchClass % 3 === 0 ? " is-major" : ""}`} x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} />
               <text
                 className={`lupan-pitch-name${isTonic ? " is-tonic" : ""}`}
@@ -662,7 +678,7 @@ export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWo
                 aria-label={`${note.name}，简谱 ${note.degree}${note.octave ? "，高八度" : ""}${note.altered ? "，偏音，拓展知识" : ""}`}
               >
                 <span className="lupan-score-degree">{note.degree}{note.octave && <sup aria-label="高八度">·</sup>}</span>
-                <span className="lupan-score-name">{note.name}</span>
+                {!note.altered && <span className="lupan-score-name">{note.name}</span>}
                 {note.altered && <span className="lupan-score-bias"><i aria-hidden="true" /><b>{note.name}</b></span>}
               </li>)}
             </ol>
