@@ -15,7 +15,7 @@ const canonicalSource = JSON.parse(await readFile("public/data/canonical-graph.j
 const NODES = canonicalSource.entities.length, EDGES = canonicalSource.relationships.length;
 assert.equal(graph.entities.length, NODES); assert.equal(graph.relationships.length, EDGES);
 assert(NODES >= 1337 && EDGES >= 4661, "canonical graph shrank below the last release");
-const examples = ["只看音乐人物", "只看作曲关系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的关系", "查找进行曲相关作品", "显示节奏相关知识"];
+const examples = ["只看音乐人物", "只看作曲知识联系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的知识联系", "查找进行曲相关作品", "显示节奏相关知识"];
 const required = ["filter_entity_types", "filter_relationship_types", "filter_books", "focus_entities", "find_path", "focus_entities", "focus_entities"];
 for (let i = 0; i < examples.length; i++) {
   const plan = planGraphQuery(examples[i], graph); assert(plan.actions.some(a => a.type === required[i]), examples[i]);

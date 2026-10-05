@@ -16,10 +16,10 @@ export function ImportView() {
       const books = payload.books?.length ?? 0;
       const triples = payload.books?.reduce((sum, book) => sum + (book.triples?.length ?? 0), 0) ?? 0;
       if (IS_STATIC_EXPORT) {
-        setSummary(`已读取 ${file.name}：${books || 1} 册、${fmt(triples)} 条关系。静态公开版支持本地校验；在线持久化导入需连接独立后端。`);
+        setSummary(`已读取 ${file.name}：${books || 1} 册、${fmt(triples)} 条知识联系。静态公开版支持本地校验；在线持久化导入需连接独立后端。`);
         return;
       }
-      setSummary(`已读取 ${file.name}：${books || 1} 册、${fmt(triples)} 条关系，正在写入…`);
+      setSummary(`已读取 ${file.name}：${books || 1} 册、${fmt(triples)} 条知识联系，正在写入…`);
       const response = await fetch("/api/import", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -43,7 +43,7 @@ export function ImportView() {
         <p>
           {IS_STATIC_EXPORT
             ? "当前为 GitHub Pages 静态公开版；JSON 可在本地校验，在线持久化需连接独立后端。"
-            : "结构化数据进入 D1，乐谱图片、音频、视频和 PDF 进入 R2，再通过中文关系边挂回作品节点。"}
+            : "结构化数据进入 D1，乐谱图片、音频、视频和 PDF 进入 R2，再通过中文知识联系挂回对应的知识点。"}
         </p>
       </div>
       <div className="import-grid">
@@ -63,19 +63,19 @@ export function ImportView() {
         </div>
         <div className="import-card">
           <div className="import-icon">◉</div>
-          <h3>中文关系标准</h3>
+          <h3>中文知识联系标准</h3>
           <ul className="schema-list">
             <li>
-              作品关系 <span>作曲 · 作词 · 属于单元 · 表现主题</span>
+              作品知识联系 <span>作曲 · 作词 · 属于单元 · 表现主题</span>
             </li>
             <li>
-              乐理关系 <span>是 · 指 · 凭借 · 解释概念</span>
+              乐理知识联系 <span>是 · 指 · 凭借 · 解释概念</span>
             </li>
             <li>
-              证据关系 <span>教材页码 · PDF页码 · 原文摘要</span>
+              教材出处 <span>教材页码 · PDF页码 · 原文摘要</span>
             </li>
             <li>
-              资源关系 <span>拥有乐谱 · 音频 · 视频</span>
+              资源知识联系 <span>拥有乐谱 · 音频 · 视频</span>
             </li>
           </ul>
         </div>

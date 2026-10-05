@@ -4,7 +4,7 @@ import { planGraphQuery } from "../../lib/graph/graph-actions";
 import { enrichGraph, graphAnswer, type AnswerResult, type EvidencePayload, type RagGraph } from "../../lib/ai/graph-rag";
 const formatPageReferences = (text: string) =>
   text.replace(/(教材|PDF)?\s*第\s*(\d+(?:\s*[-–—]\s*\d+)?)\s*页/g, (_match, label: string | undefined, page: string) => `${label === "PDF" ? "PDF " : label ?? ""}第 ${page.trim()} 页`);
-const EXAMPLES = ["只看音乐人物", "只看作曲关系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的关系", "查找进行曲相关作品", "显示节奏相关知识"];
+const EXAMPLES = ["只看音乐人物", "只看作曲知识联系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的知识联系", "查找进行曲相关作品", "显示节奏相关知识"];
 export function SmartGraphQuery({ graph, execute, assetUrl, onGraphFocus, notice }: { graph: RagGraph | null; execute: (input: unknown) => boolean; assetUrl: (path: string) => string; onGraphFocus: (answer: AnswerResult) => void; notice: string }) {
   const [question, setQuestion] = useState(""), [answer, setAnswer] = useState<AnswerResult | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const cache = useRef(new Map<string, Promise<EvidencePayload>>());

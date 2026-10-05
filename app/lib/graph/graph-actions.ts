@@ -52,7 +52,7 @@ export function planGraphQuery(question: string, graph: RagGraph) {
   if (/只看|仅看|显示|筛选/.test(question) && type) actions.push({ type: "filter_entity_types", entityTypes: [type.key] });
   const relationNames = [...new Set(graph.relationships.map(edge => edge.label ?? edge.predicate))].sort((a, b) => b.length - a.length);
   const relation = relationNames.find(name => question.includes(name));
-  if (/只看|仅看|显示/.test(question) && /关系/.test(question) && relation) actions.push({ type: "filter_relationship_types", relationshipTypes: [relation] });
+  if (/只看|仅看|显示/.test(question) && /(关系|知识联系)/.test(question) && relation) actions.push({ type: "filter_relationship_types", relationshipTypes: [relation] });
   if (/逐步|发展|递进|进阶/.test(question)) actions.push({ type: "switch_perspective", perspective: "progression" });
   else {
     const perspective = /综合知识/.test(question) ? "comprehensive" : /教材结构/.test(question) ? "textbook" : /音乐知识视角/.test(question) ? "music" : null;
@@ -61,9 +61,9 @@ export function planGraphQuery(question: string, graph: RagGraph) {
   const term = normalize(question);
   const exact = graph.entities.filter(e => !["音乐", "作品", "教材", "音乐知识", "知识"].includes(e.name) && normalize(e.name).length >= 2 && [e.name, ...(e.aliases ?? [])].some(n => term.includes(normalize(n))));
   const named = [...new Map(exact.sort((a, b) => term.indexOf(normalize(a.name)) - term.indexOf(normalize(b.name)) || b.name.length - a.name.length).map(e => [normalize(e.name), e])).values()];
-  if (/和.*(关系|连接)|之间.*关系|最短路径/.test(question) && named.length >= 2) {
+  if (/和.*(关系|知识联系|连接)|之间.*(关系|知识联系)|最短路径/.test(question) && named.length >= 2) {
     actions.push({ type: "find_path", sourceId: named[0].id, targetId: named[1].id });
-  } else if (!(type && /只看|显示|筛选|仅看/.test(question)) && !(/关系/.test(question) && relation && /只看|显示|仅看/.test(question))) {
+  } else if (!(type && /只看|显示|筛选|仅看/.test(question)) && (!/(关系|知识联系)/.test(question) || !relation || !/只看|显示|仅看/.test(question))) {
     const roots = linkEntities(graph, question), runtime = graphRuntimeFor(graph, graph.entities, graph.relationships);
     const ids = new Set(roots.map(e => e.id)), edges = new Set<string>();
     const genreQuery = /进行曲/.test(question), ethnicQuery = /蒙古族/.test(question);

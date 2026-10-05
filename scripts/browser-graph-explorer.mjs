@@ -74,7 +74,7 @@ try {
     await page.locator("[data-schema-category=work]").click(); assert(Number((await stats()).visibleNodes) > 0); await reset();
   });
   const smart = section("智能探索"); await smart.locator("summary").click();
-  for (const q of ["只看音乐人物", "只看作曲关系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的关系", "查找进行曲相关作品", "显示节奏相关知识"]) {
+  for (const q of ["只看音乐人物", "只看作曲知识联系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的知识联系", "查找进行曲相关作品", "显示节奏相关知识"]) {
     await record("GraphAction：" + q, async () => {
       const id = (await stats()).graphBuildId; await smart.getByRole("button", { name: q, exact: true }).click();
       await smart.locator("button[type=submit]:not([disabled])").waitFor();
