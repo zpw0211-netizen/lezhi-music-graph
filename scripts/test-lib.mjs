@@ -24,6 +24,12 @@ import {
   serializeYearSupplement,
   writeYearSupplementFiles,
 } from "./build-year-supplement.mjs";
+import {
+  mergePeopleLifetime,
+  missingPeopleManifestIds,
+  serializePeopleLifetime,
+  writePeopleLifetimeFiles,
+} from "./build-people-supplement.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(scriptPath), "..");
@@ -32,6 +38,8 @@ const SOURCES = {
   routing: path.join(repoRoot, "app", "lib", "app", "routing.ts"),
   unitData: path.join(repoRoot, "app", "lib", "app", "unit-data.ts"),
   timelineModel: path.join(repoRoot, "app", "components", "timeline", "timelineModel.ts"),
+  assets: path.join(repoRoot, "app", "lib", "app", "assets.ts"),
+  peopleSupplement: path.join(repoRoot, "app", "lib", "timeline", "peopleSupplement.ts"),
 };
 
 // ---- 变异定义：每条都是「源码文本替换」，替换必须真的发生（否则视为脚本自身出错） ----
@@ -122,8 +130,15 @@ async function loadModules(mutation) {
     for (const [key, file] of Object.entries(SOURCES)) {
       let source = readFileSync(file, "utf8");
       if (mutation && mutation.file === key) source = applyMutation(source, mutation);
-      const out = path.join(tmpDir, `${key}.mjs`);
-      writeFileSync(out, ts.transpileModule(source, TRANSPILE_OPTIONS).outputText, "utf8");
+      const relative = path.relative(repoRoot, file).replace(/\.ts$/, ".mjs");
+      const out = path.join(tmpDir, relative);
+      mkdirSync(path.dirname(out), { recursive: true });
+      // ESM 需要显式扩展名：把源码中的相对值导入（如 ../app/assets）改写为 .mjs
+      const linked = source.replace(
+        /from "(\.\.?\/[^"]+?)"/g,
+        (match, specifier) => (specifier.endsWith(".mjs") ? match : `from "${specifier}.mjs"`),
+      );
+      writeFileSync(out, ts.transpileModule(linked, TRANSPILE_OPTIONS).outputText, "utf8");
       modules[key] = await import(pathToFileURL(out).href);
     }
     return modules;
@@ -146,6 +161,7 @@ const loaded = await loadModules(mutationFromArgv());
 const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, parseUnitTask } = await loaded.unitData;
 const { eraForYear, filterWorks, groupTimelineWorks, workHref, withSupplementalYears } = await loaded.timelineModel;
+const { isPublicPeopleLifetime, loadPeopleSupplement } = await loaded.peopleSupplement;
 const timelineData = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "timeline.json"), "utf8"));
 const recordUnits = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "units.json"), "utf8"));
 const recordWorks = new Map(recordUnits.flatMap((unit) => unit.works.map((work) => [`${unit.bookKey}:${work.id}`, work])));
@@ -612,6 +628,121 @@ t("年代补充：写入源数据与发布数据不改教材数据且字节稳�
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
+});
+
+// --- 人物生卒年补充（people-lifetime） ----------------------------------------
+
+const PEOPLE_MANIFEST = [
+  "TEST_PEOPLE_FOUND",
+  "TEST_PEOPLE_PARTIAL",
+  "TEST_PEOPLE_LOW",
+  "TEST_PEOPLE_NOT_FOUND",
+  "TEST_PEOPLE_NOT_PERSON",
+].map((id) => ({ id, name: `《${id}》` }));
+
+function peopleLifetimeFixture() {
+  const source = {
+    title: "人物词条（示例）",
+    url: "https://bkso.baidu.com/item/测试人物",
+    publisher: "百度百科",
+  };
+  return mergePeopleLifetime(
+    [
+      [
+        { id: "TEST_PEOPLE_FOUND", name: "《TEST_PEOPLE_FOUND》", status: "found", born: 1905, died: 1945, lifetimeText: "1905—1945", subject: "代表作核对", sources: [source], confidence: "high", note: null },
+        { id: "TEST_PEOPLE_PARTIAL", name: "《TEST_PEOPLE_PARTIAL》", status: "partial", born: 1938, died: null, lifetimeText: "1938—", subject: "代表作核对", sources: [source], confidence: "medium", note: "在世" },
+        { id: "TEST_PEOPLE_LOW", name: "《TEST_PEOPLE_LOW》", status: "partial", born: 1941, died: null, lifetimeText: "1941—", subject: "代表作核对", sources: [source], confidence: "low", note: "无法核实" },
+        { id: "TEST_PEOPLE_NOT_FOUND", name: "《TEST_PEOPLE_NOT_FOUND》", status: "not_found", born: null, died: null, lifetimeText: null, subject: null, sources: [], confidence: "low", note: "查不到" },
+        { id: "TEST_PEOPLE_NOT_PERSON", name: "《TEST_PEOPLE_NOT_PERSON》", status: "not_person", born: null, died: null, lifetimeText: null, subject: null, sources: [], confidence: "medium", note: "实为乐团" },
+      ],
+    ],
+    { manifest: PEOPLE_MANIFEST },
+  );
+}
+
+t("人物补充：合并与序列化对批次顺序保持确定", () => {
+  const forward = peopleLifetimeFixture();
+  const reversed = mergePeopleLifetime(
+    [peopleLifetimeFixture().slice().reverse()],
+    { manifest: PEOPLE_MANIFEST },
+  );
+  assert.equal(serializePeopleLifetime(forward), serializePeopleLifetime(reversed));
+  assert.deepEqual(missingPeopleManifestIds(forward, PEOPLE_MANIFEST), []);
+});
+
+t("人物补充：每条记录保留完整字段、kind 与 label", () => {
+  const records = peopleLifetimeFixture();
+  const expectedKeys = [
+    "id",
+    "name",
+    "status",
+    "born",
+    "died",
+    "lifetimeText",
+    "subject",
+    "sources",
+    "confidence",
+    "note",
+    "kind",
+    "label",
+  ];
+  assert.deepEqual(Object.keys(records[0]), expectedKeys);
+  const found = records.find((person) => person.id === "TEST_PEOPLE_FOUND");
+  assert.ok(found);
+  assert.equal(found.kind, "supplement");
+  assert.equal(found.label, "补充资料（非教材）");
+  assert.equal(found.born, 1905);
+  assert.equal(found.died, 1945);
+  assert.deepEqual(Object.keys(found.sources[0]), ["title", "url", "publisher"]);
+  const notFound = records.find((person) => person.id === "TEST_PEOPLE_NOT_FOUND");
+  assert.equal(notFound.born, null);
+  assert.equal(notFound.died, null);
+  assert.equal(notFound.lifetimeText, null);
+  assert.deepEqual(notFound.sources, []);
+});
+
+t("人物补充：写入源数据与发布数据不改教材数据且字节稳定", async () => {
+  const records = peopleLifetimeFixture();
+  const before = hashTextbookData();
+  const scratch = mkdtempSync(
+    path.join(process.env.TEMP ?? tmpdir(), "yapu-people-supplement-test-"),
+  );
+  try {
+    const sourcePath = path.join(scratch, "source", "people-lifetime.json");
+    const publicPath = path.join(scratch, "public", "people-lifetime.json");
+    const first = await writePeopleLifetimeFiles(records, { sourcePath, publicPath });
+    const second = await writePeopleLifetimeFiles(records, { sourcePath, publicPath });
+    assert.equal(first, second);
+    assert.equal(readFileSync(sourcePath, "utf8"), readFileSync(publicPath, "utf8"));
+    assert.equal(readFileSync(sourcePath, "utf8"), serializePeopleLifetime(records));
+    assert.equal(hashTextbookData(), before);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+t("人物补充：只对外提供 found/partial 且 high/medium 的条目", () => {
+  const records = peopleLifetimeFixture();
+  const visible = records.filter(isPublicPeopleLifetime).map((person) => person.id);
+  assert.deepEqual(visible, ["TEST_PEOPLE_FOUND", "TEST_PEOPLE_PARTIAL"]);
+});
+
+t("人物补充：加载接口按需 fetch 且 low/not_found 不外露", async () => {
+  const records = peopleLifetimeFixture();
+  let requestedUrl = "";
+  const fetcher = async (url) => {
+    requestedUrl = String(url);
+    return {
+      ok: true,
+      json: async () => records,
+    };
+  };
+  const loaded2 = await loadPeopleSupplement(fetcher);
+  assert.deepEqual(loaded2.map((person) => person.id), ["TEST_PEOPLE_FOUND", "TEST_PEOPLE_PARTIAL"]);
+  // publicAssetUrl 恒带前导斜杠（basePath 行为归 assets 模块）
+  assert.equal(requestedUrl, "/data/supplement/people-lifetime.json");
+  const failing = async () => ({ ok: false, status: 404 });
+  await assert.rejects(() => loadPeopleSupplement(failing), /HTTP 404/);
 });
 
 // --- timeline long-roll model -------------------------------------------------
