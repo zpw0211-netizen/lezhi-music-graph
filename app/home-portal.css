@@ -226,7 +226,12 @@ body::before {
   background: transparent;
   font-size: 15px;
 }
-.home-portal .home-search input:focus-visible { outline: 0; }
+.home-portal .home-search:focus-within { border-bottom: 4px solid var(--pine); }
+.home-portal .home-search input:focus-visible {
+  outline: 2px solid var(--pine);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
 .home-portal .home-search > button[type="submit"] {
   flex: 0 0 auto;
   min-width: 0;
@@ -269,7 +274,18 @@ body::before {
 .home-portal .home-search-results svg { flex: 0 0 16px; width: 16px; }
 .home-portal .home-hot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 11px; margin-top: 10px; color: var(--ink-3); font-size: 12px; }
 .home-portal .home-hot > span { margin-right: 2px; }
-.home-portal .home-hot button { padding: 0; border: 0; background: transparent; color: var(--ink-2); font-size: 12px; }
+.home-portal .home-hot button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 12px;
+}
 .home-portal .home-hot button:hover { color: var(--seal); }
 
 .home-portal .home-scrolls { padding: 0 clamp(22px, 2.8vw, 48px); }
@@ -372,6 +388,9 @@ body::before {
   min-width: 0;
   max-height: calc(100% - 48px);
   overflow: auto;
+  padding: 12px 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgb(19 48 42 / 80%) 0%, rgb(15 36 31 / 94%) 100%);
   color: var(--paper);
   text-shadow: 0 1px 12px rgb(10 24 20 / 55%);
 }
@@ -676,7 +695,7 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
   .home-portal .home-scroll-number { font: 14px/1.2 var(--kai); letter-spacing: 0; writing-mode: horizontal-tb; }
   .home-portal .home-scroll-name { font: 22px/1.25 var(--kai); letter-spacing: .04em; writing-mode: horizontal-tb; }
   .home-portal .home-book-scroll.is-open .home-scroll-trigger { align-items: flex-start; }
-  .home-portal .home-scroll-copy { right: 17px; bottom: 16px; left: 17px; max-height: calc(100% - 35px); }
+  .home-portal .home-scroll-copy { right: 17px; bottom: 16px; left: 17px; max-height: calc(100% - 35px); padding: 10px 11px; }
   .home-portal .home-scroll-overline { font-size: 12px; }
   .home-portal .home-scroll-copy h3 { margin-bottom: 4px; font-size: 31px; }
   .home-portal .home-scroll-intro { margin-bottom: 2px; font-size: 12px; line-height: 1.45; }
