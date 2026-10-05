@@ -145,7 +145,7 @@
 .atlas-work-link:focus-visible,
 .atlas-location-list button:focus-visible,
 .atlas-controls input:focus-visible {
-  outline: 3px solid var(--amber, #C98A22);
+  outline: 3px solid var(--pine, #1F4A3C);
   outline-offset: 3px;
 }
 
@@ -423,6 +423,11 @@
   touch-action: none;
 }
 
+.atlas-map-canvas:focus-visible {
+  outline: 4px solid #F3D9A4;
+  outline-offset: -6px;
+}
+
 .atlas-marker-canvas {
   pointer-events: none;
 }
@@ -447,8 +452,8 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: start;
   gap: 6px 24px;
-  color: #9FB3AA;
-  font-size: 12px;
+  color: var(--ink-2, #44504A);
+  font-size: 14px;
   line-height: 1.55;
 }
 
@@ -459,6 +464,15 @@
 
 .atlas-map-key-help {
   text-align: right;
+}
+
+.atlas-keyboard-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .atlas-light-key {

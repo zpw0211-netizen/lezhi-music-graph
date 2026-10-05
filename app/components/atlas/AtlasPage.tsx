@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { CSSProperties } from "react";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
@@ -149,10 +149,12 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
   const [contours, setContours] = useState(false);
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null);
   const [hoverCard, setHoverCard] = useState<HoverCard>(null);
+  const [keyboardHint, setKeyboardHint] = useState("");
   const sceneRef = useRef<AtlasScene | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLElement>(null);
+  const keyboardRegionIdRef = useRef<string | null>(null);
   const reducedMotionRef = useRef(false);
 
   useEffect(() => {
@@ -296,6 +298,7 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
   }, [filter, mode, modeRegions, visibleWorksByRegion]);
 
   const selectRegion = (regionId: string) => {
+    keyboardRegionIdRef.current = regionId;
     setSelectedId(regionId);
     setHoverCard(null);
     sceneRef.current?.setSelection(regionId);
@@ -306,6 +309,8 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
     setFilter("全部");
     setSelectedId(null);
     setHoverCard(null);
+    keyboardRegionIdRef.current = null;
+    setKeyboardHint("");
   };
   const changeFilter = (nextFilter: string) => {
     setFilter(nextFilter);
@@ -326,6 +331,43 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
     (total, region) => total + (visibleWorksByRegion.get(region.id)?.length ?? 0),
     0,
   );
+
+  const handleMapKeyDown = (event: KeyboardEvent<HTMLCanvasElement>) => {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
+      event.preventDefault();
+      if (!sortedLocations.length) return;
+
+      const direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
+      const currentIndex = sortedLocations.findIndex(
+        (region) => region.id === keyboardRegionIdRef.current,
+      );
+      const nextIndex = currentIndex < 0
+        ? (direction > 0 ? 0 : sortedLocations.length - 1)
+        : (currentIndex + direction + sortedLocations.length) % sortedLocations.length;
+      const region = sortedLocations[nextIndex];
+      keyboardRegionIdRef.current = region.id;
+      sceneRef.current?.setHover(region.id);
+      sceneRef.current?.frameRegions([region]);
+      setKeyboardHint(`地图已转向${region.name}。地点列表按 Tab 浏览，按 Enter 查看作品。`);
+      return;
+    }
+
+    const zoomIn = event.key === "+" || event.code === "NumpadAdd" || (event.key === "=" && event.shiftKey);
+    const zoomOut = event.key === "-" || event.key === "_" || event.code === "NumpadSubtract";
+    if (!zoomIn && !zoomOut) return;
+
+    event.preventDefault();
+    if (mode !== "china") {
+      setKeyboardHint("缩放仅适用于中国地势视图；请切换地图范围后按 + 或 - 缩放。");
+      return;
+    }
+    stageRef.current?.dispatchEvent(new WheelEvent("wheel", {
+      deltaY: zoomIn ? -120 : 120,
+      bubbles: true,
+      cancelable: true,
+    }));
+    setKeyboardHint(zoomIn ? "已放大中国地势。" : "已缩小中国地势。");
+  };
 
   return (
     <main className="atlas-page" aria-labelledby="atlas-title">
@@ -488,9 +530,16 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
           <section
             className="atlas-stage"
             ref={stageRef}
-            aria-label="三维音乐地图，可拖动旋转；中国地势视图可倾斜、缩放"
+            aria-label="三维音乐地图，可拖动旋转；地点列表可用键盘选择"
           >
-            <canvas ref={canvasRef} className="atlas-map-canvas" aria-label="三维地形地图画布" />
+            <canvas
+              ref={canvasRef}
+              className="atlas-map-canvas"
+              role="application"
+              tabIndex={0}
+              aria-label="交互式三维地图。使用方向键转向地点；在中国地势视图中按加号放大、减号缩小。"
+              onKeyDown={handleMapKeyDown}
+            />
             <canvas ref={overlayRef} className="atlas-marker-canvas" aria-hidden="true" />
             <div className="atlas-stage-heading" aria-hidden="true">
               {mode === "world" ? "世界" : "中国 · 地势浮雕"}
@@ -519,9 +568,10 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
               <span className="atlas-light-key" />光柱越高，来自这里的作品越多
             </p>
             <p className="atlas-map-key-help">
-              拖动旋转{mode === "china" ? " · 滚轮缩放" : ""} · 点击光柱
+              拖动或按方向键转向 · 点击光柱；地点按钮按 Enter 查看作品；中国地势按 + 或 - 缩放
             </p>
           </div>
+          <p className="atlas-keyboard-status" role="status" aria-live="polite">{keyboardHint}</p>
         </div>
         <section className="atlas-places" aria-labelledby="atlas-places-title">
           <div className="atlas-places-heading">
