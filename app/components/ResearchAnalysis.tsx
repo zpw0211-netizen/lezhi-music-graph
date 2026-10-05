@@ -175,6 +175,7 @@ export function ResearchAnalysis({
               </tbody>
             </table>
           </div>
+          <p className="matrix-scroll-hint">左右滑动查看完整表格</p>
           <div className="matrix-legend" aria-label="颜色图例">
             <span>关联弱</span>
             <span className="matrix-legend-ramp">{MATRIX_RAMP.map((color) => <i key={color} style={{ background: color }} />)}</span>
