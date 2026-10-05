@@ -184,7 +184,7 @@ function WorkDetail({
       <button className="records-detail-close" type="button" onClick={onClose}>关闭 <span aria-hidden="true">×</span></button>
       {entry && work && unit ? <>
         <p className="records-detail-unit">{unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order} · {unit.title}</p>
-        <h1 className="records-detail-title" id="records-detail-title">{work.name}</h1>
+        <h2 className="records-detail-title" id="records-detail-title">{work.name}</h2>
         {(work.type || work.authors?.length) && <p className="records-detail-credits">
           {work.type && <span>{work.type}</span>}
           {work.authors?.length ? <span>{work.authors.map((author) => `${author.role} ${author.name}`).join(" · ")}</span> : null}
@@ -216,7 +216,7 @@ function WorkDetail({
         <button className="records-detail-lesson" type="button" disabled={!workEntity} onClick={() => onLearn(work.id)}>进入完整学习页</button>
       </> : <>
         <p className="records-detail-unit">{bookTitle}</p>
-        <h1 className="records-detail-title" id="records-detail-title">{isLoading ? "正在读取作品资料…" : hasLoadError ? "作品资料读取失败" : "没有找到这首作品"}</h1>
+        <h2 className="records-detail-title" id="records-detail-title">{isLoading ? "正在读取作品资料…" : hasLoadError ? "作品资料读取失败" : "没有找到这首作品"}</h2>
         {unitsStatus === "error" && <div className="records-detail-load-error" role="status">
           <p>本册目录读取失败，暂时无法确认这首作品是否存在。</p>
           <button onClick={onRetryUnits} type="button">重试</button>
