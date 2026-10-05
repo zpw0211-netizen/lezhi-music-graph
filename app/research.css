@@ -451,7 +451,7 @@
 .core-ranking-panel li span small {
   margin-top: 2px;
   color: var(--ink-3);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .core-ranking-panel li em {
@@ -660,6 +660,15 @@
   line-height: 1.7;
 }
 
+/* “左右滑动查看”轻提示：仅手机（≤760px）显示，桌面隐藏避免噪音 */
+.matrix-scroll-hint {
+  display: none;
+  margin: 8px 0 0;
+  color: var(--ink-3);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 /* ---------- 响应式 ---------- */
 @media (max-width: 900px) {
   .research-grid {
@@ -700,17 +709,47 @@
   }
 
   .matrix-panel thead th:first-child {
-    width: 28px;
+    width: 44px;
   }
 
   .matrix-panel th {
-    font-size: 11px;
+    font-size: 12px;
+  }
+
+  /* 手机：表格保持可读字号，横向滚动查看；首列（教材名）固定。
+     反覆盖 mobile-layout.css 的 .ink-app.nav-mode .matrix-scroll table{min-width:380px}
+     （380px 过窄，六列压挤；本文件在其后加载，同 specificity 可覆盖） */
+  .matrix-panel table,
+  .ink-app.nav-mode .matrix-scroll table {
+    min-width: 540px;
+  }
+
+  .matrix-panel thead th:first-child,
+  .matrix-panel tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--paper, #F4EEE1);
+  }
+
+  /* 首列右缘一道淡影，滚动时提示下方还有列 */
+  .matrix-panel tbody th {
+    box-shadow: 8px 0 8px -8px rgba(27, 38, 34, .38);
+  }
+
+  .theme-light .matrix-panel thead th:first-child,
+  .theme-light .matrix-panel tbody th {
+    background: #fff;
+  }
+
+  .matrix-scroll-hint {
+    display: block;
   }
 
   .matrix-panel td button {
     min-height: 38px;
     padding: 0 2px;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .matrix-legend-diagonal {
@@ -719,7 +758,7 @@
 
   .core-ranking-head {
     grid-template-columns: minmax(0, 1fr) repeat(4, 28px);
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .core-ranking-panel li button {
@@ -733,7 +772,7 @@
   }
 
   .core-ranking-panel li em {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .quality-panel dl {
@@ -755,17 +794,12 @@
     font-size: 27px;
   }
 
-  .ink-app.nav-mode .matrix-scroll table {
-    min-width: 0;
-  }
-
   .matrix-panel table {
-    border-spacing: 0 4px;
+    border-spacing: 3px 4px;
   }
 
   .matrix-panel td button {
-    min-height: 34px;
-    font-size: 9px;
+    min-height: 36px;
   }
 
   .quality-panel dl {
