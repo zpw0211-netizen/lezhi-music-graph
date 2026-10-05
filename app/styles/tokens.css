@@ -46,7 +46,7 @@
     --surface-soft: #F1F6F3;
     --text-primary: #1B2420;
     --text-secondary: #5E6A64;
-    --text-tertiary: #8E9993;
+    --text-tertiary: var(--ink-3);
     --accent: #16834F;
     --accent-hover: #116B40;
     --accent-bright: #2DB36F;
