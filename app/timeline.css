@@ -307,6 +307,8 @@
 
 @media (max-width: 760px) {
   .timeline-page { height: auto; min-height: calc(100svh - var(--timeline-nav-height, 72px)); overflow: visible; }
+  /* The desktop reveal curtain translates past the viewport and expands document scrollWidth. */
+  .timeline-unroll { display: none; }
   .timeline-toolbar { flex-wrap: wrap; gap: 8px 12px; min-height: 0; padding: 10px 12px; }
   .timeline-book-filter { width: 100%; overflow-x: auto; scrollbar-width: none; }
   .timeline-book-filter::-webkit-scrollbar { display: none; }
