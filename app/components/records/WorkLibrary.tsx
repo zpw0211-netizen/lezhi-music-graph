@@ -347,13 +347,6 @@ export function WorkLibrary({
   const bookNumeral = ["一", "二", "三", "四", "五", "六"][bookIndex] ?? String(bookIndex + 1);
   const activeUnit = units.find((unit) => unit.id === activeUnitId) ?? units[0];
   const activeIndex = Math.max(0, units.findIndex((unit) => unit.id === activeUnit?.id));
-  const commonKeywords = useMemo(() => {
-    const sorted = [...(activeUnit?.keywords ?? [])].sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"));
-    const common = sorted.filter((keyword) => keyword.count >= 2).slice(0, 4);
-    return [...common, ...sorted.filter((keyword) => keyword.count < 2).slice(0, Math.max(0, 4 - common.length))];
-  }, [activeUnit?.keywords]);
-  const featuredQuote = activeUnit?.works.find((work) => work.starred && work.summary)
-    ?? activeUnit?.works.find((work) => work.summary);
 
   useEffect(() => {
     if (!units.length) return;
@@ -513,6 +506,10 @@ export function WorkLibrary({
     const anchorId = unitAnchorId(directory?.key ?? bookKey, unit.id);
     const tasks = unit.kind === "project" ? [] : (unit.tasks ?? []);
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
+    const sortedKeywords = [...(unit.keywords ?? [])]
+      .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"));
+    const featuredQuote = unit.works.find((work) => work.starred && work.summary)
+      ?? unit.works.find((work) => work.summary);
     return <article
       aria-labelledby={`${anchorId}-title`}
       className={`records-chapter${unit.kind === "project" ? " is-project" : ""}`}
@@ -534,56 +531,72 @@ export function WorkLibrary({
         </div>
       </header>
 
-      {Boolean(unit.goals?.length) && <section className="records-chapter-goals" aria-label="本单元先读">
-        <h3>本单元先读</h3>
-        <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
-      </section>}
+      <div className="records-chapter-body">
+        {Boolean(unit.goals?.length) && <section className="records-chapter-goals" aria-label="本单元先读">
+          <h3>本单元先读</h3>
+          <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
+          <p className="records-chapter-meta">{unit.works.length} 首作品 · {tasks.length} 项课堂任务</p>
+        </section>}
 
-      <section aria-label="作品名录" className="records-chapter-works">
-        <div className="records-section-heading">
-          <h3>作品名录</h3>
-          <p>封面为教材谱例原图 · 悬停翻阅</p>
-        </div>
-        <div className="records-score-grid">
-          {unit.works.map((work) => {
-            const starred = Boolean(work.starred);
-            return <button
-              aria-label={`打开${work.name}作品详情`}
-              className={`records-score-card${starred ? " is-featured" : ""}`}
-              id={`records-work-${work.id}`}
-              key={work.id}
-              onClick={(event) => openWork(work, event.currentTarget)}
-              type="button"
-            >
-              <span className="records-score-image-wrap">
-                {work.scores?.[0]
-                  ? <img alt={`${work.name}谱例封面`} className="records-score-image records-lazy-image" data-src={publicAssetUrl(work.scores[0])} decoding="async" loading="lazy" />
-                  : <span className="records-score-placeholder"><span>{work.name}</span></span>}
-                {starred && <span className="records-star-seal">重点曲目</span>}
-                {work.page != null && <span className="records-score-page">教材第 {work.page} 页</span>}
-              </span>
-              <span className="records-score-copy">
-                <span className="records-score-type">{work.type}</span>
-                <strong>{work.name}</strong>
-                {work.authors?.length ? <span className="records-score-authors">{work.authors.map((author) => `${author.role} ${author.name}`).join(" · ")}</span> : null}
-                {work.hasMelody && <span className="records-has-melody">可听旋律</span>}
-              </span>
-            </button>;
-          })}
-        </div>
-      </section>
+        {unit.kind !== "project" && <aside aria-label="本单元提示" className="records-unit-notes">
+          <p className="records-notes-label">本单元关键词</p>
+          <ul className="records-keywords">{sortedKeywords.map((keyword) => <li key={`${keyword.name}-${keyword.type ?? ""}`}>
+            <button type="button" onClick={() => onKnowledge(keyword.name, keyword.type)}><span>{keyword.name}</span><small>×{keyword.count}</small></button>
+          </li>)}</ul>
+          {featuredQuote?.summary && <blockquote className="records-unit-quote">
+            <p>「{featuredQuote.summary}」</p>
+            <cite>——{featuredQuote.name}的表现主题</cite>
+          </blockquote>}
+        </aside>}
 
-      {tasks.length > 0 && <section aria-label="课堂任务" className="records-chapter-tasks">
-        <div className="records-section-heading"><h3>课堂任务</h3><span>{tasks.length} 项</span></div>
-        <ol>{tasks.map((task, taskIndex) => <li key={`${unit.id}-task-${taskIndex}`}>
-          <p>{splitTaskText(task.text, task.works, worksById, openWork)}</p>
-          {task.focus?.length > 0 && <div className="records-task-focus" aria-label="练习重点">
-            {task.focus.map((focus) => <span key={focus}>{focus}</span>)}
-          </div>}
-        </li>)}</ol>
-      </section>}
+        <div className="records-chapter-primary">
+          <section aria-label="作品名录" className="records-chapter-works">
+            <div className="records-section-heading">
+              <h3>作品名录</h3>
+              <p>封面为教材谱例原图 · 悬停翻阅</p>
+            </div>
+            <div className="records-score-grid">
+              {unit.works.map((work) => {
+                const starred = Boolean(work.starred);
+                return <button
+                  aria-label={`打开${work.name}作品详情`}
+                  className={`records-score-card${starred ? " is-featured" : ""}`}
+                  id={`records-work-${work.id}`}
+                  key={work.id}
+                  onClick={(event) => openWork(work, event.currentTarget)}
+                  type="button"
+                >
+                  <span className="records-score-image-wrap">
+                    {work.scores?.[0]
+                      ? <img alt={`${work.name}谱例封面`} className="records-score-image records-lazy-image" data-src={publicAssetUrl(work.scores[0])} decoding="async" loading="lazy" />
+                      : <span className="records-score-placeholder"><span>{work.name}</span></span>}
+                    {starred && <span className="records-star-seal">重点曲目</span>}
+                    {work.page != null && <span className="records-score-page">教材第 {work.page} 页</span>}
+                  </span>
+                  <span className="records-score-copy">
+                    <span className="records-score-type">{work.type}</span>
+                    <strong>{work.name}</strong>
+                    {work.authors?.length ? <span className="records-score-authors">{work.authors.map((author) => `${author.role} ${author.name}`).join(" · ")}</span> : null}
+                    {work.hasMelody && <span className="records-has-melody">可听旋律</span>}
+                  </span>
+                </button>;
+              })}
+            </div>
+          </section>
+
+          {tasks.length > 0 && <section aria-label="课堂任务" className="records-chapter-tasks">
+            <div className="records-section-heading"><h3>课堂任务</h3><span>{tasks.length} 项</span></div>
+            <ol>{tasks.map((task, taskIndex) => <li key={`${unit.id}-task-${taskIndex}`}>
+              <p>{splitTaskText(task.text, task.works, worksById, openWork)}</p>
+              {task.focus?.length > 0 && <div className="records-task-focus" aria-label="练习重点">
+                {task.focus.map((focus) => <span key={focus}>{focus}</span>)}
+              </div>}
+            </li>)}</ol>
+          </section>}
+        </div>
+      </div>
     </article>;
-  }), [bookKey, directory?.key, openWork, units, worksById]);
+  }), [bookKey, directory?.key, onKnowledge, openWork, units, worksById]);
 
   if (!directory) return null;
   const displayTitle = directory.title.replace(/^人音版/, "");
@@ -637,19 +650,6 @@ export function WorkLibrary({
         <div className="records-chapters">
           {chapterContents}
         </div>
-
-        <aside aria-label="本单元提示" className="records-unit-notes">
-          {activeUnit && activeUnit.kind !== "project" && <>
-            <p className="records-notes-label">本单元关键词</p>
-            <ul className="records-keywords">{commonKeywords.map((keyword) => <li key={`${keyword.name}-${keyword.type ?? ""}`}>
-              <button type="button" onClick={() => onKnowledge(keyword.name, keyword.type)}><span>{keyword.name}</span><small>×{keyword.count}</small></button>
-            </li>)}</ul>
-            {featuredQuote?.summary && <blockquote className="records-unit-quote">
-              <p>「{featuredQuote.summary}」</p>
-              <cite>——{featuredQuote.name}的表现主题</cite>
-            </blockquote>}
-          </>}
-        </aside>
       </div>}
 
       {!units.length && !unitsError && <p className="records-data-status" role="status">正在载入本册篇章…</p>}
