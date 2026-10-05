@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type { CSSProperties, RefObject } from "react";
-import { MelodySet } from "../lesson/MelodyPlayer";
+import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
 import { MELODIES } from "../../lib/lesson/melodies";
 import { bareWorkName, type Book, type BookDirectory, type Entity, type Triple } from "../../lib/app/types";
 import { publicAssetUrl } from "../../lib/app/assets";
@@ -508,6 +508,9 @@ export function WorkLibrary({
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
     const sortedKeywords = [...(unit.keywords ?? [])]
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"));
+    const sortedWorks = [...unit.works].sort(
+      (left, right) => Number(Boolean(right.starred)) - Number(Boolean(left.starred)),
+    );
     const featuredQuote = unit.works.find((work) => work.starred && work.summary)
       ?? unit.works.find((work) => work.summary);
     return <article
@@ -556,30 +559,35 @@ export function WorkLibrary({
               <p>封面为教材谱例原图 · 悬停翻阅</p>
             </div>
             <div className="records-score-grid">
-              {unit.works.map((work) => {
+              {sortedWorks.map((work) => {
                 const starred = Boolean(work.starred);
-                return <button
-                  aria-label={`打开${work.name}作品详情`}
-                  className={`records-score-card${starred ? " is-featured" : ""}`}
-                  id={`records-work-${work.id}`}
-                  key={work.id}
-                  onClick={(event) => openWork(work, event.currentTarget)}
-                  type="button"
-                >
-                  <span className="records-score-image-wrap">
-                    {work.scores?.[0]
-                      ? <img alt={`${work.name}谱例封面`} className="records-score-image records-lazy-image" data-src={publicAssetUrl(work.scores[0])} decoding="async" loading="lazy" />
-                      : <span className="records-score-placeholder"><span>{work.name}</span></span>}
-                    {starred && <span className="records-star-seal">重点曲目</span>}
-                    {work.page != null && <span className="records-score-page">教材第 {work.page} 页</span>}
-                  </span>
-                  <span className="records-score-copy">
-                    <span className="records-score-type">{work.type}</span>
-                    <strong>{work.name}</strong>
-                    {work.authors?.length ? <span className="records-score-authors">{work.authors.map((author) => `${author.role} ${author.name}`).join(" · ")}</span> : null}
-                    {work.hasMelody && <span className="records-has-melody">可听旋律</span>}
-                  </span>
-                </button>;
+                const melodies = MELODIES[bareWorkName(work.name)] ?? MELODIES[work.name] ?? [];
+                const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
+                const credits = [work.type, authors].filter(Boolean).join(" · ");
+                return <article className={`records-score-card${starred ? " is-featured" : ""}`} key={work.id}>
+                  <button
+                    aria-label={`打开${work.name}作品详情`}
+                    className="records-score-open"
+                    id={`records-work-${work.id}`}
+                    onClick={(event) => openWork(work, event.currentTarget)}
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="records-score-image-wrap">
+                      {work.scores?.[0]
+                        ? <img alt="" className="records-score-image records-lazy-image" data-src={publicAssetUrl(work.scores[0])} decoding="async" loading="lazy" />
+                        : <span className="records-score-placeholder"><span>{work.name}</span></span>}
+                      {starred && <span className="records-star-seal">重点曲目</span>}
+                      {work.page != null && <span className="records-score-page">教材第 {work.page} 页</span>}
+                    </span>
+                    <span aria-hidden="true" className="records-score-copy">
+                      <strong>{work.name}</strong>
+                      {credits && <span className="records-score-authors">{credits}</span>}
+                    </span>
+                  </button>
+                  {starred && work.hasMelody && melodies[0] && <span className="records-score-play">
+                    <MelodyPlayer melody={melodies[0]} />
+                  </span>}
+                </article>;
               })}
             </div>
           </section>
