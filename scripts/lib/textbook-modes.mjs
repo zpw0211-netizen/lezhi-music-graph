@@ -12,4 +12,6 @@ export const TEXTBOOK_MODES = Object.freeze({
   视唱: "学习活动",
   背唱: "学习活动",
   选听选唱: "学习活动",
+  综合评价: "学习活动",
+  音乐情景剧: "学习活动",
 });
