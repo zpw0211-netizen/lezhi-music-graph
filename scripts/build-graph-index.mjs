@@ -1,7 +1,8 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildBookLayout, buildFullGraphLayouts } from "./lib/full-graph-layout.mjs";
+import { BOOK_REGISTRY, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
@@ -15,6 +16,8 @@ const dataset = JSON.parse(
 const canonical = JSON.parse(
   await readFile(path.join(dataDir, "canonical-graph.json"), "utf8"),
 );
+const publishedKeys = new Set(PUBLISHED_BOOK_KEYS);
+const publishedBooks = dataset.books.filter((book) => publishedKeys.has(book.key));
 
 await mkdir(detailsDir, { recursive: true });
 await mkdir(evidenceDir, { recursive: true });
@@ -112,7 +115,7 @@ const omittedBookMetadata = new Set([
   "resourceSlotCount",
   "resourceSlots",
 ]);
-for (const book of dataset.books) {
+for (const book of publishedBooks) {
   const {
     entities,
     triples,
@@ -124,6 +127,7 @@ for (const book of dataset.books) {
   for (const key of omittedBookMetadata) delete metadata[key];
   const bookPayload = {
     bookKey: book.key,
+    pdfOffset: book.pdfOffset ?? BOOK_REGISTRY.find((item) => item.key === book.key)?.pdfOffset ?? null,
     entities: buildBookLayout(entities, triples).map(compactEntity),
     triples: triples.map(compactRelationship),
     evidenceByTriple: book.evidenceByTriple ?? {},
@@ -183,7 +187,7 @@ const evidenceCoveredRelationshipCount = canonical.relationships.filter(
 ).length;
 // Source composition per textbook (教材明示 / 乐谱可见 / 教材归纳 / 拓展知识).
 const LAYER_NAMES = ["教材明示", "乐谱可见", "教材归纳", "拓展知识"];
-const sourceLayers = dataset.books.map((book) => {
+const sourceLayers = publishedBooks.map((book) => {
   const counts = Object.fromEntries([...LAYER_NAMES, "其他"].map((name) => [name, 0]));
   for (const triple of book.triples) {
     const region = (book.evidenceByTriple?.[triple.id] ?? [])[0]?.region ?? "";
@@ -210,9 +214,17 @@ const graphIndex = {
   dataset: { books: compactBooks },
   canonicalGraph: {
     version: canonical.version,
-    books: canonical.books,
-    entities: canonicalEntitiesWithLayout.map(compactEntity),
-    relationships: canonical.relationships.map(compactRelationship),
+    books: canonical.books.filter((book) => publishedKeys.has(book.key)),
+    entities: canonicalEntitiesWithLayout
+      .filter((entity) => !entity.bookKeys?.length || entity.bookKeys.some((key) => publishedKeys.has(key)))
+      .map((entity) => compactEntity({
+        ...entity,
+        ...(entity.bookKeys ? { bookKeys: entity.bookKeys.filter((key) => publishedKeys.has(key)) } : {}),
+        ...(entity.firstPageByBook ? { firstPageByBook: Object.fromEntries(Object.entries(entity.firstPageByBook).filter(([key]) => publishedKeys.has(key))) } : {}),
+      })),
+    relationships: canonical.relationships
+      .filter((relationship) => !relationship.bookKeys?.length || relationship.bookKeys.some((key) => publishedKeys.has(key)))
+      .map(compactRelationship),
     // Occurrence evidence is book-split and loaded only when the inspector asks
     // for it. The entity-level bookKeys/firstPageByBook fields are sufficient
     // for the Full Graph overview.
@@ -241,3 +253,11 @@ console.log(
     2,
   ),
 );
+
+for (const book of BOOK_REGISTRY.filter((item) => !item.published)) {
+  for (const directory of [booksDir, evidenceDir, detailsDir]) {
+    await unlink(path.join(directory, `${book.key}.json`)).catch((error) => {
+      if (error.code !== "ENOENT") throw error;
+    });
+  }
+}

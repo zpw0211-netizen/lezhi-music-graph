@@ -1,5 +1,6 @@
 import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
+import { PUBLISHED_BOOK_KEYS, PUBLISHED_EDITION_LABEL } from "../data/books.mjs";
 
 const basePath = "/lezhi-music-graph";
 const root = path.resolve("dist/client/lezhi-music-graph");
@@ -12,10 +13,7 @@ const requiredFiles = [
   "og.jpg",
   "data/graph-quality.json",
   "data/graph-index.json",
-  "data/books/g7s1.json",
-  "data/books/g9s2.json",
-  "data/evidence/g7s1.json",
-  "data/evidence/g9s2.json",
+  ...PUBLISHED_BOOK_KEYS.flatMap((key) => [`data/books/${key}.json`, `data/evidence/${key}.json`]),
 ];
 const excludedFiles = [
   "data/music-graph.json",
@@ -69,7 +67,7 @@ assert(
 
 const indexHtml = await readFile(path.join(root, "index.html"), "utf8");
 assert(
-  indexHtml.includes("芽谱 · 人音版初中音乐教材"),
+  indexHtml.includes(`芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`),
   "页面标题没有同步为芽谱",
 );
 assert(

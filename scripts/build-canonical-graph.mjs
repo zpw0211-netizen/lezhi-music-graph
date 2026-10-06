@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const sourceUrl = new URL("../public/data/music-graph.json", import.meta.url);
 const graphUrl = new URL(
@@ -10,6 +11,8 @@ const qualityUrl = new URL(
   import.meta.url,
 );
 const dataset = JSON.parse(await readFile(sourceUrl, "utf8"));
+const publishedKeys = new Set(PUBLISHED_BOOK_KEYS);
+const publishedBooks = dataset.books.filter((book) => publishedKeys.has(book.key));
 
 const WORK_TYPES = new Set([
   "音乐作品",
@@ -137,7 +140,7 @@ const rawRelationships = [];
 const danglingRelationships = [];
 const rawDegree = new Map();
 
-for (const book of dataset.books) {
+for (const book of publishedBooks) {
   const entityById = new Map(
     book.entities.map((entity) => [entity.id, entity]),
   );
@@ -254,7 +257,7 @@ for (const book of dataset.books) {
 }
 
 // Infer the nearest unit from existing, evidence-backed textbook relationships.
-for (const book of dataset.books) {
+for (const book of publishedBooks) {
   const entityById = new Map(
     book.entities.map((entity) => [entity.id, entity]),
   );
@@ -276,7 +279,7 @@ for (const book of dataset.books) {
 
 const relationshipByKey = new Map();
 let collapsedSelfRelationships = 0;
-for (const book of dataset.books) {
+for (const book of publishedBooks) {
   for (const triple of book.triples) {
     const subjectOccurrence = occurrenceByRawKey.get(
       `${book.key}:${triple.subject}`,
@@ -330,7 +333,7 @@ for (const book of dataset.books) {
 for (const canonical of canonicalByKey.values()) {
   if (canonical.category === "textbook") continue;
   for (const bookKey of canonical.bookKeys) {
-    const book = dataset.books.find((item) => item.key === bookKey);
+    const book = publishedBooks.find((item) => item.key === bookKey);
     const textbookEntity = book.entities.find(
       (entity) => entity.type === "教材",
     );
@@ -489,7 +492,7 @@ const quality = {
   version: "2.1",
   raw: {
     totalNodes: rawNodes.size,
-    totalRelationships: dataset.books.reduce(
+    totalRelationships: publishedBooks.reduce(
       (total, book) => total + book.triples.length,
       0,
     ),
@@ -525,7 +528,7 @@ const quality = {
 
 const canonicalGraph = {
   version: "2.1",
-  books: dataset.books.map((book) => ({
+  books: publishedBooks.map((book) => ({
     key: book.key,
     title: book.title,
     grade: book.grade,

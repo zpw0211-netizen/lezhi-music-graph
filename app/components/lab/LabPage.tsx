@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import { bareWorkName, type CanonicalGraph } from "../../lib/app/types";
+import { PUBLISHED_BOOK_SHORT_NAMES } from "../../lib/app/books";
 import { MELODIES, type Melody } from "../../lib/lesson/melodies";
 import { getPianoAudioContext, loadPianoSampler, playPianoSample, type PianoSampler } from "../../lib/lesson/piano-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
@@ -24,10 +25,6 @@ const MODES: Array<{ id: LabScale; title: string; subtitle: string; legend: stri
   { id: "yayue", title: "雅乐", subtitle: "在五正声间加入变徵、变宫。", legend: "变徵 · 变宫" },
   { id: "yanyue", title: "燕乐", subtitle: "在五正声间加入清角、闰。", legend: "清角 · 闰" },
 ];
-
-const BOOK_LABELS: Record<string, string> = {
-  g7s1: "七上", g7s2: "七下", g8s1: "八上", g8s2: "八下", g9s1: "九上", g9s2: "九下",
-};
 
 function pointOnDial(semitone: number, radius: number) {
   const angle = (-90 + semitone * 30) * Math.PI / 180;
@@ -783,7 +780,7 @@ export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWo
       <div className="lupan-works-grid">
         {works.map(({ work, evidence }) => {
           const melodies = MELODIES[work.name];
-          const book = BOOK_LABELS[work.bookKeys?.[0] ?? ""] ?? "教材";
+          const book = PUBLISHED_BOOK_SHORT_NAMES[work.bookKeys?.[0] ?? ""] ?? "教材";
           return <article className="lupan-work-slip" key={work.id}>
             <span className="lupan-work-book">{book}</span>
             <h3 title={bareWorkName(work.name)}>{bareWorkName(work.name)}</h3>

@@ -2,6 +2,7 @@
 import { useRef, useState, useEffect, type KeyboardEvent, type MouseEvent } from "react";
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
 import { PendingKnowledge } from "./PendingKnowledge";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_GRADE_RANGE_LABEL } from "../../lib/app/books";
 
 // 首页示例问题分「学生常问 / 备课常用」两组，全部逐题跑过本地图谱问答
 // （scripts/test-sample-questions.mjs）：答案非空、引用教材证据、口径为 supported。
@@ -190,7 +191,7 @@ export function AssistantPage({
         }
         return `${first.bookTitle}${first.unit ? ` ${first.unit}` : ""}`;
       })()
-    : "六册教材知识";
+    : `${PUBLISHED_BOOK_COUNT_LABEL}教材知识`;
 
   const confidenceText = currentMessage
     ? currentMessage.result.confidence === "supported"
@@ -202,7 +203,7 @@ export function AssistantPage({
 
   const placeholderText = currentMessage
     ? `已提问：“${currentMessage.question}” · 输入新问题回车可重查……`
-    : "输入你想向六册教材询问的问题，例如“《歌唱祖国》是谁写的？”……";
+    : `输入你想向${PUBLISHED_BOOK_COUNT_LABEL}教材询问的问题，例如“《歌唱祖国》是谁写的？”……`;
 
   return (
     <section className={`assistant-page${currentMessage ? "" : " is-empty"}`} aria-label="智能问答">
@@ -235,9 +236,9 @@ export function AssistantPage({
               <section className="state-empty" id="state-empty">
                 <div className="opening-banner">
                   <div className="opening-kicker">以书相问 · 字字有据</div>
-                  <h1 className="opening-title">“这里的回答，只来自六册教材。”</h1>
+                  <h1 className="opening-title">“这里的回答，只来自{PUBLISHED_BOOK_COUNT_LABEL}教材。”</h1>
                   <p className="opening-lead">
-                    向人音版七至九年级音乐教材提问。无预设套话，不做大模型臆测；每个答案均提取自教材曲谱、正文解析与课后活动，注脚标注册别与实物页码，随查随验。
+                    向人音版{PUBLISHED_GRADE_RANGE_LABEL}音乐教材提问。无预设套话，不做大模型臆测；每个答案均提取自教材曲谱、正文解析与课后活动，注脚标注册别与实物页码，随查随验。
                   </p>
                 </div>
 
@@ -308,7 +309,7 @@ export function AssistantPage({
             {/* 查询中 */}
             {busy && (
               <div className="assistant-busy-box" aria-live="polite">
-                <p className="assistant-busy">正在查找六册教材内容，研墨题写中…</p>
+                <p className="assistant-busy">正在查找{PUBLISHED_BOOK_COUNT_LABEL}教材内容，研墨题写中…</p>
               </div>
             )}
 
@@ -531,7 +532,7 @@ export function AssistantPage({
               </div>
             </form>
             <div className="modest-notice">
-              <span>※ 这里的回答只来自六册教材内容，尚未接入 AI 大模型。所引页码皆可在纸质课本中翻查实证。</span>
+              <span>※ 这里的回答只来自{PUBLISHED_BOOK_COUNT_LABEL}教材内容，尚未接入 AI 大模型。所引页码皆可在纸质课本中翻查实证。</span>
               <span className="seal-text">只用教材内容回答</span>
             </div>
           </footer>

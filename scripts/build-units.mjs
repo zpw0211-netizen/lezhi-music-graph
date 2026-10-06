@@ -5,10 +5,11 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_ROOT = path.join(ROOT, "public");
-const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
+const BOOK_KEYS = PUBLISHED_BOOK_KEYS;
 const require = createRequire(import.meta.url);
 
 // The shared data helpers and melody catalog are TypeScript modules. Transpile
@@ -129,6 +130,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
       id: work.id,
       name: work.name,
       type: work.type,
+      modes: [...new Set(ownTriples.filter((triple) => triple.predicate === "学习方式").map((triple) => valueOf(triple, entityById).trim()).filter(Boolean))],
       authors,
       page: getPrintedPage(media),
       pdfPage: work.firstPage ?? null,

@@ -11,6 +11,7 @@ import os from "node:os";
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { BOOK_REGISTRY } from "../data/books.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, "..");
@@ -19,7 +20,7 @@ const JSON_PATH = process.env.ASSET_JSON_PATH ?? ".tmp-audit/asset-audit.json";
 const SELF_TEST_ROOT = path.join(os.tmpdir(), "audit-assets-fixture");
 const SELF_TEST_REPORT = path.join(SELF_TEST_ROOT, "self-test-report.md");
 
-const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
+const BOOK_KEYS = BOOK_REGISTRY.filter((book) => book.published && book.coverArt).map((book) => book.key);
 const OVERSIZE_BYTES = 250 * 1024;
 const IMAGE_EXTS = new Set([".webp", ".jpg", ".jpeg", ".png"]);
 // 需要判定「有没有人引用」的三个目录。
@@ -34,7 +35,7 @@ const CANDIDATE_RE =
 // 注释行里是否提到过资源路径（只用来统计，不当作引用）。
 const COMMENT_HINT_RE = /(?:^|[^A-Za-z0-9_.\-/])\/?(?:art|media|brand|data)\//;
 const CSS_URL_RE = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
-// 模板变量展开表：这些变量取值为六册册号。
+// 模板变量展开表：这些变量取值为已发布册号。
 const EXPANSIONS = {
   "directory.key": BOOK_KEYS,
   key: BOOK_KEYS,
@@ -166,7 +167,7 @@ async function collectReferences(root) {
     }
   }
 
-  // b) 六册教材数据里的 media[].url（用于孤儿判定；本册之外的册号也照实收）
+  // b) 已发布教材数据里的 media[].url（用于孤儿判定；本册之外的册号也照实收）
   const booksDir = path.join(publicDir, "data", "books");
   for (const bookKey of BOOK_KEYS) {
     const file = path.join(booksDir, `${bookKey}.json`);

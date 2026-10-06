@@ -3,10 +3,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
+import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DATA_ROOT = path.join(ROOT, "public", "data");
-const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
+const BOOK_KEYS = PUBLISHED_BOOK_KEYS;
 const errors = [];
 const fail = (message) => errors.push(message);
 

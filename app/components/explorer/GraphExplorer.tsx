@@ -9,6 +9,7 @@ import { relationVisualKind, schemaCategoryFor, schemaCategoryMeta, type SchemaC
 import { graphRuntimeFor } from "../../graph-runtime";
 import { relationshipMatchesPerspective } from "../../lib/graph/graph-algorithms";
 import { PUBLIC_BASE_PATH, publicAssetUrl } from "../../lib/app/assets";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOKS, graphPositionFor } from "../../lib/app/books";
 import {
   EMPTY_ENTITIES,
   fmt,
@@ -71,14 +72,6 @@ const VIEW_TABS: Array<[FullGraphView, string]> = [
   ["ownership", "教材归属"],
   ["knowledge", "联系"],
 ];
-const TEXTBOOK_POSITIONS: Record<string, { x: number; y: number }> = {
-  g7s1: { x: 360, y: 260 },
-  g7s2: { x: 1200, y: 170 },
-  g8s1: { x: 2040, y: 260 },
-  g8s2: { x: 360, y: 1240 },
-  g9s1: { x: 1200, y: 1330 },
-  g9s2: { x: 2040, y: 1240 },
-};
 const NO_IDS: string[] = [];
 const ignoreMetrics = () => undefined;
 
@@ -355,12 +348,12 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
       const triple = relationByEntity.get(entity.id) ?? { id: `canonical-node-${entity.id}`, subject: entity.id, predicate: "教材收录" };
       const activeLayout = entity.layouts?.[fullGraphLayout] ?? entity.layout;
       if (activeLayout) return { entity, triple, x: activeLayout.x, y: activeLayout.y };
-      const textbookKey = entity.bookKeys?.[0] ?? "g7s1";
+      const textbookKey = entity.bookKeys?.[0] ?? PUBLISHED_BOOKS[0]?.key ?? "";
       const seed = stableSeed(entity.canonicalKey ?? entity.id);
       let x = 1200;
       let y = 750;
       if (entity.type === "教材") {
-        const fixed = TEXTBOOK_POSITIONS[textbookKey] ?? { x: 1200, y: 750 };
+        const fixed = graphPositionFor(textbookKey, "explorerPosition");
         x = fixed.x;
         y = fixed.y;
       } else if ((entity.textbookCount ?? 1) >= 2) {
@@ -369,7 +362,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
         x = 1200 + Math.cos(angle) * radius;
         y = 750 + Math.sin(angle) * radius * 0.72;
       } else {
-        const base = TEXTBOOK_POSITIONS[textbookKey] ?? { x: 1200, y: 750 };
+        const base = graphPositionFor(textbookKey, "explorerPosition");
         const angle = ((seed % 100000) / 100000) * Math.PI * 2;
         const radius = 90 + ((Math.floor(seed / 113) % 1000) / 1000) * 300;
         x = base.x + Math.cos(angle) * radius;
@@ -377,7 +370,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
       }
       return { entity, triple, x, y };
     });
-    return { book: canonicalBook, center: { id: "CANONICAL_NETWORK_CENTER", name: "六册教材知识网络", type: "教材" }, nodes };
+    return { book: canonicalBook, center: { id: "CANONICAL_NETWORK_CENTER", name: `${PUBLISHED_BOOK_COUNT_LABEL}教材知识网络`, type: "教材" }, nodes };
   }, [canonicalBook, fullGraphLayout]);
   const perspectiveEntityIds = useMemo(() => {
     const ids = new Set<string>();
@@ -1031,7 +1024,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
     <>
       <SlidingIndicator activeKey={graphMode === "all" ? "all" : explorer.bookKey ?? "all"} />
       <button className={`book-tab ${graphMode === "all" ? "active" : ""}`} onClick={explorer.chooseFullGraph}>
-        六册总览
+        {PUBLISHED_BOOK_COUNT_LABEL}总览
       </button>
       {books.map((book) => (
         <button
@@ -1050,7 +1043,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
       <>
         <div className="book-tabs motion-tabs">
           <SlidingIndicator activeKey={explorer.bookKey ?? "all"} />
-          <button className="book-tab" onClick={explorer.chooseFullGraph}>六册总览</button>
+          <button className="book-tab" onClick={explorer.chooseFullGraph}>{PUBLISHED_BOOK_COUNT_LABEL}总览</button>
           {books.map((book) => (
             <button
               key={book.key}
@@ -1152,7 +1145,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                         } else explorer.chooseFullGraph();
                       }}
                     >
-                      {graphMode === "focus" ? "返回单册" : "返回六册总览"}
+                      {graphMode === "focus" ? "返回单册" : `返回${PUBLISHED_BOOK_COUNT_LABEL}总览`}
                     </button>
                   </div>
                 </details>
@@ -1185,7 +1178,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
               </div>
             </div>}
             {graphMode === "all" && (
-              <div className="full-graph-filterbar" aria-label="六册知识联系视图">
+              <div className="full-graph-filterbar" aria-label={`${PUBLISHED_BOOK_COUNT_LABEL}知识联系视图`}>
                 <div className="graph-filter-primary">
                   <div className="graph-filter-group" aria-label="布局">
                     <span className="graph-filter-group-label">布局</span>
@@ -1347,7 +1340,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                 </GraphRendererBoundary>
               )}
               {graphMode === "all" && canonicalGroup && fullGraphLayout !== "schema" && (
-                <div className="graph-minimap" aria-label="六册总览缩略图">
+                <div className="graph-minimap" aria-label={`${PUBLISHED_BOOK_COUNT_LABEL}总览缩略图`}>
                   <div>
                     <strong>缩略图</strong>
                     <button
@@ -1382,7 +1375,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
               <div className="graph-statusbar">
                 <span>{fmt(displayedGraphStats.nodes)} 个知识点 · {fmt(displayedGraphStats.relationships)} 条知识联系</span>
                 <span className="status-mode">
-                  当前视图：{graphMode === "all" ? "六册总览" : graphMode === "focus" ? "选中知识点" : "单册视图"}
+                  当前视图：{graphMode === "all" ? `${PUBLISHED_BOOK_COUNT_LABEL}总览` : graphMode === "focus" ? "选中知识点" : "单册视图"}
                 </span>
               </div>
             </div>

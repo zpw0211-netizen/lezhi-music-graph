@@ -9,6 +9,7 @@ import type { CSSProperties, RefObject } from "react";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
 import { MELODIES } from "../../lib/lesson/melodies";
 import { bareWorkName, type Book, type BookDirectory, type Entity, type Triple } from "../../lib/app/types";
+import { BOOK_BY_KEY } from "../../lib/app/books";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import type { BookDataStatus } from "../../hooks/useGraphIndex";
@@ -17,6 +18,7 @@ type UnitWork = {
   id: string;
   name: string;
   type: string;
+  modes?: string[];
   authors?: Array<{ role: string; name: string }>;
   page?: number | null;
   scores?: string[];
@@ -313,6 +315,7 @@ export function WorkLibrary({
   }, []);
 
   const directory = books.find((item) => item.key === bookKey) ?? books[0];
+  const isPrimaryBook = BOOK_BY_KEY.get(directory?.key ?? bookKey)?.stage === "小学";
   useEffect(() => {
     const selectedBook = document.querySelector<HTMLButtonElement>(
       ".records-top-book-picker > button.is-active",
@@ -508,9 +511,22 @@ export function WorkLibrary({
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
     const sortedKeywords = [...(unit.keywords ?? [])]
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"));
-    const sortedWorks = [...unit.works].sort(
-      (left, right) => Number(Boolean(right.starred)) - Number(Boolean(left.starred)),
-    );
+    const modeOrder = new Map<string, number>();
+    if (isPrimaryBook) {
+      for (const work of unit.works) {
+        for (const mode of work.modes ?? []) if (!modeOrder.has(mode)) modeOrder.set(mode, modeOrder.size);
+      }
+    }
+    const sortedWorks = [...unit.works].sort((left, right) => {
+      if (isPrimaryBook) {
+        const leftMode = left.modes?.[0];
+        const rightMode = right.modes?.[0];
+        const modeDifference = (modeOrder.get(leftMode ?? "") ?? Number.MAX_SAFE_INTEGER)
+          - (modeOrder.get(rightMode ?? "") ?? Number.MAX_SAFE_INTEGER);
+        if (modeDifference) return modeDifference;
+      }
+      return Number(Boolean(right.starred)) - Number(Boolean(left.starred));
+    });
     const featuredQuote = unit.works.find((work) => work.starred && work.summary)
       ?? unit.works.find((work) => work.summary);
     return <article
@@ -564,9 +580,10 @@ export function WorkLibrary({
                 const melodies = MELODIES[bareWorkName(work.name)] ?? MELODIES[work.name] ?? [];
                 const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
                 const credits = [work.type, authors].filter(Boolean).join(" · ");
-                return <article className={`records-score-card${starred ? " is-featured" : ""}`} key={work.id}>
+                const modes = isPrimaryBook ? work.modes?.join("、") : "";
+                return <article className={`records-score-card${starred ? " is-featured" : ""}`} data-mode={modes || undefined} key={work.id}>
                   <button
-                    aria-label={`打开${work.name}作品详情`}
+                    aria-label={`打开${work.name}作品详情${modes ? `，学习方式：${modes}` : ""}`}
                     className="records-score-open"
                     id={`records-work-${work.id}`}
                     onClick={(event) => openWork(work, event.currentTarget)}
@@ -582,6 +599,7 @@ export function WorkLibrary({
                     <span aria-hidden="true" className="records-score-copy">
                       <strong>{work.name}</strong>
                       {credits && <span className="records-score-authors">{credits}</span>}
+                      {modes && <span className="records-score-authors">{modes}</span>}
                     </span>
                   </button>
                   {starred && work.hasMelody && melodies[0] && <span className="records-score-play">
@@ -604,7 +622,7 @@ export function WorkLibrary({
         </div>
       </div>
     </article>;
-  }), [bookKey, directory?.key, onKnowledge, openWork, units, worksById]);
+  }), [bookKey, directory?.key, isPrimaryBook, onKnowledge, openWork, units, worksById]);
 
   if (!directory) return null;
   const displayTitle = directory.title.replace(/^人音版/, "");

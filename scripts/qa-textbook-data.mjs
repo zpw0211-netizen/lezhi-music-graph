@@ -7,11 +7,12 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const root = new URL("../", import.meta.url);
 const rootPath = fileURLToPath(root);
 const publicPath = path.join(rootPath, "public");
-const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
+const BOOK_KEYS = PUBLISHED_BOOK_KEYS;
 const REPORT_PATH = process.env.QA_REPORT_PATH ?? ".tmp-audit/data-qa-report.md";
 const JSON_PATH = process.env.QA_JSON_PATH ?? ".tmp-audit/data-qa.json";
 const DETAIL_LIMIT = 30;
@@ -895,7 +896,7 @@ const report = [
   "",
   `生成时间：${new Date().toISOString()}`,
   "",
-  `数据来源：\`public/data/books/*.json\`，6 册共 ${bookStats.reduce((sum, stat) => sum + stat.entityCount, 0)} 个实体、${bookStats.reduce((sum, stat) => sum + stat.tripleCount, 0)} 条关系，其中作品类实体 ${bookStats.reduce((sum, stat) => sum + stat.workEntities, 0)} 个。`,
+  `数据来源：\`public/data/books/*.json\`，${PUBLISHED_BOOK_COUNT_LABEL}共 ${bookStats.reduce((sum, stat) => sum + stat.entityCount, 0)} 个实体、${bookStats.reduce((sum, stat) => sum + stat.tripleCount, 0)} 条关系，其中作品类实体 ${bookStats.reduce((sum, stat) => sum + stat.workEntities, 0)} 个。`,
   "",
   "本报告只读，任何数值都没有写回教材数据。检查规则：",
   "",

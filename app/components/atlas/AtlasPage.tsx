@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { CSSProperties } from "react";
 import { publicAssetUrl } from "../../lib/app/assets";
+import { PUBLISHED_BOOK_SHORT_NAMES } from "../../lib/app/books";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 import {
   AtlasScene,
@@ -32,15 +33,6 @@ type AtlasAssets = {
   mask: HTMLImageElement;
 };
 type HoverCard = { region: AtlasRegion; x: number; y: number } | null;
-
-const BOOK_LABELS: Record<string, string> = {
-  g7s1: "七上",
-  g7s2: "七下",
-  g8s1: "八上",
-  g8s2: "八下",
-  g9s1: "九上",
-  g9s2: "九下",
-};
 
 function fetchJson<T>(url: string): Promise<T> {
   return fetch(url).then((response) => {
@@ -123,7 +115,7 @@ function selectedWorks(region: AtlasRegion, filter: string) {
 }
 
 function labelForPage(bookKey: string, printedPage?: number | null, printedPdfPage?: number | null) {
-  const book = BOOK_LABELS[bookKey] ?? bookKey;
+  const book = PUBLISHED_BOOK_SHORT_NAMES[bookKey] ?? bookKey;
   // 只认可靠印刷页（正式 media 标题，或正式 evidence 里该作品自身三元组的教材页）。
   // 拿不到就只给册别，不拿 firstPage 充数：firstPage 是「该实体首次被提及的 PDF 页」，
   // 可能是作曲家介绍页或别处的引用页，与作品正文/谱例页不是一回事。

@@ -4,13 +4,14 @@ Reads original page scans from ../textbook-scan/<book>/orig/pNN.jpg and writes
 grayscale WebP images under public/<out>. Usage: python scripts/crop-scores.py [g7s1 ...]
 """
 import json
+import os
 import sys
 from pathlib import Path
 
 from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
-SCAN = ROOT.parent / "textbook-scan"
+SCAN = Path(os.environ.get("TEXTBOOK_SCAN_DIR", r"E:\Projects\textbook-scan"))
 MAX_WIDTH = 1400
 
 manifest = json.loads((ROOT / "content" / "textbooks" / "score-manifest.json").read_text(encoding="utf-8"))

@@ -4,6 +4,7 @@
 // reader visits a lesson or asks a question, and so other pages can open the
 // graph on a given node. Rendering-only data is derived in GraphExplorer.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../../lib/app/books";
 import { ALL_SCHEMA_KEYS, schemaCategoryFor, type SchemaCategoryKey } from "../../graph-schema";
 import { graphRuntimeFor, neighborhood } from "../../graph-runtime";
 import { useGraphActions } from "../../hooks/useGraphActions";
@@ -160,7 +161,7 @@ export function useGraphExplorer(
     );
     return {
       key: "canonical",
-      title: "六册教材知识网络",
+      title: `${PUBLISHED_BOOK_COUNT_LABEL}教材知识网络`,
       grade: 0,
       semester: "跨册",
       pages: books.reduce((total, book) => total + book.pages, 0),

@@ -1,6 +1,7 @@
 "use client";
 import { schemaCategoryFor, schemaCategoryMeta } from "../../graph-schema";
 import { publicAssetUrl } from "../../lib/app/assets";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../../lib/app/books";
 import { isWorkType, type Entity, type Evidence, type KnowledgeOccurrence, type Triple } from "../../lib/app/types";
 import { NodeAIInterpretation } from "../assistant/NodeAIInterpretation";
 import { WorkbenchIcon } from "../WorkbenchIcon";
@@ -120,7 +121,7 @@ export function NodeInspector({
                 <dt>当前教材</dt>
                 <dd>
                   {graphMode === "all"
-                    ? `六册共享 · 覆盖${selected?.textbookCount ?? 1}册`
+                      ? `${PUBLISHED_BOOK_COUNT_LABEL}共享 · 覆盖${selected?.textbookCount ?? 1}册`
                     : `${currentBook.grade}年级${currentBook.semester}`}
                 </dd>
               </div>

@@ -1,4 +1,4 @@
-// units.json 与六册教材数据的一致性核对（T006，只读）。
+// units.json 与已发布教材数据的一致性核对（T006，只读）。
 // 关键点：**不 import build-units.mjs 的任何逻辑**，全部从 public/data/books/*.json
 // 按 app/lib/app/unit-data.ts 里公开的判定口径独立重推一遍，再和生成的 units.json 对账。
 // 只读；写完报告即结束，不改任何数据。
@@ -12,6 +12,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, "..");
@@ -19,7 +20,7 @@ const REPORT_PATH = process.env.UNITS_REPORT_PATH ?? ".tmp-audit/units-crosschec
 const JSON_PATH = process.env.UNITS_JSON_PATH ?? ".tmp-audit/units-crosscheck.json";
 const SELF_TEST_REPORT = ".tmp-audit/units-crosscheck-self-test.md";
 
-const BOOK_KEYS = ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"];
+const BOOK_KEYS = PUBLISHED_BOOK_KEYS;
 
 // 作品类类型。与 app/lib/app/types.ts:217 的 WORK_TYPES 完全一致
 //（任务单里列的 11 类 + 数据里暂未出现的「音乐作品」「戏曲歌曲」），
@@ -510,7 +511,7 @@ function renderReport(result) {
   out.push(`扫描根目录：\`${result.root}\``);
   out.push("");
   out.push(
-    `核对范围：\`public/data/units.json\` 的 ${result.unitCount} 个单元、${result.workCount} 个作品条目、${result.taskCount} 条课堂任务、${result.goalCount} 条学习目标；原始数据是 \`public/data/books/*.json\` 的六册实体与三元组。`,
+    `核对范围：\`public/data/units.json\` 的 ${result.unitCount} 个单元、${result.workCount} 个作品条目、${result.taskCount} 条课堂任务、${result.goalCount} 条学习目标；原始数据是 \`public/data/books/*.json\` 的 ${PUBLISHED_BOOK_COUNT_LABEL}实体与三元组。`,
   );
   out.push("");
   out.push(
