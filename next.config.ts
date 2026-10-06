@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
-const githubPagesBasePath = "/lezhi-music-graph";
+const githubPagesBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {
-  // GitHub Pages serves the project below /lezhi-music-graph/.
+  // The custom Pages domain serves the site from the root.
   // The normal Sites build keeps the existing root-path behavior.
   ...(isGitHubPages
     ? {

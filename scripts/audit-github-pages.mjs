@@ -1,8 +1,7 @@
 import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 
-const basePath = "/lezhi-music-graph";
-const root = path.resolve("dist/client/lezhi-music-graph");
+const root = path.resolve("dist/client");
 const publicRoot = path.resolve("public");
 const requiredFiles = [
   ".nojekyll",
@@ -73,16 +72,16 @@ assert(
   "页面标题没有同步为芽谱",
 );
 assert(
-  indexHtml.includes(`${basePath}/_next/`),
-  "HTML 未使用 GitHub Pages basePath 加载前端资源",
+  indexHtml.includes("/_next/"),
+  "HTML 未从自定义域名根目录加载前端资源",
 );
 assert(
-  !/(?:src|href)=["']\/(?!lezhi-music-graph\/)/.test(indexHtml),
-  "HTML 仍包含绕过 basePath 的根目录资源路径",
+  !indexHtml.includes("/lezhi-music-graph/"),
+  "HTML 仍包含旧 GitHub Pages 子目录路径",
 );
 assert(
   indexHtml.includes(
-    "https://zpw0211-netizen.github.io/lezhi-music-graph/og.jpg",
+    "https://yapu.studio/og.jpg",
   ),
   "GitHub Pages 分享预览地址不正确",
 );
@@ -114,10 +113,10 @@ for (const forbidden of [
   assert(!pageBundle.includes(forbidden), `静态页面仍依赖 ${forbidden}`);
 }
 assert(
-  pageBundle.includes(basePath) &&
+  !pageBundle.includes("/lezhi-music-graph/") &&
     pageBundle.includes("data/graph-index.json") &&
     pageBundle.includes("data/evidence/"),
-  "页面客户端脚本没有使用 basePath 读取静态图谱数据",
+  "页面客户端脚本没有从自定义域名根目录读取静态图谱数据",
 );
 
 console.log(

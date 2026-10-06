@@ -25,9 +25,9 @@ const geistMono = Geist_Mono({
 });
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
-const publicBasePath = isGitHubPages ? "/lezhi-music-graph" : "";
+const publicBasePath = isGitHubPages ? (process.env.NEXT_PUBLIC_BASE_PATH ?? "") : "";
 const publicOrigin = isGitHubPages
-  ? "https://zpw0211-netizen.github.io/"
+  ? "https://yapu.studio/"
   : "https://lezhi-music-graph.zpw0211.chatgpt.site/";
 
 export const metadata: Metadata = {

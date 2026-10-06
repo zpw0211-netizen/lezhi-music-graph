@@ -3,7 +3,7 @@ import { basename, extname, isAbsolute, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { existsSync, statSync } from "node:fs";
 
-const DEFAULT_SITE_URL = "http://localhost:4321/lezhi-music-graph/";
+const DEFAULT_SITE_URL = "http://localhost:4321/";
 const PLAYWRIGHT_MODULE = process.env.PLAYWRIGHT_MODULE?.trim();
 const CHROMIUM_EXECUTABLE = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?.trim();
 

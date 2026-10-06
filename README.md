@@ -25,7 +25,9 @@ GitHub Pages 与 Sites 共用同一套前端。`GITHUB_PAGES=true` 只切换
 
 推送到 `main` 后，GitHub Actions 会执行质量检查、静态构建和 GitHub Pages 发布。
 
-发布地址：<https://zpw0211-netizen.github.io/lezhi-music-graph/>
+发布地址：<https://yapu.studio/>
+
+GitHub Pages 使用自定义域名，静态资源与数据从域名根目录加载。
 
 ## 功能边界
 
