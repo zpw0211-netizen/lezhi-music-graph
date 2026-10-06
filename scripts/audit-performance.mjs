@@ -1,6 +1,7 @@
 import { access, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { readAppSource } from "./lib/app-source.mjs";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const root = path.resolve(".");
 const dataRoot = path.join(root, "public", "data");
@@ -12,7 +13,7 @@ const legacyBytes =
   (await stat(path.join(dataRoot, "canonical-graph.json"))).size;
 const indexBytes = (await stat(path.join(dataRoot, "graph-index.json"))).size;
 
-assert(index.dataset.books.length === 6, "graph-index 未包含六册教材");
+assert(index.dataset.books.length === PUBLISHED_BOOK_KEYS.length, `graph-index 未包含全部已发布教材（${PUBLISHED_BOOK_KEYS.length}册）`);
 for (const book of index.dataset.books) {
   for (const payloadField of ["entities", "triples", "relations", "evidenceByTriple"]) {
     assert(!(payloadField in book), `graph-index 的 ${book.key} 目录仍包含按册数据：${payloadField}`);
@@ -50,7 +51,7 @@ const runtime = await readFile(
 assert(page.includes('data/graph-index.json'), "页面没有读取首屏图索引");
 assert(!page.includes('fetch(publicAssetUrl("data/music-graph.json"'), "首屏仍读取完整教材 JSON");
 assert(!page.includes('fetch(publicAssetUrl("data/canonical-graph.json"'), "首屏仍读取完整规范图 JSON");
-assert(page.includes("FullGraphCanvas"), "六册 Full Graph 未使用 Canvas Scene");
+assert(page.includes("FullGraphCanvas"), `${PUBLISHED_BOOK_COUNT_LABEL}总览未使用 Canvas Scene`);
 assert(canvas.includes("relationshipLabelLimit"), "关系文字 LOD 未启用");
 assert(canvas.includes("edgeLayer"), "静态关系分层缓存未启用");
 assert(canvas.includes("visibleNodeIds"), "视口/可见节点裁剪未启用");

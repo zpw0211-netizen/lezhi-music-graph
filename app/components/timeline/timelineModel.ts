@@ -1,4 +1,5 @@
 import type { AppRoute } from "../../lib/app/routing";
+import { PUBLISHED_BOOK_NAME_MAP, PUBLISHED_BOOK_ORDER } from "../../lib/app/books";
 import type { PeopleLifetimeSupplement } from "../../lib/timeline/peopleSupplement";
 import type { WorkYearSupplement } from "../../lib/timeline/yearSupplement";
 
@@ -70,15 +71,8 @@ export type PeopleLifetimeSupplementLike = Pick<
   "id" | "status" | "lifetimeText" | "confidence"
 > & Partial<PeopleLifetimeSupplement>;
 
-export const BOOKS: Record<string, string> = {
-  g7s1: "七年级上册",
-  g7s2: "七年级下册",
-  g8s1: "八年级上册",
-  g8s2: "八年级下册",
-  g9s1: "九年级上册",
-  g9s2: "九年级下册",
-};
-export const BOOK_ORDER = Object.keys(BOOKS);
+export const BOOKS: Record<string, string> = PUBLISHED_BOOK_NAME_MAP;
+export const BOOK_ORDER = PUBLISHED_BOOK_ORDER;
 export const UNKNOWN = "教材未标注年代";
 
 const UNDATED_ERA: TimelineEra = {

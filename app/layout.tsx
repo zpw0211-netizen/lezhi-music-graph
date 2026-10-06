@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL, PUBLISHED_GRADE_RANGE_LABEL } from "./lib/app/books";
 import { Geist, Geist_Mono } from "next/font/google";
 import { preload } from "react-dom";
 import "./styles/tokens.css";
@@ -40,21 +41,21 @@ const publicOrigin = isGitHubPages
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicOrigin),
-  title: "芽谱 · 人音版初中音乐教材",
+  title: `芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`,
   description:
-    "人音版七至九年级六册音乐教材的知识图谱：作品、人物、音乐要素与教材出处，一册一册看清楚。",
+    `人音版${PUBLISHED_GRADE_RANGE_LABEL}${PUBLISHED_BOOK_COUNT_LABEL}音乐教材的知识图谱：作品、人物、音乐要素与教材出处，一册一册看清楚。`,
   icons: {
     icon: `${publicBasePath}/favicon.svg`,
   },
   openGraph: {
-    title: "芽谱 · 人音版初中音乐教材",
-    description: "六册教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。",
+    title: `芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`,
+    description: `${PUBLISHED_BOOK_COUNT_LABEL}教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。`,
     images: [`${publicBasePath}/og.jpg`],
   },
   twitter: {
     card: "summary_large_image",
-    title: "芽谱 · 人音版初中音乐教材",
-    description: "六册教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。",
+    title: `芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`,
+    description: `${PUBLISHED_BOOK_COUNT_LABEL}教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。`,
     images: [`${publicBasePath}/og.jpg`],
   },
 };

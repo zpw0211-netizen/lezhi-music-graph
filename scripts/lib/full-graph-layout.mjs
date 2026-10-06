@@ -1,20 +1,14 @@
 import { MultiUndirectedGraph } from "graphology";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 import { buildIslandLayout } from "./island-layout.mjs";
+import { BOOK_REGISTRY, PUBLISHED_BOOK_KEYS, graphPositionFor } from "../../data/books.mjs";
 
 const WIDTH = 2400;
 const HEIGHT = 1500;
 const CENTER = { x: WIDTH / 2, y: HEIGHT / 2 };
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-const TEXTBOOK_POSITIONS = {
-  g7s1: { x: 460, y: 450 },
-  g7s2: { x: 1200, y: 480 },
-  g8s1: { x: 1940, y: 450 },
-  g8s2: { x: 460, y: 1050 },
-  g9s1: { x: 1200, y: 1020 },
-  g9s2: { x: 1940, y: 1050 },
-};
+const registeredBookKeys = BOOK_REGISTRY.map((book) => book.key);
 
 const SCHEMA_ANCHORS = {
   work: { x: 1200, y: 260 },
@@ -322,7 +316,7 @@ function nodeRadius(entity) {
   return 11;
 }
 
-function resolveCollisions(entities, positioned, iterations = 44) {
+function resolveCollisions(entities, positioned, iterations = 44, minimumForPair = null) {
   for (let iteration = 0; iteration < iterations; iteration += 1) {
     const grid = new Map();
     const cellSize = 72;
@@ -344,7 +338,7 @@ function resolveCollisions(entities, positioned, iterations = 44) {
             let vx = point.x - otherPoint.x;
             let vy = point.y - otherPoint.y;
             let distance = Math.hypot(vx, vy);
-            const minimum = nodeRadius(entity) + nodeRadius(other) + 5;
+            const minimum = minimumForPair?.(entity, other) ?? nodeRadius(entity) + nodeRadius(other) + 5;
             if (distance >= minimum) continue;
             if (distance < 0.01) {
               const angle = (stableSeed(`${entity.id}:${other.id}`) % 6283) / 1000;
@@ -371,24 +365,24 @@ function resolveCollisions(entities, positioned, iterations = 44) {
 
 function buildTextbookClusterLayout(entities) {
   const uniqueByBook = new Map();
-  Object.keys(TEXTBOOK_POSITIONS).forEach((key) => uniqueByBook.set(key, []));
+  registeredBookKeys.forEach((key) => uniqueByBook.set(key, []));
   const sharedEntities = [];
   const textbookEntities = [];
   for (const entity of entities) {
     if (entity.type === "教材") textbookEntities.push(entity);
     else if ((entity.textbookCount ?? 1) >= 2) sharedEntities.push(entity);
     else {
-      const key = entity.bookKeys?.[0] ?? "g7s1";
+      const key = entity.bookKeys?.[0] ?? PUBLISHED_BOOK_KEYS[0] ?? registeredBookKeys[0];
       if (!uniqueByBook.has(key)) uniqueByBook.set(key, []);
       uniqueByBook.get(key).push(entity);
     }
   }
   const positioned = new Map();
   textbookEntities.forEach((entity) => {
-    positioned.set(entity.id, TEXTBOOK_POSITIONS[entity.bookKeys?.[0] ?? "g7s1"] ?? CENTER);
+    positioned.set(entity.id, graphPositionFor(entity.bookKeys?.[0] ?? PUBLISHED_BOOK_KEYS[0] ?? registeredBookKeys[0]));
   });
   for (const [key, values] of uniqueByBook) {
-    const base = TEXTBOOK_POSITIONS[key] ?? CENTER;
+    const base = graphPositionFor(key);
     const outwardAngle = Math.atan2(base.y - CENTER.y, base.x - CENTER.x);
     const sorted = [...values].sort(
       (a, b) => stableSeed(a.canonicalKey ?? a.id) - stableSeed(b.canonicalKey ?? b.id),
@@ -423,8 +417,8 @@ function buildTextbookClusterLayout(entities) {
   for (const [signature, values] of buckets) {
     const sources = signature
       .split("|")
-      .map((key) => TEXTBOOK_POSITIONS[key])
-      .filter(Boolean);
+      .filter((key) => registeredBookKeys.includes(key))
+      .map((key) => graphPositionFor(key));
     const centroid = sources.length
       ? {
           x: sources.reduce((sum, point) => sum + point.x, 0) / sources.length,
@@ -545,7 +539,11 @@ export function buildFullGraphLayouts(entities, relationships) {
   const started = performance.now();
   const structuralDegree = knowledgeDegrees(entities, relationships);
   const importanceById = normalizeImportance(entities, structuralDegree);
-  const knowledge = buildKnowledgeIslands(entities, relationships, importanceById);
+  const rawKnowledge = buildKnowledgeIslands(entities, relationships, importanceById);
+  const knowledge = {
+    ...rawKnowledge,
+    positions: resolveCollisions(entities, new Map(rawKnowledge.positions), 44, () => 16),
+  };
   const textbook = buildTextbookClusterLayout(entities);
   const schema = buildSchemaLayout(entities, importanceById);
   return {

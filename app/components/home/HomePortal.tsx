@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { publicAssetUrl } from "../../lib/app/assets";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOKS, PUBLISHED_GRADE_RANGE_LABEL } from "../../lib/app/books";
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { AppTopNav } from "../AppTopNav";
@@ -31,14 +32,10 @@ const PENTATONIC = [
   { name: "角", degree: 3, note: "mi" }, { name: "徵", degree: 5, note: "sol" },
   { name: "羽", degree: 6, note: "la" },
 ];
-const BOOK_ART: Record<string, { file: string; alt: string }> = {
-  g7s1: { file: "art/g7s1.webp", alt: "人音版七年级上册封面插画" },
-  g7s2: { file: "art/g7s2.webp", alt: "人音版七年级下册封面插画" },
-  g8s1: { file: "art/g8s1.webp", alt: "人音版八年级上册封面插画" },
-  g8s2: { file: "art/g8s2.webp", alt: "人音版八年级下册封面插画" },
-  g9s1: { file: "art/g9s1.webp", alt: "人音版九年级上册封面插画" },
-  g9s2: { file: "art/g9s2.webp", alt: "人音版九年级下册封面插画" },
-};
+const BOOK_ART = Object.fromEntries(PUBLISHED_BOOKS.filter((book) => book.coverArt).map((book) => [
+  book.key,
+  { file: `art/${book.key}.webp`, alt: `${book.title}封面插画` },
+])) as Record<string, { file: string; alt: string }>;
 const LAB_MELODIES: Melody[] = PENTATONIC.map(note => ({
   key: "1=C", tonic: "C", tonicMidi: 60, meter: "4/4", bpm: 168, source: "五声音阶交互示范",
   bars: [[{ d: note.degree, b: 0.5 }]],
@@ -79,7 +76,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   const [activeNote, setActiveNote] = useState<string | null>(null);
   const orderedBooks = useMemo(() => [...books].sort((a, b) => a.grade - b.grade || a.semester.localeCompare(b.semester, "zh-CN")), [books]);
   const lastReadBookKey = orderedBooks.some(book => book.key === storedLastReadBookKey) ? storedLastReadBookKey : null;
-  const activeBookKey = openBookKey ?? lastReadBookKey ?? "g7s1";
+  const activeBookKey = openBookKey ?? lastReadBookKey ?? orderedBooks[0]?.key ?? "";
   const unitsByBook = useMemo(() => {
     const grouped = new Map<string, PortalUnit[]>();
     for (const unit of units) grouped.set(unit.bookKey, [...(grouped.get(unit.bookKey) ?? []), unit]);
@@ -137,7 +134,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       <section className="home-hero" aria-labelledby="home-title">
         <div className="home-hero-inner">
           <div className="home-title-plate">
-            <p className="home-hero-kicker">人音版 · 七至九年级</p>
+            <p className="home-hero-kicker">人音版 · {PUBLISHED_GRADE_RANGE_LABEL}</p>
             <div className="home-wordmark"><BrandWordmark /><h1 id="home-title" className="home-title-accessible">芽谱</h1></div>
           </div>
           <p className="home-hero-lead">翻开一册，从这一课开始。</p>
@@ -155,12 +152,12 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           </div>
         </div>
       </section>
-      <section className="home-scrolls" id="home-scrolls" aria-label="六册教材画卷">
+      <section className="home-scrolls" id="home-scrolls" aria-label={`${PUBLISHED_BOOK_COUNT_LABEL}教材画卷`}>
         <div className="home-book-scrolls">
           {orderedBooks.map((book, index) => {
             const art = BOOK_ART[book.key]; const bookUnits = unitsByBook.get(book.key) ?? []; const isOpen = activeBookKey === book.key;
             const shortTitle = book.title.replace(/^人音版/, "");
-            const volume = ["一", "二", "三", "四", "五", "六"][index];
+            const volume = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二", "十三", "十四", "十五"][index] ?? String(index + 1);
             return <article key={book.key} className={"home-book-scroll " + (isOpen ? "is-open" : "")} onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}>
                 <div className="home-scroll-art" aria-hidden="true">
                   {art && <Image src={publicAssetUrl(art.file)} alt="" width={1200} height={750} priority={index === 0} loading={index === 0 ? "eager" : "lazy"} decoding="async" unoptimized />}
@@ -234,7 +231,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
     <footer className="home-footer">
       <div><strong>芽谱</strong><p>把教材里的音乐知识，连成一张可探索的图。</p></div>
       <div className="home-footer-actions"><button type="button" onClick={() => onView("assistant")}>智能问答</button><button type="button" onClick={() => onView("research")}>研究分析</button><button type="button" onClick={onResearchInfo}>研究说明</button></div>
-      <small>人音版七至九年级六册教材 · 内容按册、单元与作品整理</small>
+      <small>人音版{PUBLISHED_GRADE_RANGE_LABEL}{PUBLISHED_BOOK_COUNT_LABEL}教材 · 内容按册、单元与作品整理</small>
     </footer>
   </div>;
 }

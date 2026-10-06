@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { readAppSource } from "./lib/app-source.mjs";
+import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const root = new URL("../", import.meta.url);
 const data = JSON.parse(
@@ -13,7 +14,7 @@ const requireValue = (condition, message) => {
   if (!condition) failures.push(message);
 };
 
-requireValue(data.books?.length === 6, "必须保留六册教材数据");
+requireValue(data.books?.length === PUBLISHED_BOOK_KEYS.length, `教材数据册数必须为 ${PUBLISHED_BOOK_KEYS.length}`);
 for (const book of data.books ?? []) {
   requireValue(book.entities?.length > 0, `${book.key}: 实体为空`);
   requireValue(book.triples?.length > 0, `${book.key}: 关系为空`);

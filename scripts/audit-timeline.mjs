@@ -1,19 +1,26 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import ts from "typescript";
+import { fileURLToPath } from "node:url";
+import { build } from "esbuild";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const data = JSON.parse(await read("public/data/timeline.json"));
+const registry = JSON.parse(await read("data/books.json"));
+const baselineBookKeys = new Set(registry.books.filter(book => book.legacySourceDir).map(book => book.key));
 const atlas = JSON.parse(await read("public/data/atlas.json"));
 const recordUnits = JSON.parse(await read("public/data/units.json"));
 const supplements = JSON.parse(await read("public/data/supplement/work-years.json"));
 const peopleSupplements = JSON.parse(await read("public/data/supplement/people-lifetime.json"));
 const compileModule = async path => {
-  const source = await read(path);
-  const compiled = ts.transpileModule(source, {
-    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
-  }).outputText;
-  return import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+  const result = await build({
+    entryPoints: [fileURLToPath(new URL(`../${path}`, import.meta.url))],
+    bundle: true,
+    write: false,
+    format: "esm",
+    platform: "node",
+    target: "es2022",
+  });
+  return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 };
 const [{ BOOKS, UNKNOWN, filterWorks, groupTimelineWorks, eraForYear, personDates, personYearSource, workHref, withPrintedPages, withSupplementalPeople, withSupplementalYears }, { parseRoute }] = await Promise.all([
   compileModule("app/components/timeline/timelineModel.ts"),
@@ -46,12 +53,18 @@ const enrichedById = new Map(enriched.works.map(work => [work.id, work]));
 const supplementById = new Map(supplements.map(row => [row.id, row]));
 const eligibleSupplementRows = supplements.filter(row => row.status === "found" && ["high", "medium"].includes(row.confidence) && row.yearRange && row.yearText);
 let textbookDated = 0;
+let baselineWorks = 0;
+let baselineTextbookDated = 0;
+let baselineLinkedWorks = 0;
+let baselinePlainTextWorks = 0;
 let supplemented = 0;
 let undated = 0;
 let withPrintedPage = 0;
 let linkedWorks = 0;
 let plainTextWorks = 0;
 for (const work of data.works) {
+  const isBaselineBook = baselineBookKeys.has(work.bookKey);
+  if (isBaselineBook) baselineWorks += 1;
   const book = books.get(work.bookKey);
   assert(book, `作品册别无效 ${work.id}`);
   assert(book.entities.some(entity => entity.id === work.id && entity.name === work.name), `作品名称/编号与源数据不符 ${work.id}`);
@@ -65,16 +78,19 @@ for (const work of data.works) {
   assert.equal(Boolean(work.unit), Boolean(recordWork), `单元归属与 records 目录不一致 ${work.id}`);
   if (recordWork) {
     linkedWorks += 1;
+    if (isBaselineBook) baselineLinkedWorks += 1;
     assert.equal(recordWork.name, work.name, `records 目录作品名称不符 ${work.id}`);
     assert.equal(typeof href, "string", `目录内作品缺少年表链接 ${work.id}`);
     assert.deepEqual(parseRoute(href), { view: "records", book: work.bookKey, work: bareName }, `作品链接未解析到正确册别与作品 ${work.id}`);
   } else {
     plainTextWorks += 1;
+    if (isBaselineBook) baselinePlainTextWorks += 1;
     assert.equal(href, null, `单元外作品不应生成链接 ${work.id}`);
   }
 
   if (work.yearRange) {
     textbookDated += 1;
+    if (isBaselineBook) baselineTextbookDated += 1;
     assert.equal(resolved.yearSource, "textbook", `教材年代来源标记错误 ${work.id}`);
     assert(work.yearEvidence && work.yearText, `年代缺少原文/证据 ${work.id}`);
     const triple = book.triples.find(triple => triple.id === work.yearEvidence.tripleId);
@@ -101,12 +117,12 @@ for (const work of data.works) {
     }
   }
 }
-assert.equal(data.works.length, 362, "源数据作品记录仍为 362 条；界面年代条目会因合格补充资料增加");
-assert.equal(textbookDated, 36, "教材原文年代条目应保持为 36 条");
+assert.equal(baselineWorks, 362, "legacySourceDir books preserve the 362-work baseline");
+assert.equal(baselineTextbookDated, 36, "legacySourceDir books preserve the 36 textbook-year baseline");
 assert.equal(supplemented, eligibleSupplementRows.length, "每条合格补充年代都应进入年表");
 assert.equal(textbookDated + supplemented + undated, data.works.length, "教材年代、补充年代与未标注年代应覆盖每条源记录");
-assert.equal(linkedWorks, 212, "records 目录内作品链接数量应为 212");
-assert.equal(plainTextWorks, 150, "单元外作品纯文字数量应为 150");
+assert.equal(baselineLinkedWorks, 212, "legacySourceDir books preserve the 212 linked-work baseline");
+assert.equal(baselinePlainTextWorks, 150, "legacySourceDir books preserve the 150 plain-text baseline");
 
 const groups = groupTimelineWorks(enriched.works);
 const groupedRecords = groups.flatMap(group => group.works.flatMap(work => work.records));
@@ -135,7 +151,7 @@ assert.equal(filterWorks(enriched, "", "不存在的作品 T034").length, 0);
 assert(filterWorks(enriched, "g7s1", "《军队进行曲》").some(work => work.yearText === "1822年前后"));
 assert(filterWorks(enriched, "", "夏夜圆舞曲").some(work => work.yearText === "20世纪50年代" && work.yearSource === "textbook"));
 
-assert.equal(data.people.length, 122, "相关人物数量应保持为 122");
+assert.equal(data.people.filter(person => person.sourceEntities.some(source => baselineBookKeys.has(source.bookKey))).length, 122, "legacySourceDir books preserve the 122-person baseline");
 const emptyPerson = { lifetimeEvidence: [], lifetimeText: [], bornRange: null, diedRange: null };
 assert.equal(personDates(emptyPerson), UNKNOWN);
 for (const person of data.people) {

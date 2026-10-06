@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { BOOK_BY_KEY, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
@@ -55,7 +56,7 @@ const CREATION_TIME_RELATIONS = new Set([
   "谱曲时间",
 ]);
 
-// Only ethnic groups represented by a type:"民族" entity in the six books.
+// Only ethnic groups represented by a type:"民族" entity in published books.
 // Each group is assigned to one representative main population area for the map.
 const ETHNICITY_TO_PROVINCES = {
   蒙古族: ["内蒙古"],
@@ -265,9 +266,7 @@ function workGenre(work, book, entities) {
     .find((value) => value && !UNRELIABLE_GENRES.has(value)) ?? null;
 }
 
-// 正式数据里，evidence 的 pdfPage 与 textbookPage 恒差 8（全库 5286/5286 条一致）。
-// 用它给「印刷页 ↔ PDF 页」建立对应关系；不满足这个关系的页码一律不采纳。
-const BOOK_PAGE_OFFSET = 8;
+const pageOffsetForBook = (book) => book.pdfOffset ?? BOOK_BY_KEY.get(book.bookKey)?.pdfOffset;
 
 // 该作品**自己作主语**的全部三元组，逐条取出正式 evidence 里的教材页/PDF 页。
 // 只用作品自身的三元组：别人「相关作品→本作品」的引用页不算本作品的页。
@@ -286,7 +285,7 @@ function ownTextbookPages(work, book, evidenceByTriple) {
 
 // 页码：先认教材实体 media 标题里的「教材第N页」（正式数据直接标注）；
 // media 没有时，退回该作品自身三元组在正式 evidence 里的教材页（取最小值，
-// 且必须满足 pdfPage − textbookPage = 8 的正式页差）；两者都拿不到就是 null。
+// 且必须满足本册登记的 pdfOffset）；两者都拿不到就是 null。
 // 绝不用 firstPage 推算：firstPage 是「该实体首次被提及的 PDF 页」（可能来自作曲家介绍页），
 // 与「作品正文/谱例所在页」不是一回事。
 function pageLabelsOf(work, book, evidenceByTriple) {
@@ -295,6 +294,7 @@ function pageLabelsOf(work, book, evidenceByTriple) {
     .filter(Boolean)
     .map(Number);
   const own = ownTextbookPages(work, book, evidenceByTriple);
+  const pageOffset = pageOffsetForBook(book);
   const fromMedia = mediaPages.length ? Math.min(...mediaPages) : null;
   if (fromMedia != null) {
     const hit = own.find((item) => item.textbookPage === fromMedia);
@@ -303,7 +303,7 @@ function pageLabelsOf(work, book, evidenceByTriple) {
   const aligned = [
     ...new Set(
       own
-        .filter((item) => item.pdfPage - item.textbookPage === BOOK_PAGE_OFFSET)
+        .filter((item) => Number.isInteger(pageOffset) && item.pdfPage - item.textbookPage === pageOffset)
         .map((item) => item.textbookPage),
     ),
   ].sort((a, b) => a - b);
@@ -1109,7 +1109,7 @@ const books = (
       .map((name) => readJson(path.join(booksDir, name))),
   )
 ).sort((a, b) => a.bookKey.localeCompare(b.bookKey));
-if (books.length !== 6) throw new Error("Expected six public/data/books/*.json files.");
+if (books.length !== PUBLISHED_BOOK_KEYS.length) throw new Error(`Expected ${PUBLISHED_BOOK_KEYS.length} public/data/books/*.json files for published books.`);
 
 // 正式证据：evidenceByTriple[tripleId] → [{ textbookPage, pdfPage, ... }]。
 // 只在 media 没有标注印刷页时用来补页码，来源仍是正式数据（不是推算）。

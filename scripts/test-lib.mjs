@@ -30,6 +30,8 @@ import {
   serializePeopleLifetime,
   writePeopleLifetimeFiles,
 } from "./build-people-supplement.mjs";
+import { BOOK_BY_KEY, BOOK_REGISTRY, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
+import { TEXTBOOK_MODES, validateTextbookSource } from "./lib/textbook-source-check.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(scriptPath), "..");
@@ -37,6 +39,7 @@ const repoRoot = path.resolve(path.dirname(scriptPath), "..");
 const SOURCES = {
   routing: path.join(repoRoot, "app", "lib", "app", "routing.ts"),
   unitData: path.join(repoRoot, "app", "lib", "app", "unit-data.ts"),
+  books: path.join(repoRoot, "app", "lib", "app", "books.ts"),
   timelineModel: path.join(repoRoot, "app", "components", "timeline", "timelineModel.ts"),
   assets: path.join(repoRoot, "app", "lib", "app", "assets.ts"),
   peopleSupplement: path.join(repoRoot, "app", "lib", "timeline", "peopleSupplement.ts"),
@@ -147,6 +150,12 @@ async function loadModules(mutation) {
     const modules = {};
     for (const [key, file] of Object.entries(SOURCES)) {
       let source = readFileSync(file, "utf8");
+      if (key === "books") {
+        source = source.replace(
+          'from "../../../data/books.mjs"',
+          `from ${JSON.stringify(pathToFileURL(path.join(repoRoot, "data", "books.mjs")).href)}`,
+        );
+      }
       if (mutation && mutation.file === key) source = applyMutation(source, mutation);
       const relative = path.relative(repoRoot, file).replace(/\.ts$/, ".mjs");
       const out = path.join(tmpDir, relative);
@@ -199,6 +208,80 @@ function t(name, fn) {
     passed += 1;
   });
 }
+
+function textbookSourceFixture(overrides = {}) {
+  return {
+    key: "g1s1",
+    pdfOffset: 10,
+    book: [],
+    units: [{ no: 1, name: "第一单元 好朋友", page: 1, facts: [["学习目标", "唱游体验", "音乐活动", "明", 1]] }],
+    works: [
+      { unit: 1, name: "《小星星》", page: 2, mode: "唱歌", facts: [["拍号", "四二拍", "拍号", "谱", 2]], scores: [[2, 0.1, 0.2, 0.8, 0.9]] },
+      { unit: 1, name: "《小星星变奏》", page: 3, mode: "音乐游戏", facts: [], scores: [] },
+    ],
+    concepts: [{ name: "节奏", page: 4, facts: [["定义为", "强弱规律", "音乐概念", "归", 4]] }],
+    people: [{ name: "测试作者", facts: [["身份", "作曲家", "人物身份", "补", 4]] }],
+    tasks: [],
+    ...overrides,
+  };
+}
+
+// --- textbook registry and source checks ------------------------------------
+
+t("教材册目：登记 15 册并只发布原有六册", () => {
+  assert.deepEqual(BOOK_REGISTRY.map((book) => book.key), [
+    "g1s1", "g1s2", "g2s1", "g2s2", "g3s1", "g3s2", "g4s1", "g5s1", "g6s1",
+    "g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2",
+  ]);
+  assert.deepEqual(PUBLISHED_BOOK_KEYS, ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"]);
+  assert.equal(BOOK_BY_KEY.get("g1s1").published, false);
+  assert.ok(BOOK_REGISTRY.every((book) => book.stage && book.grade && book.semester && book.shortName && book.fullName));
+});
+
+t("小学教材图标名：照录已核对的活动类型", () => {
+  for (const mode of ["唱歌", "聆听", "演奏", "音乐游戏", "情境表演", "能力进阶", "演唱", "欣赏", "知识与技能", "编创与展示"]) {
+    assert.equal(TEXTBOOK_MODES[mode], "学习活动", `${mode} 应作为教材学习活动登记`);
+  }
+});
+
+t("教材源校验：合法源文件统计单元、作品、谱例和事实层级", () => {
+  const result = validateTextbookSource(textbookSourceFixture(), { book: BOOK_BY_KEY.get("g1s1") });
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.stats, { units: 1, works: 2, scores: 1 });
+  assert.deepEqual(result.layers, { 明: 1, 谱: 1, 归: 1, 补: 1 });
+});
+
+t("教材源校验：错误中文定位并检查层级、页码、单元、活动、谱框和重名", () => {
+  const sourceText = [
+    "export default {",
+    ' key: "g1s1",',
+    " units: [",
+    '   { no: 1, name: "第一单元 好朋友", page: 999, facts: [["主题", "朋友", null, "未知", 1]] },',
+    " ],",
+    " works: [",
+    '   { unit: 9, name: "《重复曲目》", page: 2, mode: "不认识", scores: [[2, -0.1, 0, 1.1, 1]] },',
+    '   { unit: 1, name: "重复曲目", page: 2, mode: "唱歌", scores: [] },',
+    " ], concepts: [], people: [], tasks: [],",
+    "};",
+  ].join("\n");
+  const source = textbookSourceFixture({
+    units: [{ no: 1, name: "第一单元 好朋友", page: 999, facts: [["主题", "朋友", null, "未知", 1]] }],
+    works: [
+      { unit: 9, name: "《重复曲目》", page: 2, mode: "不认识", scores: [[2, -0.1, 0, 1.1, 1]] },
+      { unit: 1, name: "重复曲目", page: 2, mode: "唱歌", scores: [] },
+    ],
+    concepts: [], people: [], tasks: [],
+  });
+  const result = validateTextbookSource(source, { book: BOOK_BY_KEY.get("g1s1"), sourceText });
+  assert.ok(result.errors.some((error) => error.includes("层级“未知”非法")));
+  assert.ok(result.errors.some((error) => error.includes("页码超出全册范围")));
+  assert.ok(result.errors.some((error) => error.includes("引用了不存在的单元 9")));
+  assert.ok(result.errors.some((error) => error.includes("活动类型“不认识”未登记")));
+  assert.ok(result.errors.some((error) => error.includes("坐标必须是 0 到 1 之间的数字")));
+  assert.ok(result.errors.some((error) => error.includes("作品重名")));
+  assert.ok(result.errors.every((error) => /^第 \d+ 行：/.test(error)));
+  assert.ok(result.errors.some((error) => error.startsWith("第 4 行：") && error.includes("页码超出")));
+});
 
 // --- routing.ts ---------------------------------------------------------------
 
@@ -993,7 +1076,7 @@ t("年表：同年代同名作品合并册别，跨年代与未标注作品分�
   assert.equal(groups.at(-1).works[0].yearText, "教材未标注年代");
 });
 
-t("年表：历史分段边界与六册筛选/书名检索", () => {
+t("年表：历史分段边界与已发布册筛选/书名检索", () => {
   assert.equal(eraForYear(1699).id, "era-ancient");
   assert.equal(eraForYear(1700).id, "era-1700");
   assert.equal(eraForYear(1899).id, "era-1850");

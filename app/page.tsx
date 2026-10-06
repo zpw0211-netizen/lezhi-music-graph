@@ -27,6 +27,7 @@ import { useBookData, useGraphIndex } from "./hooks/useGraphIndex";
 import { useKnowledgeSearch, type SearchResult } from "./hooks/useKnowledgeSearch";
 import { useScrollReveal } from "./hooks/useScrollReveal";
 import { publicAssetUrl } from "./lib/app/assets";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOK_KEYS, PUBLISHED_BOOK_SHORT_NAMES } from "./lib/app/books";
 import type { AppView } from "./lib/app/routing";
 import { bareWorkName, isWorkType, type BookDirectory, type Entity } from "./lib/app/types";
 
@@ -52,7 +53,7 @@ function RecordsStartup({ failed = false }: { failed?: boolean }) {
         </div>
       </header>
       {failed && <div className="records-data-status" role="status">
-        <p>六册教材索引读取失败，请检查网络后重试。</p>
+        <p>已发布教材索引读取失败，请检查网络后重试。</p>
         <button onClick={() => window.location.reload()} type="button">重试</button>
       </div>}
     </section>
@@ -85,7 +86,7 @@ function RecordsBookPicker({
     {books.length > 0 && <span aria-hidden="true" className="records-top-book-drop" />}
     {books.length > 0
       ? books.map((book) => {
-        const label = `${({ 7: "七", 8: "八", 9: "九" } as Record<number, string>)[book.grade] ?? book.grade}${book.semester.replace(/册$/, "")}`;
+        const label = PUBLISHED_BOOK_SHORT_NAMES[book.key] ?? `${book.grade}${book.semester.replace(/册$/, "")}`;
         const active = book.key === selectedBookKey;
         return <button
           aria-current={active ? "page" : undefined}
@@ -96,7 +97,7 @@ function RecordsBookPicker({
           type="button"
         >{label}</button>;
       })
-      : Array.from({ length: 6 }, (_, index) => <span aria-hidden="true" className="records-book-loading-tab" key={index} />)}
+      : Array.from({ length: PUBLISHED_BOOK_KEYS.length }, (_, index) => <span aria-hidden="true" className="records-book-loading-tab" key={index} />)}
   </nav>;
 }
 const GraphExplorer = nextDynamic<PropsOf<typeof GraphExplorerComponent>>(
@@ -194,8 +195,14 @@ export default function Home() {
 
   const index = useGraphIndex();
   const { dataset, canonicalGraph } = index;
-  const books = dataset?.books ?? EMPTY_BOOKS;
-  const selectedRecordsKey = route.book ?? recordsBook;
+  const books = useMemo(
+    () => dataset?.books.filter((book) => PUBLISHED_BOOK_KEYS.includes(book.key)) ?? EMPTY_BOOKS,
+    [dataset],
+  );
+  const requestedRecordsKey = route.book ?? recordsBook;
+  const selectedRecordsKey = books.some((book) => book.key === requestedRecordsKey)
+    ? requestedRecordsKey
+    : books[0]?.key ?? requestedRecordsKey;
   const recordsNavBookKey = books.find((book) => book.key === selectedRecordsKey)?.key ?? books[0]?.key ?? selectedRecordsKey;
   const recordsBookData = useBookData(selectedRecordsKey, books, view === "records");
   const explorer = useGraphExplorer(
@@ -302,7 +309,7 @@ export default function Home() {
   const dataStatus =
     needsData && view !== "records" && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
-        {index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在载入六册教材数据…"}
+        {index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : `正在载入${PUBLISHED_BOOK_COUNT_LABEL}教材数据…`}
       </div>
     ) : null;
   const missingWork =

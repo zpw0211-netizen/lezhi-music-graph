@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import { basename, extname, isAbsolute, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { existsSync, statSync } from "node:fs";
+import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const DEFAULT_SITE_URL = "http://localhost:4321/lezhi-music-graph/";
 const PLAYWRIGHT_MODULE = process.env.PLAYWRIGHT_MODULE?.trim();
@@ -168,7 +169,7 @@ async function main() {
     if (!title.includes("芽谱")) fail(`首页标题为空或不正确：${title}`);
     await page.locator(".home-portal .home-search input").waitFor({ state: "visible", timeout: 10_000 });
     const scrollCount = await page.locator(".home-portal .home-scroll-trigger").count();
-    if (scrollCount !== 6) fail(`首页教材画卷数量不正确：${scrollCount}`);
+    if (scrollCount !== PUBLISHED_BOOK_KEYS.length) fail(`首页教材画卷数量不正确：${scrollCount}，预期 ${PUBLISHED_BOOK_KEYS.length}`);
     if ((await page.locator(".home-portal .home-bookmark-list .home-bookmark-item").count()) !== 3) fail("首页书签入口数量不正确");
   });
 

@@ -1,18 +1,21 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { BOOK_REGISTRY } from "../data/books.mjs";
 
 const SITE_ROOT = process.cwd();
 const SOURCE_ROOT = path.resolve(SITE_ROOT, "..", "full_extraction");
 const OUTPUT_PATH = path.join(SITE_ROOT, "public", "data", "music-graph.json");
 
-const BOOKS = [
-  { key: "g7s1", dir: "grade7/grade7_sem1", grade: 7, semester: "上册", pages: 79, title: "人音版七年级上册" },
-  { key: "g7s2", dir: "grade7/grade7_sem2", grade: 7, semester: "下册", pages: 79, title: "人音版七年级下册" },
-  { key: "g8s1", dir: "grade8/grade8_sem1", grade: 8, semester: "上册", pages: 71, title: "人音版八年级上册" },
-  { key: "g8s2", dir: "grade8/grade8_sem2", grade: 8, semester: "下册", pages: 79, title: "人音版八年级下册" },
-  { key: "g9s1", dir: "grade9/grade9_sem1", grade: 9, semester: "上册", pages: 71, title: "人音版九年级上册" },
-  { key: "g9s2", dir: "grade9/grade9_sem2", grade: 9, semester: "下册", pages: 79, title: "人音版九年级下册" },
-];
+const BOOKS = BOOK_REGISTRY
+  .filter((book) => book.published && book.legacySourceDir)
+  .map((book) => ({
+    key: book.key,
+    dir: book.legacySourceDir,
+    grade: book.grade,
+    semester: book.semester,
+    pages: book.pages,
+    title: book.title,
+  }));
 
 const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
 const readJsonl = async (file) => (await readFile(file, "utf8"))

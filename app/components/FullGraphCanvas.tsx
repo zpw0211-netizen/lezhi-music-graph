@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useMemo, useRef } from "react";
 import type { MouseEvent, PointerEvent } from "react";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../lib/app/books";
 import {
   schemaCategoryFor,
   schemaCategoryMeta,
@@ -852,7 +853,7 @@ function FullGraphCanvasScene({
     <canvas
       ref={canvasRef}
       className="full-graph-canvas"
-      aria-label="六册全量教材知识图谱（Canvas 高性能渲染）"
+      aria-label={`${PUBLISHED_BOOK_COUNT_LABEL}全量教材知识图谱（Canvas 高性能渲染）`}
       role="img"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

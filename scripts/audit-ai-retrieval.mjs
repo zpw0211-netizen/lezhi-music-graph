@@ -1,6 +1,7 @@
 import { build } from "esbuild";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import assert from "node:assert/strict";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../data/books.mjs";
 const compile = async entry => {
   const result = await build({ entryPoints: [entry], bundle: true, write: false, format: "esm", platform: "neutral" });
   return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
@@ -9,7 +10,7 @@ const { enrichGraph, graphAnswer, recognizeIntent, linkEntities } = await compil
 const index = JSON.parse(await readFile("public/data/graph-index.json", "utf8"));
 const graph = index.canonicalGraph;
 const load = async key => JSON.parse(await readFile(`public/data/evidence/${key}.json`, "utf8"));
-const questions = ["《游击队歌》的音乐特点是什么？", "《游击队歌》为什么给人轻快机智的感觉？", "《保卫黄河》的作曲家是谁？", "《保卫黄河》和哪些音乐知识点相关？", "七至九年级关于节奏的知识如何递进？", "比较《保卫黄河》和《游击队歌》。", "教材里有哪些蒙古族音乐作品？", "贝多芬在六册教材中出现在哪里？", "什么是进行曲？教材有哪些相关作品？", "如果我是音乐教师，怎样用图谱讲“节奏”？"];
+const questions = ["《游击队歌》的音乐特点是什么？", "《游击队歌》为什么给人轻快机智的感觉？", "《保卫黄河》的作曲家是谁？", "《保卫黄河》和哪些音乐知识点相关？", "七至九年级关于节奏的知识如何递进？", "比较《保卫黄河》和《游击队歌》。", "教材里有哪些蒙古族音乐作品？", `贝多芬在${PUBLISHED_BOOK_COUNT_LABEL}教材中出现在哪里？`, "什么是进行曲？教材有哪些相关作品？", "如果我是音乐教师，怎样用图谱讲“节奏”？"];
 const results = [], original = JSON.stringify(graph);
 for (const question of questions) {
   const retrieval = await enrichGraph(graph, question, [], load), result = graphAnswer(retrieval, question);

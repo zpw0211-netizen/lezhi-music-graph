@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { schemaCategoryMeta } from "../graph-schema";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../lib/app/books";
 import { QualityPanel, SourceLayerPanel, type QualityMetrics } from "./QualityPanel";
 import { SlidingIndicator } from "./graph/SlidingIndicator";
 
@@ -119,7 +120,7 @@ export function ResearchAnalysis({
         <div>
           <h1 className="research-sr">研究分析</h1>
           <span className="research-kicker">研究分析 · 数据与口径</span>
-          <h2 id="research-analysis-title">六册教材知识结构研究分析</h2>
+          <h2 id="research-analysis-title">{PUBLISHED_BOOK_COUNT_LABEL}教材知识结构研究分析</h2>
           <p className="research-lede">基于知识融合、教材出现记录与质量审计结果进行关联查询。</p>
           <p className="research-method-note">
             <b>研究口径</b>
@@ -132,7 +133,7 @@ export function ResearchAnalysis({
         <section className="matrix-panel" data-reveal>
           <header>
             <div>
-              <h3>六册教材关联矩阵</h3>
+              <h3>{PUBLISHED_BOOK_COUNT_LABEL}教材关联矩阵</h3>
             </div>
             <div className="matrix-metric-toggle motion-tabs" aria-label="关联指标">
               <SlidingIndicator activeKey={metric} />

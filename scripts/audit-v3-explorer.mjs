@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
@@ -101,7 +102,7 @@ requireText(pathFinder, "等长路径", "equal shortest path switching is missin
 const canonicalNodes = graphIndex.canonicalGraph?.entities?.length ?? 0;
 const canonicalEdges = graphIndex.canonicalGraph?.relationships?.length ?? 0;
 const books = graphIndex.dataset?.books?.length ?? 0;
-if (books !== 6) failures.push(`expected 6 textbooks, found ${books}`);
+if (books !== PUBLISHED_BOOK_KEYS.length) failures.push(`expected ${PUBLISHED_BOOK_KEYS.length} published textbooks, found ${books}`);
 // Data may grow with textbook re-reading but must not shrink below the last release.
 if (canonicalNodes < 1337) failures.push(`canonical node regression: ${canonicalNodes}`);
 if (canonicalEdges < 4661) failures.push(`canonical relationship regression: ${canonicalEdges}`);

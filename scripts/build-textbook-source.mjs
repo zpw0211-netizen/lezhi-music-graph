@@ -6,6 +6,8 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { BOOK_BY_KEY, BOOK_REGISTRY } from "../data/books.mjs";
+import { TEXTBOOK_MODES } from "./lib/textbook-modes.mjs";
 
 const root = process.cwd();
 const sourceDir = path.join(root, "content", "textbooks");
@@ -36,10 +38,18 @@ const stableHash = (value) => {
 };
 const SENTENCE_TYPES = new Set(["学习活动", "主题与情感", "学习目标"]);
 const ATTRIBUTE_PREDICATES = new Set(["学习方式"]);
-const MODES = { 演唱: "学习活动", 欣赏: "学习活动", 视唱: "学习活动", 背唱: "学习活动", 演奏: "学习活动", 选听选唱: "学习活动" };
-
 const requested = process.argv.slice(2);
-const available = (await readdir(sourceDir)).filter((file) => /^g\ds\d\.mjs$/.test(file)).map((file) => file.replace(".mjs", ""));
+const sourceFiles = new Set((await readdir(sourceDir)).filter((file) => /^g\ds\d\.mjs$/.test(file)));
+const publishedKeys = new Set(BOOK_REGISTRY.filter((book) => book.published).map((book) => book.key));
+const available = BOOK_REGISTRY
+  .filter((book) => book.published && sourceFiles.has(`${book.key}.mjs`))
+  .map((book) => book.key);
+const unknown = requested.filter((key) => !BOOK_BY_KEY.has(key));
+const unpublished = requested.filter((key) => BOOK_BY_KEY.has(key) && !publishedKeys.has(key));
+const missingSources = requested.filter((key) => BOOK_BY_KEY.has(key) && publishedKeys.has(key) && !sourceFiles.has(`${key}.mjs`));
+if (unknown.length) throw new Error(`册目登记表中没有：${unknown.join("、")}`);
+if (unpublished.length) throw new Error(`以下册目尚未发布，不能进入教材构建：${unpublished.join("、")}`);
+if (missingSources.length) throw new Error(`以下已发布册目缺少源文件：${missingSources.join("、")}`);
 const keys = requested.length ? requested : available;
 const dataset = JSON.parse(await readFile(datasetPath, "utf8"));
 const manifest = JSON.parse(await readFile(manifestPath, "utf8").catch(() => "{}"));
@@ -50,8 +60,21 @@ for (const key of keys) {
   // Sources are authored unit by unit as `parts`; flatten them into one book.
   const parts = raw.parts ?? [raw];
   const source = { ...raw, ...Object.fromEntries(["units", "works", "concepts", "people", "tasks"].map((field) => [field, parts.flatMap((part) => part[field] ?? [])])) };
-  const previous = dataset.books.find((book) => book.key === key);
-  if (!previous) throw new Error(`music-graph.json 中没有 ${key}`);
+  const bookInfo = BOOK_BY_KEY.get(key);
+  const previousIndex = dataset.books.findIndex((book) => book.key === key);
+  const previous = previousIndex >= 0 ? dataset.books[previousIndex] : {
+    key,
+    title: bookInfo.title,
+    grade: bookInfo.grade,
+    semester: bookInfo.semester,
+    pages: bookInfo.pages,
+    entities: [],
+    triples: [],
+    candidateTriples: [],
+    structuralTriples: [],
+    evidenceByTriple: {},
+    relations: {},
+  };
   const offset = source.pdfOffset;
   const pdfOf = (page) => (page && typeof page === "object" ? page.pdf : page + offset);
   const textbookPageOf = (page) => (page && typeof page === "object" ? "前置页" : String(page));
@@ -115,6 +138,7 @@ for (const key of keys) {
 
   // Register works first so references from other facts resolve to them.
   for (const work of source.works) {
+    if (work.mode && !Object.hasOwn(TEXTBOOK_MODES, work.mode)) throw new Error(`${key}: 未登记的学习方式“${work.mode}”（作品《${work.name}》）`);
     const created = entity(work.name, work.type, { aliases: work.aliases ?? [] });
     note(created, work.page);
     workByName.set(work.name, created);
@@ -144,7 +168,7 @@ for (const key of keys) {
     const created = workByName.get(work.name);
     const unit = unitByNo.get(work.unit);
     if (unit) add(unit, "包含作品", work.name, work.type, "明", work.page);
-    if (work.mode) add(created, "学习方式", work.mode, MODES[work.mode] ?? "学习活动", "明", work.page);
+    if (work.mode) add(created, "学习方式", work.mode, TEXTBOOK_MODES[work.mode], "明", work.page);
     if (work.key) add(created, "教材标注", "重点学习曲目（☆）", null, "明", work.page);
     addFacts(created, work.facts, work.page);
     attachScores(created, work);
@@ -175,6 +199,7 @@ for (const key of keys) {
   const structural = triples.filter((triple) => ["包含单元", "单元顺序", "包含作品", "课堂任务"].includes(triple.predicate)).length;
   const book = {
     key, title: source.title, source: "逐页重读", grade: previous.grade, semester: previous.semester, pages: previous.pages,
+    pdfOffset: Number.isInteger(source.pdfOffset) ? source.pdfOffset : bookInfo.pdfOffset,
     entityCount: entities.length, tripleCount: triples.length, evidenceCount: triples.length,
     workCount: works.length, reviewCount: 0, structureShare: Math.round((structural / triples.length) * 1000) / 1000,
     publishedCount: triples.length, candidateCount: 0, structuralCount: structural,
@@ -182,13 +207,18 @@ for (const key of keys) {
     resourceSlots: works.flatMap((work) => (work.media ?? []).map((asset) => ({ workId: work.id, kind: "谱例", title: asset.title, url: asset.url, status: "已挂载" }))),
   };
   book.resourceSlotCount = book.resourceSlots.length;
-  dataset.books[dataset.books.findIndex((item) => item.key === key)] = book;
+  if (previousIndex >= 0) dataset.books[previousIndex] = book;
+  else dataset.books.push(book);
   manifest[key] = media;
 
   const layers = Object.fromEntries(Object.keys(LAYERS).map((layer) => [LAYERS[layer].region, triples.filter((triple) => triple.section === LAYERS[layer].section).length]));
   report.push({ key, entities: entities.length, triples: triples.length, entityRelations: triples.filter((triple) => triple.objectId).length, works: works.length, scores: media.length, duplicatesSkipped: duplicates, layers });
 }
 
+dataset.books = dataset.books.filter((book) => publishedKeys.has(book.key));
+for (const key of Object.keys(manifest)) {
+  if (!publishedKeys.has(key)) delete manifest[key];
+}
 dataset.version = `${new Date().toISOString().slice(0, 10)}-textbook-reread`;
 dataset.generatedAt = new Date().toISOString();
 await writeFile(datasetPath, JSON.stringify(dataset), "utf8");

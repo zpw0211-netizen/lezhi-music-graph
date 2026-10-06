@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../data/books.mjs";
 import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 let playwright;
@@ -126,11 +127,11 @@ try {
     await page.getByRole("button", { name: "兼容模式", exact: true }).click(); await page.locator(".sigma-scene-host canvas").first().waitFor();
     await page.locator(".graph-toolbar-menu summary").click();
   });
-  await record("单册、六册和小屏幕", async () => {
+  await record(`单册、${PUBLISHED_BOOK_COUNT_LABEL}和小屏幕`, async () => {
     await page.getByRole("button", { name: "7年级上册", exact: true }).click(); assert(await page.getByRole("img", { name: "教材知识图谱" }).isVisible());
     await section("知识点类型").getByRole("button", { name: "全部隐藏", exact: true }).click();
     assert.equal(await page.locator(".neo-canvas .svg-node:visible").count(), 0); await reset();
-    await page.getByRole("button", { name: "六册总览", exact: true }).click(); await checkFull(); await reset();
+    await page.getByRole("button", { name: `${PUBLISHED_BOOK_COUNT_LABEL}总览`, exact: true }).click(); await checkFull(); await reset();
     const finder = page.locator(".graph-path-finder"); if (await finder.count()) await finder.getByRole("button").first().click();
     await page.getByRole("button", { name: "适配画布", exact: true }).click(); await page.waitForTimeout(350);
     await page.screenshot({ path: path.join(output, "explorer-1920.png") });

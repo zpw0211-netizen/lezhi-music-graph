@@ -1,6 +1,7 @@
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { BOOK_BY_KEY } from "../data/books.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dataDir = path.join(root, "public", "data");
@@ -156,8 +157,10 @@ for (const book of books) {
 }
 
 // ---- 页码独立重算所需的一手材料（全部来自正式数据 books / evidence，不读 atlas.json）----
-// 正式数据里 evidence 的 pdfPage 与 textbookPage 恒差 8；用它给「印刷页 ↔ PDF 页」建立对应。
-const BOOK_PAGE_OFFSET = 8;
+const pageOffsetByBookKey = new Map(books.map((book) => [
+  book.bookKey,
+  book.pdfOffset ?? BOOK_BY_KEY.get(book.bookKey)?.pdfOffset ?? null,
+]));
 // 正式生卒年谓语 → lifetimeEvidence.kind，用来核对 tripleId 指向的谓词是否真的是生卒年。
 const LIFETIME_PREDICATE_KIND = new Map([
   ["生卒年", "lifetime"],
@@ -228,7 +231,7 @@ function expectedPageLabels(bookKey, workId) {
   const aligned = [
     ...new Set(
       own
-        .filter((item) => item.pdfPage - item.textbookPage === BOOK_PAGE_OFFSET)
+        .filter((item) => Number.isInteger(pageOffsetByBookKey.get(bookKey)) && item.pdfPage - item.textbookPage === pageOffsetByBookKey.get(bookKey))
         .map((item) => item.textbookPage),
     ),
   ].sort((a, b) => a - b);
@@ -271,8 +274,9 @@ function assertPageLabels(work, key) {
       );
     } else {
       assert(mediaPage === null, "printedPageSource=evidence but media actually has a page: " + key);
+      const pageOffset = pageOffsetByBookKey.get(bookKey);
       const alignedOwn = own
-        .filter((item) => item.pdfPage - item.textbookPage === BOOK_PAGE_OFFSET)
+        .filter((item) => Number.isInteger(pageOffset) && item.pdfPage - item.textbookPage === pageOffset)
         .map((item) => item.textbookPage);
       assert(alignedOwn.includes(printed), "printedPageSource=evidence but printedPage is not an evidence page: " + key);
       assert(printed === Math.min(...alignedOwn), "printedPage from evidence is not the smallest aligned page: " + key);
@@ -283,7 +287,7 @@ function assertPageLabels(work, key) {
         own.some((item) => item.textbookPage === printed && item.pdfPage === printedPdf),
         "printedPdfPage is not the evidence pdfPage of printedPage: " + key,
       );
-      assert(printedPdf - printed === BOOK_PAGE_OFFSET, "printedPdfPage - printedPage is not the official page offset: " + key);
+      assert(printedPdf - printed === pageOffsetByBookKey.get(bookKey), "printedPdfPage - printedPage is not the official page offset: " + key);
     }
   }
 
