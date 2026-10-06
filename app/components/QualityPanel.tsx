@@ -69,7 +69,7 @@ export function QualityPanel({ quality }: { quality: QualityMetrics }) {
     ["重复知识点候选", fmt(quality.raw.duplicateEntityGroupCount)],
     ["悬空知识联系", fmt(quality.canonical.danglingRelationshipCount)],
     [
-      "Evidence 覆盖率",
+      "教材出处覆盖率",
       `${Math.round((quality.canonical.evidenceCoverageRate ?? 0) * 1000) / 10}%`,
     ],
   ];
