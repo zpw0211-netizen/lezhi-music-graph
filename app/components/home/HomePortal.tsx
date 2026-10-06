@@ -16,7 +16,7 @@ type PortalGraph = { entities: PortalEntity[]; relationships: PortalRelationship
 type PortalSearchBook = Pick<PortalBook, "key" | "title" | "grade" | "semester">;
 type PortalSearchResult<E, B extends PortalSearchBook> = { entity: E; book: B; relationCount: number; matchedBy: string };
 type PortalView = "graph" | "assistant" | "research" | "records" | "lab" | "atlas";
-type PortalUnit = { id: string; bookKey: string; order: number; name: string; title: string; numeral: string; theme?: string; goals?: string[] };
+type PortalUnit = { id: string; bookKey: string; order: number; name: string; title: string; numeral: string; theme?: string; goals?: string[]; works?: Array<unknown> };
 type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
 const HOT_SEARCHES = ["黄河", "京剧", "民歌", "五声调式", "歌唱祖国"];
 const HOME_LAST_READ_BOOK_KEY = "yapu-home-last-book";
@@ -159,6 +159,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
         <div className="home-book-scrolls">
           {orderedBooks.map((book, index) => {
             const art = BOOK_ART[book.key]; const bookUnits = unitsByBook.get(book.key) ?? []; const isOpen = activeBookKey === book.key;
+            const workCount = bookUnits.reduce((sum, unit) => sum + (unit.works?.length ?? 0), 0);
             const shortTitle = book.title.replace(/^人音版/, "");
             const volume = ["一", "二", "三", "四", "五", "六"][index];
             return <article key={book.key} className={"home-book-scroll " + (isOpen ? "is-open" : "")} onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}>
@@ -176,7 +177,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
                   <p className="home-scroll-overline">卷 {volume} · 人音版</p>
                   <h3>{shortTitle}</h3>
                   <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
-                  <p className="home-scroll-countline">{bookUnits.length} 个单元 · {fmt(book.workCount)} 首作品</p>
+                  <p className="home-scroll-countline">{bookUnits.length} 个单元 · {fmt(workCount)} 首作品</p>
                   <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>
                     <button type="button" aria-label={`${unit.numeral || unit.order}，${unit.name || unit.title}，进入${book.title}`} onClick={() => openUnit(book, unit)}>
                       <span className="home-unit-number">{unit.numeral || unit.order}</span><span className="home-unit-title">{unit.title || unit.name}</span>
