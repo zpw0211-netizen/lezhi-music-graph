@@ -1274,7 +1274,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
                         } else explorer.chooseFullGraph();
                       }}
                     >
-                      进入单册视图
+                      单册视图
                     </button>
                     <label className="source-layer-toggle">
                       <input

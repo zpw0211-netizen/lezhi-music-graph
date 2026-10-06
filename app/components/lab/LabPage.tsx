@@ -778,7 +778,7 @@ export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWo
     <section className="lupan-works-section" aria-labelledby="lupan-works-title">
       <div className="lupan-works-heading">
         <div><p className="lupan-kicker">回到教材</p><h2 id="lupan-works-title">教材里的五声作品</h2></div>
-        <p>作品与标注来自教材关系数据。<br />听旋律时，对应的五声键会亮起。</p>
+        <p>作品与标注来自教材数据。<br />听旋律时，对应的五声键会亮起。</p>
       </div>
       <div className="lupan-works-grid">
         {works.map(({ work, evidence }) => {
@@ -803,9 +803,9 @@ export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWo
             >▷ 听旋律{melodies.every((melody) => melody.quality === "draft") ? "（草稿）" : ""}</button>}
           </article>;
         })}
-        {!works.length && <p className="lupan-works-empty">教材关系数据中暂未找到五声调式标注。</p>}
+        {!works.length && <p className="lupan-works-empty">教材数据中暂未找到五声调式标注。</p>}
       </div>
-      <p className="lupan-works-foot"><span>作品与标注来自教材关系数据。</span><span>{works.length ? `${works.length} 首` : ""}</span></p>
+      <p className="lupan-works-foot"><span>作品与标注来自教材数据。</span><span>{works.length ? `${works.length} 首` : ""}</span></p>
     </section>
 
     <p className="lupan-credit">钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a> · Alexander Holm · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a></p>

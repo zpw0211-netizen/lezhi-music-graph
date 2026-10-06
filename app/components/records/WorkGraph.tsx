@@ -735,7 +735,7 @@ export function WorkGraph({
       {selected && <div className="work-graph-card is-selection" aria-live="polite">
         <span className="work-graph-type" style={{ color: SEMANTIC_PALETTE[selected.category].stroke, background: SEMANTIC_PALETTE[selected.category].soft }}>{selected.entity.type}</span>
         <h3>{selected.entity.name}</h3>
-        <p>{selected.depth === 1 ? `与本作品的关系：${selected.labels.join("、")}` : `经由「${entityMap.get(selected.parent ?? "")?.name ?? ""}」关联：${selected.labels.join("、")}`}</p>
+        <p>{selected.depth === 1 ? `与本作品的知识联系：${selected.labels.join("、")}` : `经由「${entityMap.get(selected.parent ?? "")?.name ?? ""}」关联：${selected.labels.join("、")}`}</p>
         <div className="work-graph-selection-actions">
           {selected.category === "work" && <button type="button" onClick={() => onOpenWork(selected.id)}>打开它的作品图谱</button>}
           <button type="button" onClick={() => onLocate(selected.id)}>在总图谱中查看</button>

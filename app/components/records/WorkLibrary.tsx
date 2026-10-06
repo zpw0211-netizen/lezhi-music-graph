@@ -660,7 +660,7 @@ export function WorkLibrary({
         </div>
       </div>}
 
-      {!units.length && !unitsError && <p className="records-data-status" role="status">正在载入本册篇章…</p>}
+      {!units.length && !unitsError && <p className="records-data-status" role="status">正在载入本册单元…</p>}
     </section>
 
     {detailWork && <WorkDetail

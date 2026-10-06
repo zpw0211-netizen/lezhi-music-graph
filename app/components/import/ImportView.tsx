@@ -72,7 +72,7 @@ export function ImportView() {
               乐理知识联系 <span>是 · 指 · 凭借 · 解释概念</span>
             </li>
             <li>
-              教材出处 <span>教材页码 · PDF页码 · 原文摘要</span>
+              教材出处 <span>教材页码 · PDF 页码 · 原文摘要</span>
             </li>
             <li>
               资源知识联系 <span>拥有乐谱 · 音频 · 视频</span>

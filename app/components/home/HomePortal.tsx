@@ -147,7 +147,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
               <button type="submit">检索 <span aria-hidden="true">→</span></button>
               {query && results.length > 0 && <div className="home-search-results">
                 {results.slice(0, 7).map(({ entity, book, relationCount }) => <button type="button" key={book.key + "-" + entity.id} onClick={() => onPickResult(entity, book)}>
-                  <span><strong>{entity.name}</strong><small>{book.title} · {entity.type} · {relationCount} 条关系</small></span><WorkbenchIcon name="arrow" />
+                  <span><strong>{entity.name}</strong><small>{book.title} · {entity.type} · {relationCount} 条知识联系</small></span><WorkbenchIcon name="arrow" />
                 </button>)}
               </div>}
             </form>

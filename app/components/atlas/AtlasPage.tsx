@@ -496,8 +496,7 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
             </>
           ) : mode === "world" ? (
             <p className="atlas-panel-hint">
-              已标出 {modeRegions.filter((region) => (visibleWorksByRegion.get(region.id)?.length ?? 0) > 0).length} 个国家，
-              共 {totalVisibleWorks} 部作品。光柱越高，教材中对应这里的作品越多。
+              已标出 {modeRegions.filter((region) => (visibleWorksByRegion.get(region.id)?.length ?? 0) > 0).length} 个国家，共 {totalVisibleWorks} 部作品。光柱越高，教材中对应这里的作品越多。
             </p>
           ) : (
             <>
@@ -520,8 +519,7 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
         </div>
 
         <p className="atlas-note">
-          地形数据来源：AWS Terrain Tiles（SRTM、GMTED2010、ETOPO1 等公共领域高程数据）。
-          本图为示意图，不表示国界、省界，也不用于划界或导航。
+          地形数据来源：AWS Terrain Tiles（SRTM、GMTED2010、ETOPO1 等公共领域高程数据）。本图为示意图，不表示国界、省界，也不用于划界或导航。
         </p>
       </section>
 
