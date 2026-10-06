@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, 
 import Image from "next/image";
 import { publicAssetUrl } from "../../lib/app/assets";
 import type { AppRoute } from "../../lib/app/routing";
+import { loadPeopleSupplement } from "../../lib/timeline/peopleSupplement";
 import { loadYearSupplement } from "../../lib/timeline/yearSupplement";
 import {
   BOOKS,
@@ -12,15 +13,19 @@ import {
   filterWorks,
   groupTimelineWorks,
   personDates,
+  personYearSource,
   withPrintedPages,
+  withSupplementalPeople,
   withSupplementalYears,
   workHref,
   workRoute,
   type AtlasTimelineData,
   type TimelineData,
+  type TimelineDataWithPeople,
   type TimelineDisplayWork,
+  type TimelineDisplayPerson,
   type TimelineEraGroup,
-  type TimelinePerson,
+  type TimelineLifetimeEvidence,
   type TimelineUnit,
   type TimelineWork,
 } from "./timelineModel";
@@ -28,7 +33,8 @@ import {
 type Evidence = { textbookPage?: string; pdfPage?: number; summary?: string };
 type EvidenceFile = { evidenceByTriple: Record<string, Evidence[]> };
 type SourceRow = { work: TimelineWork; evidence?: Evidence };
-type PageData = { timeline: TimelineData; units: TimelineUnit[] };
+type PersonSourceRow = { evidence: TimelineLifetimeEvidence; source?: Evidence };
+type PageData = { timeline: TimelineDataWithPeople; units: TimelineUnit[] };
 type DragState = { startX: number; startLeft: number };
 const cache = new Map<string, Promise<unknown>>();
 const TIMELINE_HORIZONTAL_KEY = "yapu.timeline.horizontalLeft";
@@ -168,6 +174,59 @@ function TimelineNote({
   </aside>;
 }
 
+function TimelinePersonNote({
+  person,
+  position,
+  onClose,
+}: {
+  person: TimelineDisplayPerson;
+  position: { left: number; top: number };
+  onClose: () => void;
+}) {
+  const [rows, setRows] = useState<PersonSourceRow[] | null>(null);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const supplement = person.supplement;
+
+  useEffect(() => {
+    if (supplement) return;
+    let active = true;
+    Promise.all(person.lifetimeEvidence.map(async evidence => {
+      const file = await loadJson<EvidenceFile>(`evidence/${evidence.bookKey}.json`);
+      return { evidence, source: file.evidenceByTriple[evidence.tripleId]?.[0] };
+    })).then(result => { if (active) setRows(result); })
+      .catch(reason => { if (active) setError(reason instanceof Error ? reason.message : "教材来源读取失败。"); });
+    return () => { active = false; };
+  }, [person, supplement, attempt]);
+
+  useEffect(() => { closeRef.current?.focus({ preventScroll: true }); }, [person.id]);
+
+  return <aside className={`timeline-note${supplement ? " is-supplement" : ""}`} style={position} id="timeline-note" role="dialog" aria-label={`${person.name}的生卒年来源`}>
+    <button ref={closeRef} className="timeline-note-close" type="button" aria-label="关闭史料笺" data-close-timeline-note onClick={onClose}>×</button>
+    <span className={`timeline-note-stamp${supplement ? " is-blue" : ""}`} aria-hidden="true">{supplement ? "补遗" : "原典"}</span>
+    <p className="timeline-note-kicker"><span className={supplement ? "timeline-origin is-supplement" : "timeline-origin is-textbook"}>{supplement?.label ?? "教材原文"}</span></p>
+    <h2>{person.name}</h2>
+    {supplement ? <section className="timeline-note-source is-supplement">
+      <blockquote>{supplement.lifetimeText}</blockquote>
+      <dl>
+        {supplement.subject && <><dt>核对对象</dt><dd>{supplement.subject}</dd></>}
+        <dt>出处</dt><dd className="timeline-note-links">{supplement.sources.length ? supplement.sources.map((source, index) => <a key={`${source.url}:${index}`} href={source.url} target="_blank" rel="noopener noreferrer">{source.title || source.publisher || source.url}</a>) : "未提供外部来源"}</dd>
+        <dt>可信度</dt><dd>{supplement.confidence === "high" ? "高" : "中"}</dd>
+        <dt>说明</dt><dd>{supplement.note || "暂无说明"}</dd>
+      </dl>
+    </section> : error ? <p className="timeline-note-error" role="alert">{error} <button type="button" onClick={() => { setError(""); setAttempt(value => value + 1); }}>重试</button></p> : rows === null ? <p className="timeline-note-loading" role="status">正在读取教材出处…</p> : <div className="timeline-note-sources">
+      {rows.map(({ evidence, source }) => <section className="timeline-note-source" key={`${evidence.bookKey}:${evidence.tripleId}`}>
+        <blockquote>{evidence.text}</blockquote>
+        <dl>
+          <dt>教材出处</dt><dd>人民音乐出版社 · {BOOKS[evidence.bookKey] ?? evidence.bookKey}</dd>
+          <dt>页码</dt><dd>{evidencePageText(source)}</dd>
+        </dl>
+      </section>)}
+    </div>}
+  </aside>;
+}
+
 function TimelineSlip({
   work,
   index,
@@ -199,12 +258,25 @@ function TimelineSlip({
   </div>;
 }
 
-function TimelinePeople({ people, width }: { people: TimelinePerson[]; width: number }) {
+function TimelinePeople({ people, width, selectedId, onSelect }: {
+  people: TimelineDisplayPerson[];
+  width: number;
+  selectedId: string | null;
+  onSelect: (person: TimelineDisplayPerson, trigger: HTMLButtonElement) => void;
+}) {
+  const textbookCount = people.filter(person => personYearSource(person) === "textbook").length;
+  const supplementCount = people.filter(person => personYearSource(person) === "supplement").length;
   return <section className="timeline-tail" id="timeline-tail" aria-labelledby="timeline-tail-title" style={{ "--timeline-tail-width": `${width}px` } as CSSProperties}>
     <span className="timeline-tail-rule" aria-hidden="true" />
     <h2 id="timeline-tail-title">拖尾 · 人物</h2>
-    <p className="timeline-tail-sub">生卒依教材原文 · {people.length} 位</p>
-    <div className="timeline-people-list">{people.map(person => <span className="timeline-person" key={person.id} title={personDates(person)}>{person.name}<small>{personDates(person)}</small></span>)}</div>
+    <p className="timeline-tail-sub">{people.length} 位人物 · 教材原文 {textbookCount} · 补充 {supplementCount}</p>
+    <div className="timeline-people-list">{people.map(person => {
+      const source = personYearSource(person);
+      const isSelected = selectedId === person.id;
+      return <button className={`timeline-person${source === "supplement" ? " is-supplement" : ""}`} key={person.id} type="button" title={personDates(person)} aria-label={`查看${person.name}的生卒年来源`} aria-haspopup="dialog" aria-controls="timeline-note" aria-expanded={isSelected} onClick={event => onSelect(person, event.currentTarget)}>
+        <span>{person.name}</span><small>{personDates(person)}</small>
+      </button>;
+    })}</div>
     <span className="timeline-colophon" aria-label="芽谱藏">芽谱藏</span>
   </section>;
 }
@@ -217,6 +289,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   const [query, setQuery] = useState("");
   const [activeEra, setActiveEra] = useState("timeline-opening");
   const [selectedWork, setSelectedWork] = useState<TimelineDisplayWork | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<TimelineDisplayPerson | null>(null);
   const selectedNoteTrigger = useRef<HTMLButtonElement | null>(null);
   const [notePosition, setNotePosition] = useState({ left: 16, top: 120 });
   const [unrolling, setUnrolling] = useState(true);
@@ -230,7 +303,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   const groups = useMemo(() => groupTimelineWorks(works), [works]);
   const visibleWorkIds = useMemo(() => new Set(works.map(work => work.id)), [works]);
   const people = useMemo(() => pageData?.timeline.people.filter(person => person.works.some(id => visibleWorkIds.has(id))) ?? [], [pageData, visibleWorkIds]);
-  const tailPeople = useMemo(() => people.filter(person => person.lifetimeText.length > 0), [people]);
+  const tailPeople = useMemo(() => people.filter(person => personYearSource(person) !== null), [people]);
   const datedCount = rootWorks.filter(work => work.yearRange).length;
   const supplementCount = rootWorks.filter(work => work.yearSource === "supplement").length;
   const tailWidth = 220 + Math.ceil(tailPeople.length / 2) * 62 + 120;
@@ -245,12 +318,13 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
       loadJson<TimelineData>("timeline.json"),
       loadJson<TimelineUnit[]>("units.json"),
       loadYearSupplement(),
+      loadPeopleSupplement(),
       loadJson<AtlasTimelineData>("atlas.json").catch(() => null),
-    ]).then(([timeline, units, supplements, atlas]) => {
+    ]).then(([timeline, units, supplements, peopleSupplements, atlas]) => {
       if (!active) return;
       let enriched = withSupplementalYears(timeline, supplements);
       if (atlas) enriched = withPrintedPages(enriched, atlas);
-      setPageData({ timeline: enriched, units });
+      setPageData({ timeline: withSupplementalPeople(enriched, peopleSupplements), units });
       setError("");
     }).catch(reason => { if (active) setError(reason instanceof Error ? reason.message : "年表资料读取失败。"); });
     return () => { active = false; };
@@ -341,25 +415,29 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   }, [groups]);
 
   useEffect(() => {
-    if (!selectedWork) return;
+    if (!selectedWork && !selectedPerson) return;
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         setSelectedWork(null);
+        setSelectedPerson(null);
       }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [selectedWork]);
+  }, [selectedWork, selectedPerson]);
 
   useEffect(() => {
-    if (!selectedWork) selectedNoteTrigger.current?.focus({ preventScroll: true });
-  }, [selectedWork]);
+    if (!selectedWork && !selectedPerson) selectedNoteTrigger.current?.focus({ preventScroll: true });
+  }, [selectedWork, selectedPerson]);
 
   const closeNoteFromOutside = (event: PointerEvent<HTMLDivElement>) => {
     const target = event.target;
-    if (!(target instanceof Element) || target.closest(".timeline-note, .timeline-slip-tag")) return;
-    if (selectedWork) setSelectedWork(null);
+    if (!(target instanceof Element) || target.closest(".timeline-note, .timeline-slip-tag, .timeline-person")) return;
+    if (selectedWork || selectedPerson) {
+      setSelectedWork(null);
+      setSelectedPerson(null);
+    }
   };
 
   const jumpTo = (id: string) => {
@@ -422,9 +500,9 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   return <div className="timeline-page" ref={root} onPointerDown={closeNoteFromOutside} aria-labelledby="timeline-title">
     <div className="timeline-toolbar" aria-label="作品年表筛选">
       <div className="timeline-book-filter" role="group" aria-label="按教材册别筛选">
-        {bookOptions.map(key => <button key={key || "all"} type="button" aria-pressed={book === key} onClick={() => { setSelectedWork(null); setBook(key); }}>{key ? bookShortName(key) : "六册"}</button>)}
+        {bookOptions.map(key => <button key={key || "all"} type="button" aria-pressed={book === key} onClick={() => { setSelectedWork(null); setSelectedPerson(null); setBook(key); }}>{key ? bookShortName(key) : "六册"}</button>)}
       </div>
-      <label className="timeline-search">查找作品<input type="search" value={query} onChange={event => { setSelectedWork(null); setQuery(event.target.value); }} placeholder="输入作品名" aria-label="查找作品" /></label>
+      <label className="timeline-search">查找作品<input type="search" value={query} onChange={event => { setSelectedWork(null); setSelectedPerson(null); setQuery(event.target.value); }} placeholder="输入作品名" aria-label="查找作品" /></label>
       <p className="timeline-count" role="status">{pageData ? `${rootWorks.length} 首作品 · ${datedCount} 首标有年代 · ${supplementCount} 条补充资料` : "正在读取年表资料…"}</p>
     </div>
     <nav className="timeline-ruler" aria-label="年代索引">
@@ -443,7 +521,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
               <span className="timeline-seal timeline-opening-seal" aria-hidden="true">芽谱</span>
               <div className="timeline-opening-copy">
                 <p>六册教材里的作品，依年代展成一卷。<b>从左往右读</b>：每一段配一幅教材插画，作品挂在下方的时间轴上。</p>
-                <div className="timeline-legend"><span><i className="timeline-legend-seal is-red">1935</i>教材原文写明的年代</span><span><i className="timeline-legend-seal is-blue">1950</i>补充资料（非教材）</span></div>
+                <div className="timeline-legend"><span><i className="timeline-legend-seal is-red">1935</i>作品、人物的教材原文年代</span><span><i className="timeline-legend-seal is-blue">1950</i>作品、人物的补充年代（非教材）</span></div>
               </div>
               <h1 className="timeline-title-vertical" id="timeline-title"><span>循着年代</span><span>翻阅作品</span></h1>
             </section>
@@ -469,12 +547,20 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
                   const width = Math.min(420, window.innerWidth - 24);
                   setNotePosition({ left: Math.max(12, Math.min(window.innerWidth - width - 12, rect.left)), top: Math.max(96, Math.min(window.innerHeight - 400, rect.top - 250)) });
                   selectedNoteTrigger.current = trigger;
+                  setSelectedPerson(null);
                   setSelectedWork(selected);
                 }} />)}</div> : <p className="timeline-empty-era">没有找到相符的作品。</p>}
               </section>;
             })}
             {pageData && !groups.length && <section className="timeline-empty-era" id="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看六册教材。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section>}
-            {pageData && <TimelinePeople people={tailPeople} width={tailWidth} />}
+            {pageData && <TimelinePeople people={tailPeople} width={tailWidth} selectedId={selectedPerson?.id ?? null} onSelect={(person, trigger) => {
+              const rect = trigger.getBoundingClientRect();
+              const width = Math.min(420, window.innerWidth - 24);
+              setNotePosition({ left: Math.max(12, Math.min(window.innerWidth - width - 12, rect.left)), top: Math.max(96, Math.min(window.innerHeight - 400, rect.top - 250)) });
+              selectedNoteTrigger.current = trigger;
+              setSelectedWork(null);
+              setSelectedPerson(person);
+            }} />}
             {!pageData && <section className="timeline-loading" role="status">正在载入作品与人物…</section>}
           </div>
           <i className="timeline-roll-rod timeline-roll-rod-end" aria-hidden="true" />
@@ -483,5 +569,6 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
       {unrolling && <div className="timeline-unroll" aria-hidden="true" onAnimationEnd={() => setUnrolling(false)}><i className="timeline-roll-rod" /><span /></div>}
     </div>}
     {selectedWork && <TimelineNote key={selectedWork.id} work={selectedWork} position={notePosition} onOpenRecord={onOpenRecord} onClose={() => setSelectedWork(null)} />}
+    {selectedPerson && <TimelinePersonNote key={selectedPerson.id} person={selectedPerson} position={notePosition} onClose={() => setSelectedPerson(null)} />}
   </div>;
 }

@@ -1,4 +1,5 @@
 import type { AppRoute } from "../../lib/app/routing";
+import type { PeopleLifetimeSupplement } from "../../lib/timeline/peopleSupplement";
 import type { WorkYearSupplement } from "../../lib/timeline/yearSupplement";
 
 export type YearRange = [number, number] | null;
@@ -30,6 +31,8 @@ export type TimelinePerson = {
   works: string[];
 };
 export type TimelineData = { works: TimelineWork[]; people: TimelinePerson[] };
+export type TimelineDisplayPerson = TimelinePerson & { supplement?: PeopleLifetimeSupplement };
+export type TimelineDataWithPeople = Omit<TimelineData, "people"> & { people: TimelineDisplayPerson[] };
 export type TimelineUnit = { bookKey: string; order: number; name: string; title: string };
 export type AtlasPrintedWork = { id: string; printedPage: number | null };
 export type AtlasTimelineData = {
@@ -61,6 +64,11 @@ export type WorkYearSupplementLike = Pick<
   WorkYearSupplement,
   "id" | "status" | "yearText" | "yearRange" | "confidence"
 > & Partial<WorkYearSupplement>;
+
+export type PeopleLifetimeSupplementLike = Pick<
+  PeopleLifetimeSupplement,
+  "id" | "status" | "lifetimeText" | "confidence"
+> & Partial<PeopleLifetimeSupplement>;
 
 export const BOOKS: Record<string, string> = {
   g7s1: "七年级上册",
@@ -123,6 +131,28 @@ export function withSupplementalYears(
   };
 }
 
+/** Fill missing person dates from reviewed supplements, preserving every textbook date. */
+export function withSupplementalPeople(
+  data: TimelineData,
+  supplements: PeopleLifetimeSupplementLike[],
+): TimelineDataWithPeople {
+  const byId = new Map(supplements.map(row => [row.id, row]));
+  return {
+    ...data,
+    people: data.people.map(person => {
+      const originalTexts = [...new Set((person.lifetimeEvidence ?? []).map(evidence => evidence.text).filter(Boolean))];
+      if (originalTexts.length || person.lifetimeText.some(text => text.trim())) return person;
+      const supplement = byId.get(person.id);
+      if (
+        !supplement || (supplement.status !== "found" && supplement.status !== "partial") ||
+        (supplement.confidence !== "high" && supplement.confidence !== "medium") ||
+        !supplement.lifetimeText?.trim()
+      ) return person;
+      return { ...person, supplement: supplement as PeopleLifetimeSupplement };
+    }),
+  };
+}
+
 export function workRoute(work: TimelineWork): AppRoute | null {
   const title = work.name.replace(/^《|》$/g, "");
   return work.unit && Object.hasOwn(BOOKS, work.bookKey)
@@ -137,9 +167,16 @@ export function workHref(work: TimelineWork) {
     : null;
 }
 
-export function personDates(person: TimelinePerson) {
+export function personDates(person: TimelineDisplayPerson) {
   const originalTexts = [...new Set((person.lifetimeEvidence ?? []).map(evidence => evidence.text).filter(Boolean))];
-  return originalTexts.length ? originalTexts.join("；") : UNKNOWN;
+  if (originalTexts.length) return originalTexts.join("；");
+  if (person.lifetimeText.some(text => text.trim())) return [...new Set(person.lifetimeText.filter(Boolean))].join("；");
+  return person.supplement?.lifetimeText?.trim() ? person.supplement.lifetimeText : UNKNOWN;
+}
+
+export function personYearSource(person: TimelineDisplayPerson): "textbook" | "supplement" | null {
+  if (person.lifetimeEvidence.some(evidence => evidence.text) || person.lifetimeText.some(text => text.trim())) return "textbook";
+  return person.supplement?.lifetimeText?.trim() ? "supplement" : null;
 }
 
 export function filterWorks(data: TimelineData, book: string, query: string) {

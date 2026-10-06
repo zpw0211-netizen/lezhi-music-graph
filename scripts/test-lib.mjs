@@ -178,7 +178,7 @@ function mutationFromArgv() {
 const loaded = await loadModules(mutationFromArgv());
 const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, parseUnitTask } = await loaded.unitData;
-const { eraForYear, filterWorks, groupTimelineWorks, workHref, withSupplementalYears } = await loaded.timelineModel;
+const { eraForYear, filterWorks, groupTimelineWorks, personDates, personYearSource, workHref, withSupplementalPeople, withSupplementalYears } = await loaded.timelineModel;
 const { isPublicPeopleLifetime, loadPeopleSupplement } = await loaded.peopleSupplement;
 const { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, heptatonicPhrase, transposePitchClass } = await loaded.labScales;
 const { makeLupanPhrase, normalizePitchClass, transposeTonicFromDrag } = await loaded.lupanModel;
@@ -862,6 +862,81 @@ function timelineWorkFixture(overrides = {}) {
     ...overrides,
   };
 }
+
+function timelinePersonFixture(overrides = {}) {
+  return {
+    id: "TEST_TIMELINE_PERSON",
+    name: "测试人物",
+    born: null,
+    bornRange: null,
+    died: null,
+    diedRange: null,
+    lifetimeText: [],
+    lifetimeEvidence: [],
+    sourceEntities: [],
+    works: [],
+    ...overrides,
+  };
+}
+
+t("年表人物：只展示 found/partial 且 high/medium 的补充，并保留 partial 原文", () => {
+  const base = peopleLifetimeFixture();
+  const partialWithoutDate = {
+    ...base.find(person => person.id === "TEST_PEOPLE_PARTIAL"),
+    id: "TEST_PEOPLE_NO_DATE",
+    status: "partial",
+    lifetimeText: null,
+  };
+  const diedOnly = {
+    ...base.find(person => person.id === "TEST_PEOPLE_PARTIAL"),
+    id: "TEST_PEOPLE_DIED_ONLY",
+    born: null,
+    died: 1930,
+    lifetimeText: "—1930",
+  };
+  const people = [
+    timelinePersonFixture({ id: "TEST_PEOPLE_FOUND" }),
+    timelinePersonFixture({ id: "TEST_PEOPLE_PARTIAL" }),
+    timelinePersonFixture({ id: "TEST_PEOPLE_DIED_ONLY" }),
+    timelinePersonFixture({ id: "TEST_PEOPLE_LOW" }),
+    timelinePersonFixture({ id: "TEST_PEOPLE_NOT_FOUND" }),
+    timelinePersonFixture({ id: "TEST_PEOPLE_NOT_PERSON" }),
+    timelinePersonFixture({ id: "TEST_PEOPLE_NO_DATE" }),
+  ];
+  const result = withSupplementalPeople({ works: [], people }, [...base, partialWithoutDate, diedOnly]);
+  const byId = new Map(result.people.map(person => [person.id, person]));
+  assert.equal(personYearSource(byId.get("TEST_PEOPLE_FOUND")), "supplement");
+  assert.equal(personDates(byId.get("TEST_PEOPLE_FOUND")), "1905—1945");
+  assert.equal(personYearSource(byId.get("TEST_PEOPLE_PARTIAL")), "supplement");
+  assert.equal(personDates(byId.get("TEST_PEOPLE_PARTIAL")), "1938—");
+  assert.equal(personYearSource(byId.get("TEST_PEOPLE_DIED_ONLY")), "supplement");
+  assert.equal(personDates(byId.get("TEST_PEOPLE_DIED_ONLY")), "—1930");
+  for (const id of ["TEST_PEOPLE_LOW", "TEST_PEOPLE_NOT_FOUND", "TEST_PEOPLE_NOT_PERSON", "TEST_PEOPLE_NO_DATE"]) {
+    assert.equal(byId.get(id).supplement, undefined, `${id} 不应展示人物补充`);
+    assert.equal(personYearSource(byId.get(id)), null);
+    assert.equal(personDates(byId.get(id)), "教材未标注年代");
+  }
+});
+
+t("年表人物：教材原文优先，不被同编号补充覆盖", () => {
+  const textbookPerson = timelinePersonFixture({
+    id: "TEST_PEOPLE_BOOK",
+    born: 1948,
+    bornRange: [1948, 1948],
+    lifetimeText: ["1948年"],
+    lifetimeEvidence: [{ bookKey: "g9s2", tripleId: "G9S2_T_TEST", kind: "birth", text: "1948年" }],
+  });
+  const conflictingSupplement = {
+    ...peopleLifetimeFixture()[0],
+    id: textbookPerson.id,
+    lifetimeText: "1905—1945",
+  };
+  const result = withSupplementalPeople({ works: [], people: [textbookPerson] }, [conflictingSupplement]).people[0];
+  assert.equal(result.supplement, undefined);
+  assert.equal(personYearSource(result), "textbook");
+  assert.equal(personDates(result), "1948年");
+  assert.deepEqual(result.lifetimeEvidence, textbookPerson.lifetimeEvidence);
+});
 
 t("年表：只把 found 且 high/medium 的补充年代放上长卷", () => {
   const base = { works: [

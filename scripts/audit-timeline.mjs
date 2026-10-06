@@ -7,6 +7,7 @@ const data = JSON.parse(await read("public/data/timeline.json"));
 const atlas = JSON.parse(await read("public/data/atlas.json"));
 const recordUnits = JSON.parse(await read("public/data/units.json"));
 const supplements = JSON.parse(await read("public/data/supplement/work-years.json"));
+const peopleSupplements = JSON.parse(await read("public/data/supplement/people-lifetime.json"));
 const compileModule = async path => {
   const source = await read(path);
   const compiled = ts.transpileModule(source, {
@@ -14,7 +15,7 @@ const compileModule = async path => {
   }).outputText;
   return import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 };
-const [{ BOOKS, UNKNOWN, filterWorks, groupTimelineWorks, eraForYear, personDates, workHref, withPrintedPages, withSupplementalYears }, { parseRoute }] = await Promise.all([
+const [{ BOOKS, UNKNOWN, filterWorks, groupTimelineWorks, eraForYear, personDates, personYearSource, workHref, withPrintedPages, withSupplementalPeople, withSupplementalYears }, { parseRoute }] = await Promise.all([
   compileModule("app/components/timeline/timelineModel.ts"),
   compileModule("app/lib/app/routing.ts"),
 ]);
@@ -156,19 +157,73 @@ for (const person of data.people) {
   if (person.bornRange || person.diedRange) assert(dateTriples.length, `人物年代无来源 ${person.name}`);
 }
 
+const displayedPeople = withSupplementalPeople(data, peopleSupplements);
+const displayedPeopleById = new Map(displayedPeople.people.map(person => [person.id, person]));
+const supplementalPeopleById = new Map(peopleSupplements.map(person => [person.id, person]));
+const eligiblePeopleRows = peopleSupplements.filter(person =>
+  ["found", "partial"].includes(person.status) && ["high", "medium"].includes(String(person.confidence)) &&
+  typeof person.lifetimeText === "string" && person.lifetimeText.trim(),
+);
+for (const supplement of eligiblePeopleRows) {
+  const person = displayedPeopleById.get(supplement.id);
+  assert(person, `合格人物补充没有匹配教材人物 ${supplement.name}`);
+  assert.equal(person.name, supplement.name, `人物补充名称与教材人物不一致 ${supplement.id}`);
+  assert(supplement.sources.some(source => source.url), `人物补充缺少出处链接 ${supplement.name}`);
+}
+let textbookPeople = 0;
+let supplementedPeople = 0;
+let undatedPeople = 0;
+for (const person of data.people) {
+  const displayed = displayedPeopleById.get(person.id);
+  assert(displayed, `人物补充接入后记录失联 ${person.name}`);
+  const originalTexts = [...new Set((person.lifetimeEvidence ?? []).map(evidence => evidence.text).filter(Boolean))];
+  const hasTextbookDate = originalTexts.length > 0 || person.lifetimeText.some(text => text.trim());
+  const supplement = supplementalPeopleById.get(person.id);
+  if (hasTextbookDate) {
+    textbookPeople += 1;
+    assert.equal(displayed.supplement, undefined, `教材原文人物被补充资料覆盖 ${person.name}`);
+    assert.equal(personYearSource(displayed), "textbook", `教材原文人物来源标记错误 ${person.name}`);
+    assert.equal(personDates(displayed), originalTexts.length ? originalTexts.join("；") : [...new Set(person.lifetimeText.filter(Boolean))].join("；"), `教材生卒原文遭改写 ${person.name}`);
+  } else if (
+    supplement && ["found", "partial"].includes(supplement.status) &&
+    ["high", "medium"].includes(String(supplement.confidence)) &&
+    typeof supplement.lifetimeText === "string" && supplement.lifetimeText.trim()
+  ) {
+    supplementedPeople += 1;
+    assert.equal(displayed.supplement?.id, supplement.id, `合格人物补充未按人物编号接入 ${person.name}`);
+    assert.equal(personYearSource(displayed), "supplement", `人物补充来源标记错误 ${person.name}`);
+    assert.equal(personDates(displayed), supplement.lifetimeText, `人物补充生卒年被改写 ${person.name}`);
+    assert.deepEqual(displayed.lifetimeEvidence, person.lifetimeEvidence, `人物教材原文证据被改动 ${person.name}`);
+  } else {
+    undatedPeople += 1;
+    assert.equal(displayed.supplement, undefined, `低可信度或无年份人物不应展示补充 ${person.name}`);
+    assert.equal(personYearSource(displayed), null, `未通过筛选的人物被标记为有年代 ${person.name}`);
+    assert.equal(personDates(displayed), UNKNOWN, `未通过筛选的人物不应猜测生卒年 ${person.name}`);
+  }
+}
+assert.equal(eligiblePeopleRows.length, 75, "人物补充只统计 found/partial 且 high/medium 并有年代的条目");
+assert.equal(textbookPeople, 31, "教材原文人物年代应保持为 31 位");
+assert.equal(supplementedPeople, eligiblePeopleRows.length, "每条合格人物补充都应按编号进入年表");
+assert.equal(textbookPeople + supplementedPeople + undatedPeople, data.people.length, "教材原文、补充与未标注人物应覆盖每条源记录");
+
 const page = await read("app/components/timeline/TimelinePage.tsx");
 assert(page.includes('loadJson<TimelineData>("timeline.json")'), "年表未按需读取正式数据");
 assert(page.includes("loadYearSupplement()"), "补充年代未通过 yearSupplement.ts 加载");
+assert(page.includes("loadPeopleSupplement()"), "人物生卒年补充未按 peopleSupplement.ts 加载");
 assert(page.includes("withSupplementalYears(timeline, supplements)"), "补充年代未按状态与可信度筛选");
+assert(page.includes("withSupplementalPeople(enriched, peopleSupplements)"), "人物补充未按状态、可信度与教材优先规则接入");
 assert(page.includes("TIMELINE_HORIZONTAL_KEY"), "作品跳转未保存年表横向位置");
 assert(page.includes("TIMELINE_VERTICAL_KEY"), "手机作品跳转未保留纵向位置恢复");
 assert(page.includes("補充资料（非教材）") || page.includes("补充资料（非教材）"), "补充资料缺少非教材标签");
+assert(page.includes("可信度") && page.includes("supplement.sources.map") && page.includes("supplement.note"), "人物补充史料笺缺少可信度、出处链接或说明");
+assert(page.includes("位人物 · 教材原文") && page.includes("作品、人物的教材原文年代") && page.includes("作品、人物的补充年代（非教材）"), "卷首图例或人物来源统计未同步更新");
+assert(page.includes('aria-label={`查看${person.name}的生卒年来源`}') && page.includes('aria-haspopup="dialog"'), "人物条目不能键盘打开史料笺");
 assert(page.includes('className="timeline-slip-tag" type="button"') && page.includes('aria-haspopup="dialog"'), "整张垂签必须可用键盘打开史料笺");
 assert(!page.includes("timeline-note-trigger") && !page.includes("timeline-slip-origin"), "垂签仍显示来源小字或笺按钮");
 assert(page.includes("首作品") && !page.includes("条册别记录"), "年代作品数量文案未使用统一说法");
 assert(page.includes('"--timeline-art-width": "var(--timeline-era-width)"') && page.includes("var(--timeline-slip-start) + ${slipsWidth}px"), "年代插画宽度未覆盖年代段");
 assert(page.includes("DENSE_TIER_COUNT") && page.includes("group.works.length >= 7"), "作品较多年代未压缩到四层垂签");
-assert(!page.includes("证据编号") && !page.includes("可信度"), "年表界面仍显示名词表禁止的技术词");
+assert(!page.includes("证据编号"), "年表界面仍显示名词表禁止的技术词");
 assert(page.includes('const href = workHref(record);'), "史料笺未保留逐条 records 详情链接");
 assert(page.includes("EvidenceFile"), "教材年代来源未保留证据数组结构");
 assert(!/addEventListener\(["']scroll/.test(page), "年表出现 scroll 事件监听");
@@ -178,4 +233,5 @@ assert(css.includes("--timeline-band-height") && css.includes("var(--timeline-ti
 assert(css.includes("object-position: right center") && css.includes(".timeline-slip-tag:focus-visible"), "插画裁切位置或垂签焦点样式缺失");
 assert(css.includes("animation-timeline: view(x)"), "横向渐隐渐出未使用滚动驱动动画");
 assert(css.includes(".timeline-note.is-supplement") && css.includes("--azure"), "补充资料史料笺未使用石青标识");
-console.log(`TIMELINE_AUDIT_PASSED works=${data.works.length} textbookDated=${textbookDated} supplemented=${supplemented} undated=${undated} linked=${linkedWorks} plainText=${plainTextWorks} people=${data.people.length} groups=${groups.length} cards=${groups.reduce((total, group) => total + group.works.length, 0)} printedPages=${withPrintedPage} originalYears=preserved links=parsed`);
+assert(css.includes(".timeline-person.is-supplement small") && css.includes("color: var(--azure)"), "补充人物年代未使用石青标识");
+console.log(`TIMELINE_AUDIT_PASSED works=${data.works.length} textbookDated=${textbookDated} supplemented=${supplemented} undated=${undated} linked=${linkedWorks} plainText=${plainTextWorks} people=${data.people.length} textbookPeople=${textbookPeople} supplementedPeople=${supplementedPeople} undatedPeople=${undatedPeople} groups=${groups.length} cards=${groups.reduce((total, group) => total + group.works.length, 0)} printedPages=${withPrintedPage} originalYears=preserved links=parsed`);

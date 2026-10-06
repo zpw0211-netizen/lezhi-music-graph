@@ -220,14 +220,17 @@
 .timeline-hanger.has-textbook:hover .timeline-hanger-thread, .timeline-hanger.has-textbook:focus-within .timeline-hanger-thread { background: var(--seal); }
 .timeline-hanger.has-supplement:not(.has-textbook):hover .timeline-hanger-thread, .timeline-hanger.has-supplement:not(.has-textbook):focus-within .timeline-hanger-thread { background: var(--azure); }
 
-/* The final panel gathers people named by textbook evidence. */
+/* The final panel gathers dated people and marks textbook/supplement sources. */
 .timeline-tail { position: relative; display: flex; flex: 0 0 var(--timeline-tail-width, 4200px); gap: 30px; align-items: stretch; height: 100%; padding: 66px 76px 60px 96px; }
 .timeline-tail-rule { position: absolute; top: 40px; bottom: 40px; left: 30px; width: 1px; background: linear-gradient(transparent, var(--gold), transparent); opacity: .6; }
 .timeline-tail h2 { flex: 0 0 auto; margin: 0; font-family: var(--timeline-kai); font-size: 50px; font-weight: 400; letter-spacing: .25em; writing-mode: vertical-rl; }
 .timeline-tail-sub { flex: 0 0 auto; margin: 0; color: var(--ink-3); font-family: var(--serif); font-size: 12px; letter-spacing: .24em; writing-mode: vertical-rl; }
 .timeline-people-list { display: grid; flex: 0 0 auto; grid-auto-columns: 58px; grid-auto-flow: column; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 26px 4px; }
-.timeline-person { color: var(--ink); font-family: var(--timeline-kai); font-size: 18px; letter-spacing: .1em; writing-mode: vertical-rl; }
+.timeline-person { appearance: none; border: 0; padding: 0; background: transparent; color: var(--ink); font-family: var(--timeline-kai); font-size: 18px; letter-spacing: .1em; text-align: center; writing-mode: vertical-rl; }
+.timeline-person:hover, .timeline-person[aria-expanded="true"] { color: var(--pine); }
+.timeline-person:focus-visible { outline: 2px solid var(--pine); outline-offset: 3px; }
 .timeline-person small { display: block; margin-top: 10px; color: var(--seal); font-family: var(--serif); font-size: 10px; letter-spacing: .04em; white-space: normal; }
+.timeline-person.is-supplement small { color: var(--azure); }
 .timeline-colophon { align-self: flex-end; display: inline-grid; flex: 0 0 72px; place-items: center; width: 72px; height: 72px; border: 1.5px solid var(--seal); color: var(--seal); font-family: var(--timeline-kai); font-size: 20px; writing-mode: vertical-rl; transform: rotate(3deg); }
 
 /* Paper notes open from an individual slip and carry distinct source colors. */
