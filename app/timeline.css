@@ -331,7 +331,7 @@
   .timeline-opening, .timeline-era-section, .timeline-tail { position: relative; left: auto !important; width: auto !important; }
   .timeline-opening { display: block; height: auto; min-height: 0; padding: 48px 22px 30px; }
   .timeline-opening::after { display: none; }
-  .timeline-title-vertical { justify-content: center; height: 300px; gap: 26px; font-size: 66px; }
+  .timeline-title-vertical { justify-content: center; height: 300px; gap: 26px; font-size: 66px; margin-top: 28px; }
   .timeline-title-vertical span { opacity: 1; filter: none; transform: none; animation: none; }
   .timeline-opening-copy { max-width: none; margin-top: 40px; font-size: 14px; opacity: 1; animation: none; }
   .timeline-legend { gap: 8px 14px; }

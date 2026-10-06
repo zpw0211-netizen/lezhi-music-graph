@@ -85,10 +85,10 @@
 .ink-app.network-mode .explorer-dataset-summary p{margin:0;color:var(--text-secondary);font-size:11px;line-height:1.6}
 
 @media(max-width:760px){
-  .ink-app.network-mode .graph-rangebar{gap:4px;min-width:0;padding:4px 8px}
-  .ink-app.network-mode .graph-rangebar .book-tabs{flex:1 1 0;width:0;min-width:0;padding:5px 8px 7px}
+  .ink-app.network-mode .graph-rangebar{display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0;padding:4px 8px 6px;min-height:auto}
+  .ink-app.network-mode .graph-rangebar .book-tabs{flex:0 0 auto;width:100%;min-width:0;padding:5px 4px 6px}
   .ink-app.network-mode .graph-rangebar .book-tab{padding:5px 8px}
-  .ink-app.network-mode .graph-rangebar .graph-toolbar-tools{gap:2px}
+  .ink-app.network-mode .graph-rangebar .graph-toolbar-tools{display:flex;width:100%;justify-content:flex-end;align-items:center;gap:4px;padding:2px 0 0}
   .ink-app.network-mode .graph-rangebar .graph-toolbar-tools button{min-width:30px;width:30px;min-height:30px}
   .ink-app.network-mode .graph-rangebar .zoom-slider{width:54px}
   .ink-app.network-mode .graph-rangebar .zoom-value{display:none}
