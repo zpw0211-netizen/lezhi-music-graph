@@ -32,6 +32,7 @@ import {
 } from "./build-people-supplement.mjs";
 import { BOOK_BY_KEY, BOOK_REGISTRY, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 import { TEXTBOOK_MODES, validateTextbookSource } from "./lib/textbook-source-check.mjs";
+import { detectScoreBlocks, snapScoreBox } from "./lib/score-snap.mjs";
 
 const scriptPath = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(scriptPath), "..");
@@ -225,6 +226,92 @@ function textbookSourceFixture(overrides = {}) {
     ...overrides,
   };
 }
+
+function makeRgba(width, height, color = [255, 255, 255, 255]) {
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  for (let pixel = 0; pixel < width * height; pixel += 1) rgba.set(color, pixel * 4);
+  return rgba;
+}
+
+function paintRect(rgba, width, x0, y0, x1, y1, color = [20, 20, 20, 255]) {
+  for (let y = y0; y < y1; y += 1) {
+    for (let x = x0; x < x1; x += 1) rgba.set(color, (y * width + x) * 4);
+  }
+}
+
+function addSyntheticScorePage() {
+  const width = 420;
+  const height = 300;
+  const rgba = makeRgba(width, height);
+  // A compact score heading above the notation.
+  paintRect(rgba, width, 58, 61, 59, 69);
+  paintRect(rgba, width, 65, 66, 83, 67);
+  paintRect(rgba, width, 87, 61, 88, 69);
+  // Notes, bar lines and beams across one numbered-notation line.
+  for (const x of [54, 112, 170, 228, 286, 344, 390]) paintRect(rgba, width, x, 91, x + 2, 111);
+  for (const x of [68, 82, 96, 128, 144, 188, 204, 246, 262, 304, 320, 362, 376]) {
+    paintRect(rgba, width, x, 96, x + 3, 104);
+    paintRect(rgba, width, x - 2, 102, x + 6, 104);
+  }
+  // A lyrics line immediately below the score.
+  for (const x of [66, 93, 122, 153, 185, 218, 249, 284, 318, 352]) {
+    paintRect(rgba, width, x, 120, x + 2, 131);
+    paintRect(rgba, width, x - 3, 124, x + 5, 126);
+  }
+  // Saturated illustration area must not be interpreted as black score rows.
+  paintRect(rgba, width, 35, 185, 390, 275, [220, 135, 40, 255]);
+  return { rgba, width, height };
+}
+
+t("谱例吸附：从简谱像素识别谱头、谱行和歌词，跳过彩色插图", () => {
+  const { rgba, width, height } = addSyntheticScorePage();
+  const result = detectScoreBlocks(rgba, width, height);
+  assert.equal(result.blocks.length, 1);
+  const [x0, y0, x1, y1] = result.blocks[0].box;
+  assert.ok(x0 < 0.15 && x1 > 0.85, "谱行应覆盖大部分版心");
+  assert.ok(y0 < 0.24 && y1 > 0.39, `谱头、谱行和歌词应合并为一个块：${JSON.stringify(result.blocks)}`);
+  assert.ok(y1 < 0.55, "彩色插图不应进入谱面块");
+});
+
+t("谱例吸附：合并粗框内多个谱面块并保留边距", () => {
+  const blocks = [
+    { box: [0.24, 0.31, 0.54, 0.42], confidence: 0.9 },
+    { box: [0.25, 0.51, 0.55, 0.62], confidence: 0.9 },
+  ];
+  const result = snapScoreBox([0.2, 0.28, 0.6, 0.67], blocks);
+  assert.equal(result.status, "auto");
+  assert.equal(result.selectedBlocks.length, 2);
+  assert.ok(result.box[0] < 0.24 && result.box[1] < 0.31);
+  assert.ok(result.box[2] > 0.55 && result.box[3] > 0.62);
+});
+
+t("谱例吸附：框外邻近谱块、无交叠和超阈值变化都转人工", () => {
+  const block = { box: [0.2, 0.42, 0.8, 0.53], confidence: 0.9 };
+  const adjacent = { box: [0.21, 0.61, 0.79, 0.72], confidence: 0.9 };
+  assert.equal(snapScoreBox([0.1, 0.2, 0.9, 0.6], [block, adjacent]).reason, "nearby-score-block-outside-box");
+  assert.equal(snapScoreBox([0.1, 0.1, 0.9, 0.3], [block]).reason, "no-overlapping-score-block");
+  assert.equal(snapScoreBox([0.2, 0.2, 0.8, 0.8], [block], { maxAreaRatio: 0.2 }).reason, "size-change-over-threshold");
+  assert.equal(
+    snapScoreBox([0.1, 0.2, 0.9, 0.7], [{ box: [0.15, 0.32, 0.85, 0.62], confidence: 0.9 }]).reason,
+    "size-change-over-threshold",
+  );
+  assert.equal(
+    snapScoreBox([0.1, 0.1, 0.9, 0.8], [{ box: [0.06, 0.38, 0.94, 0.66], confidence: 0.9 }]).reason,
+    "size-change-over-threshold",
+  );
+});
+
+t("谱例吸附：稀疏分散的单行片段和明显偏移都转人工", () => {
+  const fragments = [0.2, 0.36, 0.52].map((top) => ({
+    box: [0.2, top, 0.8, top + 0.02],
+    lineCount: 1,
+    confidence: 0.9,
+  }));
+  assert.equal(snapScoreBox([0.1, 0.15, 0.9, 0.7], fragments).reason, "sparse-score-block-fragments");
+
+  const offsetBlock = { box: [0.2, 0.32, 0.8, 0.5], confidence: 0.9 };
+  assert.equal(snapScoreBox([0.2, 0.1, 0.8, 0.4], [offsetBlock]).reason, "center-shift-over-threshold");
+});
 
 // --- textbook registry and source checks ------------------------------------
 
