@@ -4,7 +4,17 @@ import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { publicAssetUrl } from "../../lib/app/assets";
-import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOKS, PUBLISHED_GRADE_RANGE_LABEL } from "../../lib/app/books";
+import {
+  PUBLISHED_BOOK_COUNT_LABEL,
+  PUBLISHED_BOOKS,
+  PUBLISHED_BOOK_SHORT_NAMES,
+  PUBLISHED_GRADE_RANGE_LABEL,
+  availableBookStages,
+  bookStageForKey,
+  booksForStage,
+  volumeNumeral,
+  type BookStage,
+} from "../../lib/app/books";
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { AppTopNav } from "../AppTopNav";
@@ -61,11 +71,12 @@ function getHomeLastReadSnapshot() {
 }
 const getHomeLastReadServerSnapshot = () => null;
 export function HomePortal<E extends PortalEntity, B extends PortalBook, R extends PortalSearchBook = B>({
-  books, query, onQuery, results, onPickResult, onSearch, onOpenBook, onOpenFullGraph, onView, onResearchInfo,
+  books, bookStage, onStageChange, query, onQuery, results, onPickResult, onSearch, onOpenBook, onOpenFullGraph, onView, onResearchInfo,
 }: {
-  books: B[]; graph: PortalGraph | null; query: string; onQuery: (value: string) => void;
+  books: B[]; bookStage: BookStage; graph: PortalGraph | null; query: string; onQuery: (value: string) => void;
   results: Array<PortalSearchResult<E, R>>; onPickResult: (entity: E, book: R) => void;
-  onSearch: (event: FormEvent) => void; onOpenBook: (book: B) => void; onOpenFullGraph: () => void;
+  onSearch: (event: FormEvent) => void; onOpenBook: (bookKey: string) => void; onOpenFullGraph: () => void;
+  onStageChange: (stage: BookStage) => void;
   onView: (view: PortalView) => void; onPickEntityName: (name: string) => void; onResearchInfo: () => void;
 }) {
   const searchInput = useRef<HTMLInputElement>(null);
@@ -74,9 +85,14 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   const [openBookKey, setOpenBookKey] = useState<string | null>(null);
   const storedLastReadBookKey = useSyncExternalStore(subscribeToHomeLastRead, getHomeLastReadSnapshot, getHomeLastReadServerSnapshot);
   const [activeNote, setActiveNote] = useState<string | null>(null);
-  const orderedBooks = useMemo(() => [...books].sort((a, b) => a.grade - b.grade || a.semester.localeCompare(b.semester, "zh-CN")), [books]);
+  const orderedBooks = useMemo(() => [...books].sort((a, b) => a.grade - b.grade || (a.semester === b.semester ? 0 : a.semester === "上册" ? -1 : 1)), [books]);
+  const stageBooks = useMemo(() => booksForStage(orderedBooks, bookStage), [bookStage, orderedBooks]);
   const lastReadBookKey = orderedBooks.some(book => book.key === storedLastReadBookKey) ? storedLastReadBookKey : null;
-  const activeBookKey = openBookKey ?? lastReadBookKey ?? orderedBooks[0]?.key ?? "";
+  const activeBookKey = stageBooks.some(book => book.key === openBookKey)
+    ? openBookKey ?? ""
+    : stageBooks.some(book => book.key === lastReadBookKey)
+      ? lastReadBookKey ?? ""
+      : stageBooks[0]?.key ?? "";
   const unitsByBook = useMemo(() => {
     const grouped = new Map<string, PortalUnit[]>();
     for (const unit of units) grouped.set(unit.bookKey, [...(grouped.get(unit.bookKey) ?? []), unit]);
@@ -87,6 +103,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   const focusSearch = () => { searchInput.current?.focus(); searchInput.current?.scrollIntoView({ block: "center", behavior: "smooth" }); };
   const rememberBook = (key: string) => {
     setOpenBookKey(key);
+    const stage = bookStageForKey(key);
+    if (stage) onStageChange(stage);
     try {
       window.localStorage.setItem(HOME_LAST_READ_BOOK_KEY, key);
       window.dispatchEvent(new Event(HOME_LAST_READ_CHANGE_EVENT));
@@ -94,12 +112,21 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   };
   const openBook = (book: B) => {
     rememberBook(book.key);
-    onOpenBook(book);
+    onOpenBook(book.key);
   };
   const openUnit = (book: B, unit: PortalUnit) => {
     try { window.sessionStorage.setItem(RECORDS_FOCUS_UNIT_KEY, `${book.key}:${unit.id}`); } catch { /* Navigation still works without session storage. */ }
     rememberBook(book.key);
-    onOpenBook(book);
+    onOpenBook(book.key);
+  };
+  const selectStage = (stage: BookStage) => {
+    const firstBook = booksForStage(orderedBooks, stage)[0];
+    if (!firstBook) return;
+    setOpenBookKey(firstBook.key);
+    onStageChange(stage);
+  };
+  const selectShelfBook = (bookKey: string) => {
+    if (stageBooks.some((book) => book.key === bookKey)) setOpenBookKey(bookKey);
   };
   useEffect(() => {
     let active = true;
@@ -152,16 +179,30 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           </div>
         </div>
       </section>
-      <section className="home-scrolls" id="home-scrolls" aria-label={`${PUBLISHED_BOOK_COUNT_LABEL}教材画卷`}>
+      <section className="home-scrolls" id="home-scrolls" aria-label={`${bookStage}教材画卷`}>
+        {availableBookStages(orderedBooks).length > 1 && <div className="home-scroll-controls">
+          <div className="home-stage-tabs" role="group" aria-label="选择学段">
+            {availableBookStages(orderedBooks).map((stage) => <button key={stage} type="button" aria-pressed={bookStage === stage} onClick={() => selectStage(stage)}>{stage}</button>)}
+          </div>
+          <div className="home-stage-mobile">
+            <label><span>学段</span><select aria-label="选择学段" value={bookStage} onChange={(event) => selectStage(event.currentTarget.value as BookStage)}>
+              {availableBookStages(orderedBooks).map((stage) => <option key={stage} value={stage}>{stage}</option>)}
+            </select></label>
+            <label><span>册别</span><select aria-label="选择册别" value={activeBookKey} onChange={(event) => selectShelfBook(event.currentTarget.value)}>
+              {stageBooks.map((book) => <option key={book.key} value={book.key}>{PUBLISHED_BOOK_SHORT_NAMES[book.key] ?? `${book.grade}${book.semester.replace(/册$/, "")}`}</option>)}
+            </select></label>
+          </div>
+        </div>}
         <div className="home-book-scrolls">
-          {orderedBooks.map((book, index) => {
-            const art = BOOK_ART[book.key]; const bookUnits = unitsByBook.get(book.key) ?? []; const isOpen = activeBookKey === book.key;
+          {stageBooks.map((book, index) => {
+            const art = BOOK_ART[book.key] ?? { file: `art/${book.key}.webp`, alt: `${book.title.replace(/^人音版/, "")}封面插画` };
+            const bookUnits = unitsByBook.get(book.key) ?? []; const isOpen = activeBookKey === book.key;
             const workCount = bookUnits.reduce((sum, unit) => sum + (unit.works?.length ?? 0), 0);
             const shortTitle = book.title.replace(/^人音版/, "");
-            const volume = ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二", "十三", "十四", "十五"][index] ?? String(index + 1);
+            const volume = volumeNumeral(book.key, orderedBooks);
             return <article key={book.key} className={"home-book-scroll " + (isOpen ? "is-open" : "")} onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}>
                 <div className="home-scroll-art" aria-hidden="true">
-                  {art && <Image src={publicAssetUrl(art.file)} alt="" width={1200} height={750} priority={index === 0} loading={index === 0 ? "eager" : "lazy"} decoding="async" unoptimized />}
+                  <Image src={publicAssetUrl(art.file)} alt="" width={1200} height={750} priority={index === 0} loading={index === 0 ? "eager" : "lazy"} decoding="async" unoptimized />
                 </div>
               <span className="home-scroll-rod home-scroll-rod-top" aria-hidden="true" />
               <span className="home-scroll-rod home-scroll-rod-bottom" aria-hidden="true" />

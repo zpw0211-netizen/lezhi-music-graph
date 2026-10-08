@@ -111,3 +111,22 @@ A single young sprout growing out of a musical staff drawn as five carved lines,
 ```text
 The same sprout-and-staff motif as the hero, centered, with wide empty paper margins for the title overlay. Use Image 1 as a visual reference for the sprout, curved five-line musical staff, woodblock print texture, and limited palette; create a related centered composition with generous blank warm paper around it. Chinese woodblock print and screen-print style, hand-carved lines, visible paper grain and slight ink misregistration, limited palette of 4 spot colors only: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C, amber #E9A83A, printed on warm off-white paper #F7F3EA. Flat shapes, no gradients, no glow, no neon, no 3D render, no photorealism, no text, no letters, no watermark, no logo. Calm, editorial composition with generous empty space for layout. Wide 1200×630 landscape composition, centered motif and wide paper margins. Negative prompt: glowing nodes, network lines, sci-fi, holographic, neon, bokeh, lens flare, 3D, CGI, glossy, gradient mesh, generic ink-wash mountains, clip art, emoji, cartoon mascot, text, watermark.
 ```
+
+## T049 / T053 小学封面 `g1s1.webp`–`g6s1.webp`
+
+- 生成日期：2026-10-06
+- 工具：OpenAI Codex 内置图像生成工具（`image_gen`）；底层模型名称未披露
+- 使用条款：[OpenAI Terms of Use](https://openai.com/policies/terms-of-use/)
+- 导出：1200×750 WebP，Sharp quality 78；各册提示词、主题和原始扫描页记录见 `E:\Projects\yapu-collab\codex3\outbox\books15\SOURCES.md`
+
+| 文件 | 目录扫描页 | 插画主题 |
+|---|---|---|
+| `g1s1.webp` | `g1s1/read/p08.jpg` | 安静校园中的长椅、书包、小狗和鸟 |
+| `g1s2.webp` | `g1s2/read/p06.jpg` | 雨后草地、花枝、小溪与远处布谷鸟 |
+| `g2s1.webp` | `g2s1/read/p06.jpg` | 校园里背对镜头唱歌的孩子 |
+| `g2s2.webp` | `g2s2/read/p06.jpg` | 校园花园中向上生长的树苗 |
+| `g3s1.webp` | `g3s1/read/p06.jpg` | 山坡路上放风筝的两个孩子与远处社区 |
+| `g3s2.webp` | `g3s2/read/p06.jpg` | 窗边画纸上的风筝、青山、河流与太阳 |
+| `g4s1.webp` | `g4s1/read/p06.jpg` | 日出时的公共广场、树影与素色红旗 |
+| `g5s1.webp` | `g5s1/read/p06.jpg` | 一条连贯河流串联晨光、暮色与归舟 |
+| `g6s1.webp` | `g6s1/read/p04.jpg` | 茉莉花枝、江南水巷、石桥与民居 |

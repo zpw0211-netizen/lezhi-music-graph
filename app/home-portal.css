@@ -289,6 +289,12 @@ body::before {
 .home-portal .home-hot button:hover { color: var(--seal); }
 
 .home-portal .home-scrolls { padding: 0 clamp(22px, 2.8vw, 48px); }
+.home-portal .home-scroll-controls { display: flex; justify-content: center; margin: 8px 0 14px; }
+.home-portal .home-stage-tabs { display: inline-flex; align-items: center; gap: 3px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper-2); }
+.home-portal .home-stage-tabs button { min-width: 72px; min-height: 34px; padding: 5px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); font: 14px/1.4 var(--ui); cursor: pointer; }
+.home-portal .home-stage-tabs button[aria-pressed="true"] { background: var(--pine); color: var(--sheet); }
+.home-portal .home-stage-tabs button:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+.home-portal .home-stage-mobile { display: none; }
 .home-portal .home-book-scrolls { display: flex; gap: 6px; height: min(60svh, 560px); min-height: 400px; }
 .home-portal .home-book-scroll {
   position: relative;
@@ -688,6 +694,11 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
   .home-portal .home-hot { gap: 4px 8px; margin-top: 6px; font-size: 11px; }
   .home-portal .home-hot button { font-size: 11px; }
   .home-portal .home-scrolls { margin-top: 10px; padding: 0 12px; }
+  .home-portal .home-scroll-controls { margin: 0 0 10px; padding: 0 12px; }
+  .home-portal .home-stage-tabs { display: none; }
+  .home-portal .home-stage-mobile { display: grid; grid-template-columns: minmax(0, .72fr) minmax(0, 1fr); gap: 8px; width: 100%; }
+  .home-portal .home-stage-mobile label { display: grid; min-width: 0; gap: 3px; color: var(--ink-3); font: 11px/1.3 var(--ui); }
+  .home-portal .home-stage-mobile select { width: 100%; min-height: 36px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 2px; background: var(--sheet); color: var(--ink); font: 14px/1.4 var(--ui); }
   .home-portal .home-book-scrolls { display: grid; height: auto; min-height: calc(max(340px, min(385px, 54svh)) + 370px); gap: 6px; }
   .home-portal .home-book-scroll { height: 68px; min-height: 68px; transition: none; }
   .home-portal .home-book-scroll.is-open { height: min(385px, 54svh); min-height: 340px; }
