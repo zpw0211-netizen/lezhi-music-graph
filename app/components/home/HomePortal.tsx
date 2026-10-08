@@ -1,7 +1,8 @@
 "use client";
-import { useMemo, useRef, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { AppTopNav } from "../AppTopNav";
+import { AccountPanel, type AccountView } from "../account/AccountPanel";
 
 type PortalEntity = { id: string; name: string; type: string; category?: string; textbookCount?: number; degree?: number };
 type PortalRelationship = { subject: string; objectId?: string | null; predicate: string; label?: string };
@@ -37,6 +38,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   onResearchInfo: () => void;
 }) {
   const searchInput = useRef<HTMLInputElement>(null);
+  const accountEntry = useRef<HTMLDivElement>(null);
+  const [accountView, setAccountView] = useState<AccountView | null>("register");
   const stats = useMemo(() => {
     const entities = graph?.entities ?? [];
     return {
@@ -58,6 +61,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
 
   return <div className="home-portal">
     <AppTopNav active="home" onAbout={onResearchInfo}
+      onAccount={view => { setAccountView(view); accountEntry.current?.scrollIntoView({ block: "start", behavior: "smooth" }); }}
       onNavigate={view => { if (view === "graph") onOpenFullGraph(); else if (view !== "home") onView(view); }}
       trailing={<>
         <button type="button" className="home-nav-icon" onClick={focusSearch} aria-label="搜索"><WorkbenchIcon name="search" /></button>
@@ -84,7 +88,9 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           </form>
           <div className="home-hot"><span>热门搜索：</span>{HOT_SEARCHES.map(term => <button key={term} type="button" onClick={() => onQuery(term)}>{term}</button>)}</div>
         </div>
-        <HeroGraph hero={hero} onPick={onPickEntityName} />
+        <div ref={accountEntry} style={{ scrollMarginTop: 90 }}>
+          {accountView ? <AccountPanel key={accountView} initialView={accountView} onBrowse={() => onView("records")} /> : <HeroGraph hero={hero} onPick={onPickEntityName} />}
+        </div>
       </div>
     </section>
 

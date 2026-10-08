@@ -13,6 +13,7 @@ import "./work-graph.css";
 import "./lesson.css";
 import "./ink-theme.css";
 import "./mobile-layout.css";
+import "./account.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

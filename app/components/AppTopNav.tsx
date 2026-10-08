@@ -1,6 +1,8 @@
 "use client";
-import type { FormEvent, ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { WorkbenchIcon } from "./WorkbenchIcon";
+import { AccountDialog } from "./account/AccountDialog";
+import type { AccountView } from "./account/AccountPanel";
 
 export type NavView = "home" | "records" | "graph" | "assistant" | "research";
 const LINKS: Array<[NavView, string]> = [["home", "首页"], ["records", "按课学习"], ["graph", "知识图谱"], ["assistant", "智能问答"], ["research", "研究分析"]];
@@ -8,15 +10,17 @@ const LINKS: Array<[NavView, string]> = [["home", "首页"], ["records", "按课
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
 
 /** The site-wide top navigation shared by the home page and every app page. */
-export function AppTopNav({ active, onNavigate, onAbout, search, trailing }: {
+export function AppTopNav({ active, onNavigate, onAbout, search, trailing, onAccount }: {
   active: NavView | null;
   onNavigate: (view: NavView) => void;
   onAbout: () => void;
   /** An inline search box; the home page passes none and keeps its hero search instead. */
   search?: { query: string; onQuery: (value: string) => void; onSubmit: (event: FormEvent) => void; hits: SearchHit[] };
   trailing?: ReactNode;
+  onAccount?: (view: AccountView) => void;
 }) {
-  return <nav className="home-nav" aria-label="主导航">
+  const [accountView, setAccountView] = useState<AccountView | null>(null);
+  return <><nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
       <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label="返回首页">
         <WorkbenchIcon name="sprout" /><b>芽谱</b><small>中小学音乐教育知识图谱平台</small>
@@ -34,7 +38,8 @@ export function AppTopNav({ active, onNavigate, onAbout, search, trailing }: {
           </div>}
         </form>}
         {trailing}
+        <button type="button" className="account-nav-button" onClick={() => onAccount ? onAccount("login") : setAccountView("login")}>登录／注册</button>
       </div>
     </div>
-  </nav>;
+  </nav>{accountView && <AccountDialog view={accountView} onClose={() => setAccountView(null)} onBrowse={() => onNavigate("records")} />}</>;
 }
