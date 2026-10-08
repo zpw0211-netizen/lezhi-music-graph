@@ -9,7 +9,8 @@ import { relationVisualKind, schemaCategoryFor, schemaCategoryMeta, type SchemaC
 import { graphRuntimeFor } from "../../graph-runtime";
 import { relationshipMatchesPerspective } from "../../lib/graph/graph-algorithms";
 import { PUBLIC_BASE_PATH, publicAssetUrl } from "../../lib/app/assets";
-import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOKS, graphPositionFor } from "../../lib/app/books";
+import { StageBookPicker } from "../StageBookPicker";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOKS, availableBookStages, graphPositionFor, type BookStage } from "../../lib/app/books";
 import {
   EMPTY_ENTITIES,
   fmt,
@@ -183,7 +184,11 @@ export function ExplorerSidebar({ explorer, onView }: { explorer: GraphExplorerS
   );
 }
 
-export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
+export function GraphExplorer({ explorer, stage, onStageChange }: {
+  explorer: GraphExplorerState;
+  stage: BookStage;
+  onStageChange: (stage: BookStage) => void;
+}) {
   const {
     books, currentBook, canonicalBook, inspectionBook, inspectionRuntime, selected, selectedId, graphMode,
     fullGraphLayout, fullGraphView, fullGraphRenderer, graphPerspective, showTextbookSources, showLabels,
@@ -203,6 +208,7 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
   const explorerRef = useRef(explorer);
   const mobileFilterTriggerRef = useRef<HTMLButtonElement>(null);
   const canvasStageRef = useRef<HTMLDivElement>(null);
+  const hasMultipleStages = availableBookStages(books).length > 1;
   useEffect(() => {
     explorerRef.current = explorer;
   });
@@ -1020,40 +1026,41 @@ export function GraphExplorer({ explorer }: { explorer: GraphExplorerState }) {
       }
     } else explorer.selectEntity(selected, currentBook, true);
   };
-  const bookTabsContent = (
-    <>
-      <SlidingIndicator activeKey={graphMode === "all" ? "all" : explorer.bookKey ?? "all"} />
-      <button className={`book-tab ${graphMode === "all" ? "active" : ""}`} onClick={explorer.chooseFullGraph}>
-        {PUBLISHED_BOOK_COUNT_LABEL}总览
+  const bookTabsContent = hasMultipleStages ? <StageBookPicker
+    allOption={{ key: "__all__", label: `${PUBLISHED_BOOK_COUNT_LABEL}总览` }}
+    ariaLabel="选择图谱教材册别"
+    className="stage-book-picker--graph"
+    books={books}
+    onSelectBook={(bookKey) => {
+      if (bookKey === "__all__") explorer.chooseFullGraph();
+      else {
+        const selectedBook = books.find((book) => book.key === bookKey);
+        if (selectedBook) explorer.chooseBook(selectedBook);
+      }
+    }}
+    onStageChange={onStageChange}
+    selectedBookKey={graphMode === "all" ? "__all__" : explorer.bookKey ?? ""}
+    stage={stage}
+  /> : <>
+    <SlidingIndicator activeKey={graphMode === "all" ? "all" : explorer.bookKey ?? "all"} />
+    <button className={`book-tab ${graphMode === "all" ? "active" : ""}`} onClick={explorer.chooseFullGraph}>
+      {PUBLISHED_BOOK_COUNT_LABEL}总览
+    </button>
+    {books.map((book) => (
+      <button
+        key={book.key}
+        className={`book-tab ${graphMode !== "all" && book.key === explorer.bookKey ? "active" : ""}`}
+        onClick={() => explorer.chooseBook(book)}
+      >
+        {book.grade}年级{book.semester}
       </button>
-      {books.map((book) => (
-        <button
-          key={book.key}
-          className={`book-tab ${graphMode !== "all" && book.key === explorer.bookKey ? "active" : ""}`}
-          onClick={() => explorer.chooseBook(book)}
-        >
-          {book.grade}年级{book.semester}
-        </button>
-      ))}
-    </>
-  );
+    ))}
+  </>;
 
   if (graphMode !== "all" && explorer.bookDataStatus !== "ready") {
     return (
       <>
-        <div className="book-tabs motion-tabs">
-          <SlidingIndicator activeKey={explorer.bookKey ?? "all"} />
-          <button className="book-tab" onClick={explorer.chooseFullGraph}>{PUBLISHED_BOOK_COUNT_LABEL}总览</button>
-          {books.map((book) => (
-            <button
-              key={book.key}
-              className={`book-tab ${book.key === explorer.bookKey ? "active" : ""}`}
-              onClick={() => explorer.chooseBook(book)}
-            >
-              {book.grade}年级{book.semester}
-            </button>
-          ))}
-        </div>
+        <div className="book-tabs motion-tabs">{bookTabsContent}</div>
         <div className="app-view-status" role="status" aria-live="polite">
           {explorer.bookDataStatus === "error" ? (
             <>

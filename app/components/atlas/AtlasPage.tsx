@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import type { CSSProperties } from "react";
 import { publicAssetUrl } from "../../lib/app/assets";
-import { PUBLISHED_BOOK_SHORT_NAMES } from "../../lib/app/books";
+import { StageBookPicker } from "../StageBookPicker";
+import { PUBLISHED_BOOK_SHORT_NAMES, availableBookStages, booksForStage, type BookStage } from "../../lib/app/books";
+import type { BookDirectory } from "../../lib/app/types";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 import {
   AtlasScene,
@@ -131,11 +133,17 @@ function shortUnit(unit: string | null) {
   return unit?.replace(/^第[一二三四五六七八九十]+单元\s*/, "") || "教材拓展";
 }
 
-export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void }) {
+export function AtlasPage({ books, stage, onStageChange, onOpenWork }: {
+  books: BookDirectory[];
+  stage: BookStage;
+  onStageChange: (stage: BookStage) => void;
+  onOpenWork: (title: string) => void;
+}) {
   const [assets, setAssets] = useState<AtlasAssets | null>(null);
   const [loadError, setLoadError] = useState("");
   const [mode, setMode] = useState<AtlasMode>("world");
   const [filter, setFilter] = useState("全部");
+  const [selectedBookKey, setSelectedBookKey] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [exaggeration, setExaggeration] = useState(14);
   const [contours, setContours] = useState(false);
@@ -179,7 +187,13 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
     };
   }, []);
 
-  const regions = useMemo(() => (assets ? pointRegions(assets) : []), [assets]);
+  const stageBooks = useMemo(() => booksForStage(books, stage), [books, stage]);
+  const stageBookKeys = useMemo(() => new Set(stageBooks.map((book) => book.key)), [stageBooks]);
+  const regions = useMemo(() => (assets ? pointRegions(assets).map((region) => ({
+    ...region,
+    works: region.works.filter((work) => stageBookKeys.has(work.bookKey)
+      && (!selectedBookKey || work.bookKey === selectedBookKey)),
+  })) : []), [assets, selectedBookKey, stageBookKeys]);
   const modeRegions = useMemo(
     () => regions.filter((region) => region.mode === mode),
     [mode, regions],
@@ -315,6 +329,15 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
     sceneRef.current?.frameRegions(remaining);
   };
 
+  const changeBookScope = (bookKey: string) => {
+    setSelectedBookKey(bookKey);
+    setFilter("全部");
+    setSelectedId(null);
+    setHoverCard(null);
+    keyboardRegionIdRef.current = null;
+    setKeyboardHint("");
+  };
+
   const openWork = (work: AtlasWork) => {
     onOpenWork(work.name.replace(/[《》]/g, ""));
   };
@@ -369,6 +392,16 @@ export function AtlasPage({ onOpenWork }: { onOpenWork: (title: string) => void 
         <p className="atlas-lede">
           教材里的歌来自四面八方。转动地球，点一根光柱；再切到中国地势，在真实的高程起伏上看看作品标点落在哪里。
         </p>
+        {availableBookStages(books).length > 1 && <StageBookPicker
+          allOption={{ key: "", label: "本学段全部" }}
+          ariaLabel="按教材册别筛选"
+          className="stage-book-picker--page"
+          books={books}
+          onSelectBook={changeBookScope}
+          onStageChange={onStageChange}
+          selectedBookKey={selectedBookKey}
+          stage={stage}
+        />}
         <div className="atlas-segment" role="group" aria-label="地图范围">
           <span
             className={`atlas-segment-ink${mode === "china" ? " is-china" : ""}`}

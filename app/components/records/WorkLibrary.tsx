@@ -9,7 +9,7 @@ import type { CSSProperties, RefObject } from "react";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
 import { MELODIES } from "../../lib/lesson/melodies";
 import { bareWorkName, type Book, type BookDirectory, type Entity, type Triple } from "../../lib/app/types";
-import { BOOK_BY_KEY } from "../../lib/app/books";
+import { BOOK_BY_KEY, volumeNumeral } from "../../lib/app/books";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import type { BookDataStatus } from "../../hooks/useGraphIndex";
@@ -61,6 +61,8 @@ const DIALOG_FOCUSABLE = [
   "[contenteditable=true]",
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
+const EARLY_PRIMARY_ACTIVITY_MODES = ["唱歌", "聆听", "演奏", "音乐游戏", "情境表演", "能力进阶"];
+const LATER_PRIMARY_ACTIVITY_MODES = ["演唱", "欣赏", "知识与技能"];
 
 function unitAnchorId(bookKey: string, unitId: string) {
   return `records-${bookKey}-${unitId}`;
@@ -346,8 +348,7 @@ export function WorkLibrary({
   const selectedEntity = selectedEntry ? entitiesById.get(selectedEntry.work.id) : undefined;
   const workCount = units.reduce((sum, unit) => sum + unit.works.length, 0);
   const unitsStatus: "loading" | "ready" | "error" = unitsError ? "error" : unitRows ? "ready" : "loading";
-  const bookIndex = Math.max(0, books.findIndex((item) => item.key === directory?.key));
-  const bookNumeral = ["一", "二", "三", "四", "五", "六"][bookIndex] ?? String(bookIndex + 1);
+  const bookNumeral = volumeNumeral(directory?.key ?? bookKey, books);
   const activeUnit = units.find((unit) => unit.id === activeUnitId) ?? units[0];
   const activeIndex = Math.max(0, units.findIndex((unit) => unit.id === activeUnit?.id));
 
@@ -581,6 +582,8 @@ export function WorkLibrary({
                 const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
                 const credits = [work.type, authors].filter(Boolean).join(" · ");
                 const modes = isPrimaryBook ? work.modes?.join("、") : "";
+                const activityModeSet = (directory?.grade ?? 3) <= 2 ? EARLY_PRIMARY_ACTIVITY_MODES : LATER_PRIMARY_ACTIVITY_MODES;
+                const activityModes = isPrimaryBook ? (work.modes ?? []).filter((mode) => activityModeSet.includes(mode)) : [];
                 return <article className={`records-score-card${starred ? " is-featured" : ""}`} data-mode={modes || undefined} key={work.id}>
                   <button
                     aria-label={`打开${work.name}作品详情${modes ? `，学习方式：${modes}` : ""}`}
@@ -599,7 +602,9 @@ export function WorkLibrary({
                     <span aria-hidden="true" className="records-score-copy">
                       <strong>{work.name}</strong>
                       {credits && <span className="records-score-authors">{credits}</span>}
-                      {modes && <span className="records-score-authors">{modes}</span>}
+                      {activityModes.length > 0 && <span className="records-primary-work-stamps" aria-label={`学习活动：${activityModes.join("、")}`}>
+                        {activityModes.map((mode) => <span className="records-primary-work-stamp" key={mode}>{mode}</span>)}
+                      </span>}
                     </span>
                   </button>
                   {starred && work.hasMelody && melodies[0] && <span className="records-score-play">
@@ -622,7 +627,7 @@ export function WorkLibrary({
         </div>
       </div>
     </article>;
-  }), [bookKey, directory?.key, isPrimaryBook, onKnowledge, openWork, units, worksById]);
+  }), [bookKey, directory?.grade, directory?.key, isPrimaryBook, onKnowledge, openWork, units, worksById]);
 
   if (!directory) return null;
   const displayTitle = directory.title.replace(/^人音版/, "");

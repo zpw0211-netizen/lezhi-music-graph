@@ -8,6 +8,7 @@ import nextDynamic from "next/dynamic";
 import { designTokenCssVariables } from "./design-tokens";
 import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AppTopNav, type NavView } from "./components/AppTopNav";
+import { StageBookPicker } from "./components/StageBookPicker";
 import type { AssistantPage as AssistantPageComponent } from "./components/assistant/AssistantPage";
 import type { AtlasPage as AtlasPageComponent } from "./components/atlas/AtlasPage";
 import type { LabPage as LabPageComponent } from "./components/lab/LabPage";
@@ -27,7 +28,19 @@ import { useBookData, useGraphIndex } from "./hooks/useGraphIndex";
 import { useKnowledgeSearch, type SearchResult } from "./hooks/useKnowledgeSearch";
 import { useScrollReveal } from "./hooks/useScrollReveal";
 import { publicAssetUrl } from "./lib/app/assets";
-import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOK_KEYS, PUBLISHED_BOOK_SHORT_NAMES } from "./lib/app/books";
+import {
+  BOOK_STAGE_STORAGE_KEY,
+  PUBLISHED_BOOK_COUNT_LABEL,
+  PUBLISHED_BOOKS,
+  PUBLISHED_BOOK_KEYS,
+  PUBLISHED_BOOK_SHORT_NAMES,
+  availableBookStages,
+  bookStageForKey,
+  booksForStage,
+  defaultBookStage,
+  isBookStage,
+  type BookStage,
+} from "./lib/app/books";
 import type { AppView } from "./lib/app/routing";
 import { bareWorkName, isWorkType, type BookDirectory, type Entity } from "./lib/app/types";
 
@@ -39,6 +52,18 @@ const viewLoading = () => (
     正在载入…
   </div>
 );
+
+function initialBookStage(): BookStage {
+  const fallback = defaultBookStage(PUBLISHED_BOOKS);
+  if (typeof window === "undefined") return fallback;
+  try {
+    const stages = availableBookStages(PUBLISHED_BOOKS);
+    const saved = window.localStorage.getItem(BOOK_STAGE_STORAGE_KEY);
+    if (isBookStage(saved) && stages.includes(saved)) return saved;
+    if (saved !== null) window.localStorage.setItem(BOOK_STAGE_STORAGE_KEY, fallback);
+  } catch { /* Storage may be unavailable or disabled. */ }
+  return fallback;
+}
 function RecordsStartup({ failed = false }: { failed?: boolean }) {
   return <>
     <section aria-busy={!failed} aria-labelledby="records-startup-title" className="work-library records-startup">
@@ -185,6 +210,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [assistantEntry, setAssistantEntry] = useState({ question: "", token: 0 });
   const [researchInfoOpen, setResearchInfoOpen] = useState(false);
+  const [bookStage, setBookStage] = useState<BookStage>(initialBookStage);
   const [recordsBook, setRecordsBook] = useState("g7s1");
 
   const openAssistant = (question = "") => {
@@ -199,10 +225,25 @@ export default function Home() {
     () => dataset?.books.filter((book) => PUBLISHED_BOOK_KEYS.includes(book.key)) ?? EMPTY_BOOKS,
     [dataset],
   );
+  const routeBookStage = route.book && books.some((book) => book.key === route.book)
+    ? bookStageForKey(route.book)
+    : null;
+  const activeBookStage = routeBookStage && availableBookStages(books).includes(routeBookStage) ? routeBookStage : bookStage;
+  const stageBooks = useMemo(() => booksForStage(books, activeBookStage), [books, activeBookStage]);
+  const persistBookStage = useCallback((stage: BookStage) => {
+    if (!availableBookStages(PUBLISHED_BOOKS).includes(stage)) return;
+    setBookStage(stage);
+    try { window.localStorage.setItem(BOOK_STAGE_STORAGE_KEY, stage); } catch { /* Storage may be unavailable or disabled. */ }
+  }, []);
+  const setStageForBook = useCallback((bookKey: string) => {
+    const stage = bookStageForKey(bookKey);
+    if (stage && PUBLISHED_BOOKS.some((book) => book.key === bookKey)) persistBookStage(stage);
+  }, [persistBookStage]);
   const requestedRecordsKey = route.book ?? recordsBook;
   const selectedRecordsKey = books.some((book) => book.key === requestedRecordsKey)
+    && bookStageForKey(requestedRecordsKey) === activeBookStage
     ? requestedRecordsKey
-    : books[0]?.key ?? requestedRecordsKey;
+    : stageBooks[0]?.key ?? books[0]?.key ?? requestedRecordsKey;
   const recordsNavBookKey = books.find((book) => book.key === selectedRecordsKey)?.key ?? books[0]?.key ?? selectedRecordsKey;
   const recordsBookData = useBookData(selectedRecordsKey, books, view === "records");
   const explorer = useGraphExplorer(
@@ -293,12 +334,14 @@ export default function Home() {
   };
   const openRecordsBook = (bookKey: string, replace = false) => {
     setRecordsBook(bookKey);
+    setStageForBook(bookKey);
     navigate({ view: "records", book: bookKey }, { replace });
   };
   const openRecordsWork = useCallback((routeTitle: string, bookKey: string) => {
     setRecordsBook(bookKey);
+    setStageForBook(bookKey);
     pushQuietly({ view: "records", book: bookKey, work: routeTitle });
-  }, [pushQuietly]);
+  }, [pushQuietly, setStageForBook]);
   const openRecordsKnowledge = (name: string, type?: string) => {
     const candidates = canonicalGraph?.entities.filter((item) => item.name === name || item.aliases?.includes(name)) ?? [];
     const entity = candidates.find((item) => item.type === type || item.rawTypes?.includes(type ?? "")) ?? candidates[0];
@@ -348,7 +391,18 @@ export default function Home() {
             }
             onNavigate={goTo}
             onAbout={() => setResearchInfoOpen(true)}
-            centerSlot={view === "records" ? <RecordsBookPicker books={books} selectedBookKey={recordsNavBookKey} onSelect={openRecordsBook} /> : undefined}
+            centerSlot={view === "records" ? availableBookStages(books).length > 1
+              ? <StageBookPicker
+                ariaLabel="按学段和教材册别筛选"
+                bookListClassName="records-top-book-picker"
+                books={books}
+                className="stage-book-picker--top"
+                onSelectBook={openRecordsBook}
+                onStageChange={persistBookStage}
+                selectedBookKey={recordsNavBookKey}
+                stage={activeBookStage}
+              />
+              : <RecordsBookPicker books={books} selectedBookKey={recordsNavBookKey} onSelect={openRecordsBook} /> : undefined}
             search={{
               query,
               onQuery: setQuery,
@@ -369,13 +423,15 @@ export default function Home() {
           {view === "home" && (
             <HomePortal
             books={books}
+            bookStage={activeBookStage}
             graph={canonicalGraph}
             query={query}
             onQuery={setQuery}
             results={searchResults}
             onPickResult={pickSearchResult}
             onSearch={submitSearch}
-            onOpenBook={(book) => openRecordsBook(book.key)}
+            onOpenBook={(bookKey) => openRecordsBook(bookKey)}
+            onStageChange={persistBookStage}
             onOpenFullGraph={explorer.chooseFullGraph}
             onView={(value) => (value === "assistant" ? openAssistant() : navigate({ view: value }))}
             onPickEntityName={(name) => {
@@ -385,7 +441,7 @@ export default function Home() {
             onResearchInfo={() => setResearchInfoOpen(true)}
             />
           )}
-          {view === "graph" && canonicalGraph && <GraphExplorer explorer={explorer} />}
+          {view === "graph" && canonicalGraph && <GraphExplorer explorer={explorer} stage={activeBookStage} onStageChange={persistBookStage} />}
           {view === "assistant" && canonicalGraph && (
             <AssistantPage
               key={assistantEntry.token}
@@ -456,9 +512,9 @@ export default function Home() {
             />
           )}
           {view === "import" && <ImportView />}
-          {view === "atlas" && <AtlasPage onOpenWork={(work) => navigate({ view: "lesson", work })} />}
-          {view === "lab" && canonicalGraph && <LabPage graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
-          {view === "timeline" && <TimelinePage onOpenWork={destination => navigate(destination)} />}
+          {view === "atlas" && <AtlasPage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+          {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+          {view === "timeline" && <TimelinePage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={destination => navigate(destination)} />}
         </div>
       </section>
       <ResearchInfo

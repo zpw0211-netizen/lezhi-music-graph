@@ -101,6 +101,49 @@
   background: color-mix(in srgb, var(--records-paper-3) 68%, transparent);
 }
 
+.stage-book-picker { min-width: 0; }
+.stage-book-picker__desktop { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.stage-book-picker__stages { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--line, #CFC4AC); border-radius: 999px; background: var(--paper-2, #EAE2D0); }
+.stage-book-picker__stages button { min-height: 30px; padding: 4px 10px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2, #44504A); font: 13px/1.35 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); white-space: nowrap; cursor: pointer; }
+.stage-book-picker__stages button.is-active { background: var(--pine, #1F4A3C); color: var(--sheet, #FBF8F0); }
+.stage-book-picker__stages button:focus-visible,
+.stage-book-picker__books button:focus-visible { outline: 2px solid var(--seal, #B8392A); outline-offset: 2px; }
+.stage-book-picker__books { display: flex; flex: 1 1 auto; min-width: 0; align-items: center; gap: 2px; }
+.stage-book-picker__books button { flex: 0 0 auto; min-height: 32px; padding: 4px 10px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--ink-2, #44504A); font: 13px/1.35 var(--serif, "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif); white-space: nowrap; cursor: pointer; }
+.stage-book-picker__books button.is-active,
+.stage-book-picker__books button[aria-current="page"] { border-bottom-color: var(--pine, #1F4A3C); color: var(--pine, #1F4A3C); }
+.stage-book-picker__mobile { display: none; }
+.stage-book-picker--top { width: 100%; min-width: 0; }
+.stage-book-picker--top .stage-book-picker__desktop { justify-content: center; gap: 5px; }
+.stage-book-picker--top .stage-book-picker__stages { gap: 0; padding: 3px; }
+.stage-book-picker--top .stage-book-picker__stages button { min-height: 28px; padding: 3px 8px; font-size: 12px; }
+.stage-book-picker--top .records-top-book-picker { flex: 1 1 auto; width: auto; }
+.stage-book-picker--top .records-top-book-picker > button { flex-basis: 38px; width: 38px; min-height: 30px; padding-inline: 0; font-size: 12px; }
+.stage-book-picker--timeline { flex: 0 1 auto; }
+.stage-book-picker--timeline .stage-book-picker__desktop { gap: 10px; }
+.stage-book-picker--timeline .stage-book-picker__books button { padding-inline: 9px; }
+.stage-book-picker--graph { width: 100%; }
+.stage-book-picker--graph .stage-book-picker__desktop { width: 100%; gap: 10px; }
+.stage-book-picker--graph .stage-book-picker__books { overflow-x: auto; scrollbar-width: none; }
+.stage-book-picker--graph .stage-book-picker__books::-webkit-scrollbar { display: none; }
+.stage-book-picker--graph .stage-book-picker__books button { border: 1px solid var(--line, #CFC4AC); border-radius: 999px; padding-inline: 11px; }
+.stage-book-picker--graph .stage-book-picker__books button.is-active,
+.stage-book-picker--graph .stage-book-picker__books button[aria-current="page"] { border-color: var(--pine, #1F4A3C); background: var(--pine, #1F4A3C); color: var(--sheet, #FBF8F0); }
+.stage-book-picker--page { width: 100%; margin: 0 0 14px; }
+.stage-book-picker--page .stage-book-picker__books { flex-wrap: wrap; }
+
+@media (max-width: 760px) {
+  .stage-book-picker__desktop { display: none; }
+  .stage-book-picker__mobile { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; }
+  .stage-book-picker__mobile label { display: grid; min-width: 0; gap: 3px; color: var(--ink-3, #62675B); font: 11px/1.3 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
+  .stage-book-picker__mobile select { width: 100%; min-height: 36px; padding: 5px 8px; border: 1px solid var(--line, #CFC4AC); border-radius: 2px; background: var(--sheet, #FBF8F0); color: var(--ink, #1B2622); font: 14px/1.4 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
+  .stage-book-picker--top .stage-book-picker__mobile { max-width: 540px; margin: 0 auto; }
+  .stage-book-picker--timeline { flex: 1 0 100%; width: 100%; }
+  .stage-book-picker--timeline .stage-book-picker__mobile { margin-bottom: 2px; }
+  .stage-book-picker--graph { margin: 0 0 10px; }
+  .stage-book-picker--page { margin-bottom: 16px; }
+}
+
 @media (min-width: 961px) and (max-width: 1080px) {
   .home-nav:has(.records-top-book-picker) .home-nav-inner {
     flex-wrap: wrap;
@@ -651,6 +694,8 @@
   font-variant-numeric: lining-nums tabular-nums;
 }
 
+.records-primary-work-stamps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.records-primary-work-stamp { display: inline-flex; min-height: 18px; align-items: center; padding: 1px 5px; border: 1px solid color-mix(in srgb, var(--records-seal) 65%, transparent); border-radius: 2px; color: var(--records-seal); font: 10px/1.35 var(--records-ui); letter-spacing: .04em; white-space: nowrap; }
 .records-score-copy { display: grid; min-height: 100px; align-content: start; justify-items: start; gap: 4px; box-sizing: border-box; padding: 14px 0 0; }
 .records-score-copy strong { color: var(--records-ink); font: 600 19px/1.35 var(--records-serif); }
 .records-score-authors { color: var(--records-ink-3); font: 13px/1.5 var(--records-ui); }

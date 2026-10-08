@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
-import { bareWorkName, type CanonicalGraph } from "../../lib/app/types";
-import { PUBLISHED_BOOK_SHORT_NAMES } from "../../lib/app/books";
+import { bareWorkName, type BookDirectory, type CanonicalGraph } from "../../lib/app/types";
+import { StageBookPicker } from "../StageBookPicker";
+import { PUBLISHED_BOOK_SHORT_NAMES, availableBookStages, booksForStage, type BookStage } from "../../lib/app/books";
 import { MELODIES, type Melody } from "../../lib/lesson/melodies";
 import { getPianoAudioContext, loadPianoSampler, playPianoSample, type PianoSampler } from "../../lib/lesson/piano-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
@@ -312,7 +313,13 @@ function revealLabTarget(target: Element | null) {
   });
 }
 
-export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWork: (work: string) => void }) {
+export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
+  graph: CanonicalGraph;
+  books: BookDirectory[];
+  stage: BookStage;
+  onStageChange: (stage: BookStage) => void;
+  onOpenWork: (work: string) => void;
+}) {
   const [tonicPitchClass, setTonicPitchClass] = useState(0);
   const [scale, setScale] = useState<LabScale>("pentatonic");
   const [traceVersion, setTraceVersion] = useState(0);
@@ -325,6 +332,7 @@ export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWo
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [selected, setSelected] = useState<{ name: string; index: number } | null>(null);
+  const [selectedBookKey, setSelectedBookKey] = useState("");
   const [workPlaying, setWorkPlaying] = useState(false);
   const sampler = useRef<PianoSampler | null>(null);
   const output = useRef<DynamicsCompressorNode | null>(null);
@@ -339,7 +347,12 @@ export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWo
   const playerRef = useRef<HTMLElement>(null);
   const revealPlayerAfterRender = useRef(false);
 
-  const works = useMemo(() => findPentatonicWorks(graph).slice(0, 8), [graph]);
+  const stageBooks = useMemo(() => booksForStage(books, stage), [books, stage]);
+  const stageBookKeys = useMemo(() => new Set(stageBooks.map((book) => book.key)), [stageBooks]);
+  const works = useMemo(() => findPentatonicWorks(graph)
+    .filter(({ work }) => (work.bookKeys ?? []).some((key) => stageBookKeys.has(key))
+      && (!selectedBookKey || work.bookKeys?.includes(selectedBookKey)))
+    .slice(0, 8), [graph, selectedBookKey, stageBookKeys]);
   const selectedMelody: Melody | undefined = selected ? MELODIES[selected.name]?.[selected.index] : undefined;
   const tonicMidi = 60 + tonicPitchClass;
   const keyName = CHROMATIC_PITCH_NAMES[tonicPitchClass];
@@ -777,6 +790,16 @@ export function LabPage({ graph, onOpenWork }: { graph: CanonicalGraph; onOpenWo
         <div><p className="lupan-kicker">回到教材</p><h2 id="lupan-works-title">教材里的五声作品</h2></div>
         <p>作品与标注来自教材数据。<br />听旋律时，对应的五声键会亮起。</p>
       </div>
+      {availableBookStages(books).length > 1 && <StageBookPicker
+        allOption={{ key: "", label: "本学段全部" }}
+        ariaLabel="按教材册别筛选"
+        className="stage-book-picker--page"
+        books={books}
+        onSelectBook={setSelectedBookKey}
+        onStageChange={onStageChange}
+        selectedBookKey={selectedBookKey}
+        stage={stage}
+      />}
       <div className="lupan-works-grid">
         {works.map(({ work, evidence }) => {
           const melodies = MELODIES[work.name];

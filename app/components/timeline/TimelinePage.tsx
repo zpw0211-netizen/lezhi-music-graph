@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 import Image from "next/image";
 import { publicAssetUrl } from "../../lib/app/assets";
-import { PUBLISHED_BOOK_COUNT_LABEL } from "../../lib/app/books";
+import { StageBookPicker } from "../StageBookPicker";
+import { PUBLISHED_BOOK_COUNT_LABEL, availableBookStages, booksForStage, type BookStage } from "../../lib/app/books";
+import type { BookDirectory } from "../../lib/app/types";
 import type { AppRoute } from "../../lib/app/routing";
 import { loadPeopleSupplement } from "../../lib/timeline/peopleSupplement";
 import { loadYearSupplement } from "../../lib/timeline/yearSupplement";
@@ -282,7 +284,12 @@ function TimelinePeople({ people, width, selectedId, onSelect }: {
   </section>;
 }
 
-export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => void }) {
+export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
+  books: BookDirectory[];
+  stage: BookStage;
+  onStageChange: (stage: BookStage) => void;
+  onOpenWork: (route: AppRoute) => void;
+}) {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -299,8 +306,14 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   const scroller = useRef<HTMLDivElement>(null);
   const ruler = useRef<HTMLDivElement>(null);
   const drag = useRef<DragState | null>(null);
-  const rootWorks = useMemo(() => pageData?.timeline.works ?? [], [pageData]);
-  const works = useMemo(() => pageData ? filterWorks(pageData.timeline, book, query) : [], [pageData, book, query]);
+  const stageBooks = useMemo(() => booksForStage(books, stage), [books, stage]);
+  const stageBookKeys = useMemo(() => new Set(stageBooks.map((item) => item.key)), [stageBooks]);
+  const stageTimeline = useMemo(() => pageData ? {
+    ...pageData.timeline,
+    works: pageData.timeline.works.filter((work) => stageBookKeys.has(work.bookKey)),
+  } : null, [pageData, stageBookKeys]);
+  const rootWorks = useMemo(() => stageTimeline?.works ?? [], [stageTimeline]);
+  const works = useMemo(() => stageTimeline ? filterWorks(stageTimeline, book, query) : [], [stageTimeline, book, query]);
   const groups = useMemo(() => groupTimelineWorks(works), [works]);
   const visibleWorkIds = useMemo(() => new Set(works.map(work => work.id)), [works]);
   const people = useMemo(() => pageData?.timeline.people.filter(person => person.works.some(id => visibleWorkIds.has(id))) ?? [], [pageData, visibleWorkIds]);
@@ -482,7 +495,14 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   };
   const endDrag = () => { drag.current = null; setDragging(false); };
 
-  const bookOptions = ["", ...BOOK_ORDER];
+  const bookOptions = ["", ...BOOK_ORDER.filter((key) => stageBookKeys.has(key))];
+  const multipleStages = availableBookStages(books).length > 1;
+  const scopeLabel = multipleStages ? `${stage}教材` : `${PUBLISHED_BOOK_COUNT_LABEL}教材`;
+  const changeBook = (key: string) => {
+    setSelectedWork(null);
+    setSelectedPerson(null);
+    setBook(key);
+  };
   const indexItems = [
     { id: "timeline-opening", label: "引首" },
     ...groups.map(group => ({ id: group.id, label: group.undated ? "未标年代" : group.ancient ? "古调" : group.from != null && group.from >= 1930 ? `${group.label}s` : group.label })),
@@ -500,9 +520,18 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
   const decoratedGroups = groups.map((group, index) => ({ group, image: artForEra(group, pageData?.units ?? [], usedArt, index) }));
   return <div className="timeline-page" ref={root} onPointerDown={closeNoteFromOutside} aria-labelledby="timeline-title">
     <div className="timeline-toolbar" aria-label="作品年表筛选">
-      <div className="timeline-book-filter" role="group" aria-label="按教材册别筛选">
-        {bookOptions.map(key => <button key={key || "all"} type="button" aria-pressed={book === key} onClick={() => { setSelectedWork(null); setSelectedPerson(null); setBook(key); }}>{key ? bookShortName(key) : PUBLISHED_BOOK_COUNT_LABEL}</button>)}
-      </div>
+      {multipleStages ? <StageBookPicker
+        allOption={{ key: "", label: "本学段全部" }}
+        ariaLabel="按教材册别筛选"
+        className="stage-book-picker--timeline"
+        books={books}
+        onSelectBook={changeBook}
+        onStageChange={onStageChange}
+        selectedBookKey={book}
+        stage={stage}
+      /> : <div className="timeline-book-filter" role="group" aria-label="按教材册别筛选">
+        {bookOptions.map(key => <button key={key || "all"} type="button" aria-pressed={book === key} onClick={() => changeBook(key)}>{key ? bookShortName(key) : PUBLISHED_BOOK_COUNT_LABEL}</button>)}
+      </div>}
       <label className="timeline-search">查找作品<input type="search" value={query} onChange={event => { setSelectedWork(null); setSelectedPerson(null); setQuery(event.target.value); }} placeholder="输入作品名" aria-label="查找作品" /></label>
       <p className="timeline-count" role="status">{pageData ? `${rootWorks.length} 首作品 · ${datedCount} 首标有年代 · ${supplementCount} 条补充资料` : "正在读取年表资料…"}</p>
     </div>
@@ -521,7 +550,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
             <section className="timeline-opening" id="timeline-opening" aria-labelledby="timeline-title">
               <span className="timeline-seal timeline-opening-seal" aria-hidden="true">芽谱</span>
               <div className="timeline-opening-copy">
-                <p>{PUBLISHED_BOOK_COUNT_LABEL}教材里的作品，依年代展成一卷。<b>从左往右读</b>：每一段配一幅教材插画，作品挂在下方的时间轴上。</p>
+              <p>{scopeLabel}里的作品，依年代展成一卷。<b>从左往右读</b>：每一段配一幅教材插画，作品挂在下方的时间轴上。</p>
                 <div className="timeline-legend"><span><i className="timeline-legend-seal is-red">1935</i>作品、人物的教材原文年代</span><span><i className="timeline-legend-seal is-blue">1950</i>作品、人物的补充年代（非教材）</span></div>
               </div>
               <h1 className="timeline-title-vertical" id="timeline-title"><span>循着年代</span><span>翻阅作品</span></h1>
@@ -553,7 +582,7 @@ export function TimelinePage({ onOpenWork }: { onOpenWork: (route: AppRoute) => 
                 }} />)}</div> : <p className="timeline-empty-era">没有找到相符的作品。</p>}
               </section>;
             })}
-            {pageData && !groups.length && <section className="timeline-empty-era" id="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看{PUBLISHED_BOOK_COUNT_LABEL}教材。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section>}
+            {pageData && !groups.length && <section className="timeline-empty-era" id="timeline-empty"><h2>没有找到相符的作品</h2><p>换一个作品名，或查看{scopeLabel}。</p><button type="button" onClick={() => { setBook(""); setQuery(""); }}>清除筛选</button></section>}
             {pageData && <TimelinePeople people={tailPeople} width={tailWidth} selectedId={selectedPerson?.id ?? null} onSelect={(person, trigger) => {
               const rect = trigger.getBoundingClientRect();
               const width = Math.min(420, window.innerWidth - 24);
