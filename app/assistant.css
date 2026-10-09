@@ -1031,6 +1031,8 @@
   margin-left: var(--nudge, 0px);
   animation: ask-float var(--period, 6s) ease-in-out var(--delay, 0s) infinite alternate;
 }
+/* A lone bubble on the last row sits in the middle column. */
+.assistant-page .ask-bubble-slot:last-child:nth-child(3n + 1) { grid-column: 2; }
 @keyframes ask-float {
   from { transform: translate3d(0, 0, 0) rotate(-.6deg); }
   to { transform: translate3d(calc(var(--drift) * .4), var(--drift), 0) rotate(.6deg); }
@@ -1098,6 +1100,7 @@
   .assistant-page .ask-composer--hero .inscribe-btn { padding: 7px 13px; font-size: 14px; }
   .assistant-page .ask-bubbles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; margin-top: 30px; }
   .assistant-page .ask-bubble-slot { margin-top: 0; margin-left: 0; }
+  .assistant-page .ask-bubble-slot:last-child:nth-child(3n + 1) { grid-column: auto; }
   .assistant-page .ask-bubble-slot:nth-child(even) { margin-top: 18px; }
   .assistant-page .ask-bubble { max-width: none; padding: 9px 12px 10px; }
   .assistant-page .ask-bubble-q { font-size: 14px; }
