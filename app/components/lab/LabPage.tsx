@@ -700,13 +700,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
 
   /** The right-hand explanation card for whatever was last clicked on the dial. */
   const renderInspectCard = () => {
-    if (!inspect) {
-      return <div className="lupan-card lupan-card-idle" key="idle">
-        <p className="lupan-card-kicker">点盘上的音</p>
-        <h2 className="lupan-card-title">看看它是谁</h2>
-        <p className="lupan-card-text">盘上的宫、商、角、徵、羽，外圈的音名，还有盘心，都可以点。</p>
-      </div>;
-    }
+    if (!inspect) return null;
     if (inspect.kind === "hub") {
       return <div className="lupan-card" key={`hub-${tonicPitchClass}`}>
         <p className="lupan-card-kicker">盘心</p>
@@ -755,6 +749,13 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
     </div>;
   };
 
+  useEffect(() => {
+    if (!inspect) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setInspect(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [inspect]);
+
   const finishOrRepeatQuiz = () => {
     if (!question) return;
     if (question.round === 5 && question.chosen === 5) {
@@ -771,7 +772,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       <div className="lupan-current-key" aria-live="polite"><span>当前宫</span><b>{keyName}</b></div>
     </header>
 
-    <section className="lupan-stage" aria-label="律盘练习">
+    <section className={`lupan-stage${inspect ? " has-card" : ""}`} aria-label="律盘练习">
       <aside className="lupan-stick-board" aria-label="选择音阶">
         <p className="lupan-side-lead">转动外圈换宫，<br />抽一支竹签换音阶。</p>
         <p className="lupan-stage-label">四支竹签</p>
@@ -811,9 +812,10 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
         />
       </div>
 
-      <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
+      {inspect && <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
+        <button type="button" className="lupan-card-close" aria-label="关闭说明" onClick={() => setInspect(null)}>×</button>
         {renderInspectCard()}
-      </aside>
+      </aside>}
     </section>
 
     <section className="lupan-tape-row" aria-label="律盘走句">
