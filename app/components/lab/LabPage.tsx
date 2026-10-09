@@ -142,16 +142,10 @@ function LupanWheel({
 
   return <div className="lupan-dial-column">
     <div className="lupan-dial-wrap">
-      <svg
-        ref={wheelRef}
-        className="lupan-dial"
-        viewBox="0 0 600 600"
-        role="group"
-        tabIndex={-1}
-        aria-label={`律盘，${modeTitle}，当前宫音 1=${currentKey}`}
-      >
+      {/* Static bronze body on its own layer: painted once, so hovering the studs above never re-runs the grain. */}
+      <svg className="lupan-dial-bg" viewBox="0 0 600 600" aria-hidden="true" focusable="false">
         <defs>
-          {/* Cast bronze face: warm gold in the light, umber toward the rim. */}
+          {/* Cast bronze face with fine casting grain (the 颗粒感). */}
           <radialGradient id="lupan-metal-face" cx="38%" cy="30%" r="78%">
             <stop offset="0" stopColor="#F2DDA8" />
             <stop offset=".34" stopColor="#D8B776" />
@@ -173,6 +167,40 @@ function LupanWheel({
             <stop offset=".7" stopColor="#E8CF97" />
             <stop offset="1" stopColor="#5E4224" />
           </linearGradient>
+          <filter id="lupan-metal-grain" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="1.15" numOctaves="2" seed="11" result="grain" />
+            <feColorMatrix in="grain" values="0 0 0 0 .2 0 0 0 0 .14 0 0 0 0 .05 0 0 0 .42 -.06" result="dark-grain" />
+            <feComposite in="dark-grain" in2="SourceAlpha" operator="in" result="masked-grain" />
+            <feBlend in="SourceGraphic" in2="masked-grain" mode="multiply" />
+          </filter>
+          <filter id="lupan-shadow-soft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="6" /></filter>
+        </defs>
+
+        <circle className="lupan-disc-shadow" filter="url(#lupan-shadow-soft)" cx="300" cy="310" r="276" />
+        <circle className="lupan-disc-edge" cx="300" cy="300" r="276" />
+        <circle className="lupan-disc-knurl" cx="300" cy="300" r="268" />
+        <circle className="lupan-disc-bevel" cx="300" cy="300" r="259" />
+        <circle className="lupan-disc-face" cx="300" cy="300" r="253" />
+        <g className="lupan-disc-lathe" aria-hidden="true">
+          {Array.from({ length: 64 }, (_, ring) => <circle key={ring} cx="300" cy="300" r={60 + ring * 3} className={ring % 3 === 0 ? "is-dark" : ring % 3 === 1 ? "is-light" : ""} />)}
+        </g>
+        <circle className="lupan-disc-sheen" cx="300" cy="300" r="253" />
+        <circle className="lupan-disc-etched" cx="300" cy="300" r="240" />
+        <circle className="lupan-disc-etched-lip" cx="300" cy="300" r="241.2" />
+        <circle className="lupan-disc-inner" cx="300" cy="300" r="226" />
+        <circle className="lupan-disc-faint" cx="300" cy="300" r="184" />
+        <circle className="lupan-disc-inner-rim" cx="300" cy="300" r="179" />
+
+      </svg>
+      <svg
+        ref={wheelRef}
+        className="lupan-dial"
+        viewBox="0 0 600 600"
+        role="group"
+        tabIndex={-1}
+        aria-label={`律盘，${modeTitle}，当前宫音 1=${currentKey}`}
+      >
+        <defs>
           <radialGradient id="lupan-stud" cx="36%" cy="30%" r="78%">
             <stop offset="0" stopColor="#FFF4D2" />
             <stop offset=".42" stopColor="#E7C987" />
@@ -189,39 +217,10 @@ function LupanWheel({
             <stop offset=".6" stopColor="#47331B" />
             <stop offset="1" stopColor="#2C1F10" />
           </radialGradient>
-          {/* Fine casting grain over the metal (the 颗粒感). */}
-          <filter id="lupan-metal-grain" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="1.15" numOctaves="2" seed="11" result="grain" />
-            <feColorMatrix in="grain" values="0 0 0 0 .2 0 0 0 0 .14 0 0 0 0 .05 0 0 0 .42 -.06" result="dark-grain" />
-            <feComposite in="dark-grain" in2="SourceAlpha" operator="in" result="masked-grain" />
-            <feBlend in="SourceGraphic" in2="masked-grain" mode="multiply" />
-          </filter>
-          {/* Letters cut into metal: a dark cut with a lit lower lip. */}
-          <filter id="lupan-engrave" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
-            <feOffset in="SourceAlpha" dx="0" dy="1.1" result="lip" />
-            <feFlood floodColor="#FFF1CC" floodOpacity=".55" />
-            <feComposite in2="lip" operator="in" result="lit-lip" />
-            <feMerge><feMergeNode in="lit-lip" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
           <filter id="lupan-ink-soft" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
             <feGaussianBlur stdDeviation="1.1" />
           </filter>
         </defs>
-
-        <circle className="lupan-disc-shadow" cx="300" cy="310" r="276" />
-        <circle className="lupan-disc-edge" cx="300" cy="300" r="276" />
-        <circle className="lupan-disc-knurl" cx="300" cy="300" r="268" />
-        <circle className="lupan-disc-bevel" cx="300" cy="300" r="259" />
-        <circle className="lupan-disc-face" cx="300" cy="300" r="253" />
-        <g className="lupan-disc-lathe" aria-hidden="true">
-          {Array.from({ length: 64 }, (_, ring) => <circle key={ring} cx="300" cy="300" r={60 + ring * 3} className={ring % 3 === 0 ? "is-dark" : ring % 3 === 1 ? "is-light" : ""} />)}
-        </g>
-        <circle className="lupan-disc-sheen" cx="300" cy="300" r="253" />
-        <circle className="lupan-disc-etched" cx="300" cy="300" r="240" />
-        <circle className="lupan-disc-etched-lip" cx="300" cy="300" r="241.2" />
-        <circle className="lupan-disc-inner" cx="300" cy="300" r="226" />
-        <circle className="lupan-disc-faint" cx="300" cy="300" r="184" />
-        <circle className="lupan-disc-inner-rim" cx="300" cy="300" r="179" />
 
         <g className="lupan-pitch-ring" style={{ transform: `rotate(${-tonicPitchClass * 30}deg)` }}>
           {CHROMATIC_PITCH_NAMES.map((pitchName, pitchClass) => {
@@ -289,6 +288,7 @@ function LupanWheel({
           onKeyDown={(event) => activate(event, onInspectHub)}
         >
           <circle className="lupan-hub-ring" cx="300" cy="300" r="62" />
+          <circle className="lupan-hub-shadow" cx="300" cy="303" r="58" />
           <circle className="lupan-hub" cx="300" cy="300" r="57" />
           <circle className="lupan-hub-inner" cx="300" cy="300" r="49" />
           <text className="lupan-hub-main" x="300" y="286">宫</text>
@@ -321,6 +321,7 @@ function LupanWheel({
             >
               <circle className="lupan-note-hit" r="35" />
               <g className={note.altered && stampVersion ? "lupan-stamp-motion is-dropping" : "lupan-stamp-motion"}>
+                <circle className="lupan-note-shadow" cy="2.6" r="27.6" />
                 <circle className="lupan-note-core" r="27" />
                 <circle className="lupan-note-halo" r="31" />
                 {note.altered

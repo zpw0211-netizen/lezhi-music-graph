@@ -188,7 +188,10 @@
 .lupan-dial { display: block; width: 100%; height: 100%; overflow: visible; outline: none; touch-action: manipulation; }
 
 /* Bronze dial: cast face with grain, lathe rings, a knurled rim and a soft raking sheen. */
-.lupan-disc-shadow { fill: rgba(46,31,12,.22); filter: url(#lupan-ink-soft); }
+.lupan-dial-wrap { position: relative; }
+.lupan-dial-bg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; will-change: transform; transform: translateZ(0); }
+.lupan-dial { position: relative; }
+.lupan-disc-shadow { fill: rgba(46,31,12,.24); }
 .lupan-disc-edge { fill: url(#lupan-bronze-edge); stroke: #4A321A; stroke-width: 1.4; }
 .lupan-disc-knurl { fill: none; stroke: rgba(42,28,12,.5); stroke-width: 9; stroke-dasharray: 1.4 2.6; }
 .lupan-disc-bevel { fill: none; stroke: #F4DEA6; stroke-width: 3; opacity: .55; }
@@ -204,7 +207,7 @@
 .lupan-disc-inner { fill: none; stroke: rgba(46,30,10,.38); stroke-width: 1; }
 .lupan-disc-inner-rim { fill: rgba(60,40,15,.06); stroke: rgba(46,30,10,.42); stroke-width: 1.2; }
 .lupan-pitch-ring { transform-box: view-box; transform-origin: center; transition: transform .8s var(--lupan-ease); }
-.lupan-pitch-tick { stroke: rgba(46,30,10,.6); stroke-width: 1.2; filter: url(#lupan-engrave); }
+.lupan-pitch-tick { stroke: rgba(46,30,10,.6); stroke-width: 1.2; }
 .lupan-pitch-tick.is-major { stroke: #7A2618; stroke-width: 2; }
 .lupan-pitch-hit { cursor: pointer; outline: none; }
 .lupan-pitch-plate { fill: transparent; stroke: transparent; stroke-width: 1.4; transition: fill .25s ease, stroke .25s ease; }
@@ -216,7 +219,10 @@
   font: 600 17px/1 var(--serif, "Songti SC", "STSong", serif);
   text-anchor: middle;
   dominant-baseline: central;
-  filter: url(#lupan-engrave);
+  /* A lit lip under the cut letters, without a per-letter filter. */
+  stroke: rgba(255,241,204,.42);
+  stroke-width: 2.2px;
+  paint-order: stroke fill;
   pointer-events: none;
 }
 .lupan-pitch-name.is-tonic { fill: #8E2A1B; }
@@ -226,7 +232,7 @@
   stroke: var(--lupan-pine);
   stroke-width: 7;
   opacity: .15;
-  filter: url(#lupan-ink-soft);
+
 }
 .lupan-ink-stroke {
   stroke: var(--lupan-pine-deep);
@@ -239,11 +245,12 @@
   animation: lupan-ink-trace .62s linear var(--trace-delay, 0ms) forwards;
 }
 @keyframes lupan-ink-trace { to { stroke-dashoffset: 0; } }
-.lupan-ink-pool { fill: var(--lupan-pine-deep); opacity: .27; filter: url(#lupan-ink-soft); pointer-events: none; }
+.lupan-ink-pool { fill: var(--lupan-pine-deep); opacity: .18; pointer-events: none; }
 .lupan-scale-note { cursor: pointer; outline: none; }
 .lupan-note-hit { fill: rgba(251,248,240,.025); stroke: transparent; stroke-width: 2; }
 /* Each tone is a polished stud set into the bronze. */
-.lupan-note-core { fill: url(#lupan-stud); stroke: #4E361A; stroke-width: 1.6; filter: drop-shadow(0 2px 2px rgba(40,26,8,.45)); }
+.lupan-note-shadow { fill: rgba(40,26,8,.32); }
+.lupan-note-core { fill: url(#lupan-stud); stroke: #4E361A; stroke-width: 1.6; }
 .lupan-scale-note:hover .lupan-note-core,
 .lupan-scale-note:focus-visible .lupan-note-core { fill: url(#lupan-stud-lit); stroke: #2F200C; stroke-width: 2.4; }
 .lupan-scale-note.is-sounding .lupan-note-core { fill: url(#lupan-stud-lit); stroke: var(--lupan-seal); stroke-width: 2.6; }
@@ -275,7 +282,8 @@
 /* Dark patinated boss in the middle, letters picked out in gold. */
 .lupan-wheel-hub { cursor: pointer; outline: none; }
 .lupan-hub-ring { fill: none; stroke: rgba(46,30,10,.45); stroke-width: 2; stroke-dasharray: 1.2 2.2; }
-.lupan-hub { fill: url(#lupan-patina); stroke: #E2C68A; stroke-width: 1.6; filter: drop-shadow(0 2px 3px rgba(30,18,6,.5)); }
+.lupan-hub-shadow { fill: rgba(30,18,6,.38); }
+.lupan-hub { fill: url(#lupan-patina); stroke: #E2C68A; stroke-width: 1.6; }
 .lupan-hub-inner { fill: none; stroke: rgba(240,214,156,.38); stroke-width: 1; }
 .lupan-wheel-hub:hover .lupan-hub,
 .lupan-wheel-hub:focus-visible .lupan-hub,
@@ -283,7 +291,7 @@
 .lupan-hub-main { fill: #F1D79C; font: 400 30px/1 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); text-anchor: middle; dominant-baseline: central; }
 .lupan-hub-key { fill: #FFE1A3; font: 600 14px/1 var(--serif, "Songti SC", "STSong", serif); text-anchor: middle; letter-spacing: .04em; }
 .lupan-hub-sub { fill: rgba(241,215,156,.72); font: 10px/1 var(--serif, "Songti SC", "STSong", serif); text-anchor: middle; }
-.lupan-fixed-marker { fill: var(--lupan-seal); stroke: #FFF3D6; stroke-width: 2; pointer-events: none; filter: drop-shadow(0 1px 1.5px rgba(40,20,6,.45)); }
+.lupan-fixed-marker { fill: var(--lupan-seal); stroke: #FFF3D6; stroke-width: 2; pointer-events: none; }
 .lupan-drag-track { fill: none; stroke: rgba(184,150,96,.01); stroke-width: 23; pointer-events: stroke; cursor: grab; touch-action: none; }
 .lupan-drag-track:active { cursor: grabbing; }
 .lupan-lab .lupan-drag-track:focus-visible { outline: none; stroke: rgba(31,74,60,.62); stroke-width: 7; }
