@@ -10,8 +10,11 @@ import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, type HeptatonicModeId } from "./heptatonic";
 import { findPentatonicWorks, PENTATONIC } from "./pentatonic";
 import { makeLupanPhrase, normalizePitchClass, transposeTonicFromDrag, type LupanPitch } from "./lupan-model";
+import { DIAL_NOTE_INFO, PITCH_NAME_READING } from "./lab-glossary";
 
 type LabScale = "pentatonic" | HeptatonicModeId;
+/** What the explanation card is showing: a scale tone, a fixed pitch name on the outer ring, or the 宫 hub. */
+type Inspect = { kind: "note"; name: string } | { kind: "pitch"; pitchClass: number } | { kind: "hub" } | null;
 type Question = { answer: number; round: number; score: number; chosen: number | null };
 type Voice = ReturnType<typeof playPianoSample>;
 type ScaleNote = LupanPitch & { altered: boolean; solfege: string };
@@ -65,7 +68,10 @@ function LupanWheel({
   activePitchClasses,
   traceVersion,
   stampVersion,
+  inspect,
   onPlayNote,
+  onPlayPitch,
+  onInspectHub,
   onTranspose,
   onSetTonic,
   onBeginDrag,
@@ -77,11 +83,19 @@ function LupanWheel({
   activePitchClasses: number[];
   traceVersion: number;
   stampVersion: number;
+  inspect: Inspect;
   onPlayNote: (note: ScaleNote, pitchClass: number) => void;
+  onPlayPitch: (pitchClass: number) => void;
+  onInspectHub: () => void;
   onTranspose: (steps: number) => void;
   onSetTonic: (pitchClass: number) => void;
   onBeginDrag: () => void;
 }) {
+  const activate = (event: ReactKeyboardEvent<SVGGElement>, action: () => void) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    action();
+  };
   const dragRef = useRef<DragState | null>(null);
   const modeTitle = MODES.find((mode) => mode.id === scale)?.title ?? "五声 · 宫起";
   const currentKey = CHROMATIC_PITCH_NAMES[tonicPitchClass];
@@ -127,7 +141,6 @@ function LupanWheel({
   };
 
   return <div className="lupan-dial-column">
-    <p className="lupan-dial-caption">十二半音位 · 平均律示范</p>
     <div className="lupan-dial-wrap">
       <svg
         ref={wheelRef}
@@ -138,51 +151,77 @@ function LupanWheel({
         aria-label={`律盘，${modeTitle}，当前宫音 1=${currentKey}`}
       >
         <defs>
-          <radialGradient id="lupan-paper-face" cx="42%" cy="33%" r="73%">
-            <stop offset="0" stopColor="#FFFCF4" />
-            <stop offset=".48" stopColor="#F7F0E3" />
-            <stop offset=".82" stopColor="#E8DCC5" />
-            <stop offset="1" stopColor="#C9B48A" />
+          {/* Cast bronze face: warm gold in the light, umber toward the rim. */}
+          <radialGradient id="lupan-metal-face" cx="38%" cy="30%" r="78%">
+            <stop offset="0" stopColor="#F2DDA8" />
+            <stop offset=".34" stopColor="#D8B776" />
+            <stop offset=".68" stopColor="#B08A4E" />
+            <stop offset=".9" stopColor="#8A6735" />
+            <stop offset="1" stopColor="#6E5028" />
           </radialGradient>
-          <radialGradient id="lupan-lacquer-depth" cx="36%" cy="28%" r="82%">
-            <stop offset="0" stopColor="#FFFDF6" stopOpacity=".27" />
-            <stop offset=".52" stopColor="#E9D7B4" stopOpacity=".06" />
-            <stop offset=".82" stopColor="#8C693C" stopOpacity=".08" />
-            <stop offset="1" stopColor="#563A20" stopOpacity=".28" />
-          </radialGradient>
-          <linearGradient id="lupan-bronze-edge" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#6B4A2E" />
-            <stop offset=".18" stopColor="#D2B57F" />
-            <stop offset=".46" stopColor="#9D7A47" />
-            <stop offset=".72" stopColor="#E1C993" />
-            <stop offset="1" stopColor="#73512F" />
+          <linearGradient id="lupan-metal-sheen" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#FFF6DD" stopOpacity=".55" />
+            <stop offset=".3" stopColor="#FFF6DD" stopOpacity="0" />
+            <stop offset=".52" stopColor="#FFF0C8" stopOpacity=".22" />
+            <stop offset=".7" stopColor="#3A2A14" stopOpacity="0" />
+            <stop offset="1" stopColor="#2A1D0C" stopOpacity=".32" />
           </linearGradient>
-          <radialGradient id="lupan-hub-paper" cx="40%" cy="28%" r="85%">
-            <stop offset="0" stopColor="#FBF8F0" />
-            <stop offset="1" stopColor="#EAE2D0" />
+          <linearGradient id="lupan-bronze-edge" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#5A3D20" />
+            <stop offset=".2" stopColor="#D9BC82" />
+            <stop offset=".45" stopColor="#8E6B3A" />
+            <stop offset=".7" stopColor="#E8CF97" />
+            <stop offset="1" stopColor="#5E4224" />
+          </linearGradient>
+          <radialGradient id="lupan-stud" cx="36%" cy="30%" r="78%">
+            <stop offset="0" stopColor="#FFF4D2" />
+            <stop offset=".42" stopColor="#E7C987" />
+            <stop offset=".82" stopColor="#B48C4B" />
+            <stop offset="1" stopColor="#7C5A2C" />
           </radialGradient>
-          <filter id="lupan-disc-grain" x="-2%" y="-2%" width="104%" height="104%" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="2" seed="5" result="grain" />
-            <feColorMatrix in="grain" values="0 0 0 0 .62 0 0 0 0 .49 0 0 0 0 .31 0 0 0 .11 0" result="tinted-grain" />
-            <feComposite in="tinted-grain" in2="SourceAlpha" operator="in" result="masked-grain" />
+          <radialGradient id="lupan-stud-lit" cx="36%" cy="30%" r="78%">
+            <stop offset="0" stopColor="#FFFBEA" />
+            <stop offset=".45" stopColor="#F6DB98" />
+            <stop offset="1" stopColor="#C2913E" />
+          </radialGradient>
+          <radialGradient id="lupan-patina" cx="40%" cy="32%" r="80%">
+            <stop offset="0" stopColor="#6E5432" />
+            <stop offset=".6" stopColor="#47331B" />
+            <stop offset="1" stopColor="#2C1F10" />
+          </radialGradient>
+          {/* Fine casting grain over the metal (the 颗粒感). */}
+          <filter id="lupan-metal-grain" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="1.15" numOctaves="2" seed="11" result="grain" />
+            <feColorMatrix in="grain" values="0 0 0 0 .2 0 0 0 0 .14 0 0 0 0 .05 0 0 0 .42 -.06" result="dark-grain" />
+            <feComposite in="dark-grain" in2="SourceAlpha" operator="in" result="masked-grain" />
             <feBlend in="SourceGraphic" in2="masked-grain" mode="multiply" />
+          </filter>
+          {/* Letters cut into metal: a dark cut with a lit lower lip. */}
+          <filter id="lupan-engrave" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+            <feOffset in="SourceAlpha" dx="0" dy="1.1" result="lip" />
+            <feFlood floodColor="#FFF1CC" floodOpacity=".55" />
+            <feComposite in2="lip" operator="in" result="lit-lip" />
+            <feMerge><feMergeNode in="lit-lip" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
           <filter id="lupan-ink-soft" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
             <feGaussianBlur stdDeviation="1.1" />
           </filter>
         </defs>
 
-        <circle className="lupan-disc-shadow" cx="300" cy="307" r="267" />
-        <circle className="lupan-disc-edge" cx="300" cy="300" r="264" />
-        <circle className="lupan-disc-bevel" cx="300" cy="300" r="258" />
+        <circle className="lupan-disc-shadow" cx="300" cy="310" r="276" />
+        <circle className="lupan-disc-edge" cx="300" cy="300" r="276" />
+        <circle className="lupan-disc-knurl" cx="300" cy="300" r="268" />
+        <circle className="lupan-disc-bevel" cx="300" cy="300" r="259" />
         <circle className="lupan-disc-face" cx="300" cy="300" r="253" />
-        <circle className="lupan-disc-lacquer" cx="300" cy="300" r="252" />
-        <circle className="lupan-disc-rimlight" cx="300" cy="300" r="255.4" />
+        <g className="lupan-disc-lathe" aria-hidden="true">
+          {Array.from({ length: 64 }, (_, ring) => <circle key={ring} cx="300" cy="300" r={60 + ring * 3} className={ring % 3 === 0 ? "is-dark" : ring % 3 === 1 ? "is-light" : ""} />)}
+        </g>
+        <circle className="lupan-disc-sheen" cx="300" cy="300" r="253" />
         <circle className="lupan-disc-etched" cx="300" cy="300" r="240" />
+        <circle className="lupan-disc-etched-lip" cx="300" cy="300" r="241.2" />
         <circle className="lupan-disc-inner" cx="300" cy="300" r="226" />
-        <circle className="lupan-disc-faint" cx="300" cy="300" r="205" />
-        <circle className="lupan-disc-inner-rim" cx="300" cy="300" r="190" />
-        <circle className="lupan-disc-inner" cx="300" cy="300" r="179" />
+        <circle className="lupan-disc-faint" cx="300" cy="300" r="184" />
+        <circle className="lupan-disc-inner-rim" cx="300" cy="300" r="179" />
 
         <g className="lupan-pitch-ring" style={{ transform: `rotate(${-tonicPitchClass * 30}deg)` }}>
           {CHROMATIC_PITCH_NAMES.map((pitchName, pitchClass) => {
@@ -192,15 +231,26 @@ function LupanWheel({
             const inner = { x: 300 + Math.cos(angle) * innerRadius, y: 300 + Math.sin(angle) * innerRadius };
             const label = { x: 300 + Math.cos(angle) * 205, y: 300 + Math.sin(angle) * 205 };
             const isTonic = pitchClass === tonicPitchClass;
+            const inspected = inspect?.kind === "pitch" && inspect.pitchClass === pitchClass;
             return <g key={pitchName}>
-              <line className="lupan-pitch-tick-shadow" x1={inner.x + 1} y1={inner.y + 1} x2={outer.x + 1} y2={outer.y + 1} />
               <line className={`lupan-pitch-tick${pitchClass % 3 === 0 ? " is-major" : ""}`} x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} />
-              <text
-                className={`lupan-pitch-name${isTonic ? " is-tonic" : ""}`}
-                x={label.x}
-                y={label.y}
-                transform={`rotate(${tonicPitchClass * 30} ${label.x} ${label.y})`}
-              >{pitchName}</text>
+              <g
+                className={`lupan-pitch-hit${inspected ? " is-inspected" : ""}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`音名 ${PITCH_NAME_READING[pitchName]}，点一下听它的音高并查看说明`}
+                aria-pressed={inspected}
+                onClick={() => onPlayPitch(pitchClass)}
+                onKeyDown={(event) => activate(event, () => onPlayPitch(pitchClass))}
+              >
+                <circle className="lupan-pitch-plate" cx={label.x} cy={label.y} r="17" />
+                <text
+                  className={`lupan-pitch-name${isTonic ? " is-tonic" : ""}`}
+                  x={label.x}
+                  y={label.y}
+                  transform={`rotate(${tonicPitchClass * 30} ${label.x} ${label.y})`}
+                >{pitchName}</text>
+              </g>
             </g>;
           })}
         </g>
@@ -229,11 +279,20 @@ function LupanWheel({
           })}
         </g>
 
-        <g className="lupan-wheel-hub" aria-hidden="true">
+        <g
+          className={`lupan-wheel-hub${inspect?.kind === "hub" ? " is-inspected" : ""}`}
+          role="button"
+          tabIndex={0}
+          aria-label={`盘心：宫音 1=${currentKey}，查看说明`}
+          aria-pressed={inspect?.kind === "hub"}
+          onClick={onInspectHub}
+          onKeyDown={(event) => activate(event, onInspectHub)}
+        >
+          <circle className="lupan-hub-ring" cx="300" cy="300" r="62" />
           <circle className="lupan-hub" cx="300" cy="300" r="57" />
           <circle className="lupan-hub-inner" cx="300" cy="300" r="49" />
           <text className="lupan-hub-main" x="300" y="286">宫</text>
-          <text className="lupan-hub-key" x="300" y="311">{currentKey}</text>
+          <text className="lupan-hub-key" x="300" y="311">1={currentKey}</text>
           <text className="lupan-hub-sub" x="300" y="331">宫音基准</text>
         </g>
 
@@ -243,10 +302,11 @@ function LupanWheel({
             const pitchClass = normalizePitchClass(tonicPitchClass + note.semitone);
             const pitchName = CHROMATIC_PITCH_NAMES[pitchClass];
             const sounding = activePitchClasses.includes(pitchClass);
+            const inspected = inspect?.kind === "note" && inspect.name === note.name;
             const ariaLabel = `${note.name}，${pitchName}，${note.altered ? "偏音" : "正声"}，简谱 ${note.degree}${note.altered ? "，拓展知识" : ""}`;
             return <g
               key={`${stampVersion}-${scale}-${note.name}`}
-              className={`lupan-scale-note${note.altered ? " is-altered" : ""}${sounding ? " is-sounding" : ""}`}
+              className={`lupan-scale-note${note.altered ? " is-altered" : ""}${sounding ? " is-sounding" : ""}${inspected ? " is-inspected" : ""}`}
               transform={`translate(${point.x.toFixed(2)} ${point.y.toFixed(2)})`}
               role="button"
               tabIndex={0}
@@ -334,6 +394,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
   const [selected, setSelected] = useState<{ name: string; index: number } | null>(null);
   const [selectedBookKey, setSelectedBookKey] = useState("");
   const [workPlaying, setWorkPlaying] = useState(false);
+  const [inspect, setInspect] = useState<Inspect>(null);
   const sampler = useRef<PianoSampler | null>(null);
   const output = useRef<DynamicsCompressorNode | null>(null);
   const voices = useRef<Voice[]>([]);
@@ -506,6 +567,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
   }, [answerQuestion, loading, playSequence, question, tonicMidi]);
 
   const playDialNote = useCallback((note: ScaleNote, pitchClass: number) => {
+    setInspect({ kind: "note", name: note.name });
     if (loading) return;
     if (question?.chosen === null) {
       const index = PENTATONIC.findIndex((pentatonicNote) => pentatonicNote.semitone === note.semitone);
@@ -521,6 +583,23 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       title: `${note.name}（${CHROMATIC_PITCH_NAMES[pitchClass]}）`,
     });
   }, [answerQuestion, loading, playSequence, question, tonicMidi]);
+
+  const playPitch = useCallback((pitchClass: number) => {
+    setInspect({ kind: "pitch", pitchClass });
+    if (loading) return;
+    const semitone = normalizePitchClass(pitchClass - tonicPitchClass);
+    const index = PENTATONIC.findIndex((note) => note.semitone === semitone);
+    void playSequence([{ index: index < 0 ? null : index, midi: 60 + pitchClass }], {
+      kind: "single",
+      title: `音名 ${PITCH_NAME_READING[CHROMATIC_PITCH_NAMES[pitchClass]]}`,
+    });
+  }, [loading, playSequence, tonicPitchClass]);
+
+  const inspectHub = useCallback(() => {
+    setInspect({ kind: "hub" });
+    if (loading) return;
+    void playSequence([{ index: 0, midi: tonicMidi }], { kind: "single", title: `宫音（${CHROMATIC_PITCH_NAMES[tonicPitchClass]}）` });
+  }, [loading, playSequence, tonicMidi, tonicPitchClass]);
 
   const clearQuestion = useCallback(() => {
     setQuestion(null);
@@ -618,6 +697,63 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
     if (notes.length) setPulse((value) => value + 1);
   }, [selectedMelody, tonicMidi]);
 
+  /** The right-hand explanation card for whatever was last clicked on the dial. */
+  const renderInspectCard = () => {
+    if (!inspect) {
+      return <div className="lupan-card lupan-card-idle" key="idle">
+        <p className="lupan-card-kicker">点盘上的音</p>
+        <h2 className="lupan-card-title">看看它是谁</h2>
+        <p className="lupan-card-text">盘上的宫、商、角、徵、羽，外圈的音名，还有盘心，都可以点。</p>
+      </div>;
+    }
+    if (inspect.kind === "hub") {
+      return <div className="lupan-card" key={`hub-${tonicPitchClass}`}>
+        <p className="lupan-card-kicker">盘心</p>
+        <h2 className="lupan-card-title">宫音 <span>1={keyName}</span></h2>
+        <p className="lupan-card-text">宫音是一个调的基准。现在宫落在 {keyName} 上，所以记作 1={keyName}。</p>
+        <dl className="lupan-card-facts">
+          <div><dt>换宫</dt><dd>拖动外圈，或点下方 ＋ −，整串音一起移动，这就是“移宫”。</dd></div>
+          <div><dt>当前音阶</dt><dd>{scaleTitle}，共 {scaleNotes.length} 个音。</dd></div>
+        </dl>
+      </div>;
+    }
+    if (inspect.kind === "pitch") {
+      const pitchName = CHROMATIC_PITCH_NAMES[inspect.pitchClass];
+      const semitone = normalizePitchClass(inspect.pitchClass - tonicPitchClass);
+      const inScale = scaleNotes.find((note) => note.semitone === semitone);
+      return <div className="lupan-card" key={`pitch-${inspect.pitchClass}-${tonicPitchClass}-${scale}`}>
+        <p className="lupan-card-kicker">外圈 · 音名</p>
+        <h2 className="lupan-card-title">{pitchName} <span>{PITCH_NAME_READING[pitchName]}</span></h2>
+        <p className="lupan-card-text">音名是固定的音高名称，不随调改变。外圈一圈是十二个半音。</p>
+        <dl className="lupan-card-facts">
+          <div><dt>在 1={keyName} 里</dt><dd>{inScale
+            ? <>它是 <b>{inScale.name}</b>（简谱 {inScale.degree}）{inScale.altered ? "，属于偏音" : ""}。</>
+            : `它不在当前的${scaleTitle}音阶里。`}</dd></div>
+          <div><dt>试一试</dt><dd>把外圈转到让 {pitchName} 对准顶端红点，它就成了新的宫音。</dd></div>
+        </dl>
+      </div>;
+    }
+    const note = scaleNotes.find((item) => item.name === inspect.name);
+    const info = DIAL_NOTE_INFO[inspect.name];
+    if (!note || !info) return null;
+    const pitchClass = normalizePitchClass(tonicPitchClass + note.semitone);
+    return <div className={`lupan-card${info.extension ? " is-extension" : ""}`} key={`note-${note.name}-${tonicPitchClass}`}>
+      <p className="lupan-card-kicker">{info.extension ? "偏音 · 拓展知识" : "五声 · 正声"}</p>
+      <h2 className="lupan-card-title">{note.name} <span>{info.pinyin}</span></h2>
+      <p className="lupan-card-badges"><b>简谱 {note.degree}</b><b>{note.solfege}</b><b>此刻在 {CHROMATIC_PITCH_NAMES[pitchClass]}</b></p>
+      <p className="lupan-card-text">{info.what}</p>
+      <dl className="lupan-card-facts">
+        <div><dt>与宫的距离</dt><dd>{info.interval}</dd></div>
+      </dl>
+      {!info.extension && works.length > 0 && <div className="lupan-card-works">
+        <p>教材里的五声作品</p>
+        <ul>{works.slice(0, 3).map(({ work }) => <li key={work.id}>
+          <button type="button" onClick={() => onOpenWork(bareWorkName(work.name))}>《{bareWorkName(work.name)}》</button>
+        </li>)}</ul>
+      </div>}
+    </div>;
+  };
+
   const finishOrRepeatQuiz = () => {
     if (!question) return;
     if (question.round === 5 && question.chosen === 5) {
@@ -629,17 +765,15 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
 
   return <section className="lupan-lab" aria-labelledby="lupan-title">
     <header className="lupan-intro">
-      <div className="lupan-intro-copy">
-        <p className="lupan-kicker">五声实验室 · 听音与转调</p>
-        <h1 id="lupan-title">律盘 <small>五声 · 七声</small></h1>
-        <p className="lupan-intro-summary">点一处徽位听音；转动外圈，换一个宫位。再听音阶怎样在盘上排开。</p>
-      </div>
+      <p className="lupan-kicker">五声实验室</p>
+      <h1 id="lupan-title">律盘</h1>
       <div className="lupan-current-key" aria-live="polite"><span>当前宫</span><b>{keyName}</b></div>
     </header>
 
     <section className="lupan-stage" aria-label="律盘练习">
       <aside className="lupan-stick-board" aria-label="选择音阶">
-        <p className="lupan-stage-label">选四支竹签</p>
+        <p className="lupan-side-lead">转动外圈换宫，<br />抽一支竹签换音阶。</p>
+        <p className="lupan-stage-label">四支竹签</p>
         <div className="lupan-stick-list" role="group" aria-label="选择五声或七声示范">
           {MODES.map((item) => <button
             key={item.id}
@@ -655,7 +789,6 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
           </button>)}
         </div>
         <p className="lupan-bamboo-legend"><b>{selectedMode.title}</b><span>{selectedMode.subtitle}</span></p>
-        <p className="lupan-mode-note">{scale === "pentatonic" ? "先听熟这五个音，再试着换宫位。" : "拓展知识 · 一种七声音阶的等音高示范。"}</p>
       </aside>
 
       <div className="lupan-center-column">
@@ -667,11 +800,22 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
           activePitchClasses={activePitchClasses}
           traceVersion={traceVersion}
           stampVersion={stampVersion}
+          inspect={inspect}
           onPlayNote={playDialNote}
+          onPlayPitch={playPitch}
+          onInspectHub={inspectHub}
           onTranspose={moveTonic}
           onSetTonic={setTonic}
           onBeginDrag={beginDialDrag}
         />
+      </div>
+
+      <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
+        {renderInspectCard()}
+      </aside>
+    </section>
+
+    <section className="lupan-tape-row" aria-label="律盘走句">
         <section className="lupan-score-tape" aria-label="自编简谱示例">
           <div className="lupan-score-head"><span>自编示例 · 非教材曲目</span><strong>{scale === "pentatonic" ? "五声走句" : `${scaleTitle}走句`}</strong></div>
           <div className="lupan-score-view" ref={scoreWindowRef}>
@@ -699,23 +843,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
             <button type="button" className="is-stop" onClick={() => { stopLab(); window.dispatchEvent(new Event(VOCAL_PLAYBACK_STARTED)); setMessage("已停止。"); }}>停止</button>
           </div>
         </section>
-      </div>
-
-      <aside className="lupan-guide" aria-labelledby="lupan-guide-title">
-        <p className="lupan-guide-kicker">先听 · 再转</p>
-        <h2 id="lupan-guide-title">让音在盘上走</h2>
-        <p>轻点一个徽位，听听它的音高。选一支竹签，再转动外圈，看看一串音怎样换到另一个宫位。</p>
-        <ol className="lupan-guide-list">
-          <li><b>一</b><span>点徽位，听这一声。</span></li>
-          <li><b>二</b><span>抽出一支竹签，换一种音阶。</span></li>
-          <li><b>三</b><span>转外圈或按方向键，换宫位。</span></li>
-        </ol>
-        <div className="lupan-guide-actions">
-          <button type="button" className="lupan-ink-button" disabled={loading} onClick={playPhrase}>听一遍上行再回宫</button>
-          <button type="button" className="lupan-text-button" onClick={() => { wheelRef.current?.focus(); revealLabTarget(wheelRef.current); }}>回到律盘</button>
-        </div>
-        <p className="lupan-guide-note">七声部分为平均律教学示范，属于拓展知识。</p>
-      </aside>
+        <p className="lupan-guide-note">十二半音位按平均律示范；七声部分属于拓展知识。</p>
     </section>
 
     <section className="lupan-sound-panel" aria-labelledby="lupan-sound-title">

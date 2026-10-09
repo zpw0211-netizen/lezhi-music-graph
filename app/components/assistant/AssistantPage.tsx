@@ -1,8 +1,8 @@
 "use client";
-import { useRef, useState, useEffect, type KeyboardEvent, type MouseEvent } from "react";
+import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
 import { PendingKnowledge } from "./PendingKnowledge";
-import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_GRADE_RANGE_LABEL } from "../../lib/app/books";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../../lib/app/books";
 
 // 首页示例问题分「学生常问 / 备课常用」两组，全部逐题跑过本地图谱问答
 // （scripts/test-sample-questions.mjs）：答案非空、引用教材证据、口径为 supported。
@@ -203,10 +203,94 @@ export function AssistantPage({
 
   const placeholderText = currentMessage
     ? `已提问：“${currentMessage.question}” · 输入新问题回车可重查……`
-    : `输入你想向${PUBLISHED_BOOK_COUNT_LABEL}教材询问的问题，例如“《歌唱祖国》是谁写的？”……`;
+    : "想问教材什么？比如：《歌唱祖国》是谁写的？";
+
+  // 学生题与备课题交错排开，像一群各自漂浮的聊天气泡。
+  const bubbles = SAMPLE_QUESTIONS.student.flatMap((item, index) => {
+    const teacher = SAMPLE_QUESTIONS.teacher[index];
+    return [
+      { ...item, group: "student" as const },
+      ...(teacher ? [{ ...teacher, group: "teacher" as const }] : []),
+    ];
+  });
+
+  const composer = (variant: "hero" | "folio") => (
+    <form
+      id="composer-form"
+      className={`ask-composer ask-composer--${variant}`}
+      onSubmit={e => {
+        e.preventDefault();
+        void submit();
+      }}
+    >
+      <div className="pen-line-wrap">
+        <svg className="brush-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M20 20l-4-4" />
+        </svg>
+        <textarea
+          className="pen-input"
+          id="pen-input"
+          aria-label="向芽谱提问"
+          placeholder={placeholderText}
+          value={question}
+          onChange={e => setQuestion(e.target.value)}
+          onKeyDown={handleKeyDown}
+          rows={1}
+          autoComplete="off"
+        />
+        <button type="submit" className="inscribe-btn" id="inscribe-btn" disabled={!question.trim() || busy}>
+          <span>提问</span>
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z" />
+          </svg>
+        </button>
+      </div>
+    </form>
+  );
+
+  if (!currentMessage) {
+    return (
+      <section className="assistant-page is-empty" aria-label="智能问答">
+        <main className="ask-hero">
+          <header className="ask-hero-head">
+            <span className="seal-mark" aria-hidden="true">问</span>
+            <h1 className="ask-hero-title">问问教材</h1>
+            <p className="ask-hero-lead">回答只来自{PUBLISHED_BOOK_COUNT_LABEL}教材，每一句都标出页码。</p>
+          </header>
+
+          {composer("hero")}
+
+          {busy && <p className="assistant-busy ask-hero-status" aria-live="polite">正在翻查{PUBLISHED_BOOK_COUNT_LABEL}教材……</p>}
+          {error && <p className="assistant-error" role="alert">{error}</p>}
+
+          <div className="ask-bubbles" role="list" aria-label="示例问题">
+            {bubbles.map((item, index) => (
+              <div className="ask-bubble-slot" role="listitem" key={item.q} style={{ "--offset": `${[0, 18, 6, 26, 2, 22, 10, 30, 4, 14][index % 10]}px`, "--nudge": `${[8, 0, 22, 30, 4, 16, 0, 26, 12, 6][index % 10]}px`, "--drift": `${6 + (index * 5) % 7}px`, "--period": `${5.2 + index * 0.37}s`, "--delay": `${-index * 0.83}s` } as CSSProperties}>
+                <button
+                  type="button"
+                  className={`ask-bubble ask-bubble--${item.group} tone-${index % 6}`}
+                  onClick={() => void submit(item.q)}
+                  disabled={busy}
+                  title={item.hint}
+                >
+                  <span className="ask-bubble-who">{item.group === "student" ? "学生问" : "备课问"}</span>
+                  <span className="ask-bubble-q">{item.q}</span>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <p className="modest-notice ask-hero-notice">
+            <span>※ 尚未接入 AI 大模型，回答只用教材内容；所引页码都能在纸质课本中翻到。</span>
+          </p>
+        </main>
+      </section>
+    );
+  }
 
   return (
-    <section className={`assistant-page${currentMessage ? "" : " is-empty"}`} aria-label="智能问答">
+    <section className="assistant-page" aria-label="智能问答">
       <main className="stage" id="stage">
         <article className="book-folio" id="folio">
           {/* 书眉 / 鱼尾栏 */}
@@ -231,81 +315,6 @@ export function AssistantPage({
 
           {/* 书页主体 */}
           <div className="folio-body">
-            {/* 状态一：空页（展示签条） */}
-            {!currentMessage && (
-              <section className="state-empty" id="state-empty">
-                <div className="opening-banner">
-                  <div className="opening-kicker">以书相问 · 字字有据</div>
-                  <h1 className="opening-title">“这里的回答，只来自{PUBLISHED_BOOK_COUNT_LABEL}教材。”</h1>
-                  <p className="opening-lead">
-                    向人音版{PUBLISHED_GRADE_RANGE_LABEL}音乐教材提问。无预设套话，不做大模型臆测；每个答案均提取自教材曲谱、正文解析与课后活动，注脚标注册别与实物页码，随查随验。
-                  </p>
-                </div>
-
-                <div className="bookmarks-section">
-                  {/* 学生常问 */}
-                  <div className="bookmark-group">
-                    <div className="bookmark-group-label">
-                      <i />
-                      <strong>学生常问 · 签条</strong>
-                      <span>点击在教材中查释</span>
-                    </div>
-                    <div className="bookmark-list" id="student-bookmarks">
-                      {SAMPLE_QUESTIONS.student.map(item => (
-                        <button
-                          key={item.q}
-                          className="bookmark-slip"
-                          type="button"
-                          onClick={() => void submit(item.q)}
-                          disabled={busy}
-                        >
-                          <span className="slip-cord">
-                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                              <circle cx="8" cy="8" r="5" stroke="#1F4A3C" strokeWidth="1.5" />
-                              <line x1="8" y1="13" x2="8" y2="16" stroke="#1F4A3C" strokeWidth="1.5" />
-                            </svg>
-                          </span>
-                          <span className="slip-tag">{item.tag}</span>
-                          <span className="slip-q">{item.q}</span>
-                          <span className="slip-hint">{item.hint}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 备课常用 */}
-                  <div className="bookmark-group">
-                    <div className="bookmark-group-label teacher">
-                      <i />
-                      <strong>备课常用 · 签条</strong>
-                      <span>面向一线音乐教师单元设计</span>
-                    </div>
-                    <div className="bookmark-list" id="teacher-bookmarks">
-                      {SAMPLE_QUESTIONS.teacher.map(item => (
-                        <button
-                          key={item.q}
-                          className="bookmark-slip teacher"
-                          type="button"
-                          onClick={() => void submit(item.q)}
-                          disabled={busy}
-                        >
-                          <span className="slip-cord">
-                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                              <circle cx="8" cy="8" r="5" stroke="#916319" strokeWidth="1.5" />
-                              <line x1="8" y1="13" x2="8" y2="16" stroke="#916319" strokeWidth="1.5" />
-                            </svg>
-                          </span>
-                          <span className="slip-tag">{item.tag}</span>
-                          <span className="slip-q">{item.q}</span>
-                          <span className="slip-hint">{item.hint}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </section>
-            )}
-
             {/* 查询中 */}
             {busy && (
               <div className="assistant-busy-box" aria-live="polite">
@@ -486,51 +495,7 @@ export function AssistantPage({
 
           {/* 底部落笔输入区：细墨线 + 楷体提示 */}
           <footer className="composer-bottom">
-            <form
-              id="composer-form"
-              onSubmit={e => {
-                e.preventDefault();
-                void submit();
-              }}
-            >
-              <div className="pen-line-wrap">
-                <svg
-                  className="brush-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  aria-hidden="true"
-                >
-                  <path d="M12 19l7-7 3 3-7 7-3-3z" />
-                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18" />
-                  <path d="M2 2l7.586 7.586" />
-                  <circle cx="11" cy="11" r="2" />
-                </svg>
-                <textarea
-                  className="pen-input"
-                  id="pen-input"
-                  aria-label="向芽谱提问"
-                  placeholder={placeholderText}
-                  value={question}
-                  onChange={e => setQuestion(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  rows={1}
-                  autoComplete="off"
-                />
-                <button
-                  type="submit"
-                  className="inscribe-btn"
-                  id="inscribe-btn"
-                  disabled={!question.trim() || busy}
-                >
-                  <span>提问</span>
-                  <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                    <path d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z" />
-                  </svg>
-                </button>
-              </div>
-            </form>
+            {composer("folio")}
             <div className="modest-notice">
               <span>※ 这里的回答只来自{PUBLISHED_BOOK_COUNT_LABEL}教材内容，尚未接入 AI 大模型。所引页码皆可在纸质课本中翻查实证。</span>
               <span className="seal-text">只用教材内容回答</span>

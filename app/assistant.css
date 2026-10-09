@@ -965,3 +965,143 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ===== Empty page: one clean search bar, colourful question bubbles floating below it ===== */
+.assistant-page.is-empty .ask-hero {
+  position: relative;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(36px, 9vh, 96px) 24px 40px;
+  box-sizing: border-box;
+}
+.assistant-page .ask-hero-head { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.assistant-page .ask-hero-head .seal-mark { width: 30px; height: 30px; font-size: 16px; }
+.assistant-page .ask-hero-title {
+  margin: 4px 0 0;
+  font: 400 clamp(36px, 4.4vw, 50px)/1.15 var(--kai);
+  letter-spacing: .18em;
+  color: var(--ink);
+}
+.assistant-page .ask-hero-lead { margin: 0; color: var(--ink-3); font: 14px/1.7 var(--serif); }
+
+/* The search bar: a rounded paper strip with nothing else in it */
+.assistant-page .ask-composer--hero { position: relative; z-index: 2; max-width: 680px; margin: 30px auto 0; }
+.assistant-page .ask-composer--hero .pen-line-wrap {
+  gap: 12px;
+  padding: 10px 10px 10px 20px;
+  border: 1px solid rgba(143, 130, 104, .55);
+  border-radius: 999px;
+  background: var(--sheet);
+  box-shadow: 0 14px 30px -22px rgba(40, 32, 16, .55), inset 0 1px 0 rgba(255, 255, 255, .7);
+  transition: border-color .2s var(--ease), box-shadow .25s var(--ease);
+}
+.assistant-page .ask-composer--hero .pen-line-wrap:focus-within {
+  border: 1px solid var(--pine);
+  box-shadow: 0 16px 34px -20px rgba(31, 74, 60, .45), 0 0 0 4px rgba(31, 74, 60, .08);
+}
+.assistant-page .ask-composer--hero .pen-input { height: 32px; font-size: 18px; line-height: 32px; }
+.assistant-page .ask-composer--hero .pen-input::placeholder { font-size: 16px; }
+.assistant-page .ask-composer--hero .inscribe-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--pine);
+  color: #FBF8F0;
+  font-size: 15px;
+}
+.assistant-page .ask-composer--hero .inscribe-btn:hover:not(:disabled) { background: var(--pine-deep); color: #FBF8F0; }
+.assistant-page .ask-composer--hero .inscribe-btn:disabled { opacity: .45; }
+.assistant-page .ask-hero-status { margin: 14px auto 0; text-align: center; }
+.assistant-page .ask-hero .assistant-error { max-width: 680px; margin: 14px auto 0; }
+
+/* Bubble field: below the search bar only; the drift is tiny, so bubbles never reach the bar above */
+.assistant-page .ask-bubbles {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 300px));
+  justify-content: center;
+  align-items: start;
+  gap: 20px 24px;
+  margin: 46px auto 0;
+  padding: 14px 0 6px;
+}
+.assistant-page .ask-bubble-slot {
+  justify-self: start;
+  margin-top: var(--offset, 0px);
+  margin-left: var(--nudge, 0px);
+  animation: ask-float var(--period, 6s) ease-in-out var(--delay, 0s) infinite alternate;
+}
+@keyframes ask-float {
+  from { transform: translate3d(0, 0, 0) rotate(-.6deg); }
+  to { transform: translate3d(calc(var(--drift) * .4), var(--drift), 0) rotate(.6deg); }
+}
+.assistant-page .ask-bubble {
+  --bubble-bg: #DDEBE3;
+  --bubble-ink: #1F4A3C;
+  --bubble-edge: rgba(31, 74, 60, .2);
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-height: 82px;
+  max-width: 272px;
+  box-sizing: border-box;
+  padding: 12px 18px 13px;
+  border: 1px solid var(--bubble-edge);
+  border-radius: 20px 20px 20px 6px;
+  background: var(--bubble-bg);
+  color: var(--bubble-ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -16px rgba(40, 32, 16, .6);
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.assistant-page .ask-bubble--teacher { border-radius: 20px 20px 6px 20px; }
+/* The chat-bubble tail */
+.assistant-page .ask-bubble::after {
+  position: absolute;
+  bottom: -7px;
+  left: 14px;
+  width: 13px;
+  height: 13px;
+  border-right: 1px solid var(--bubble-edge);
+  border-bottom: 1px solid var(--bubble-edge);
+  background: var(--bubble-bg);
+  content: "";
+  transform: rotate(45deg) skew(8deg, 8deg);
+}
+.assistant-page .ask-bubble--teacher::after { right: 14px; left: auto; }
+.assistant-page .ask-bubble.tone-0 { --bubble-bg: #DDEBE3; --bubble-ink: #1F4A3C; --bubble-edge: rgba(31, 74, 60, .22); }
+.assistant-page .ask-bubble.tone-1 { --bubble-bg: #F8E3DC; --bubble-ink: #8E2A1B; --bubble-edge: rgba(184, 57, 42, .22); }
+.assistant-page .ask-bubble.tone-2 { --bubble-bg: #DCE6EF; --bubble-ink: #284A66; --bubble-edge: rgba(40, 74, 102, .22); }
+.assistant-page .ask-bubble.tone-3 { --bubble-bg: #F6EACB; --bubble-ink: #6E4A0C; --bubble-edge: rgba(145, 99, 25, .25); }
+.assistant-page .ask-bubble.tone-4 { --bubble-bg: #EEDFEA; --bubble-ink: #6A3B5C; --bubble-edge: rgba(106, 59, 92, .22); }
+.assistant-page .ask-bubble.tone-5 { --bubble-bg: #E4ECD2; --bubble-ink: #46581B; --bubble-edge: rgba(70, 88, 27, .24); }
+.assistant-page .ask-bubble-who { font: 11px/1.4 var(--serif); letter-spacing: .2em; opacity: .72; }
+.assistant-page .ask-bubble-q { font: 400 16px/1.5 var(--kai); }
+.assistant-page .ask-bubble-slot:hover,
+.assistant-page .ask-bubble-slot:focus-within { animation-play-state: paused; }
+.assistant-page .ask-bubble:hover:not(:disabled),
+.assistant-page .ask-bubble:focus-visible { transform: scale(1.05); box-shadow: 0 16px 28px -16px rgba(40, 32, 16, .65); }
+.assistant-page .ask-bubble:focus-visible { outline: 2px solid var(--pine); outline-offset: 3px; }
+.assistant-page .ask-bubble:disabled { opacity: .6; cursor: wait; }
+.assistant-page .ask-hero-notice { justify-content: center; margin-top: 40px; text-align: center; }
+
+@media (max-width: 760px) {
+  .assistant-page.is-empty .ask-hero { padding: 28px 14px 30px; }
+  .assistant-page .ask-hero-title { font-size: 34px; }
+  .assistant-page .ask-hero-lead { font-size: 12px; }
+  .assistant-page .ask-composer--hero { margin-top: 20px; }
+  .assistant-page .ask-composer--hero .pen-line-wrap { padding: 6px 6px 6px 14px; gap: 8px; }
+  .assistant-page .ask-composer--hero .pen-input { font-size: 15px; }
+  .assistant-page .ask-composer--hero .pen-input::placeholder { font-size: 13px; }
+  .assistant-page .ask-composer--hero .inscribe-btn { padding: 7px 13px; font-size: 14px; }
+  .assistant-page .ask-bubbles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; margin-top: 30px; }
+  .assistant-page .ask-bubble-slot { margin-top: 0; margin-left: 0; }
+  .assistant-page .ask-bubble-slot:nth-child(even) { margin-top: 18px; }
+  .assistant-page .ask-bubble { max-width: none; padding: 9px 12px 10px; }
+  .assistant-page .ask-bubble-q { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-page .ask-bubble-slot { animation: none; }
+}
