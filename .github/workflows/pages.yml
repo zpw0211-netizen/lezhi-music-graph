@@ -47,6 +47,10 @@ jobs:
           NEXT_PUBLIC_STATIC_EXPORT: "1"
           NEXT_PUBLIC_BASE_PATH: ""
           NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
+          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
       - name: Prepare Pages artifact
         run: node scripts/prepare-github-pages.mjs
       - name: Audit Pages artifact

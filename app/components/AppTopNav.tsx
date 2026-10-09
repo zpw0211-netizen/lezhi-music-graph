@@ -3,6 +3,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { AccountDialog } from "./account/AccountDialog";
 import type { AccountView } from "./account/AccountPanel";
+import { useAccount } from "./account/AccountProvider";
 
 export type NavView = "home" | "records" | "graph" | "assistant" | "research";
 const LINKS: Array<[NavView, string]> = [["home", "首页"], ["records", "按课学习"], ["graph", "知识图谱"], ["assistant", "智能问答"], ["research", "研究分析"]];
@@ -20,6 +21,7 @@ export function AppTopNav({ active, onNavigate, onAbout, search, trailing, onAcc
   onAccount?: (view: AccountView) => void;
 }) {
   const [accountView, setAccountView] = useState<AccountView | null>(null);
+  const { profile } = useAccount();
   return <><nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
       <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label="返回首页">
@@ -38,7 +40,7 @@ export function AppTopNav({ active, onNavigate, onAbout, search, trailing, onAcc
           </div>}
         </form>}
         {trailing}
-        <button type="button" className="account-nav-button" onClick={() => onAccount ? onAccount("login") : setAccountView("login")}>登录／注册</button>
+        <button type="button" className="account-nav-button" onClick={() => onAccount ? onAccount("login") : setAccountView("login")}>{profile ? "我的班级" : "登录／注册"}</button>
       </div>
     </div>
   </nav>{accountView && <AccountDialog view={accountView} onClose={() => setAccountView(null)} onBrowse={() => onNavigate("records")} />}</>;

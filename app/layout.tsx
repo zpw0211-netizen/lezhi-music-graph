@@ -14,6 +14,7 @@ import "./lesson.css";
 import "./ink-theme.css";
 import "./mobile-layout.css";
 import "./account.css";
+import { AccountProvider } from "./components/account/AccountProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,7 +66,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AccountProvider>{children}</AccountProvider>
       </body>
     </html>
   );
