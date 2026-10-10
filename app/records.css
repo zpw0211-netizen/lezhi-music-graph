@@ -939,6 +939,13 @@
 .records-journey-growth { display: inline-flex; flex: 0 0 auto; align-items: flex-end; gap: 6px; margin: 0; color: var(--records-ink-3); font: 13px/1 var(--records-ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .records-journey-growth b { color: var(--records-seal); font-size: 17px; }
 
+.records-journey-sound { display: grid; flex: 0 0 auto; width: 34px; height: 34px; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--records-ink-3); cursor: pointer; }
+.records-journey-sound svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.records-journey-sound .records-sound-body { fill: currentColor; stroke: none; }
+.records-journey-sound[aria-pressed="true"] { color: var(--records-pine); }
+.records-journey-sound:hover { background: var(--records-paper-2); }
+.records-journey-sound:focus-visible { outline: 2px solid var(--records-seal); outline-offset: 2px; }
+
 .records-detail {
   position: fixed;
   z-index: 1200;
@@ -1146,6 +1153,7 @@
   .records-journey .records-unit-tooltip { display: none; }
   .records-journey-growth .records-sprout { width: 24px; height: 30px; }
   .records-journey-growth { font-size: 12px; }
+  .records-journey-sound { width: 30px; height: 30px; }
 
   .records-detail { display: block; }
   .records-detail-score { min-height: 0; max-height: 46svh; padding: 18px; }

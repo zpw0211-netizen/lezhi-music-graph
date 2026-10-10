@@ -13,6 +13,7 @@ import { BOOK_BY_KEY, volumeNumeral } from "../../lib/app/books";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import type { BookDataStatus } from "../../hooks/useGraphIndex";
+import { playPageTurn, playStamp, readBookSoundOn, saveBookSoundOn } from "../../lib/records/book-sounds";
 
 type UnitWork = {
   id: string;
@@ -312,6 +313,10 @@ export function WorkLibrary({
   const libraryRef = useRef<HTMLElement>(null);
   const restoredBook = useRef("");
   const openedWorkId = useRef("");
+  // A work opened from a card gets its stamp when the detail closes, so the student sees it land.
+  const [pendingStamp, setPendingStamp] = useState<UnitWork | null>(null);
+  const [soundOn, setSoundOn] = useState(() => (typeof window === "undefined" ? true : readBookSoundOn()));
+  const soundOnRef = useRef(soundOn);
   // The page a turn is heading to; the scroll position catches up during a smooth turn.
   const targetPage = useRef(0);
 
@@ -405,15 +410,24 @@ export function WorkLibrary({
   const bookIndex = books.findIndex((item) => item.key === currentBookKey);
   const nextBook = bookIndex >= 0 ? books[bookIndex + 1] : undefined;
 
-  const markLearned = useCallback((work: UnitWork) => {
+  const markLearned = useCallback((work: UnitWork, quiet = false) => {
     const key = learnedKey(currentBookKey, work.id);
+    if (!quiet && soundOnRef.current && !learned.has(key)) playStamp();
     setLearned((current) => {
       if (current.has(key)) return current;
       const next = new Set(current).add(key);
       try { window.localStorage.setItem(LEARNED_STORAGE_KEY, JSON.stringify([...next])); } catch { /* The stamp still shows for this visit. */ }
       return next;
     });
-  }, [currentBookKey]);
+  }, [currentBookKey, learned]);
+
+  const toggleSound = useCallback(() => {
+    setSoundOn((current) => {
+      soundOnRef.current = !current;
+      saveBookSoundOn(!current);
+      return !current;
+    });
+  }, []);
 
   const goToPage = useCallback((index: number, instant = false) => {
     const track = trackRef.current;
@@ -421,6 +435,7 @@ export function WorkLibrary({
     const last = track.querySelectorAll(":scope > .records-page").length - 1;
     const target = Math.max(0, Math.min(last, index));
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!instant && target !== targetPage.current && soundOnRef.current) playPageTurn();
     targetPage.current = target;
     track.scrollTo({ left: target * track.clientWidth, behavior: instant || reduced ? "auto" : "smooth" });
   }, []);
@@ -445,7 +460,12 @@ export function WorkLibrary({
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => setPageIndex(Math.round(track.scrollLeft / Math.max(1, track.clientWidth))));
     };
-    const onScrollEnd = () => { targetPage.current = Math.round(track.scrollLeft / Math.max(1, track.clientWidth)); };
+    // A swipe or trackpad turn lands here without going through goToPage.
+    const onScrollEnd = () => {
+      const landed = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+      if (landed !== targetPage.current && soundOnRef.current) playPageTurn();
+      targetPage.current = landed;
+    };
     // A mouse wheel turns the page, unless the part under the pointer can still scroll that way itself.
     let wheelLock = 0;
     const onWheel = (event: WheelEvent) => {
@@ -538,6 +558,26 @@ export function WorkLibrary({
     }
     requestAnimationFrame(() => dialogRef.current?.focus({ preventScroll: true }));
   }, [detailWork, selectedEntry]);
+
+  // Stamp the work once its detail closes and the card is back in view.
+  const detailWasOpen = useRef(false);
+  useEffect(() => {
+    if (detailWork) {
+      detailWasOpen.current = true;
+      return;
+    }
+    if (!pendingStamp) {
+      detailWasOpen.current = false;
+      return;
+    }
+    if (!detailWasOpen.current) return;
+    const frame = requestAnimationFrame(() => {
+      detailWasOpen.current = false;
+      markLearned(pendingStamp);
+      setPendingStamp(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [detailWork, markLearned, pendingStamp]);
 
   const closeDetails = useCallback(() => onClose(), [onClose]);
 
@@ -641,14 +681,14 @@ export function WorkLibrary({
 
   const openWork = useCallback((work: UnitWork, sourceCard?: HTMLButtonElement) => {
     const routeTitle = routeTitleFor(work, allWorks);
-    markLearned(work);
+    setPendingStamp(work);
     const cover = sourceCard?.querySelector<HTMLElement>(".records-score-image, .records-score-placeholder");
     if (cover) cover.style.viewTransitionName = "work-cover";
     startViewTransition(() => {
       cover?.style.removeProperty("view-transition-name");
       onOpen(routeTitle, directory?.key ?? bookKey);
     });
-  }, [allWorks, bookKey, directory?.key, markLearned, onOpen]);
+  }, [allWorks, bookKey, directory?.key, onOpen]);
 
   const retryUnitsLoad = () => {
     setUnitRows(null);
@@ -914,6 +954,12 @@ export function WorkLibrary({
             <Sprout progress={bookProgress} />
             <span aria-hidden="true"><b>{learnedCount}</b> / {workCount}</span>
           </p>
+          <button aria-label="翻页和盖章音效" aria-pressed={soundOn} className="records-journey-sound" onClick={toggleSound} title={soundOn ? "关闭音效" : "打开音效"} type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path className="records-sound-body" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />
+              {soundOn ? <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /> : <path d="M16 9.5l5 5M21 9.5l-5 5" />}
+            </svg>
+          </button>
           <button aria-label="下一页" className="records-journey-arrow" disabled={pageIndex >= pageCount - 1} onClick={() => goToPage(targetPage.current + 1)} type="button">{chevron("right")}</button>
         </>}
       </nav>
@@ -927,7 +973,12 @@ export function WorkLibrary({
       dialogRef={dialogRef}
       entry={selectedEntry}
       onClose={closeDetails}
-      onLearn={onLearn}
+      onLearn={(workId) => {
+        // Leaving for the full lesson page still counts as learned.
+        if (pendingStamp) markLearned(pendingStamp, true);
+        setPendingStamp(null);
+        onLearn(workId);
+      }}
       onRetryBookData={onRetryBookData}
       onRetryUnits={retryUnitsLoad}
       unitsStatus={unitsStatus}
