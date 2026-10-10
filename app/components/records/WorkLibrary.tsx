@@ -3,7 +3,7 @@
 /* The book and score covers are editorial artwork served from public/. */
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import type { CSSProperties, RefObject } from "react";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
@@ -63,9 +63,47 @@ const DIALOG_FOCUSABLE = [
 ].join(",");
 const EARLY_PRIMARY_ACTIVITY_MODES = ["唱歌", "聆听", "演奏", "音乐游戏", "情境表演", "能力进阶"];
 const LATER_PRIMARY_ACTIVITY_MODES = ["演唱", "欣赏", "知识与技能"];
+// Per-viewer conveniences only: which works this browser has opened or played, and the last page per book.
+const LEARNED_STORAGE_KEY = "yapu-learned-works";
+const PAGE_STORAGE_PREFIX = "yapu-records-page:";
 
 function unitAnchorId(bookKey: string, unitId: string) {
   return `records-${bookKey}-${unitId}`;
+}
+
+function learnedKey(bookKey: string, workId: string) {
+  return `${bookKey}:${workId}`;
+}
+
+function readLearned(): Set<string> {
+  try {
+    const list = JSON.parse(window.localStorage.getItem(LEARNED_STORAGE_KEY) ?? "[]") as unknown;
+    return new Set(Array.isArray(list) ? list.filter((item): item is string => typeof item === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function isTypingTarget(target: EventTarget | null) {
+  return target instanceof HTMLElement && Boolean(target.closest("input, textarea, select, [contenteditable=true]"));
+}
+
+/** The 芽谱 sprout that grows with the share of works learned in this book. */
+function Sprout({ progress, large }: { progress: number; large?: boolean }) {
+  const stage = progress >= 1 ? 4 : progress >= .6 ? 3 : progress >= .3 ? 2 : progress > 0 ? 1 : 0;
+  const grown = (min: number) => (stage >= min ? " is-grown" : "");
+  return <svg aria-hidden="true" className={`records-sprout${large ? " is-large" : ""}`} data-stage={stage} viewBox="0 0 64 80">
+    <path className="records-sprout-soil" d="M6 71 Q32 63 58 71 L56 76 Q32 70 8 76Z" />
+    <ellipse className={`records-sprout-seed${stage ? "" : " is-grown"}`} cx="32" cy="66" rx="4.5" ry="3.2" />
+    <path className={`records-sprout-stem${grown(1)}`} d="M32 68 C32 58 31 46 32 32" pathLength={1} style={{ strokeDashoffset: [1, .55, .3, 0, 0][stage] }} />
+    <path className={`records-sprout-leaf is-left-low${grown(1)}`} d="M32 58 C24 57 17 51 15 44 C24 43 30 49 32 58Z" />
+    <path className={`records-sprout-leaf is-right${grown(2)}`} d="M32 50 C40 48 47 41 49 34 C40 34 34 41 32 50Z" />
+    <path className={`records-sprout-leaf is-left-high${grown(3)}`} d="M32 42 C25 40 20 34 20 28 C27 28 31 34 32 42Z" />
+    <g className={`records-sprout-bloom${grown(4)}`}>
+      {[0, 72, 144, 216, 288].map((angle) => <ellipse cx="32" cy="22" key={angle} rx="4.2" ry="7" transform={`rotate(${angle} 32 29)`} />)}
+      <circle cx="32" cy="29" r="3.6" />
+    </g>
+  </svg>;
 }
 
 function routeTitleFor(work: UnitWork, works: readonly UnitWork[]) {
@@ -248,6 +286,7 @@ export function WorkLibrary({
   onClose,
   onLearn,
   onKnowledge,
+  onOpenBook,
 }: {
   books: BookDirectory[];
   bookKey: string;
@@ -259,13 +298,22 @@ export function WorkLibrary({
   onClose: () => void;
   onLearn: (workId: string) => void;
   onKnowledge: (name: string, type?: string) => void;
+  onOpenBook?: (bookKey: string) => void;
 }) {
   const [unitRows, setUnitRows] = useState<TextbookUnit[] | null>(null);
   const [unitsError, setUnitsError] = useState(false);
   const [retryUnits, setRetryUnits] = useState(0);
-  const [activeUnitId, setActiveUnitId] = useState("");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [taskUnits, setTaskUnits] = useState<ReadonlySet<string>>(() => new Set());
+  // Only ever rendered in the browser (loaded after the data index), so storage can seed the first render.
+  const [learned, setLearned] = useState<ReadonlySet<string>>(() => (typeof window === "undefined" ? new Set() : readLearned()));
   const dialogRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const libraryRef = useRef<HTMLElement>(null);
+  const restoredBook = useRef("");
   const openedWorkId = useRef("");
+  // The page a turn is heading to; the scroll position catches up during a smooth turn.
+  const targetPage = useRef(0);
 
   useEffect(() => {
     let active = true;
@@ -349,36 +397,131 @@ export function WorkLibrary({
   const workCount = units.reduce((sum, unit) => sum + unit.works.length, 0);
   const unitsStatus: "loading" | "ready" | "error" = unitsError ? "error" : unitRows ? "ready" : "loading";
   const bookNumeral = volumeNumeral(directory?.key ?? bookKey, books);
-  const activeUnit = units.find((unit) => unit.id === activeUnitId) ?? units[0];
-  const activeIndex = Math.max(0, units.findIndex((unit) => unit.id === activeUnit?.id));
+  const currentBookKey = directory?.key ?? bookKey;
+  // Pages of the book, left to right: cover, one spread per unit, then the closing page.
+  const pageCount = units.length ? units.length + 2 : 1;
+  const learnedIn = useCallback((works: readonly UnitWork[]) => works.filter((work) => learned.has(learnedKey(currentBookKey, work.id))).length, [currentBookKey, learned]);
+  const learnedCount = learnedIn(allWorks);
+  const bookIndex = books.findIndex((item) => item.key === currentBookKey);
+  const nextBook = bookIndex >= 0 ? books[bookIndex + 1] : undefined;
+
+  const markLearned = useCallback((work: UnitWork) => {
+    const key = learnedKey(currentBookKey, work.id);
+    setLearned((current) => {
+      if (current.has(key)) return current;
+      const next = new Set(current).add(key);
+      try { window.localStorage.setItem(LEARNED_STORAGE_KEY, JSON.stringify([...next])); } catch { /* The stamp still shows for this visit. */ }
+      return next;
+    });
+  }, [currentBookKey]);
+
+  const goToPage = useCallback((index: number, instant = false) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const last = track.querySelectorAll(":scope > .records-page").length - 1;
+    const target = Math.max(0, Math.min(last, index));
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    targetPage.current = target;
+    track.scrollTo({ left: target * track.clientWidth, behavior: instant || reduced ? "auto" : "smooth" });
+  }, []);
+
+  // The book fills the screen under the sticky top bar, so the pages turn sideways instead of the page scrolling down.
+  useLayoutEffect(() => {
+    const library = libraryRef.current;
+    const nav = document.querySelector<HTMLElement>(".home-nav");
+    if (!library || !nav) return;
+    const apply = () => library.style.setProperty("--records-nav-h", `${Math.round(nav.getBoundingClientRect().height)}px`);
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (!units.length) return;
-    const observer = new IntersectionObserver((entries) => {
-      const current = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((left, right) => Math.abs(left.boundingClientRect.top) - Math.abs(right.boundingClientRect.top))[0];
-      if (current?.target instanceof HTMLElement) setActiveUnitId(current.target.dataset.unitId ?? "");
-    }, { rootMargin: "-18% 0px -62% 0px", threshold: [0, 0.1, 0.35] });
-    const revealObserver = new IntersectionObserver((entries) => {
+    const track = trackRef.current;
+    if (!track) return;
+    let frame = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setPageIndex(Math.round(track.scrollLeft / Math.max(1, track.clientWidth))));
+    };
+    const onScrollEnd = () => { targetPage.current = Math.round(track.scrollLeft / Math.max(1, track.clientWidth)); };
+    // A mouse wheel turns the page, unless the part under the pointer can still scroll that way itself.
+    let wheelLock = 0;
+    const onWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+      for (let node = event.target as HTMLElement | null; node && node !== track; node = node.parentElement) {
+        const overflow = window.getComputedStyle(node).overflowY;
+        if (!/(auto|scroll)/.test(overflow) || node.scrollHeight <= node.clientHeight + 1) continue;
+        const canScroll = event.deltaY > 0 ? node.scrollTop + node.clientHeight < node.scrollHeight - 1 : node.scrollTop > 0;
+        if (canScroll) return;
+      }
+      event.preventDefault();
+      // One gesture turns one page: a trackpad's momentum keeps extending the lock.
+      if (wheelLock) {
+        window.clearTimeout(wheelLock);
+        wheelLock = window.setTimeout(() => { wheelLock = 0; }, 260);
+        return;
+      }
+      wheelLock = window.setTimeout(() => { wheelLock = 0; }, 260);
+      goToPage(targetPage.current + (event.deltaY > 0 ? 1 : -1));
+    };
+    track.addEventListener("scroll", onScroll, { passive: true });
+    track.addEventListener("scrollend", onScrollEnd);
+    track.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(wheelLock);
+      track.removeEventListener("scroll", onScroll);
+      track.removeEventListener("scrollend", onScrollEnd);
+      track.removeEventListener("wheel", onWheel);
+    };
+  }, [goToPage, units.length]);
+
+  useEffect(() => {
+    if (detailWork) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || isTypingTarget(event.target)) return;
+      if (event.key === "ArrowRight" || event.key === "PageDown") { event.preventDefault(); goToPage(targetPage.current + 1); }
+      else if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); goToPage(targetPage.current - 1); }
+      else if (event.key === "Home") { event.preventDefault(); goToPage(0); }
+      else if (event.key === "End") { event.preventDefault(); goToPage(pageCount - 1); }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [detailWork, goToPage, pageCount]);
+
+  // Reveal a spread when it turns into view; fetch its images (and its neighbours') a little earlier.
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || !units.length) return;
+    const pages = Array.from(track.querySelectorAll<HTMLElement>(":scope > .records-page"));
+    const reveal = new IntersectionObserver((entries) => {
       for (const entry of entries) {
-        if (!entry.isIntersecting || !(entry.target instanceof HTMLElement)) continue;
+        if (!entry.isIntersecting) continue;
         entry.target.classList.add("is-revealed");
-        revealObserver.unobserve(entry.target);
+        reveal.unobserve(entry.target);
       }
-    }, { threshold: 0.05 });
-    for (const unit of units) {
-      const chapter = document.getElementById(unitAnchorId(directory?.key ?? bookKey, unit.id));
-      if (chapter) {
-        observer.observe(chapter);
-        revealObserver.observe(chapter);
+    }, { root: track, threshold: .35 });
+    const preload = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.querySelectorAll<HTMLImageElement>(".records-lazy-image[data-src]").forEach((image) => {
+          image.src = image.dataset.src ?? "";
+          delete image.dataset.src;
+        });
+        preload.unobserve(entry.target);
       }
+    }, { root: track, rootMargin: "0px 110%" });
+    for (const page of pages) {
+      reveal.observe(page);
+      preload.observe(page);
     }
     return () => {
-      observer.disconnect();
-      revealObserver.disconnect();
+      reveal.disconnect();
+      preload.disconnect();
     };
-  }, [bookKey, directory?.key, units]);
+  }, [units]);
 
   useEffect(() => {
     if (!detailWork) {
@@ -455,50 +598,57 @@ export function WorkLibrary({
   }, [closeDetails, detailWork]);
 
   const goToUnit = useCallback((unit: TextbookUnit) => {
-    setActiveUnitId(unit.id);
-    const target = document.getElementById(unitAnchorId(directory?.key ?? bookKey, unit.id));
-    if (!target) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-  }, [bookKey, directory?.key]);
+    goToPage(units.findIndex((item) => item.id === unit.id) + 1);
+  }, [goToPage, units]);
 
-  // The home page can ask for a specific unit ("<bookKey>:<unitId>") before navigating here.
-  useEffect(() => {
-    if (!units.length) return;
+  // Open on the unit the home page asked for ("<bookKey>:<unitId>"), else where this book was left.
+  useLayoutEffect(() => {
+    if (!units.length || restoredBook.current === currentBookKey) return;
+    restoredBook.current = currentBookKey;
     let requested: string | null = null;
+    let saved: string | null = null;
     try {
       requested = window.sessionStorage.getItem(RECORDS_FOCUS_UNIT_KEY);
       if (requested) window.sessionStorage.removeItem(RECORDS_FOCUS_UNIT_KEY);
-    } catch {
-      return;
-    }
-    if (!requested) return;
-    const [requestedBook, requestedUnit] = requested.split(":");
-    if (requestedBook !== (directory?.key ?? bookKey)) return;
-    const unit = units.find((item) => item.id === requestedUnit);
-    if (!unit) return;
-    // Landing on a page, so jump instantly (a smooth scroll gets cut short while the page settles).
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      setActiveUnitId(unit.id);
-      const anchorId = unitAnchorId(directory?.key ?? bookKey, unit.id);
-      document.getElementById(anchorId)?.scrollIntoView({ behavior: "auto", block: "start" });
-      const title = document.getElementById(`${anchorId}-title`);
+      saved = window.sessionStorage.getItem(PAGE_STORAGE_PREFIX + currentBookKey);
+    } catch { /* Start from the cover. */ }
+    const [requestedBook, requestedUnit] = requested?.split(":") ?? [];
+    const requestedIndex = requestedBook === currentBookKey ? units.findIndex((item) => item.id === requestedUnit) : -1;
+    const index = requestedIndex >= 0 ? requestedIndex + 1 : Math.min(Number(saved) || 0, units.length + 1);
+    goToPage(index, true);
+    if (requestedIndex >= 0) {
+      const title = document.getElementById(`${unitAnchorId(currentBookKey, units[requestedIndex].id)}-title`);
       if (title) {
         title.tabIndex = -1;
         title.focus({ preventScroll: true });
       }
-    }));
-  }, [bookKey, directory?.key, units]);
+    }
+  }, [currentBookKey, goToPage, units]);
+
+  // On narrow screens the journey strip scrolls; keep the current stop in view.
+  useEffect(() => {
+    const stops = libraryRef.current?.querySelector<HTMLElement>(".records-journey-stops");
+    const current = stops?.querySelector<HTMLElement>("button[aria-current=page]");
+    if (!stops || !current || stops.scrollWidth <= stops.clientWidth) return;
+    const left = (current.parentElement?.offsetLeft ?? 0) - (stops.clientWidth - current.offsetWidth) / 2;
+    stops.scrollTo({ left, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, [pageIndex]);
+
+  useEffect(() => {
+    if (restoredBook.current !== currentBookKey) return;
+    try { window.sessionStorage.setItem(PAGE_STORAGE_PREFIX + currentBookKey, String(pageIndex)); } catch { /* Not remembered. */ }
+  }, [currentBookKey, pageIndex]);
 
   const openWork = useCallback((work: UnitWork, sourceCard?: HTMLButtonElement) => {
     const routeTitle = routeTitleFor(work, allWorks);
+    markLearned(work);
     const cover = sourceCard?.querySelector<HTMLElement>(".records-score-image, .records-score-placeholder");
     if (cover) cover.style.viewTransitionName = "work-cover";
     startViewTransition(() => {
       cover?.style.removeProperty("view-transition-name");
       onOpen(routeTitle, directory?.key ?? bookKey);
     });
-  }, [allWorks, bookKey, directory?.key, onOpen]);
+  }, [allWorks, bookKey, directory?.key, markLearned, onOpen]);
 
   const retryUnitsLoad = () => {
     setUnitRows(null);
@@ -506,9 +656,19 @@ export function WorkLibrary({
     setRetryUnits((value) => value + 1);
   };
 
+  const toggleTasks = useCallback((unitId: string, show: boolean) => {
+    setTaskUnits((current) => {
+      const next = new Set(current);
+      if (show) next.add(unitId);
+      else next.delete(unitId);
+      return next;
+    });
+  }, []);
+
   const chapterContents = useMemo(() => units.map((unit) => {
-    const anchorId = unitAnchorId(directory?.key ?? bookKey, unit.id);
+    const anchorId = unitAnchorId(currentBookKey, unit.id);
     const tasks = unit.kind === "project" ? [] : (unit.tasks ?? []);
+    const showTasks = tasks.length > 0 && taskUnits.has(unit.id);
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
     const sortedKeywords = [...(unit.keywords ?? [])]
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"));
@@ -530,63 +690,85 @@ export function WorkLibrary({
     });
     const featuredQuote = unit.works.find((work) => work.starred && work.summary)
       ?? unit.works.find((work) => work.summary);
+    const unitLearned = learnedIn(unit.works);
     return <article
       aria-labelledby={`${anchorId}-title`}
-      className={`records-chapter${unit.kind === "project" ? " is-project" : ""}`}
+      aria-roledescription="单元页"
+      className={`records-chapter records-page${unit.kind === "project" ? " is-project" : ""}`}
       data-kind={unit.kind ?? "chapter"}
       data-chapter-reveal
       data-unit-id={unit.id}
       id={anchorId}
       key={unit.id}
     >
-      <header className="records-chapter-heading">
+      <div className="records-leaf records-leaf-intro">
         <figure className="records-chapter-art">
           <img alt={`${unit.title}单元插画`} className="records-chapter-art-image records-lazy-image" data-src={publicAssetUrl(unitArtwork(unit))} decoding="async" height="750" loading="lazy" width="1200" />
         </figure>
-        <div className="records-chapter-title-block">
+        <header className="records-chapter-title-block">
           <span aria-hidden="true" className="records-chapter-number">{numeral}</span>
-          <p className="records-chapter-kicker">第 {numeral} 单元</p>
-          <h2 id={`${anchorId}-title`}>{unit.title}</h2>
-          {unit.theme && <span className="records-theme-seal">{unit.theme}</span>}
-        </div>
-      </header>
+          <div>
+            <p className="records-chapter-kicker">第 {numeral} 单元</p>
+            <h2 id={`${anchorId}-title`}>{unit.title}</h2>
+            {unit.theme && <span className="records-theme-seal">{unit.theme}</span>}
+          </div>
+        </header>
 
-      <div className="records-chapter-body">
         {Boolean(unit.goals?.length) && <section className="records-chapter-goals" aria-label="本单元先读">
           <h3>本单元先读</h3>
           <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
-          <p className="records-chapter-meta">{unit.works.length} 首作品 · {tasks.length} 项课堂任务</p>
         </section>}
 
-        {unit.kind !== "project" && <aside aria-label="本单元提示" className="records-unit-notes">
+        {unit.kind !== "project" && sortedKeywords.length > 0 && <section aria-label="本单元关键词" className="records-unit-notes">
           <p className="records-notes-label">本单元关键词</p>
           <ul className="records-keywords">{sortedKeywords.map((keyword) => <li key={`${keyword.name}-${keyword.type ?? ""}`}>
             <button type="button" onClick={() => onKnowledge(keyword.name, keyword.type)}><span>{keyword.name}</span><small>×{keyword.count}</small></button>
           </li>)}</ul>
-          {featuredQuote?.summary && <blockquote className="records-unit-quote">
-            <p>「{featuredQuote.summary}」</p>
-            <cite>——{featuredQuote.name}的表现主题</cite>
-          </blockquote>}
-        </aside>}
+        </section>}
 
-        <div className="records-chapter-primary">
-          <section aria-label="作品名录" className="records-chapter-works">
-            <div className="records-section-heading">
-              <h3>作品名录</h3>
-              <p>封面为教材谱例原图 · 悬停翻阅</p>
+        {unit.kind !== "project" && featuredQuote?.summary && <blockquote className="records-unit-quote">
+          <p>「{featuredQuote.summary}」</p>
+          <cite>——{featuredQuote.name}的表现主题</cite>
+        </blockquote>}
+      </div>
+
+      <div className="records-leaf records-leaf-works">
+        <div className="records-leaf-head">
+          {tasks.length > 0
+            ? <div aria-label="本单元内容" className="records-leaf-tabs" role="group">
+              <button aria-pressed={!showTasks} onClick={() => toggleTasks(unit.id, false)} type="button">作品<small>{unit.works.length}</small></button>
+              <button aria-pressed={showTasks} onClick={() => toggleTasks(unit.id, true)} type="button">课堂任务<small>{tasks.length}</small></button>
             </div>
+            : <h3>作品名录</h3>}
+          <p className={`records-unit-progress${unitLearned === unit.works.length ? " is-done" : ""}`}>
+            <span aria-hidden="true" style={{ "--unit-progress": unit.works.length ? unitLearned / unit.works.length : 0 } as CSSProperties} />
+            已学 <b>{unitLearned}</b> / {unit.works.length}
+          </p>
+        </div>
+
+        {showTasks
+          ? <section aria-label="课堂任务" className="records-chapter-tasks">
+            <ol>{tasks.map((task, taskIndex) => <li key={`${unit.id}-task-${taskIndex}`}>
+              <p>{splitTaskText(task.text, task.works, worksById, openWork)}</p>
+              {task.focus?.length > 0 && <div className="records-task-focus" aria-label="练习重点">
+                {task.focus.map((focus) => <span key={focus}>{focus}</span>)}
+              </div>}
+            </li>)}</ol>
+          </section>
+          : <section aria-label="作品名录" className="records-chapter-works">
             <div className="records-score-grid">
-              {sortedWorks.map((work) => {
+              {sortedWorks.map((work, workIndex) => {
                 const starred = Boolean(work.starred);
+                const isLearned = learned.has(learnedKey(currentBookKey, work.id));
                 const melodies = MELODIES[bareWorkName(work.name)] ?? MELODIES[work.name] ?? [];
                 const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
                 const credits = [work.type, authors].filter(Boolean).join(" · ");
                 const modes = isPrimaryBook ? work.modes?.join("、") : "";
                 const activityModeSet = (directory?.grade ?? 3) <= 2 ? EARLY_PRIMARY_ACTIVITY_MODES : LATER_PRIMARY_ACTIVITY_MODES;
                 const activityModes = isPrimaryBook ? (work.modes ?? []).filter((mode) => activityModeSet.includes(mode)) : [];
-                return <article className={`records-score-card${starred ? " is-featured" : ""}`} data-mode={modes || undefined} key={work.id}>
+                return <article className={`records-score-card${starred ? " is-featured" : ""}${isLearned ? " is-learned" : ""}`} data-mode={modes || undefined} key={work.id} style={{ "--card-index": workIndex } as CSSProperties}>
                   <button
-                    aria-label={`打开${work.name}作品详情${modes ? `，学习方式：${modes}` : ""}`}
+                    aria-label={`打开${work.name}作品详情${modes ? `，学习方式：${modes}` : ""}${isLearned ? "，已学" : ""}`}
                     className="records-score-open"
                     id={`records-work-${work.id}`}
                     onClick={(event) => openWork(work, event.currentTarget)}
@@ -597,6 +779,7 @@ export function WorkLibrary({
                         ? <img alt="" className="records-score-image records-lazy-image" data-src={publicAssetUrl(work.scores[0])} decoding="async" loading="lazy" />
                         : <span className="records-score-placeholder"><span>{work.name}</span></span>}
                       {starred && <span className="records-star-seal">重点曲目</span>}
+                      {isLearned && <span className="records-learned-seal">已学</span>}
                       {work.page != null && <span className="records-score-page">教材第 {work.page} 页</span>}
                     </span>
                     <span aria-hidden="true" className="records-score-copy">
@@ -607,83 +790,133 @@ export function WorkLibrary({
                       </span>}
                     </span>
                   </button>
-                  {starred && work.hasMelody && melodies[0] && <span className="records-score-play">
+                  {work.hasMelody && melodies[0] && <span className="records-score-play" onClickCapture={() => markLearned(work)}>
                     <MelodyPlayer melody={melodies[0]} />
                   </span>}
                 </article>;
               })}
             </div>
-          </section>
-
-          {tasks.length > 0 && <section aria-label="课堂任务" className="records-chapter-tasks">
-            <div className="records-section-heading"><h3>课堂任务</h3><span>{tasks.length} 项</span></div>
-            <ol>{tasks.map((task, taskIndex) => <li key={`${unit.id}-task-${taskIndex}`}>
-              <p>{splitTaskText(task.text, task.works, worksById, openWork)}</p>
-              {task.focus?.length > 0 && <div className="records-task-focus" aria-label="练习重点">
-                {task.focus.map((focus) => <span key={focus}>{focus}</span>)}
-              </div>}
-            </li>)}</ol>
           </section>}
-        </div>
       </div>
     </article>;
-  }), [bookKey, directory?.grade, directory?.key, isPrimaryBook, onKnowledge, openWork, units, worksById]);
+  }), [currentBookKey, directory?.grade, isPrimaryBook, learned, learnedIn, markLearned, onKnowledge, openWork, taskUnits, toggleTasks, units, worksById]);
 
   if (!directory) return null;
   const displayTitle = directory.title.replace(/^人音版/, "");
   const detailsReady = bookDataStatus === "ready" && Boolean(bookData);
+  const bookProgress = workCount ? learnedCount / workCount : 0;
+  const endTitle = workCount && learnedCount === workCount ? "小芽开花啦！" : learnedCount ? "小芽长高了" : "种下一颗小芽";
+  const chevron = (direction: "left" | "right") => <svg aria-hidden="true" viewBox="0 0 24 24"><path d={direction === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} /></svg>;
   return <>
-    <section aria-hidden={detailWork ? true : undefined} className="work-library" data-book={directory.key} data-grade={directory.grade}>
-      <header className="records-book-hero" aria-labelledby="records-book-title">
-        <figure className="records-book-hero-art">
-          <img alt={`${directory.title}插画`} decoding="async" fetchPriority="high" height="750" loading="eager" src={publicAssetUrl(`art/${directory.key}.webp`)} width="1200" />
-        </figure>
-        <div className="records-book-hero-copy">
-          <p className="records-book-kicker">卷 {bookNumeral} · 人音版</p>
-          <p aria-hidden="true" className="records-book-brush">音乐 ·</p>
-          <h1 id="records-book-title">{displayTitle}</h1>
-          <p className="records-book-intro">{units.length
-            ? `${units.length} 个单元，${workCount} 首作品——${bookIntroduction(units)}`
-            : unitsError ? "本册目录暂时无法读取。" : "正在读取本册目录…"}</p>
-          {units.length > 0
-            ? <nav aria-label={`${directory.title}单元目录`} className="records-book-directory">
-              {units.map((unit) => <button key={unit.id} onClick={() => goToUnit(unit)} type="button">
-                <span>{unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order}</span>
-                <strong>{unit.title}</strong>
-                <small>{unit.works.length} 首</small>
-              </button>)}
-            </nav>
-            : <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />}
-        </div>
-      </header>
+    <section aria-hidden={detailWork ? true : undefined} className="work-library is-pager" data-book={directory.key} data-grade={directory.grade} ref={libraryRef}>
+      <div className="records-pager">
+        <div aria-label={`${displayTitle}，左右翻页`} aria-roledescription="翻页书" className="records-pager-track" ref={trackRef} role="region">
+          <section aria-label="封面" aria-roledescription="封面" className="records-page records-cover">
+            <header className="records-book-hero" aria-labelledby="records-book-title">
+              <figure className="records-book-hero-art">
+                <img alt={`${directory.title}插画`} decoding="async" fetchPriority="high" height="750" loading="eager" src={publicAssetUrl(`art/${directory.key}.webp`)} width="1200" />
+              </figure>
+              <div className="records-book-hero-copy">
+                <p className="records-book-kicker">卷 {bookNumeral} · 人音版</p>
+                <p aria-hidden="true" className="records-book-brush">音乐 ·</p>
+                <h1 id="records-book-title">{displayTitle}</h1>
+                <p className="records-book-intro">{units.length
+                  ? `${units.length} 个单元，${workCount} 首作品——${bookIntroduction(units)}`
+                  : unitsError ? "本册目录暂时无法读取。" : "正在读取本册目录…"}</p>
+                {units.length > 0
+                  ? <nav aria-label={`${directory.title}单元目录`} className="records-book-directory">
+                    {units.map((unit) => <button key={unit.id} onClick={() => goToUnit(unit)} type="button">
+                      <span>{unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order}</span>
+                      <strong>{unit.title}</strong>
+                      <small>{learnedIn(unit.works) ? `${learnedIn(unit.works)}/` : ""}{unit.works.length} 首</small>
+                    </button>)}
+                  </nav>
+                  : <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />}
+                {!unitsError && <div className="records-cover-actions">
+                  <button className="records-cover-start" disabled={!units.length} onClick={() => goToPage(1)} type="button">翻开第一单元{chevron("right")}</button>
+                  <span aria-hidden="true" className="records-swipe-hint"><i />左右滑动翻页</span>
+                </div>}
+                {unitsError && <div className="records-data-status" role="status">
+                  <p>本册目录读取失败，请重试。</p>
+                  <button type="button" onClick={retryUnitsLoad}>重试</button>
+                </div>}
+                {bookDataStatus === "error" && <div className="records-data-status" role="status">
+                  <p>这一册作品资料读取失败，作品详情中的知识点暂不可用。</p>
+                  <button type="button" onClick={onRetryBookData}>重试</button>
+                </div>}
+                {!units.length && !unitsError && <p className="records-data-status" role="status">正在载入本册单元…</p>}
+              </div>
+            </header>
+          </section>
 
-      {unitsError && <div className="records-data-status" role="status">
-        <p>本册目录读取失败，请重试。</p>
-        <button type="button" onClick={retryUnitsLoad}>重试</button>
-      </div>}
-      {bookDataStatus === "error" && <div className="records-data-status" role="status">
-        <p>这一册作品资料读取失败，作品详情中的知识点暂不可用。</p>
-        <button type="button" onClick={onRetryBookData}>重试</button>
-      </div>}
-
-      {units.length > 0 && <div className="records-reader">
-        <aside aria-label="单元导航" className="records-unit-rail">
-          <span aria-hidden="true" className="records-unit-rail-marker" style={{ "--unit-index": activeIndex } as CSSProperties} />
-          {units.map((unit) => {
-            const active = unit.id === activeUnit?.id;
-            return <button aria-label={unit.title} aria-current={active ? "location" : undefined} className={active ? "is-active" : ""} key={unit.id} onClick={() => goToUnit(unit)} type="button">
-              <span>{unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order}</span>
-              <span aria-hidden="true" className="records-unit-tooltip">{unit.title}</span>
-            </button>;
-          })}
-        </aside>
-
-        <div className="records-chapters">
           {chapterContents}
-        </div>
-      </div>}
 
-      {!units.length && !unitsError && <p className="records-data-status" role="status">正在载入本册单元…</p>}
+          {units.length > 0 && <section aria-labelledby="records-end-title" aria-roledescription="卷尾" className="records-page records-end">
+            <div className="records-end-inner">
+              <Sprout large progress={bookProgress} />
+              <div className="records-end-copy">
+                <p className="records-book-kicker">卷尾 · 我的小芽</p>
+                <h2 id="records-end-title">{endTitle}</h2>
+                <p className="records-end-lead">本册共 {workCount} 首作品，你已学了 <b>{learnedCount}</b> 首。打开一首作品，或听一遍它的旋律，就会盖上「已学」章。</p>
+                <ol className="records-end-units">{units.map((unit) => {
+                  const done = learnedIn(unit.works);
+                  return <li key={unit.id}>
+                    <button className={done === unit.works.length ? "is-done" : ""} onClick={() => goToUnit(unit)} type="button">
+                      <span>{unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order}</span>
+                      <strong>{unit.title}</strong>
+                      <small>{done} / {unit.works.length}</small>
+                    </button>
+                  </li>;
+                })}</ol>
+                <div className="records-end-actions">
+                  {nextBook && onOpenBook && <button className="records-cover-start" onClick={() => onOpenBook(nextBook.key)} type="button">下一册：{nextBook.title.replace(/^人音版/, "")}{chevron("right")}</button>}
+                  <button className="records-end-again" onClick={() => goToPage(0)} type="button">回到封面</button>
+                </div>
+              </div>
+            </div>
+          </section>}
+        </div>
+
+        {pageCount > 1 && <>
+          <button aria-hidden="true" className="records-edge is-prev" disabled={pageIndex === 0} onClick={() => goToPage(targetPage.current - 1)} tabIndex={-1} type="button">{chevron("left")}</button>
+          <button aria-hidden="true" className="records-edge is-next" disabled={pageIndex >= pageCount - 1} onClick={() => goToPage(targetPage.current + 1)} tabIndex={-1} type="button">{chevron("right")}</button>
+        </>}
+      </div>
+
+      <nav aria-label="翻页" className="records-journey">
+        {units.length > 0 && <>
+          <button aria-label="上一页" className="records-journey-arrow" disabled={pageIndex === 0} onClick={() => goToPage(targetPage.current - 1)} type="button">{chevron("left")}</button>
+          <div className="records-journey-stops" style={{ "--page-index": pageIndex } as CSSProperties}>
+            <span aria-hidden="true" className="records-journey-drop" />
+            <ol>
+              <li><button aria-current={pageIndex === 0 ? "page" : undefined} aria-label="封面" className="is-cover" onClick={() => goToPage(0)} type="button"><span>封</span></button></li>
+              {units.map((unit, index) => {
+                const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
+                const done = learnedIn(unit.works);
+                return <li key={unit.id}>
+                  <button
+                    aria-current={pageIndex === index + 1 ? "page" : undefined}
+                    aria-label={`第${numeral}单元 ${unit.title}，已学 ${done} / ${unit.works.length}`}
+                    className={done && done === unit.works.length ? "is-done" : ""}
+                    onClick={() => goToPage(index + 1)}
+                    style={{ "--unit-progress": unit.works.length ? done / unit.works.length : 0 } as CSSProperties}
+                    type="button"
+                  >
+                    <span>{numeral}</span>
+                    <span aria-hidden="true" className="records-unit-tooltip">{unit.title}</span>
+                  </button>
+                </li>;
+              })}
+              {units.length > 0 && <li><button aria-current={pageIndex === pageCount - 1 ? "page" : undefined} aria-label="卷尾：我的小芽" className="is-end" onClick={() => goToPage(pageCount - 1)} type="button"><span>尾</span></button></li>}
+            </ol>
+          </div>
+          <p aria-label={`本册已学 ${learnedCount} / ${workCount} 首`} className="records-journey-growth">
+            <Sprout progress={bookProgress} />
+            <span aria-hidden="true"><b>{learnedCount}</b> / {workCount}</span>
+          </p>
+          <button aria-label="下一页" className="records-journey-arrow" disabled={pageIndex >= pageCount - 1} onClick={() => goToPage(targetPage.current + 1)} type="button">{chevron("right")}</button>
+        </>}
+      </nav>
     </section>
 
     {detailWork && <WorkDetail
