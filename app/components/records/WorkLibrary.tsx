@@ -712,22 +712,13 @@ export function WorkLibrary({
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
     const sortedKeywords = [...(unit.keywords ?? [])]
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"));
-    const modeOrder = new Map<string, number>();
-    if (isPrimaryBook) {
-      for (const work of unit.works) {
-        for (const mode of work.modes ?? []) if (!modeOrder.has(mode)) modeOrder.set(mode, modeOrder.size);
-      }
-    }
-    const sortedWorks = [...unit.works].sort((left, right) => {
-      if (isPrimaryBook) {
-        const leftMode = left.modes?.[0];
-        const rightMode = right.modes?.[0];
-        const modeDifference = (modeOrder.get(leftMode ?? "") ?? Number.MAX_SAFE_INTEGER)
-          - (modeOrder.get(rightMode ?? "") ?? Number.MAX_SAFE_INTEGER);
-        if (modeDifference) return modeDifference;
-      }
-      return Number(Boolean(right.starred)) - Number(Boolean(left.starred));
+    // Textbook order: by printed page; a work without a page stays right after the work before it.
+    let lastPage = 0;
+    const pageKeys = unit.works.map((work) => {
+      lastPage = work.page ?? lastPage;
+      return { work, page: lastPage };
     });
+    const sortedWorks = pageKeys.sort((left, right) => left.page - right.page).map((entry) => entry.work);
     const featuredQuote = unit.works.find((work) => work.starred && work.summary)
       ?? unit.works.find((work) => work.summary);
     const unitLearned = learnedIn(unit.works);
@@ -806,7 +797,7 @@ export function WorkLibrary({
                 const modes = isPrimaryBook ? work.modes?.join("、") : "";
                 const activityModeSet = (directory?.grade ?? 3) <= 2 ? EARLY_PRIMARY_ACTIVITY_MODES : LATER_PRIMARY_ACTIVITY_MODES;
                 const activityModes = isPrimaryBook ? (work.modes ?? []).filter((mode) => activityModeSet.includes(mode)) : [];
-                return <article className={`records-score-card${starred ? " is-featured" : ""}${isLearned ? " is-learned" : ""}`} data-mode={modes || undefined} key={work.id} style={{ "--card-index": workIndex } as CSSProperties}>
+                return <article className={`records-score-card${isLearned ? " is-learned" : ""}`} data-mode={modes || undefined} key={work.id} style={{ "--card-index": workIndex } as CSSProperties}>
                   <button
                     aria-label={`打开${work.name}作品详情${modes ? `，学习方式：${modes}` : ""}${isLearned ? "，已学" : ""}`}
                     className="records-score-open"
