@@ -479,6 +479,7 @@ export default function Home() {
                 if (work && isWorkType(work.type)) openLessonPage(work);
               }}
               onKnowledge={openRecordsKnowledge}
+              onOpenBook={(key) => openRecordsBook(key)}
             />
           )}
           {view === "lesson" && canonicalGraph && routeWork && (
