@@ -106,7 +106,8 @@
 .exploration-tab-copy small { overflow: hidden; color: var(--ink-3, #68766E); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .exploration-tab-arrow { margin-left: auto; color: #98A69D; font-size: 14px; }
 .is-active .exploration-tab-arrow { color: var(--exploration-green); }
-.exploration-panel { min-width: 0; }
+/* flow-root: a loading box margin (pages-v5 gives it 72px) must not collapse through and move the panel. */
+.exploration-panel { display: flow-root; min-width: 0; }
 .exploration-panel:focus { outline: none; }
 
 .route-view-exploration > .exploration-shell .timeline-page {
@@ -148,3 +149,6 @@
 @media (prefers-reduced-motion: reduce) {
   .exploration-tabs button { transition-duration: 1ms; }
 }
+
+/* 页面分块与律坊数据载入时的占位，留在面板里，标题与标签不再被推动。 */
+.exploration-panel > .app-view-status { display: grid; min-height: min(640px, calc(100dvh - 240px)); place-items: center; max-width: none; margin: 0; border: 0; background: transparent; color: var(--ink-2, #44544B); }

@@ -350,8 +350,10 @@ export default function Home() {
   };
 
   const needsData = view !== "home" && view !== "import" && view !== "atlas" && view !== "timeline";
+  // The 律坊 waits for data inside the exploration panel, so the shared heading never jumps when the data lands.
+  const labLoading = view === "lab" && !canonicalGraph;
   const dataStatus =
-    needsData && view !== "records" && index.status !== "ready" ? (
+    needsData && view !== "records" && view !== "lab" && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
         {index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : `正在载入${PUBLISHED_BOOK_COUNT_LABEL}教材数据…`}
       </div>
@@ -521,6 +523,7 @@ export default function Home() {
             onViewChange={nextView => navigate({ view: nextView })}
           >
             {view === "atlas" && <AtlasPage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+            {labLoading && <div className="app-view-status exploration-loading" role="status" aria-live="polite">{index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在准备律盘…"}</div>}
             {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
             {view === "timeline" && <TimelinePage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={destination => navigate(destination)} />}
           </ExplorationPage>}
