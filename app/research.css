@@ -4,17 +4,17 @@
    颜色取 DESIGN-v2 色板并在页面作用域覆盖同名令牌；宣纸底沿用站点共享 --paper。 */
 .research-analysis {
   /* DESIGN-v2 色板（页面作用域） */
-  --p2: #EAE2D0;
-  --p3: #E1D6BF;
-  --sheet: #FBF8F0;
-  --ink: #1B2622;
-  --ink-2: #44504A;
-  --ink-3: #62675B;
-  --pine: #1F4A3C;
-  --pine-deep: #13302A;
-  --seal: #B8392A;
+  --p2: #EEF3F0;
+  --p3: #E5ECE8;
+  --sheet: #FFFFFF;
+  --ink: #17221C;
+  --ink-2: #44544B;
+  --ink-3: #68766E;
+  --pine: #276344;
+  --pine-deep: #194D35;
+  --seal: #AF4236;
   --amber-text: #916319;
-  --line: #CFC4AC;
+  --line: #DCE5DF;
   --kai: "LXGW WenKai", "STKaiti", "KaiTi", "Kaiti SC", "楷体", var(--serif, serif);
   /* 原型中的手绘墨线（章节分隔），线色为墨 */
   --rule-ink: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='8' preserveAspectRatio='none' viewBox='0 0 1200 8'%3E%3Cpath d='M2 4.4 C160 3.1 330 5.2 520 4 S900 2.8 1060 4.3 1180 3.6 1198 4' stroke='%231B2622' stroke-width='1.7' fill='none' stroke-linecap='round' opacity='.62'/%3E%3Cpath d='M40 4.9 C300 4.4 600 5.1 1150 4.6' stroke='%231B2622' stroke-width='.6' fill='none' opacity='.3'/%3E%3C/svg%3E");
@@ -595,9 +595,9 @@
 }
 
 .theme-light .research-info {
-  background: #FBF8F0;
-  color: #1B2622;
-  border-color: #CFC4AC;
+  background: #FFFFFF;
+  color: #17221C;
+  border-color: #DCE5DF;
   box-shadow: -18px 0 44px rgba(27, 38, 34, .22);
 }
 

@@ -9,11 +9,14 @@ import type { BookDirectory } from "../../lib/app/types";
 import type { AppRoute } from "../../lib/app/routing";
 import { loadPeopleSupplement } from "../../lib/timeline/peopleSupplement";
 import { loadYearSupplement } from "../../lib/timeline/yearSupplement";
+import { MELODIES, type Melody } from "../../lib/lesson/melodies";
+import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import {
   BOOKS,
   BOOK_ORDER,
   UNKNOWN,
   filterWorks,
+  eraForYear,
   groupTimelineWorks,
   personDates,
   personYearSource,
@@ -39,6 +42,7 @@ type SourceRow = { work: TimelineWork; evidence?: Evidence };
 type PersonSourceRow = { evidence: TimelineLifetimeEvidence; source?: Evidence };
 type PageData = { timeline: TimelineDataWithPeople; units: TimelineUnit[] };
 type DragState = { startX: number; startLeft: number };
+type StudentSong = { work: TimelineWork; melody: Melody };
 const cache = new Map<string, Promise<unknown>>();
 const TIMELINE_HORIZONTAL_KEY = "yapu.timeline.horizontalLeft";
 const TIMELINE_VERTICAL_KEY = "yapu.timeline.scrollTop";
@@ -56,6 +60,174 @@ function loadJson<T>(path: string): Promise<T> {
 
 function bookShortName(bookKey: string) {
   return (BOOKS[bookKey] ?? bookKey).replace("年级", "").replace("册", "");
+}
+
+function studentEraLabel(from: number | null, to: number | null, ancient: boolean) {
+  if (ancient) return "1700年以前";
+  if (from == null) return UNKNOWN;
+  if (from >= 1930) return `${from}年代`;
+  return `${from}—${to ?? from}年`;
+}
+
+function studentYearLabel(work: TimelineWork) {
+  if (work.yearText) return work.yearText;
+  if (work.yearRange) return work.yearRange[0] === work.yearRange[1]
+    ? `${work.yearRange[0]}年`
+    : `${work.yearRange[0]}—${work.yearRange[1]}年`;
+  return UNKNOWN;
+}
+
+function StudentTimelineEntry({
+  books,
+  stage,
+  onStageChange,
+  selectedBookKey,
+  onSelectBook,
+  works,
+  onOpenTimeline,
+}: {
+  books: BookDirectory[];
+  stage: BookStage;
+  onStageChange: (stage: BookStage) => void;
+  selectedBookKey: string;
+  onSelectBook: (bookKey: string) => void;
+  works: TimelineWork[];
+  onOpenTimeline: (work?: TimelineWork) => void;
+}) {
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [comparisonAnswer, setComparisonAnswer] = useState<string | null>(null);
+  const songs = useMemo(() => {
+    const unique = new Map<string, StudentSong>();
+    works.forEach((work) => {
+      const melody = MELODIES[work.name]?.[0];
+      if (work.yearRange && melody && !unique.has(work.name)) unique.set(work.name, { work, melody });
+    });
+    return [...unique.values()].sort((a, b) => (a.work.yearRange?.[0] ?? Infinity) - (b.work.yearRange?.[0] ?? Infinity));
+  }, [works]);
+  const featured = songs.find(({ work }) => work.name === "《歌唱祖国》") ?? songs[0] ?? null;
+  const discoverySongs = ["《中华人民共和国国歌》", "《歌唱祖国》", "《游击队歌》", "《蓝色多瑙河圆舞曲》"]
+    .map((name) => songs.find(({ work }) => work.name === name))
+    .filter((song): song is StudentSong => Boolean(song));
+  const comparePair = (() => {
+    const earlier = songs.find(({ work }) => work.name === "《蓝色多瑙河圆舞曲》");
+    const later = songs.find(({ work }) => work.name === "《歌唱祖国》");
+    if (earlier && later) return [earlier, later] as const;
+    return songs.length > 1 ? [songs[0], songs[songs.length - 1]] as const : null;
+  })();
+  const eras = useMemo(() => groupTimelineWorks(works).filter((group) => !group.undated), [works]);
+  const answerEra = featured?.work.yearRange ? eraForYear(featured.work.yearRange[0]) : null;
+  const choices = useMemo(() => {
+    if (!answerEra) return [];
+    const correct = eras.find((era) => era.id === answerEra.id);
+    if (!correct) return [];
+    const nearby = eras
+      .filter((era) => era.id !== correct.id)
+      .sort((a, b) => Math.abs((a.from ?? 0) - (correct.from ?? 0)) - Math.abs((b.from ?? 0) - (correct.from ?? 0)))
+      .slice(0, 3);
+    return [correct, ...nearby].sort((a, b) => (a.from ?? -Infinity) - (b.from ?? -Infinity));
+  }, [answerEra, eras]);
+  const comparisonCorrect = comparePair?.[0].work.id ?? null;
+
+  return <main className="student-time-machine" aria-labelledby="student-time-title">
+    <div className="student-time-topbar">
+      <div className="student-time-brand"><span aria-hidden="true">芽</span><span>音乐时光机</span></div>
+      <StageBookPicker
+        allOption={{ key: "", label: "本学段全部" }}
+        ariaLabel="切换教材学段"
+        className="stage-book-picker--timeline"
+        books={books}
+        onSelectBook={onSelectBook}
+        onStageChange={onStageChange}
+        selectedBookKey={selectedBookKey}
+        stage={stage}
+      />
+    </div>
+
+    <header className="student-time-hero">
+      <div>
+        <p className="student-time-kicker"><span>听一听</span><i aria-hidden="true" />猜一猜</p>
+        <h2 id="student-time-title">一段旋律，<br /><em>藏着一个年代。</em></h2>
+        <p className="student-time-lede">从课本里的歌出发，听见它的模样，再去时间长卷里找答案。</p>
+      </div>
+      <div className="student-time-orbit" aria-hidden="true">
+        <span className="student-orbit-year">????</span>
+        <span className="student-orbit-caption">找到这首歌的时间坐标</span>
+        <i className="student-orbit-line" />
+        <span className="student-orbit-dot dot-one" />
+        <span className="student-orbit-dot dot-two" />
+        <span className="student-orbit-dot dot-three" />
+      </div>
+    </header>
+
+    <section className="student-feature" aria-label="听音猜年代">
+      <div className="student-feature-listen">
+        <div className="student-card-heading">
+          <span className="student-step">01</span>
+          <div><p>先听一段</p><h3>{featured?.work.name ?? "课本里的旋律"}</h3></div>
+          <span className="student-card-meta">{featured ? `${bookShortName(featured.work.bookKey)} · 教材谱例` : "本学段暂无可播放谱例"}</span>
+        </div>
+        {featured ? <div className="student-listen-player"><MelodyPlayer melody={featured.melody} /></div> : <p className="student-no-melody">可以先从课本寻歌或年代长卷开始探索。</p>}
+      </div>
+      <div className="student-feature-quiz">
+        <p className="student-quiz-label">听音挑战 <span>约 1 分钟</span></p>
+        <h3>这首作品，大约诞生于哪个时期？</h3>
+        <p className="student-quiz-hint">听听旋律的情绪和节奏，选一个你觉得接近的年代。</p>
+        {choices.length > 0 ? <fieldset className="student-era-choices" aria-label="选择作品年代">
+          {choices.map((era) => <label key={era.id} className={answer === era.id ? "is-picked" : ""}>
+            <input type="radio" name="student-era-answer" value={era.id} checked={answer === era.id} onChange={() => setAnswer(era.id)} />
+            <span>{studentEraLabel(era.from, era.to, era.ancient)}</span><i aria-hidden="true">↗</i>
+          </label>)}
+        </fieldset> : <p className="student-quiz-hint">这段旋律暂时没有可核对的年代，先听一听，再到年表里发现更多作品。</p>}
+        {answer && answerEra && featured && <p className={`student-answer-feedback${answer === answerEra.id ? " is-correct" : ""}`} role="status">
+          {answer === answerEra.id ? "答对了！" : "再听一次也可以。"} 教材资料记为 <strong>{studentYearLabel(featured.work)}</strong>。
+        </p>}
+        <button className="student-open-roll" type="button" onClick={() => onOpenTimeline(featured?.work)}>
+          看它在年代长卷的位置 <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+
+    <section className="student-activity-section" aria-labelledby="student-activity-title">
+      <div className="student-section-heading"><div><p>接下来，换个玩法</p><h2 id="student-activity-title">自己选一条探索路线</h2></div><span>不用闯关，也能发现新线索</span></div>
+      <div className="student-activity-grid">
+        <article className="student-activity-card student-find-card">
+          <span className="student-activity-icon" aria-hidden="true">♫</span>
+          <p className="student-activity-kicker">02 · 课本寻歌</p>
+          <h3>你认识哪一首？</h3>
+          <p>点开熟悉的作品，看看它属于哪个年代。</p>
+          {discoverySongs.length ? <div className="student-work-picks">{discoverySongs.map(({ work }) => <button key={work.id} type="button" onClick={() => onOpenTimeline(work)}>
+            <span>{work.name}</span><small>{studentYearLabel(work)}</small><i aria-hidden="true">→</i>
+          </button>)}</div> : <p className="student-activity-empty">可播放的教材谱例会显示在这里。</p>}
+        </article>
+
+        <article className="student-activity-card student-compare-card">
+          <span className="student-activity-icon" aria-hidden="true">⇄</span>
+          <p className="student-activity-kicker">03 · 年代侦探</p>
+          <h3>哪首歌来得更早？</h3>
+          <p>先凭印象选，再打开时间线索核对。</p>
+          {comparePair ? <fieldset className="student-compare-choices" aria-label="选择年代更早的作品">
+            {comparePair.map(({ work }) => <label key={work.id} className={comparisonAnswer === work.id ? "is-picked" : ""}>
+              <input type="radio" name="student-compare-answer" value={work.id} checked={comparisonAnswer === work.id} onChange={() => setComparisonAnswer(work.id)} />
+              <span>{work.name}</span>
+            </label>)}
+          </fieldset> : <p className="student-activity-empty">再收录一首有谱例的作品，就可以开始比较。</p>}
+          {comparisonAnswer && comparePair && <p className={`student-compare-feedback${comparisonAnswer === comparisonCorrect ? " is-correct" : ""}`} role="status">
+            {comparisonAnswer === comparisonCorrect ? "判断正确，" : "再想想，"}<strong>{comparePair[0].work.name}</strong>（{studentYearLabel(comparePair[0].work)}）比<strong>{comparePair[1].work.name}</strong>（{studentYearLabel(comparePair[1].work)}）更早。
+          </p>}
+        </article>
+
+        <article className="student-activity-card student-roll-card">
+          <span className="student-activity-icon" aria-hidden="true">⌁</span>
+          <p className="student-activity-kicker">04 · 自由浏览</p>
+          <h3>打开完整年代长卷</h3>
+          <p>从古调到今天，拖动时间轴，看看不同年代的音乐作品。</p>
+          <button className="student-roll-button" type="button" onClick={() => onOpenTimeline()}>进入完整年表 <span aria-hidden="true">→</span></button>
+          <small className="student-roll-note">{works.length} 条教材作品记录 · 年代有出处可查</small>
+        </article>
+      </div>
+    </section>
+    <p className="student-time-footnote">作品与年代来自教材记录；补充年代会在完整年表中单独标出。</p>
+  </main>;
 }
 
 function workYearMark(work: TimelineDisplayWork) {
@@ -296,6 +468,8 @@ export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
   const [book, setBook] = useState("");
   const [query, setQuery] = useState("");
   const [activeEra, setActiveEra] = useState("timeline-opening");
+  const [showFullTimeline, setShowFullTimeline] = useState(false);
+  const [pendingJumpEra, setPendingJumpEra] = useState<string | null>(null);
   const [selectedWork, setSelectedWork] = useState<TimelineDisplayWork | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<TimelineDisplayPerson | null>(null);
   const selectedNoteTrigger = useRef<HTMLButtonElement | null>(null);
@@ -313,6 +487,7 @@ export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
     works: pageData.timeline.works.filter((work) => stageBookKeys.has(work.bookKey)),
   } : null, [pageData, stageBookKeys]);
   const rootWorks = useMemo(() => stageTimeline?.works ?? [], [stageTimeline]);
+  const studentWorks = useMemo(() => book ? rootWorks.filter((work) => work.bookKey === book) : rootWorks, [book, rootWorks]);
   const works = useMemo(() => stageTimeline ? filterWorks(stageTimeline, book, query) : [], [stageTimeline, book, query]);
   const groups = useMemo(() => groupTimelineWorks(works), [works]);
   const visibleWorkIds = useMemo(() => new Set(works.map(work => work.id)), [works]);
@@ -454,14 +629,29 @@ export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
     }
   };
 
-  const jumpTo = (id: string) => {
+  const jumpTo = useCallback((id: string) => {
     const section = document.getElementById(id);
     if (!section) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (window.matchMedia("(max-width: 760px)").matches) section.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
     else scroller.current?.scrollTo({ left: Math.max(0, section.offsetLeft - (id === "timeline-opening" ? 0 : 40)), behavior: reducedMotion ? "instant" : "smooth" });
     setActiveEra(id);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!showFullTimeline || !pendingJumpEra) return;
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        jumpTo(pendingJumpEra);
+        setPendingJumpEra(null);
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [showFullTimeline, pendingJumpEra, groups, jumpTo]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const target = event.target;
@@ -518,8 +708,27 @@ export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
   }, [activeEra, groups]);
   const usedArt = new Set<string>();
   const decoratedGroups = groups.map((group, index) => ({ group, image: artForEra(group, pageData?.units ?? [], usedArt, index) }));
-  return <div className="timeline-page" ref={root} onPointerDown={closeNoteFromOutside} aria-labelledby="timeline-title">
+  const openFullTimeline = (work?: TimelineWork) => {
+    setSelectedWork(null);
+    setSelectedPerson(null);
+    setBook("");
+    setQuery(work ? work.name.replace(/^《|》$/g, "") : "");
+    setPendingJumpEra(work?.yearRange ? eraForYear(work.yearRange[0]).id : null);
+    setShowFullTimeline(true);
+  };
+  return <div className={`timeline-page${showFullTimeline ? "" : " is-student-entry"}`} ref={root} onPointerDown={closeNoteFromOutside} aria-labelledby={showFullTimeline ? "timeline-title" : "student-time-title"}>
+    {!showFullTimeline ? error ? <div className="student-time-error" role="alert"><p>年表资料暂时没有载入。</p><button type="button" onClick={() => setAttempt(value => value + 1)}>重新载入</button></div> : pageData ? <StudentTimelineEntry
+      key={`${stage}:${book}`}
+      books={books}
+      stage={stage}
+      onStageChange={(nextStage) => { setBook(""); setQuery(""); onStageChange(nextStage); }}
+      selectedBookKey={book}
+      onSelectBook={changeBook}
+      works={studentWorks}
+      onOpenTimeline={openFullTimeline}
+    /> : <p className="timeline-loading" role="status">正在载入音乐探索…</p> : <>
     <div className="timeline-toolbar" aria-label="作品年表筛选">
+      <button className="timeline-back-to-student" type="button" onClick={() => { setSelectedWork(null); setSelectedPerson(null); setShowFullTimeline(false); setBook(""); setQuery(""); }}><span aria-hidden="true">←</span> 音乐时光机</button>
       {multipleStages ? <StageBookPicker
         allOption={{ key: "", label: "本学段全部" }}
         ariaLabel="按教材册别筛选"
@@ -553,7 +762,7 @@ export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
               <p>{scopeLabel}里的作品，依年代展成一卷。<b>从左往右读</b>：每一段配一幅教材插画，作品挂在下方的时间轴上。</p>
                 <div className="timeline-legend"><span><i className="timeline-legend-seal is-red">1935</i>作品、人物的教材原文年代</span><span><i className="timeline-legend-seal is-blue">1950</i>作品、人物的补充年代（非教材）</span></div>
               </div>
-              <h1 className="timeline-title-vertical" id="timeline-title"><span>循着年代</span><span>翻阅作品</span></h1>
+              <h2 className="timeline-title-vertical" id="timeline-title"><span>循着年代</span><span>翻阅作品</span></h2>
             </section>
             <div className="timeline-axis" aria-hidden="true" />
             {pageData && decoratedGroups.map(({ group, image }) => {
@@ -598,7 +807,8 @@ export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
       </div>
       {unrolling && <div className="timeline-unroll" aria-hidden="true" onAnimationEnd={() => setUnrolling(false)}><i className="timeline-roll-rod" /><span /></div>}
     </div>}
-    {selectedWork && <TimelineNote key={selectedWork.id} work={selectedWork} position={notePosition} onOpenRecord={onOpenRecord} onClose={() => setSelectedWork(null)} />}
-    {selectedPerson && <TimelinePersonNote key={selectedPerson.id} person={selectedPerson} position={notePosition} onClose={() => setSelectedPerson(null)} />}
+    {showFullTimeline && selectedWork && <TimelineNote key={selectedWork.id} work={selectedWork} position={notePosition} onOpenRecord={onOpenRecord} onClose={() => setSelectedWork(null)} />}
+    {showFullTimeline && selectedPerson && <TimelinePersonNote key={selectedPerson.id} person={selectedPerson} position={notePosition} onClose={() => setSelectedPerson(null)} />}
+    </>}
   </div>;
 }

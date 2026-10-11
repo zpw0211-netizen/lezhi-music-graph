@@ -30,14 +30,14 @@ body::before {
 .home-portal p { margin-top: 0; }
 .home-portal svg { display: block; }
 
-/* The shared navigation keeps its existing menu on other routes. */
+/* The shared navigation keeps its primary destinations visible on every viewport. */
 .home-nav {
   position: sticky;
   top: 0;
   z-index: 80;
   width: 100%;
-  border-bottom: 1px solid rgb(207 196 172 / 72%);
-  background: rgb(244 238 225 / 91%);
+  border-bottom: 1px solid rgb(220 229 223 / 88%);
+  background: rgb(255 255 255 / 94%);
   backdrop-filter: blur(14px);
 }
 .home-nav-inner {
@@ -121,7 +121,6 @@ body::before {
   background: transparent;
 }
 .home-nav-search svg { width: 18px; height: 18px; }
-.home-nav-menu { display: none; }
 .app-nav-search { position: relative; display: flex; align-items: center; gap: 8px; }
 .app-nav-search > svg { width: 16px; height: 16px; }
 .app-nav-search input {
@@ -561,7 +560,7 @@ body::before {
 .home-portal .home-bookmark-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
 .home-portal .home-bookmark-heading h2 { margin: 0; font: 400 clamp(32px, 3.4vw, 44px)/1.25 var(--kai); }
 .home-portal .home-bookmark-heading p { max-width: 28em; margin: 0 0 2px; color: var(--ink-2); font: 15px/1.8 var(--serif); }
-.home-portal .home-bookmark-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 4vw, 56px); }
+.home-portal .home-bookmark-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(22px, 4vw, 64px); max-width: 1120px; }
 .home-portal .home-bookmark-item {
   position: relative;
   display: block;
@@ -575,7 +574,7 @@ body::before {
   cursor: pointer;
 }
 .home-portal .home-bookmark-item:focus-visible { outline-offset: 2px; }
-.home-portal .home-bookmark-stage { position: relative; display: grid; justify-items: center; height: 520px; padding-top: 15px; overflow: hidden; }
+.home-portal .home-bookmark-stage { position: relative; display: grid; justify-items: center; height: 430px; padding-top: 15px; overflow: hidden; }
 .home-portal .home-bookmark-string { position: relative; z-index: 1; width: 1px; height: 41px; background: var(--seal); }
 .home-portal .home-bookmark-knot { position: absolute; z-index: 2; top: 50px; left: calc(50% - 3px); width: 7px; height: 7px; border: 1px solid var(--seal); border-radius: 50%; background: var(--paper); }
 .home-portal .home-bookmark-tassel { position: absolute; z-index: 1; top: 56px; left: calc(50% - 1px); width: 1px; height: 20px; background: var(--seal); transform-origin: top; transition: transform .55s var(--ease); }
@@ -602,8 +601,8 @@ body::before {
 .home-portal .home-bookmark-paper::before { top: 18px; }
 .home-portal .home-bookmark-paper::after { bottom: 17px; }
 .home-portal .home-bookmark-paper > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.home-portal .home-bookmark-seal { position: relative; z-index: 1; display: grid; place-items: center; width: 36px; height: 50px; margin-top: 8px; border: 1px solid var(--seal); background: rgb(247 243 234 / 70%); color: var(--seal); font: 13px/1.2 var(--kai); writing-mode: vertical-rl; letter-spacing: .1em; }
-.home-portal .home-bookmark-label { position: relative; z-index: 1; margin-top: 8px; color: var(--ink); font: 400 24px/1.4 var(--kai); writing-mode: vertical-rl; white-space: nowrap; text-shadow: 0 0 10px #F7F3EA, 0 0 4px #F7F3EA; }
+.home-portal .home-bookmark-seal { position: relative; z-index: 1; display: grid; place-items: center; width: 36px; height: 50px; margin-top: 8px; border: 1px solid var(--seal); background: rgb(255 255 255 / 78%); color: var(--seal); font: 13px/1.2 var(--kai); writing-mode: vertical-rl; letter-spacing: .1em; }
+.home-portal .home-bookmark-label { position: relative; z-index: 1; margin-top: 8px; color: var(--ink); font: 400 24px/1.4 var(--kai); writing-mode: vertical-rl; white-space: nowrap; text-shadow: 0 0 10px #fff, 0 0 4px #fff; }
 .home-portal .home-bookmark-item:hover .home-bookmark-paper,
 .home-portal .home-bookmark-item:focus-visible .home-bookmark-paper { transform: translateY(-13px); }
 .home-portal .home-bookmark-item:hover .home-bookmark-tassel,
@@ -662,23 +661,13 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
   .home-portal .home-lab { grid-template-columns: minmax(320px, .86fr) minmax(0, 1.14fr); gap: clamp(22px, 3vw, 36px); }
 }
 @media (max-width: 960px) {
-  .home-nav-menu { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; padding: 8px 12px; border: 1px solid var(--line); background: var(--paper); font-size: 13px; }
-  .home-nav-content { position: absolute; top: calc(100% + 1px); right: 0; left: 0; display: none; align-items: stretch; flex-direction: column; gap: 12px; padding: 16px 20px 20px; border-bottom: 1px solid var(--line); background: var(--paper); box-shadow: 0 14px 22px rgb(27 38 34 / 8%); }
-  .home-nav-content.is-open { display: flex; }
-  .home-nav-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 14px; }
-  .home-nav-links button, .home-nav-links a { min-height: 42px; font-size: 14px; }
-  .home-nav-actions { justify-content: flex-start; }
+  .home-nav-inner { gap: 12px; min-height: 62px; padding-right: 14px; padding-left: 14px; }
+  .home-nav-content { position: static; display: flex; flex: 1 1 auto; align-items: center; justify-content: flex-start; min-width: 0; overflow: hidden; padding: 0; border: 0; background: transparent; box-shadow: none; }
+  .home-nav-links { display: flex; flex: 1 1 auto; width: 100%; min-width: 0; flex-wrap: nowrap; justify-content: flex-start; gap: 16px; overflow-x: auto; scrollbar-width: none; }
+  .home-nav-links::-webkit-scrollbar { display: none; }
+  .home-nav-links button, .home-nav-links a { flex: 0 0 auto; min-height: 38px; font-size: 12px; }
+  .home-nav-actions { display: none; }
   .home-nav-center { display: none; }
-  .home-portal .home-nav-inner { display: grid; grid-template-columns: 1fr; grid-template-rows: 43px 31px; gap: 0; min-height: 80px; padding: 2px 18px 0; }
-  .home-portal .home-brand { grid-row: 1; justify-self: start; }
-  .home-portal .home-nav-menu { display: none; }
-  .home-portal .home-nav-content,
-  .home-portal .home-nav-content.is-open { position: static; grid-row: 2; display: flex; align-items: center; gap: 0; width: 100%; min-width: 0; overflow: hidden; padding: 0; border: 0; background: transparent; box-shadow: none; }
-  .home-portal .home-nav-links { display: flex; flex: 0 0 auto; width: 100%; min-width: 0; flex-wrap: nowrap; justify-content: flex-start; gap: 18px; overflow-x: auto; scrollbar-width: none; }
-  .home-portal .home-nav-links::-webkit-scrollbar { display: none; }
-  .home-portal .home-nav-links button,
-  .home-portal .home-nav-links a { flex: 0 0 auto; width: auto; min-height: 29px; font-size: 12px; }
-  .home-portal .home-nav-actions { display: none; }
 }
 @media (max-width: 900px) {
   .home-portal .home-hero { min-height: 0; padding: 18px 22px 14px; }

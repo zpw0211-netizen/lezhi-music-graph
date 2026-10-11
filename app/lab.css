@@ -1,8 +1,10 @@
 /* The laboratory keeps the approved paper, ink, seal, and bronze palette local to this route. */
 .ink-app:has(.lupan-lab),
-.workspace:has(.lupan-lab) { background: #F4EEE1; }
-.route-view-lab { display: flow-root; min-height: calc(100dvh - 65px); background: #F4EEE1; }
-.route-view-lab > .app-view-status {
+.workspace:has(.lupan-lab) { background: #F7F9F8; }
+.route-view-lab,
+.route-view-exploration { display: flow-root; min-height: calc(100dvh - 65px); background: #F7F9F8; }
+.route-view-lab > .app-view-status,
+.route-view-exploration > .app-view-status {
   display: grid;
   min-height: calc(100dvh - 65px);
   place-items: start center;
@@ -12,18 +14,18 @@
   font: 14px/1.7 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 .lupan-lab {
-  --lupan-paper: #F4EEE1;
-  --lupan-paper-2: #EAE2D0;
-  --lupan-sheet: #FBF8F0;
-  --lupan-ink: #1B2622;
-  --lupan-ink-2: #44504A;
-  --lupan-ink-3: #62675B;
-  --lupan-pine: #1F4A3C;
-  --lupan-pine-deep: #13302A;
-  --lupan-seal: #B8392A;
+  --lupan-paper: #F7F9F8;
+  --lupan-paper-2: #EEF3F0;
+  --lupan-sheet: #FFFFFF;
+  --lupan-ink: #17221C;
+  --lupan-ink-2: #44544B;
+  --lupan-ink-3: #68766E;
+  --lupan-pine: #276344;
+  --lupan-pine-deep: #194D35;
+  --lupan-seal: #AF4236;
   --lupan-amber: #C98A22;
   --lupan-amber-light: #F3D9A4;
-  --lupan-line: #CFC4AC;
+  --lupan-line: #DCE5DF;
   --lupan-bronze: #B89660;
   --lupan-ease: cubic-bezier(.16, 1, .3, 1);
   position: relative;
@@ -42,7 +44,7 @@
   pointer-events: none;
   content: "";
   inset: 0;
-  opacity: .22;
+  opacity: .07;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .25 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -68,7 +70,7 @@
   letter-spacing: .28em;
 }
 .lupan-intro .lupan-kicker { margin: 0; }
-.lupan-intro h1 {
+.lupan-intro :is(h1, h2) {
   margin: 0;
   font: 400 30px/1.2 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif);
   letter-spacing: .14em;
@@ -88,16 +90,14 @@
 .lupan-stage {
   display: grid;
   position: relative;
-  /* The third track opens only while the explanation card is showing; the dial glides left to make room. */
-  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) 0px;
+  /* Keep the dial's footprint fixed while its explanation changes. */
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) min(330px, 30vw);
   align-items: center;
   column-gap: 0;
   row-gap: 14px;
-  transition: grid-template-columns .45s var(--lupan-ease);
   min-height: calc(100dvh - 65px - 64px);
   padding: 10px 0 14px;
 }
-.lupan-stage.has-card { grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) min(330px, 30vw); }
 .lupan-stick-board { align-self: center; min-width: 0; padding-right: clamp(12px, 2vw, 28px); }
 .lupan-side-lead {
   margin: 0 0 22px;
@@ -126,12 +126,10 @@
   align-items: center;
   justify-content: center;
   padding: 14px 0 10px;
-  border: 1px solid #90734D;
+  border: 1px solid #DCE5DF;
   border-radius: 2px 2px 7px 7px;
-  background:
-    linear-gradient(90deg, rgba(60,44,22,.09), transparent 18%, rgba(255,255,255,.32) 50%, rgba(60,44,22,.06) 83%, transparent),
-    linear-gradient(180deg, #DED0AB, #C9B98F 52%, #D6C49A);
-  box-shadow: 2px 3px 0 rgba(75,57,34,.08);
+  background: linear-gradient(180deg, #FFFFFF, #F0F5F2 52%, #FFFFFF);
+  box-shadow: 2px 3px 0 rgba(39,99,68,.06);
   transition: transform .48s var(--lupan-ease), opacity .35s ease;
 }
 .lupan-bamboo::before,
@@ -140,8 +138,8 @@
   right: 3px;
   left: 3px;
   height: 2px;
-  border-top: 1px solid rgba(80,61,35,.38);
-  border-bottom: 1px solid rgba(255,255,255,.38);
+  border-top: 1px solid rgba(39,99,68,.18);
+  border-bottom: 1px solid rgba(255,255,255,.9);
   content: "";
 }
 .lupan-bamboo::before { top: 8px; }
@@ -151,9 +149,7 @@
   z-index: 1;
   transform: translate(3px, -3px) rotate(1.2deg);
   border-color: var(--lupan-pine);
-  background:
-    linear-gradient(90deg, rgba(60,44,22,.08), transparent 18%, rgba(255,255,255,.4) 50%, rgba(60,44,22,.04) 83%, transparent),
-    linear-gradient(180deg, #E5D9B9, #D4C49E 52%, #E0D0A7);
+  background: linear-gradient(180deg, #F4FAF6, #E7F3EB 52%, #F4FAF6);
 }
 .lupan-bamboo span {
   writing-mode: vertical-rl;
@@ -252,12 +248,11 @@
 @keyframes lupan-ink-trace { to { stroke-dashoffset: 0; } }
 .lupan-ink-pool { fill: var(--lupan-pine-deep); opacity: .18; pointer-events: none; }
 .lupan-scale-note { cursor: pointer; outline: none; }
-.lupan-note-hit { fill: rgba(251,248,240,.025); stroke: transparent; stroke-width: 2; }
+.lupan-note-hit { fill: transparent; stroke: transparent; stroke-width: 2; pointer-events: all; }
 /* Each tone is a polished stud set into the bronze. */
 .lupan-note-shadow { fill: rgba(40,26,8,.32); }
 .lupan-note-core { fill: url(#lupan-stud); stroke: #4E361A; stroke-width: 1.6; }
-.lupan-scale-note:hover .lupan-note-core,
-.lupan-scale-note:focus-visible .lupan-note-core { fill: url(#lupan-stud-lit); stroke: #2F200C; stroke-width: 2.4; }
+.lupan-scale-note:focus-visible .lupan-note-core { fill: url(#lupan-stud-lit); stroke: #2F200C; stroke-width: 1.6; }
 .lupan-scale-note.is-sounding .lupan-note-core { fill: url(#lupan-stud-lit); stroke: var(--lupan-seal); stroke-width: 2.6; }
 .lupan-scale-note.is-inspected .lupan-note-core { stroke: var(--lupan-seal); stroke-width: 3; }
 .lupan-scale-note.is-inspected .lupan-note-halo { opacity: .8; transform: scale(1.22); stroke: var(--lupan-seal); }
@@ -290,7 +285,8 @@
 .lupan-hub-shadow { fill: rgba(30,18,6,.38); }
 .lupan-hub { fill: url(#lupan-patina); stroke: #E2C68A; stroke-width: 1.6; }
 .lupan-hub-inner { fill: none; stroke: rgba(240,214,156,.38); stroke-width: 1; }
-.lupan-wheel-hub:hover .lupan-hub,
+.lupan-wheel-hub .lupan-hub { transition: stroke .16s ease; }
+.lupan-wheel-hub:hover .lupan-hub { stroke: #FFE7AE; }
 .lupan-wheel-hub:focus-visible .lupan-hub,
 .lupan-wheel-hub.is-inspected .lupan-hub { stroke: #FFE7AE; stroke-width: 2.4; }
 .lupan-hub-main { fill: #F1D79C; font: 400 30px/1 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); text-anchor: middle; dominant-baseline: central; }
@@ -312,8 +308,7 @@
 }
 .lupan-turn-controls button:hover { color: var(--lupan-seal); border-color: var(--lupan-seal); }
 .lupan-turn-controls span { color: var(--lupan-ink-3); font: 11px/1.5 var(--serif, "Songti SC", "STSong", serif); }
-/* Right-hand card: a slip of paper that slides in with whatever was clicked on the dial. */
-/* Pops out over the right side only after something on the dial is clicked. */
+/* The right-hand explanation keeps a steady footprint so inspecting a tone never shifts the dial. */
 .lupan-inspector { position: relative; z-index: 4; align-self: center; min-width: 0; padding-left: 20px; }
 .lupan-card-close {
   position: absolute;
@@ -334,11 +329,8 @@
   padding: 22px 22px 20px 24px;
   border: 1px solid var(--lupan-line);
   border-left: 3px solid var(--lupan-pine);
-  background:
-    repeating-linear-gradient(0deg, transparent 0 27px, rgba(184,57,42,.05) 27px 28px),
-    linear-gradient(180deg, rgba(255,255,255,.5), transparent 40%),
-    var(--lupan-sheet);
-  box-shadow: 0 22px 44px -22px rgba(56,40,16,.6), 0 2px 6px rgba(56,40,16,.08);
+  background: linear-gradient(180deg, #FFFFFF, #FAFCFB 100%);
+  box-shadow: 0 22px 44px -22px rgba(29,53,40,.24), 0 2px 6px rgba(29,53,40,.06);
   animation: lupan-card-in .46s var(--lupan-ease) both;
 }
 .lupan-card.is-extension { border-left-color: var(--lupan-seal); }
@@ -366,14 +358,11 @@
   margin: 1px auto 0;
   border-top: 1px solid var(--lupan-line);
   border-bottom: 1px solid var(--lupan-line);
-  background:
-    repeating-linear-gradient(90deg, transparent 0 41px, rgba(184,57,42,.075) 41px 42px),
-    linear-gradient(180deg, rgba(255,255,255,.23), transparent 34%, rgba(120,90,50,.035)),
-    var(--lupan-sheet);
+  background: #FFFFFF;
 }
 .lupan-score-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 2px 12px 0; color: var(--lupan-ink-3); font: 10px/1.5 var(--serif, "Songti SC", "STSong", serif); }
 .lupan-score-head strong { color: var(--lupan-ink-2); font-weight: 400; letter-spacing: .08em; }
-.lupan-score-view { position: relative; height: 48px; overflow: hidden; border-top: 1px solid rgba(207,196,172,.45); }
+.lupan-score-view { position: relative; height: 48px; overflow: hidden; border-top: 1px solid rgba(145,171,155,.34); }
 .lupan-score-view::before,
 .lupan-score-view::after { position: absolute; z-index: 0; right: 0; left: 0; height: 1px; background: rgba(98,103,91,.18); content: ""; }
 .lupan-score-view::before { top: 15px; }
@@ -456,8 +445,8 @@
 .lupan-works-heading h2 { margin-top: 2px; }
 .lupan-works-heading > p { max-width: 410px; margin: 0; color: var(--lupan-ink-3); font: 11px/1.7 var(--serif, "Songti SC", "STSong", serif); text-align: right; }
 .lupan-works-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--lupan-line); border-left: 1px solid var(--lupan-line); }
-.lupan-work-slip { position: relative; min-width: 0; min-height: 112px; padding: 12px 14px 34px 43px; border-right: 1px solid var(--lupan-line); border-bottom: 1px solid var(--lupan-line); background: repeating-linear-gradient(90deg, transparent 0 30px, rgba(184,57,42,.06) 30px 31px), var(--lupan-sheet); }
-.lupan-work-slip::before { position: absolute; top: 11px; bottom: 11px; left: 30px; width: 1px; background: rgba(184,57,42,.35); content: ""; }
+.lupan-work-slip { position: relative; min-width: 0; min-height: 112px; padding: 12px 14px 34px 43px; border-right: 1px solid var(--lupan-line); border-bottom: 1px solid var(--lupan-line); background: var(--lupan-sheet); }
+.lupan-work-slip::before { position: absolute; top: 11px; bottom: 11px; left: 30px; width: 1px; background: rgba(39,99,68,.2); content: ""; }
 .lupan-work-book { display: inline-block; color: var(--lupan-seal); font: 10px/1.5 var(--serif, "Songti SC", "STSong", serif); letter-spacing: .09em; }
 .lupan-work-slip h3 { overflow: hidden; margin: 2px 0; font: 400 20px/1.3 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); text-overflow: ellipsis; white-space: nowrap; }
 .lupan-work-evidence { display: block; overflow: hidden; color: var(--lupan-ink-3); font: 10px/1.5 var(--serif, "Songti SC", "STSong", serif); text-overflow: ellipsis; white-space: nowrap; }
@@ -476,21 +465,46 @@
 }
 @media (max-width: 1100px) {
   .lupan-lab { width: calc(100% + 40px); margin-left: -20px; }
-  .lupan-stage { grid-template-columns: minmax(140px, 170px) minmax(0, 1fr) 0px; min-height: 0; }
-  .lupan-stage.has-card { grid-template-columns: minmax(140px, 170px) minmax(0, 1fr) min(290px, 34vw); }
+  .lupan-stage { grid-template-columns: minmax(140px, 170px) minmax(0, 1fr) min(290px, 34vw); min-height: 0; }
   .lupan-bamboo small { font-size: 8px; }
 }
+@media (min-width: 1101px) {
+  .lupan-stage { grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) minmax(170px, 185px); }
+  .lupan-inspector { padding-left: 12px; }
+  .lupan-card { padding: 18px 14px 16px 16px; }
+  .lupan-card-title { gap: 8px; font-size: 34px; }
+  .lupan-card-title span { font-size: 13px; }
+  .lupan-card-badges { gap: 4px; margin-bottom: 10px; }
+  .lupan-card-badges b { padding: 1px 6px; font-size: 10px; }
+  .lupan-card-text { font-size: 13px; line-height: 1.75; }
+  .lupan-card-facts div { grid-template-columns: 54px 1fr; gap: 6px; }
+  .lupan-card-facts dt { font-size: 11px; }
+  .lupan-card-facts dd { font-size: 12px; line-height: 1.6; }
+  .lupan-card-works button { font-size: 13px; }
+}
 @media (max-width: 900px) {
+  .lupan-stage { grid-template-columns: 104px minmax(0, 1fr) 164px; min-height: 0; }
+  .lupan-inspector { grid-column: auto; width: auto; justify-self: auto; padding-left: 8px; }
+  .lupan-dial-wrap { width: min(100%, 520px, calc(100dvh - 220px)); min-width: 0; }
+  .lupan-card { padding: 14px 12px 14px 14px; }
+  .lupan-card-title { gap: 8px; font-size: 32px; }
+  .lupan-card-text { font-size: 12px; line-height: 1.7; }
+  .lupan-card-facts div { grid-template-columns: 48px 1fr; gap: 6px; }
+  .lupan-card-facts dt,
+  .lupan-card-facts dd { font-size: 11px; }
+  .lupan-card-facts dd { line-height: 1.6; }
   .lupan-sound-panel { grid-template-columns: minmax(0, 1fr) minmax(180px, 220px); gap: 18px; }
   .lupan-works-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
-  .route-view-lab { min-height: calc(100dvh - 56px); }
-  .route-view-lab > .app-view-status { min-height: calc(100dvh - 56px); padding-top: 28px; }
+  .route-view-lab,
+  .route-view-exploration { min-height: calc(100dvh - 56px); }
+  .route-view-lab > .app-view-status,
+  .route-view-exploration > .app-view-status { min-height: calc(100dvh - 56px); padding-top: 28px; }
   .lupan-lab { width: calc(100% + 26px); margin-left: -13px; padding: 8px 17px 100px; }
   .lupan-intro { gap: 10px; padding: 10px 0 6px; }
   .lupan-kicker { margin-bottom: 0; font-size: 9px; letter-spacing: .2em; }
-  .lupan-intro h1 { font-size: 24px; }
+  .lupan-intro :is(h1, h2) { font-size: 24px; }
   .lupan-current-key { gap: 5px; font-size: 9px; }
   .lupan-current-key b { font-size: 22px; }
   .lupan-stage { display: flex; flex-direction: column; align-items: stretch; gap: 0; min-height: auto; padding: 8px 0 12px; }
@@ -562,6 +576,12 @@
   .lupan-dial-wrap { width: min(100%, 760px, calc(100dvh - 186px)); }
   .lupan-score-view { height: 44px; }
 }
+@media (min-width: 761px) and (max-width: 900px) and (max-height: 850px) {
+  .lupan-dial-wrap { width: min(100%, 520px, calc(100dvh - 220px)); }
+}
+@media (min-width: 1101px) {
+  .lupan-dial-wrap { width: min(100%, 780px, calc(100dvh - 125px)); }
+}
 @media (prefers-reduced-motion: reduce) {
   .lupan-lab *,
   .lupan-lab *::before,
@@ -573,4 +593,239 @@
   .lupan-score-track,
   .lupan-score-track.is-following { position: relative; top: auto; left: auto; min-height: 48px; transform: none !important; }
   .lupan-score-playhead { display: none; }
+}
+
+/* A guided listening path keeps the existing dial activities in a clear order for students. */
+.lupan-learning-overview {
+  display: grid;
+  grid-template-columns: minmax(230px, .8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(22px, 4vw, 56px);
+  margin: 22px 0 16px;
+  padding: clamp(20px, 2.6vw, 32px);
+  border: 1px solid var(--lupan-line);
+  border-radius: 18px;
+  background: #FFFFFF;
+  box-shadow: 0 12px 34px -28px rgba(25, 54, 39, .36);
+}
+.lupan-learning-copy .lupan-kicker { margin-bottom: 4px; }
+.lupan-learning-copy h2 { margin: 0; font: 400 clamp(25px, 2.6vw, 34px)/1.25 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); }
+.lupan-learning-copy > p:last-child { margin: 7px 0 0; color: var(--lupan-ink-2); font: 14px/1.75 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-learning-progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 0; padding: 0; list-style: none; }
+.lupan-learning-progress li { display: grid; grid-template-columns: 30px minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; gap: 2px 8px; min-width: 0; padding: 7px 8px; border-left: 1px solid var(--lupan-line); color: var(--lupan-ink-2); font: 12px/1.45 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-progress-number { display: grid; grid-row: 1 / 3; width: 28px; height: 28px; place-items: center; border: 1px solid var(--lupan-line); border-radius: 50%; color: var(--lupan-ink-3); font: 11px/1 var(--lupan-ui, "Microsoft YaHei", sans-serif); }
+.lupan-progress-state { color: var(--lupan-ink-3); font: 10px/1.3 var(--lupan-ui, "Microsoft YaHei", sans-serif); }
+.lupan-learning-progress li.is-complete { color: var(--lupan-pine-deep); }
+.lupan-learning-progress li.is-complete .lupan-progress-number { border-color: var(--lupan-pine); background: var(--lupan-pine); color: #FFFFFF; }
+.lupan-learning-progress li.is-complete .lupan-progress-state { color: var(--lupan-pine); }
+
+.lupan-lesson-step {
+  margin: 0 0 16px;
+  padding: 22px clamp(18px, 2.5vw, 30px) 24px;
+  border: 1px solid var(--lupan-line);
+  border-radius: 18px;
+  background: #FFFFFF;
+  box-shadow: 0 12px 34px -30px rgba(25, 54, 39, .34);
+}
+.lupan-tape-row { display: block; justify-items: initial; gap: 0; padding: 22px clamp(18px, 2.5vw, 30px) 20px; border: 1px solid var(--lupan-line); }
+.lupan-step-heading { display: flex; align-items: flex-start; gap: 13px; min-width: 0; margin: 0 0 17px; }
+.lupan-step-heading > div { min-width: 0; }
+.lupan-step-number { display: grid; flex: 0 0 40px; width: 40px; height: 40px; place-items: center; border: 1px solid #D8E5DC; border-radius: 50%; background: #F1F6F2; color: var(--lupan-pine); font: 600 12px/1 var(--lupan-ui, "Microsoft YaHei", sans-serif); }
+.lupan-step-caption { margin: 0 0 2px; color: var(--lupan-seal); font: 11px/1.5 var(--serif, "Songti SC", "STSong", serif); letter-spacing: .13em; }
+.lupan-step-heading h2,
+.lupan-step-heading h3 { margin: 0; color: var(--lupan-ink); font: 400 clamp(22px, 2.4vw, 30px)/1.28 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); }
+.lupan-step-heading > div > p:last-child { margin: 4px 0 0; color: var(--lupan-ink-3); font: 13px/1.65 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-step-done { margin: 4px 0 0 auto; padding: 3px 10px; border-radius: 999px; background: #EFF7F1; color: var(--lupan-pine); font: 11px/1.5 var(--lupan-ui, "Microsoft YaHei", sans-serif); white-space: nowrap; }
+.lupan-score-tape { width: 100%; max-width: none; margin: 0; padding: 12px 14px 8px; border: 1px solid var(--lupan-line); border-radius: 14px; background: #FBFDFC; }
+.lupan-score-head { padding: 0 4px 7px; font-size: 12px; }
+.lupan-score-head strong { color: var(--lupan-pine-deep); font-size: 13px; }
+.lupan-score-view { height: 76px; border-radius: 8px; background: #FFFFFF; }
+.lupan-score-view::before { top: 24px; }
+.lupan-score-view::after { bottom: 17px; }
+.lupan-score-note { flex-basis: 76px; }
+.lupan-score-note::before { top: 13px; width: 38px; height: 44px; }
+.lupan-score-degree { font-size: 24px; }
+.lupan-score-name { font-size: 12px; }
+.lupan-score-actions { gap: 12px; padding: 8px 4px 0; font-size: 12px; }
+.lupan-score-actions button { min-height: 38px; padding: 0 16px; border: 1px solid var(--lupan-pine); border-radius: 999px; background: var(--lupan-pine); color: #FFFFFF; font: 12px/1.4 var(--lupan-ui, "Microsoft YaHei", sans-serif); }
+.lupan-score-actions button:hover { background: var(--lupan-pine-deep); }
+.lupan-score-actions button.is-stop { border-color: var(--lupan-line); background: #FFFFFF; color: var(--lupan-ink-2); }
+.lupan-extension-note { margin: 11px 0 0 53px; color: var(--lupan-ink-3); font: 11px/1.65 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-extension-note summary { width: fit-content; color: var(--lupan-pine); cursor: pointer; text-underline-offset: 3px; }
+.lupan-extension-note p { margin: 5px 0 0; }
+
+.lupan-sound-panel { grid-template-columns: minmax(0, 1.35fr) minmax(250px, .85fr); gap: clamp(16px, 2.4vw, 30px); align-items: stretch; margin: 0 0 20px; padding: 24px clamp(18px, 2.5vw, 30px); border: 1px solid var(--lupan-line); border-radius: 18px; background: #FFFFFF; box-shadow: 0 12px 34px -30px rgba(25, 54, 39, .34); }
+.lupan-keys-and-actions { min-width: 0; }
+.lupan-keys-and-actions .lupan-step-heading { min-height: 72px; }
+.lupan-five-keys { gap: 9px; }
+.lupan-five-key { min-height: 118px; border-radius: 13px; background: linear-gradient(180deg, #FFFFFF 0%, #F6F9F7 100%); box-shadow: 0 6px 14px -12px rgba(24, 48, 34, .4); }
+.lupan-five-key:hover { transform: translateY(-4px); box-shadow: 0 12px 18px -14px rgba(24, 48, 34, .55); }
+.lupan-five-key.is-main { border-bottom-width: 4px; }
+.lupan-five-key strong { font-size: 36px; }
+.lupan-five-key small { font-size: 12px; }
+.lupan-key-degree { top: 8px; left: 9px; font-size: 12px; }
+.lupan-sound-row-actions { gap: 12px; margin-top: 12px; font-size: 12px; }
+.lupan-sound-row-actions button { min-height: 38px; padding: 0 16px; border: 1px solid var(--lupan-line); border-radius: 999px; background: #FFFFFF; font: 12px/1.4 var(--lupan-ui, "Microsoft YaHei", sans-serif); }
+.lupan-sound-row-actions button:hover { border-color: var(--lupan-pine); background: #F3F8F4; }
+.lupan-quiz { align-self: stretch; min-width: 0; padding: 19px; border: 1px solid #DFE9E2; border-left: 3px solid var(--lupan-pine); border-radius: 14px; background: #F7FAF8; }
+.lupan-quiz-heading { align-items: center; margin-bottom: 11px; }
+.lupan-quiz-heading .lupan-step-number { flex-basis: 36px; width: 36px; height: 36px; }
+.lupan-quiz h3 { font-size: 25px; }
+.lupan-quiz-message { min-height: 72px; margin: 0 0 10px; color: var(--lupan-ink-2); font: 13px/1.7 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-quiz-actions { gap: 8px; }
+.lupan-quiz-actions button { min-height: 39px; padding: 0 12px; border: 1px solid var(--lupan-pine); border-radius: 999px; background: var(--lupan-pine); color: #FFFFFF; font: 11px/1.4 var(--lupan-ui, "Microsoft YaHei", sans-serif); }
+.lupan-quiz-actions button:first-child { color: #FFFFFF; }
+.lupan-quiz-actions button:hover { border-color: var(--lupan-pine-deep); background: var(--lupan-pine-deep); color: #FFFFFF; }
+.lupan-quiz-actions button.is-secondary { border-color: var(--lupan-line); background: #FFFFFF; color: var(--lupan-ink-2); }
+.lupan-quiz-actions button.is-secondary:hover { border-color: var(--lupan-pine); color: var(--lupan-pine); }
+.lupan-live-message { min-height: 20px; margin: 0; padding-top: 2px; font-size: 11px; }
+
+.lupan-works-section { margin: 4px 0 20px; padding: 4px 0 21px; border-bottom: 1px solid var(--lupan-line); }
+.lupan-works-heading { align-items: center; margin-bottom: 17px; }
+.lupan-works-heading .lupan-step-heading { margin: 0; }
+.lupan-works-heading > p { max-width: 280px; font-size: 13px; line-height: 1.7; text-align: left; }
+.lupan-works-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; border: 0; }
+.lupan-work-slip { min-height: 164px; padding: 15px 16px 54px; border: 1px solid var(--lupan-line); border-radius: 15px; background: #FFFFFF; box-shadow: 0 8px 22px -20px rgba(25, 54, 39, .42); transition: transform .2s ease, box-shadow .2s ease; }
+.lupan-work-slip:hover { transform: translateY(-3px); box-shadow: 0 14px 24px -20px rgba(25, 54, 39, .52); }
+.lupan-work-slip::before { display: none; }
+.lupan-work-book { padding: 3px 8px; border-radius: 999px; background: #F3F6F4; font-size: 11px; }
+.lupan-work-slip h3 { margin: 9px 0 7px; font-size: 22px; }
+.lupan-work-evidence { width: fit-content; max-width: 100%; padding: 3px 9px; border: 1px solid #E7DDD1; border-radius: 999px; background: #FCF8F3; color: #86603B; font-size: 11px; }
+.lupan-work-actions { position: absolute; right: 12px; bottom: 10px; left: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lupan-work-actions .lupan-work-open,
+.lupan-work-actions .lupan-work-listen { position: static; min-height: 34px; padding: 0 9px; border: 1px solid var(--lupan-line); border-radius: 999px; background: #FFFFFF; color: var(--lupan-pine); font: 11px/1.4 var(--lupan-ui, "Microsoft YaHei", sans-serif); white-space: nowrap; }
+.lupan-work-actions .lupan-work-listen { border-color: var(--lupan-pine); background: var(--lupan-pine); color: #FFFFFF; text-decoration: none; }
+.lupan-work-actions .lupan-work-open { margin-left: auto; text-decoration: none; }
+.lupan-work-actions button:hover { border-color: var(--lupan-pine-deep); color: var(--lupan-pine-deep); }
+.lupan-work-actions .lupan-work-listen:hover { background: var(--lupan-pine-deep); color: #FFFFFF; }
+.lupan-works-foot { align-items: center; margin-top: 12px; font-size: 11px; }
+.lupan-completion-card { display: flex; align-items: center; gap: 16px; margin: 8px 0 19px; padding: 18px 22px; border: 1px solid #D5E5D9; border-radius: 16px; background: #F3F8F4; }
+.lupan-completion-mark { display: grid; flex: 0 0 40px; width: 40px; height: 40px; place-items: center; border-radius: 50%; background: var(--lupan-pine); color: #FFFFFF; font-size: 22px; }
+.lupan-completion-card > div { min-width: 0; }
+.lupan-completion-card h3 { margin: 0; color: var(--lupan-ink); font: 400 20px/1.4 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); }
+.lupan-completion-card button { min-height: 40px; margin-left: auto; padding: 0 15px; border: 1px solid var(--lupan-pine); border-radius: 999px; background: var(--lupan-pine); color: #FFFFFF; font: 12px/1.4 var(--lupan-ui, "Microsoft YaHei", sans-serif); white-space: nowrap; }
+.lupan-completion-card button:hover { background: var(--lupan-pine-deep); }
+
+@media (max-width: 900px) {
+  .lupan-learning-overview { grid-template-columns: 1fr; gap: 15px; }
+  .lupan-learning-progress { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lupan-learning-progress li { padding: 5px; }
+  .lupan-sound-panel { grid-template-columns: minmax(0, 1fr) minmax(220px, .72fr); gap: 14px; }
+  .lupan-works-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .lupan-learning-overview { gap: 14px; margin: 16px 0 12px; padding: 18px 16px; border-radius: 15px; }
+  .lupan-learning-copy h2 { font-size: 25px; }
+  .lupan-learning-copy > p:last-child { font-size: 12px; }
+  .lupan-learning-progress { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 4px; }
+  .lupan-learning-progress li { padding: 5px 7px; font-size: 11px; }
+  .lupan-lesson-step { margin-bottom: 12px; padding: 17px 14px; border-radius: 15px; }
+  .lupan-step-heading { gap: 10px; margin-bottom: 12px; }
+  .lupan-step-number { flex-basis: 34px; width: 34px; height: 34px; font-size: 10px; }
+  .lupan-step-heading h2,
+  .lupan-step-heading h3 { font-size: 22px; }
+  .lupan-step-heading > div > p:last-child { font-size: 11px; }
+  .lupan-step-done { padding: 2px 7px; font-size: 9px; }
+  .lupan-score-tape { padding: 9px 8px 7px; }
+  .lupan-score-head { padding: 0 2px 6px; font-size: 10px; }
+  .lupan-score-view { height: 62px; }
+  .lupan-score-note { flex-basis: 54px; }
+  .lupan-score-degree { font-size: 20px; }
+  .lupan-score-name { font-size: 10px; }
+  .lupan-score-actions { gap: 6px; padding: 6px 1px 0; font-size: 9px; }
+  .lupan-score-actions button { min-height: 35px; padding: 0 12px; font-size: 10px; }
+  .lupan-extension-note { margin-left: 44px; }
+  .lupan-sound-panel { grid-template-columns: 1fr; gap: 12px; margin-bottom: 15px; padding: 17px 14px; border-radius: 15px; }
+  .lupan-keys-and-actions .lupan-step-heading { min-height: 0; }
+  .lupan-five-keys { gap: 5px; }
+  .lupan-five-key { min-height: 86px; border-radius: 10px; }
+  .lupan-five-key strong { font-size: 28px; }
+  .lupan-five-key small { font-size: 9px; }
+  .lupan-key-degree { top: 5px; left: 6px; font-size: 9px; }
+  .lupan-sound-row-actions { flex-wrap: wrap; gap: 5px 9px; margin-top: 7px; font-size: 10px; }
+  .lupan-sound-row-actions button { min-height: 35px; padding: 0 12px; font-size: 10px; }
+  .lupan-quiz { padding: 14px; border-radius: 12px; }
+  .lupan-quiz h3 { font-size: 22px; }
+  .lupan-quiz-message { min-height: 0; font-size: 11px; }
+  .lupan-quiz-actions button { min-height: 37px; font-size: 10px; }
+  .lupan-works-section { margin-top: 0; padding: 2px 0 16px; }
+  .lupan-works-heading { margin-bottom: 12px; }
+  .lupan-works-heading > p { margin: 0 0 0 44px; font-size: 11px; }
+  .lupan-works-grid { gap: 8px; }
+  .lupan-work-slip { min-height: 144px; padding: 11px 10px 51px; border-radius: 12px; }
+  .lupan-work-slip h3 { font-size: 18px; }
+  .lupan-work-book,
+  .lupan-work-evidence { font-size: 9px; }
+  .lupan-work-actions { right: 7px; bottom: 7px; left: 7px; gap: 5px; }
+  .lupan-work-actions .lupan-work-open,
+  .lupan-work-actions .lupan-work-listen { min-height: 32px; padding: 0 7px; font-size: 9px; }
+  .lupan-works-foot { font-size: 9px; }
+  .lupan-completion-card { flex-wrap: wrap; gap: 10px; padding: 15px; }
+  .lupan-completion-card h3 { font-size: 17px; }
+  .lupan-completion-card button { margin-left: 50px; }
+}
+@media (max-width: 420px) {
+  .lupan-learning-progress li { grid-template-columns: 26px minmax(0, 1fr); gap: 2px 6px; }
+  .lupan-progress-number { width: 24px; height: 24px; }
+  .lupan-works-grid { grid-template-columns: 1fr; }
+  .lupan-work-slip { min-height: 136px; }
+}
+
+/* Scale and mode choices belong to the hands-on step, alongside the playable keys. */
+.lupan-current-scale-card { display: grid; gap: 7px; padding: 14px 13px; border: 1px solid var(--lupan-line); border-left: 3px solid var(--lupan-pine); border-radius: 12px; background: #FFFFFF; }
+.lupan-current-scale-card b { color: var(--lupan-pine-deep); font: 400 23px/1.2 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); }
+.lupan-current-scale-card span { color: var(--lupan-ink-2); font: 12px/1.65 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-current-scale-card small { color: var(--lupan-ink-3); font: 10px/1.5 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-scale-options,
+.lupan-root-options { display: grid; grid-template-columns: 74px minmax(0, 1fr); align-items: center; gap: 9px 12px; margin: 0 0 13px; }
+.lupan-choice-label { color: var(--lupan-ink-2); font: 12px/1.4 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-scale-option-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.lupan-scale-option,
+.lupan-root-option { display: flex; align-items: center; justify-content: center; min-width: 0; border: 1px solid var(--lupan-line); border-radius: 10px; background: #FFFFFF; color: var(--lupan-ink-2); transition: border-color .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease; }
+.lupan-scale-option { min-height: 48px; flex-direction: column; gap: 2px; padding: 5px 8px; }
+.lupan-scale-option b { font: 500 14px/1.3 var(--lupan-ui, "Microsoft YaHei", sans-serif); }
+.lupan-scale-option small { color: var(--lupan-ink-3); font: 9px/1.3 var(--serif, "Songti SC", "STSong", serif); white-space: nowrap; }
+.lupan-scale-option:hover,
+.lupan-root-option:hover { border-color: var(--lupan-pine); }
+.lupan-scale-option.is-selected,
+.lupan-root-option.is-selected { border-color: var(--lupan-pine); background: #EEF6F0; color: var(--lupan-pine-deep); box-shadow: inset 0 0 0 1px rgba(39,99,68,.12); }
+.lupan-scale-option.is-selected small { color: var(--lupan-pine); }
+.lupan-root-option-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }
+.lupan-root-option { min-height: 42px; gap: 6px; padding: 5px 8px; }
+.lupan-root-option b { font: 400 19px/1 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); }
+.lupan-root-option span { color: var(--lupan-ink-3); font: 10px/1.3 var(--serif, "Songti SC", "STSong", serif); white-space: nowrap; }
+.lupan-root-option.is-selected span { color: var(--lupan-pine); }
+.lupan-root-options > p { grid-column: 2; margin: -3px 0 0; color: var(--lupan-ink-3); font: 10px/1.5 var(--serif, "Songti SC", "STSong", serif); }
+.lupan-five-keys { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+
+@media (max-width: 900px) {
+  .lupan-scale-options,
+  .lupan-root-options { grid-template-columns: 62px minmax(0, 1fr); }
+  .lupan-scale-option-list,
+  .lupan-root-option-list { gap: 5px; }
+  .lupan-scale-option { padding-inline: 4px; }
+  .lupan-scale-option small { font-size: 8px; }
+  .lupan-root-option { gap: 4px; padding-inline: 5px; }
+}
+@media (max-width: 760px) {
+  .lupan-current-scale-card { grid-template-columns: auto 1fr; align-items: baseline; gap: 3px 10px; margin-bottom: 5px; padding: 9px 11px; }
+  .lupan-current-scale-card b { grid-row: span 2; font-size: 19px; }
+  .lupan-current-scale-card span { font-size: 10px; }
+  .lupan-current-scale-card small { font-size: 9px; }
+  .lupan-scale-options,
+  .lupan-root-options { grid-template-columns: 1fr; gap: 6px; margin-bottom: 11px; }
+  .lupan-choice-label { font-size: 10px; }
+  .lupan-scale-option-list,
+  .lupan-root-option-list { gap: 5px; }
+  .lupan-scale-option { min-height: 42px; padding: 4px 2px; border-radius: 8px; }
+  .lupan-scale-option b { font-size: 11px; }
+  .lupan-scale-option small { font-size: 7px; }
+  .lupan-root-option { min-height: 39px; flex-direction: column; gap: 2px; padding: 4px 1px; border-radius: 8px; }
+  .lupan-root-option b { font-size: 16px; }
+  .lupan-root-option span { font-size: 8px; }
+  .lupan-root-options > p { grid-column: auto; margin-top: -1px; font-size: 9px; }
+  .lupan-five-keys { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .lupan-five-key { min-width: 0; min-height: 72px; padding-inline: 1px; }
+  .lupan-five-key strong { font-size: clamp(18px, 5.6vw, 25px); }
+  .lupan-five-key small { font-size: clamp(7px, 2vw, 8px); }
 }

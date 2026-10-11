@@ -1,16 +1,16 @@
 /* 书卷式按课学习：纸面、墨滴导航、单元篇章与作品详情。 */
 .ink-app.theme-light .work-library {
-  --records-paper: var(--paper, #F4EEE1);
-  --records-paper-2: var(--paper-2, #EAE2D0);
-  --records-paper-3: var(--paper-3, #E1D6BF);
-  --records-sheet: var(--sheet, #FBF8F0);
-  --records-ink: var(--ink, #1B2622);
-  --records-ink-2: var(--ink-2, #44504A);
-  --records-ink-3: var(--ink-3, #7A7F72);
-  --records-pine: var(--pine, #1F4A3C);
-  --records-seal: var(--seal, #B8392A);
-  --records-amber: var(--amber, #C98A22);
-  --records-line: var(--line, #CFC4AC);
+  --records-paper: var(--paper, #F7F9F8);
+  --records-paper-2: var(--paper-2, #EEF3F0);
+  --records-paper-3: var(--paper-3, #E5ECE8);
+  --records-sheet: var(--sheet, #FFFFFF);
+  --records-ink: var(--ink, #17221C);
+  --records-ink-2: var(--ink-2, #44544B);
+  --records-ink-3: var(--ink-3, #68766E);
+  --records-pine: var(--pine, #276344);
+  --records-seal: var(--seal, #AF4236);
+  --records-amber: var(--amber, #A8731C);
+  --records-line: var(--line, #DCE5DF);
   --records-kai: var(--kai, STKaiti, KaiTi, serif);
   --records-serif: var(--serif, "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif);
   --records-ui: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
@@ -166,11 +166,6 @@
   .home-nav:has(.records-top-book-picker) .home-nav-inner {
     flex-wrap: wrap;
     row-gap: 6px;
-  }
-  .home-nav:has(.records-top-book-picker) .home-nav-menu {
-    order: 2;
-    flex: 0 0 auto;
-    white-space: nowrap;
   }
   .home-nav:has(.records-top-book-picker) .home-nav-center {
     display: flex;

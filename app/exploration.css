@@ -1,0 +1,150 @@
+.exploration-shell {
+  --exploration-green: #276344;
+  width: 100%;
+  max-width: 1560px;
+  margin-inline: auto;
+  padding-top: 16px;
+}
+
+.exploration-heading {
+  display: grid;
+  grid-template-columns: minmax(230px, .92fr) minmax(0, 1.28fr);
+  align-items: center;
+  gap: clamp(22px, 4vw, 56px);
+  margin: 0 clamp(18px, 2.8vw, 42px) 8px;
+  padding: clamp(18px, 2.4vw, 30px) clamp(18px, 2.8vw, 36px);
+  border: 1px solid var(--border, #E2E9E4);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgb(23 34 28 / 4%);
+}
+
+.exploration-intro { min-width: 0; }
+.exploration-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--exploration-green);
+  font-size: 12px;
+  letter-spacing: .14em;
+}
+.exploration-kicker::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+.exploration-intro h1 {
+  margin: 0;
+  color: var(--ink, #17221C);
+  font: 400 clamp(25px, 2.5vw, 34px)/1.3 var(--kai, "LXGW WenKai", serif);
+  letter-spacing: .06em;
+}
+.exploration-intro > p:last-child {
+  margin: 7px 0 0;
+  color: var(--ink-2, #44544B);
+  font: 14px/1.75 var(--serif, "Songti SC", serif);
+}
+
+.exploration-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+.exploration-tabs button {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 62px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--border, #E2E9E4);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink-2, #44544B);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease, color .2s ease;
+}
+.exploration-tabs button:hover {
+  border-color: #B9CDC0;
+  background: #F9FBF9;
+  color: var(--exploration-green);
+}
+.exploration-tabs button.is-active {
+  border-color: #B8CEBF;
+  background: #F0F6F2;
+  box-shadow: inset 0 0 0 1px rgb(39 99 68 / 8%);
+  color: var(--exploration-green);
+}
+.exploration-tabs button:focus-visible {
+  outline: 3px solid rgb(39 99 68 / 30%);
+  outline-offset: 3px;
+}
+.exploration-tab-number {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #F2F5F3;
+  color: #748078;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.is-active .exploration-tab-number {
+  background: #DFECE3;
+  color: var(--exploration-green);
+}
+.exploration-tab-copy { display: grid; gap: 3px; min-width: 0; }
+.exploration-tab-copy > span { color: var(--ink, #17221C); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.exploration-tab-copy small { overflow: hidden; color: var(--ink-3, #68766E); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.exploration-tab-arrow { margin-left: auto; color: #98A69D; font-size: 14px; }
+.is-active .exploration-tab-arrow { color: var(--exploration-green); }
+.exploration-panel { min-width: 0; }
+.exploration-panel:focus { outline: none; }
+
+.route-view-exploration > .exploration-shell .timeline-page {
+  --timeline-nav-height: 208px;
+}
+.route-view-exploration .lupan-stage {
+  min-height: min(620px, calc(100dvh - 210px));
+}
+
+@media (max-width: 880px) {
+  .exploration-heading {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-inline: 18px;
+    padding: 20px;
+  }
+  .exploration-tabs { gap: 7px; }
+  .exploration-tabs button { min-height: 58px; gap: 7px; padding: 8px; }
+  .exploration-tab-number { width: 26px; height: 26px; }
+  .exploration-tab-copy > span { font-size: 13px; }
+  .exploration-tab-copy small { font-size: 10px; }
+  .route-view-exploration > .exploration-shell .timeline-page { --timeline-nav-height: 284px; }
+}
+
+@media (max-width: 520px) {
+  .exploration-shell { padding-top: 8px; }
+  .exploration-heading { gap: 13px; margin-inline: 12px; padding: 16px; border-radius: 14px; }
+  .exploration-intro h1 { font-size: 25px; }
+  .exploration-intro > p:last-child { font-size: 12px; }
+  .exploration-tabs { gap: 5px; }
+  .exploration-tabs button { min-height: 54px; justify-content: center; gap: 5px; padding: 7px 4px; }
+  .exploration-tab-number, .exploration-tab-arrow { display: none; }
+  .exploration-tab-copy { text-align: center; }
+  .exploration-tab-copy > span { font-size: 12px; }
+  .exploration-tab-copy small { max-width: 100%; font-size: 9px; }
+  .route-view-exploration > .exploration-shell .timeline-page { --timeline-nav-height: 278px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exploration-tabs button { transition-duration: 1ms; }
+}

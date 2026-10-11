@@ -22,6 +22,7 @@ import type { LessonPage as LessonPageComponent } from "./components/lesson/Less
 import type { WorkGraph as WorkGraphComponent } from "./components/records/WorkGraph";
 import type { WorkLibrary as WorkLibraryComponent } from "./components/records/WorkLibrary";
 import type { ResearchAnalysis as ResearchAnalysisComponent } from "./components/ResearchAnalysis";
+import { ExplorationPage } from "./components/exploration/ExplorationPage";
 import { ResearchInfo } from "./components/ResearchInfo";
 import { useAppRoute } from "./hooks/useAppRoute";
 import { useBookData, useGraphIndex } from "./hooks/useGraphIndex";
@@ -182,9 +183,9 @@ const EMPTY_BOOKS: BookDirectory[] = [];
 const SITE_TITLE = "芽谱 · 人音版初中音乐教材";
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
-  atlas: "音乐地图",
-  lab: "五声实验室",
-  timeline: "作品年表",
+  atlas: "声音与音乐探索 · 音乐地图",
+  lab: "声音与音乐探索 · 五声律坊",
+  timeline: "声音与音乐探索 · 音乐时光机",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
@@ -385,8 +386,10 @@ export default function Home() {
             active={
               view === "lesson" || view === "work"
                 ? "records"
-                : view === "import" || view === "atlas" || view === "timeline"
+                : view === "import"
                   ? null
+                  : view === "atlas" || view === "lab" || view === "timeline"
+                    ? "atlas"
                   : view
             }
             onNavigate={goTo}
@@ -416,7 +419,7 @@ export default function Home() {
             }}
           />
         )}
-        <div className={`route-view${view === "lab" ? " route-view-lab" : ""}`} ref={viewContainerRef}>
+        <div className={`route-view${view === "atlas" || view === "lab" || view === "timeline" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
           {view === "records" && index.status !== "ready" && <RecordsStartup failed={index.status === "error"} />}
@@ -512,9 +515,14 @@ export default function Home() {
             />
           )}
           {view === "import" && <ImportView />}
-          {view === "atlas" && <AtlasPage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
-          {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
-          {view === "timeline" && <TimelinePage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={destination => navigate(destination)} />}
+          {(view === "atlas" || view === "lab" || view === "timeline") && <ExplorationPage
+            activeView={view}
+            onViewChange={nextView => navigate({ view: nextView })}
+          >
+            {view === "atlas" && <AtlasPage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+            {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+            {view === "timeline" && <TimelinePage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={destination => navigate(destination)} />}
+          </ExplorationPage>}
         </div>
       </section>
       <ResearchInfo

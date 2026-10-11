@@ -2,10 +2,10 @@
    对照原型 E:\Projects\yapu-collab\proto\index.html：宣纸底、楷体大标题、
    朱砂细节、细分隔线、谱例纸。全部规则限定在 .lesson 子树内。 */
 .lesson {
-  --paper:#F4EEE1; --paper-2:#EAE2D0; --paper-3:#E1D6BF; --sheet:#FBF8F0;
-  --ink:#1B2622; --ink-2:#44504A; --ink-3:#62675B;
-  --pine:#1F4A3C; --pine-deep:#13302A; --seal:#B8392A; --amber-hi:#F3D9A4;
-  --line:#CFC4AC;
+  --paper:#F7F9F8; --paper-2:#EEF3F0; --paper-3:#E5ECE8; --sheet:#FFFFFF;
+  --ink:#17221C; --ink-2:#44544B; --ink-3:#68766E;
+  --pine:#276344; --pine-deep:#194D35; --seal:#AF4236; --amber-hi:#F6EAD0;
+  --line:#DCE5DF;
   --kai:"LXGW WenKai","STKaiti","KaiTi","楷体",serif;
   --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
   --ease:cubic-bezier(.16,1,.3,1);

@@ -2,27 +2,27 @@
 
 /* 芽谱「书卷」视觉令牌。 */
 :root {
-    --paper: #F4EEE1;
-    --paper-2: #EAE2D0;
-    --paper-3: #E1D6BF;
-    --sheet: #FBF8F0;
-    --ink: #1B2622;
-    --ink-2: #44504A;
-    --ink-3: #62675B;
-    --pine: #1F4A3C;
-    --pine-deep: #13302A;
-    --seal: #B8392A;
-    --amber: #C98A22;
-    --amber-bg: #F3D9A4;
-    --line: #CFC4AC;
+    --paper: #F7F9F8;
+    --paper-2: #EEF3F0;
+    --paper-3: #E5ECE8;
+    --sheet: #FFFFFF;
+    --ink: #17221C;
+    --ink-2: #44544B;
+    --ink-3: #68766E;
+    --pine: #276344;
+    --pine-deep: #194D35;
+    --seal: #AF4236;
+    --amber: #A8731C;
+    --amber-bg: #F6EAD0;
+    --line: #DCE5DF;
     --ease: cubic-bezier(.16, 1, .3, 1);
     --kai: "LXGW WenKai", "STKaiti", "KaiTi", serif;
     --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
     --ui: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 
     --brand-ink: #1C2B26;
-    --brand-paper: #F7F3EA;
-    --brand-paper-deep: #EDE6D6;
+    --brand-paper: #FFFFFF;
+    --brand-paper-deep: #E8EFEB;
     --brand-sprout: #3E9B4F;
     --brand-sprout-deep: #1F5C47;
     --brand-vermilion: #D2462C;
@@ -41,27 +41,27 @@
     --space-4: 12px;
     --space-5: 16px;
     --font-academic: Georgia,"Songti SC","SimSun",serif;
-    --app-bg: #F6F8F7;
+    --app-bg: #F7F9F8;
     --surface: #FFFFFF;
-    --surface-soft: #F1F6F3;
-    --text-primary: #1B2420;
-    --text-secondary: #5E6A64;
+    --surface-soft: #F4F7F5;
+    --text-primary: #17221C;
+    --text-secondary: #526057;
     --text-tertiary: var(--ink-3);
     --accent: #16834F;
     --accent-hover: #116B40;
     --accent-bright: #2DB36F;
     --accent-soft: #E6F5EC;
-    --border: #E2E8E4;
-    --border-strong: #CBD5CF;
-    --shadow-sm: 0 1px 2px #1B24200A,0 1px 3px #1B242008;
-    --shadow-md: 0 4px 16px #1B24200F,0 1px 3px #1B24200A;
-    --shadow-lg: 0 18px 48px #1B242014;
+    --border: #E2E9E4;
+    --border-strong: #CAD6CE;
+    --shadow-sm: 0 1px 2px #17221C08,0 1px 3px #17221C06;
+    --shadow-md: 0 4px 16px #17221C0B,0 1px 3px #17221C08;
+    --shadow-lg: 0 18px 48px #17221C12;
     --bg: var(--app-bg);
     --panel: var(--surface);
     --panel-2: var(--surface-soft);
     --surface-hover: #EDF3EF;
     --surface-selected: var(--accent-soft);
-    --line: #CFC4AC;
+    --line: #DCE5DF;
     --line-subtle: #EDF1EE;
     --line-active: var(--border-strong);
     --text: var(--text-primary);
@@ -88,19 +88,19 @@
 }
 /* 首页门户令牌与按类别设置的颜色。 */
 .home-portal {
-    --paper: #F4EEE1;
-    --paper-2: #EAE2D0;
-    --paper-3: #E1D6BF;
-    --sheet: #FBF8F0;
-    --ink: #1B2622;
-    --ink-2: #44504A;
-    --ink-3: #62675B;
-    --pine: #1F4A3C;
-    --pine-deep: #13302A;
-    --seal: #B8392A;
-    --amber: #C98A22;
-    --amber-bg: #F3D9A4;
-    --line: #CFC4AC;
+    --paper: #F7F9F8;
+    --paper-2: #EEF3F0;
+    --paper-3: #E5ECE8;
+    --sheet: #FFFFFF;
+    --ink: #17221C;
+    --ink-2: #44544B;
+    --ink-3: #68766E;
+    --pine: #276344;
+    --pine-deep: #194D35;
+    --seal: #AF4236;
+    --amber: #A8731C;
+    --amber-bg: #F6EAD0;
+    --line: #DCE5DF;
     --ease: cubic-bezier(.16, 1, .3, 1);
     --kai: "LXGW WenKai", "STKaiti", "KaiTi", serif;
     --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
@@ -112,7 +112,7 @@
     --brush: var(--kai);
 }
 .home-hero-node.cat-person {
-    --node-bg: #F1E7D6;
+    --node-bg: #EAF0F4;
     --node-fg: #8A5A2B
 }
 .home-hero-node.cat-textbook {
@@ -120,7 +120,7 @@
     --node-fg: #2B6B52
 }
 .home-hero-node.cat-culture {
-    --node-bg: #F4E1DC;
+    --node-bg: #F4E6E3;
     --node-fg: var(--seal)
 }
 .home-hero-node.cat-element {
@@ -136,15 +136,15 @@
     --node-fg: #5B4BB5
 }
 .home-entry.is-learn {
-    --entry-bg: linear-gradient(135deg,#E9F1EC,#F4F6F1);
+    --entry-bg: linear-gradient(135deg,#EEF4F0,#FFFFFF);
     --entry-fg: var(--pine)
 }
 .home-entry.is-graph {
-    --entry-bg: linear-gradient(135deg,#E6EEF3,#F3F5F4);
+    --entry-bg: linear-gradient(135deg,#EBF1F7,#FFFFFF);
     --entry-fg: #2F5E7C
 }
 .home-entry.is-ask {
-    --entry-bg: linear-gradient(135deg,#F7E6E1,#F9F2EE);
+    --entry-bg: linear-gradient(135deg,#F6EBE8,#FFFFFF);
     --entry-fg: var(--seal)
 }
 /* 按教材年级显示作品卡片的强调色。 */
@@ -165,21 +165,21 @@
 }
 /* 应用主界面的水墨主题覆盖值。 */
 .ink-app {
-    --paper: #F4EEE1;
-    --paper-deep: #EAE2D0;
-    --ink: #1B2622;
-    --ink-soft: #44504A;
-    --pine: #1F4A3C;
-    --pine-hover: #13302A;
-    --seal: #B8392A;
-    --gold: #C98A22;
-    --line: #CFC4AC;
+    --paper: #F7F9F8;
+    --paper-deep: #EEF3F0;
+    --ink: #17221C;
+    --ink-soft: #44544B;
+    --pine: #276344;
+    --pine-hover: #194D35;
+    --seal: #AF4236;
+    --gold: #A8731C;
+    --line: #DCE5DF;
     --serif: "Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
     --brush: "STKaiti","KaiTi","Kaiti SC","楷体",var(--serif);
     --app-bg: var(--paper);
     --bg: var(--paper);
-    --surface-soft: #F3F0E8;
-    --surface-hover: #EFEBE1;
+    --surface-soft: #F4F7F5;
+    --surface-hover: #EDF3EF;
     --text-primary: var(--ink);
     --text-secondary: var(--ink-soft);
     --text-tertiary: #62675B;
@@ -187,8 +187,8 @@
     --accent-hover: var(--pine-hover);
     --accent-bright: #3E8C72;
     --accent-soft: #E5EEE8;
-    --border: #E6E1D5;
-    --border-strong: #D4CDBD;
+    --border: #E2E9E4;
+    --border-strong: #CAD6CE;
     --shadow-sm: 0 1px 2px #1F3B310D,0 2px 6px #1F3B310A;
     --shadow-md: 0 6px 18px #1F3B3114;
     --shadow-lg: 0 18px 44px #1F3B311F

@@ -819,6 +819,7 @@ Windows 本机预览的 Workers 运行时因访问冲突无法启动，但生产
 - `npm run quality:audit` and `npm run build` both succeeded.
 - The runtime suggested installing the latest Microsoft Visual C++ Redistributable.
 - 2026-08-27 replacing the g7s2 graph reproduced the same access violation before the local preview URL became available.
+- 2026-10-11 `vinext dev` reproduced the crash; running the existing `GITHUB_PAGES=true` mode served the local preview successfully. The root Workers-runtime issue remains unresolved.
 
 ### Suggested Fix
 更新 Microsoft Visual C++ Redistributable 后重试本地预览；发布前继续依赖成功的生产构建和部署预览。
@@ -826,7 +827,8 @@ Windows 本机预览的 Workers 运行时因访问冲突无法启动，但生产
 ### Metadata
 - Reproducible: yes
 - Related Files: package.json
-- Recurrence-Count: 2
+- Recurrence-Count: 3
+- Last-Seen: 2026-10-11
 
 ---
 
@@ -920,5 +922,35 @@ Use an exact, asserted mechanical replacement for the bounded fragment, or forma
 - Browser finding: Drag release also emitted a node click, recentering the camera and making the new pointer position miss the dragged node. Used container-relative pointer coordinates, disabled camera movement during dragging, suppressed the release click briefly, and cleaned up mouseup / blur handlers.
 - Test tooling: Long chained browser calls caused a persistent-kernel timeout. Reinitialized Chromium and moved repeatable checks into a standalone Playwright script. Used explicit select labels and the actual “Canvas 回退” button name.
 - Verification: Real-browser drag identity and subsequent right-click match; filters preserve Graphology identity; no canonical data writes.
+
+---
+
+## [ERR-20261011-NPX] npm-and-npx-missing-from-powershell-path
+
+**Logged**: 2026-10-11T00:00:00+08:00
+**Priority**: low
+**Status**: resolved
+**Area**: config
+
+### Summary
+PowerShell could not resolve `npm` or `npx` while running project checks.
+
+### Error
+`npm : The term 'npm' is not recognized as a name of a cmdlet, function, script file, or executable program.`
+
+### Context
+- `npm run test:lib` was attempted in the project shell.
+- Use the workspace-bundled Node runtime to execute the project script directly; keep temporary output under `E:\Projects\.tmp`.
+
+### Suggested Fix
+Invoke the workspace-bundled Node runtime on project scripts directly instead of relying on `npm` or `npx`; do not install a package manager just to run checks.
+
+### Metadata
+- Reproducible: yes
+- Related Files: package.json
+
+### Resolution
+- **Resolved**: 2026-10-11T00:00:00+08:00
+- **Notes**: Switched to the project-local command shims.
 
 ---

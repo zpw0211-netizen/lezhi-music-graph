@@ -33,8 +33,7 @@ const HOT_SEARCHES = ["黄河", "京剧", "民歌", "五声调式", "歌唱祖�
 const HOME_LAST_READ_BOOK_KEY = "yapu-home-last-book";
 const HOME_LAST_READ_CHANGE_EVENT = "yapu:home-last-book-change";
 const BOOKMARKS = [
-  { label: "音乐地图", description: "在地图上查看教材作品的地域线索。", file: "art/bookmarks/map.webp", href: "#/atlas" },
-  { label: "作品年表", description: "按年代浏览教材作品与人物。", file: "art/bookmarks/timeline.webp", href: "#/timeline" },
+  { label: "声音与音乐探索", description: "在地图、年表与律盘之间切换，看音乐的地域、年代与声音。", file: "art/bookmarks/map.webp", href: "#/atlas" },
   { label: "知识图谱", description: "从一个知识点查看它和作品的联系。", file: "art/bookmarks/graph.webp", href: null },
 ] as const;
 const PENTATONIC = [
@@ -230,11 +229,11 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       </section>
       <section className="home-lab" aria-labelledby="home-lab-title">
         <div className="home-lab-heading" data-reveal>
-          <p className="home-section-overline">五声实验室</p><h2 id="home-lab-title">宫、商、角、徵、羽</h2>
-          <p>点按五个琴键听音高变化，也可以按键盘 1、2、3、5、6。五个音是入口，实验室里还可以继续比较七声音阶。</p>
+          <p className="home-section-overline">声音与音乐探索</p><h2 id="home-lab-title">听见宫、商、角、徵、羽</h2>
+          <p>循着地图认识地域，沿着年表读作品，再转动律盘，听见一首旋律里的五声与七声。</p>
           <button type="button" className="home-lab-phrase" onClick={() => playSample(5)} data-playing={activeNote === "phrase"} aria-pressed={activeNote === "phrase"}>▶ 上行再下行</button>
           <p className="home-lab-hint">按 1、2、3、5、6，也能依次弹奏五个音。</p>
-          <a href="#/lab" className="home-lab-enter">进入五声实验室 <WorkbenchIcon name="right" /></a>
+          <a href="#/lab" className="home-lab-enter">进入声音与音乐探索 <WorkbenchIcon name="right" /></a>
         </div>
         <div className="home-pentatonic" role="group" aria-label="五声音阶，按数字 1、2、3、5、6 播放" data-reveal>
           {PENTATONIC.map((note, index) => <button key={note.name} type="button" className={activeNote === note.name ? "is-playing" : ""} onClick={() => playSample(index)} aria-label={"播放" + note.name + "音，键盘" + [1, 2, 3, 5, 6][index]} aria-pressed={activeNote === note.name}>
@@ -247,8 +246,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       </section>
       <section className="home-bookmarks" aria-labelledby="home-bookmark-title">
         <header className="home-bookmark-heading" data-reveal>
-          <h2 id="home-bookmark-title">夹一枚书签，接着读</h2>
-          <p>从地域、年代或知识关联出发，继续翻阅教材里的音乐。</p>
+          <h2 id="home-bookmark-title">接着探索</h2>
+          <p>地图、年表和律盘共享一个探索空间；知识图谱还原作品之间的联系。</p>
         </header>
         <div className="home-bookmark-list">
           {BOOKMARKS.map(bookmark => {

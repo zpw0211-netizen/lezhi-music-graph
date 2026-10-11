@@ -388,7 +388,7 @@ export function AtlasPage({ books, stage, onStageChange, onOpenWork }: {
     <main className="atlas-page" aria-labelledby="atlas-title">
       <section className="atlas-intro">
         <p className="atlas-kicker">音 乐 地 图</p>
-        <h1 id="atlas-title">作品从哪里来</h1>
+        <h2 id="atlas-title">作品从哪里来</h2>
         <p className="atlas-lede">
           教材里的歌来自四面八方。转动地球，点一根光柱；再切到中国地势，在真实的高程起伏上看看作品标点落在哪里。
         </p>

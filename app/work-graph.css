@@ -4,17 +4,17 @@
 .work-graph,
 .work-graph-empty {
   /* DESIGN-v2 色板（页面作用域） */
-  --p2: #EAE2D0;
-  --p3: #E1D6BF;
-  --sheet: #FBF8F0;
-  --ink: #1B2622;
-  --ink-2: #44504A;
-  --ink-3: #62675B;
-  --pine: #1F4A3C;
-  --pine-deep: #13302A;
-  --seal: #B8392A;
+  --p2: #EEF3F0;
+  --p3: #E5ECE8;
+  --sheet: #FFFFFF;
+  --ink: #17221C;
+  --ink-2: #44544B;
+  --ink-3: #68766E;
+  --pine: #276344;
+  --pine-deep: #194D35;
+  --seal: #AF4236;
   --amber-text: #916319;
-  --line: #CFC4AC;
+  --line: #DCE5DF;
   --kai: "LXGW WenKai", "STKaiti", "KaiTi", "Kaiti SC", "楷体", var(--serif, serif);
 }
 .work-graph { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:20px; height:calc(100vh - 150px); min-height:560px; padding:8px 4px 20px; }

@@ -170,7 +170,8 @@ async function main() {
     await page.locator(".home-portal .home-search input").waitFor({ state: "visible", timeout: 10_000 });
     const scrollCount = await page.locator(".home-portal .home-scroll-trigger").count();
     if (scrollCount !== PUBLISHED_BOOK_KEYS.length) fail(`首页教材画卷数量不正确：${scrollCount}，预期 ${PUBLISHED_BOOK_KEYS.length}`);
-    if ((await page.locator(".home-portal .home-bookmark-list .home-bookmark-item").count()) !== 3) fail("首页书签入口数量不正确");
+    const bookmarkCount = await page.locator(".home-portal .home-bookmark-list .home-bookmark-item").count();
+    if (bookmarkCount !== 2) fail(`首页探索入口数量不正确：${bookmarkCount}，预期 2（声音与音乐探索、知识图谱）`);
   });
 
   await step("桌面：按课学习导航到 #/records", async () => {

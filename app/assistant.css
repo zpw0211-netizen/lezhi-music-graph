@@ -6,20 +6,20 @@
    颜色完全对齐 DESIGN-v2 色板与 tokens.css。 */
 
 .assistant-page {
-  --paper: #F4EEE1;
-  --paper-2: #EAE2D0;
-  --paper-3: #E1D6BF;
-  --sheet: #FBF8F0;
-  --ink: #1B2622;
-  --ink-2: #44504A;
-  --ink-3: #62675B;
-  --pine: #1F4A3C;
-  --pine-deep: #13302A;
-  --seal: #B8392A;
+  --paper: #F7F9F8;
+  --paper-2: #EEF3F0;
+  --paper-3: #E5ECE8;
+  --sheet: #FFFFFF;
+  --ink: #17221C;
+  --ink-2: #44544B;
+  --ink-3: #68766E;
+  --pine: #276344;
+  --pine-deep: #194D35;
+  --seal: #AF4236;
   --seal-light: rgba(184, 57, 42, 0.08);
   --amber: #916319;
   --amber-bg: #F5EEDF;
-  --line: #CFC4AC;
+  --line: #DCE5DF;
   --line-strong: #8F8268;
   --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
   --kai: "LXGW WenKai", "STKaiti", "KaiTi", "Kaiti SC", "楷体", serif;
@@ -659,7 +659,7 @@
 
 .assistant-page .footnote-slip-item.highlighted {
   border-color: var(--seal);
-  background: #FFFBF5;
+  background: #FFFFFF;
   box-shadow: 0 0 0 1px var(--seal);
 }
 
