@@ -30,7 +30,7 @@ for (const [name, segments] of Object.entries(MELODIES)) {
     if (melody.quality === "draft" && melody.meter === "节奏待核对") unmeteredDrafts += 1;
     const bad = checkMelody(melody);
     const notes = melody.bars.flat();
-    const sung = notes.filter((note) => note.d && !note.tie);
+    const sung = notes.filter((note) => note.d && !note.tie && !note.slur);
     const lyrics = sung.filter((note) => note.lyric).length;
     if (bad.length) failures += 1;
     const tag = segments.length > 1 ? `[${melody.title ?? k + 1}]` : "";

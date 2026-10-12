@@ -1,8 +1,9 @@
 // Hand-transcribed main melodies for lesson playback, read from the textbook
 // score. Degrees are jianpu digits (0 = rest, 9 = unpitched rhythm X); octave -1 is a dot below, +1 a
-// dot above; beats count quarter notes. `tie` continues the previous note;
+// dot above; beats count quarter notes. `tie` holds the previous note (same pitch);
+// `slur` is a new pitch sung on the previous syllable (a melisma), so it sounds but takes no lyric;
 // `a` is an accidental (1 = ♯, -1 = ♭).
-export type MelodyNote = { d: number; /** octave dots: +1/+2 above, -1/-2 below */ o?: number; b: number; lyric?: string; tie?: boolean; a?: -1 | 1; tri?: boolean };
+export type MelodyNote = { d: number; /** octave dots: +1/+2 above, -1/-2 below */ o?: number; b: number; lyric?: string; tie?: boolean; slur?: boolean; a?: -1 | 1; tri?: boolean };
 export type Melody = {
   /** Heading when a work has several excerpts (主题一, 引子…). */
   title?: string;
@@ -25,12 +26,13 @@ export type Melody = {
 /**
  * Compact jianpu text → bars. Bars split on "|", notes on spaces.
  *   5  quarter · 5/ eighth · 5// sixteenth · 5/// thirty-second · 5//// sixty-fourth · 5. / 5/. dotted · "-" adds a beat to the previous note
- *   5' dot above · 5, dot below · #4 sharp · b7 flat · 0 rest · ~5 tied continuation · 5//t triplet
+ *   5' dot above · 5, dot below · #4 sharp · b7 flat · 0 rest · ~5 tie (same pitch) or slur (new pitch, no syllable) · 5//t triplet
  * Lyrics: one item per sung note (not rests or ties); "~" = melisma (no syllable).
  */
 export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
   const words = lyrics.split(/\s+/).filter(Boolean);
   let w = 0;
+  let previous: MelodyNote | undefined;
   return text.split("|").map((bar) => bar.trim()).filter(Boolean).map((bar) => {
     const notes: MelodyNote[] = [];
     for (const token of bar.split(/\s+/)) {
@@ -44,8 +46,12 @@ export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
       const note: MelodyNote = { d: Number(digit), b, o: octave.startsWith("'") ? octave.length : -octave.length };
       if (acc) note.a = acc === "#" ? 1 : -1;
       if (triplet) note.tri = true;
-      if (tie) note.tie = true;
+      // "~" on the same pitch holds the note; on a new pitch it is a slur that still sounds.
+      const samePitch = previous && previous.d === note.d && (previous.o ?? 0) === (note.o ?? 0) && (previous.a ?? 0) === (note.a ?? 0);
+      if (tie && samePitch) note.tie = true;
+      else if (tie && note.d) note.slur = true;
       else if (note.d) { const word = words[w++]; if (word && word !== "~") note.lyric = word; }
+      if (note.d) previous = note;
       notes.push(note);
     }
     return notes;
