@@ -47,7 +47,7 @@ export function NodeInspector({
   const tabs: Array<[InspectorTab, string]> = [
     ["overview", "概览"],
     ["relations", `知识联系 ${directTriples.length}`],
-    ["occurrences", `跨册 ${selected?.textbookCount ?? 1}/6`],
+    ["occurrences", `跨册 ${selected?.textbookCount ?? 1}/${PUBLISHED_BOOK_COUNT_LABEL}`],
     ["evidence", `教材出处 ${evidence.length}`],
     ["teaching", "教学应用"],
   ];
@@ -223,7 +223,7 @@ export function NodeInspector({
               <h3>跨册出现</h3>
               <div className="cross-book-metrics">
                 <span>
-                  <b>{selected?.textbookCount ?? 1} / 6</b>覆盖教材
+                  <b>{selected?.textbookCount ?? 1} / {PUBLISHED_BOOK_COUNT_LABEL}</b>覆盖教材
                 </span>
                 <span>
                   <b>{selected?.occurrenceCount ?? 1}</b>出现次数

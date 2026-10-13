@@ -220,7 +220,7 @@ export function useGraphExplorer(
     }
     return map;
   }, [canonicalBook]);
-  /** The canonical (six-book) entity behind a per-book entity. */
+  /** The canonical cross-book entity behind a per-book entity. */
   const toCanonical = (entity: Entity) =>
     canonicalEntityById.get(entity.id) ??
     (entity.canonicalKey ? canonicalEntityBySearchKey.get(entity.canonicalKey) : undefined) ??
@@ -317,7 +317,7 @@ export function useGraphExplorer(
     setPanel("evidence");
     setContextMenu(null);
   };
-  /** Open the six-book graph on an entity picked from search or another page. */
+  /** Open the full graph on an entity picked from search or another page. */
   const selectSearchResult = (entity: Entity, book: Book) => {
     setInspectorOpen(true);
     const canonical =

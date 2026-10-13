@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { basename, extname, isAbsolute, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { existsSync, statSync } from "node:fs";
-import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
+import { PUBLISHED_BOOK_KEYS, PUBLISHED_BOOKS } from "../data/books.mjs";
 
 const DEFAULT_SITE_URL = "http://localhost:4321/lezhi-music-graph/";
 const PLAYWRIGHT_MODULE = process.env.PLAYWRIGHT_MODULE?.trim();
@@ -169,7 +169,9 @@ async function main() {
     if (!title.includes("芽谱")) fail(`首页标题为空或不正确：${title}`);
     await page.locator(".home-portal .home-search input").waitFor({ state: "visible", timeout: 10_000 });
     const scrollCount = await page.locator(".home-portal .home-scroll-trigger").count();
-    if (scrollCount !== PUBLISHED_BOOK_KEYS.length) fail(`首页教材画卷数量不正确：${scrollCount}，预期 ${PUBLISHED_BOOK_KEYS.length}`);
+    // The home shows one stage (小学 or 初中) at a time.
+    const stageCounts = [...new Set(PUBLISHED_BOOKS.map((book) => book.stage))].map((stage) => PUBLISHED_BOOKS.filter((book) => book.stage === stage).length);
+    if (!stageCounts.includes(scrollCount)) fail(`首页教材画卷数量不正确：${scrollCount}，预期其中之一 ${stageCounts.join("/")}`);
     const bookmarkCount = await page.locator(".home-portal .home-bookmark-list .home-bookmark-item").count();
     if (bookmarkCount !== 2) fail(`首页探索入口数量不正确：${bookmarkCount}，预期 2（声音与音乐探索、知识图谱）`);
   });
@@ -177,7 +179,14 @@ async function main() {
   await step("桌面：按课学习导航到 #/records", async () => {
     await page.getByRole("navigation", { name: "主导航" }).getByRole("button", { name: "按课学习", exact: true }).click();
     await page.waitForFunction(() => location.hash === "#/records", null, { timeout: 10_000 });
-    await page.locator('.records-book-picker [aria-label="7年级上册"]').click();
+    // With both stages published the top bar is the stage picker: choose 初中, then 七上.
+    const stagePicker = page.locator(".stage-book-picker--top .stage-book-picker__desktop");
+    if (await stagePicker.count()) {
+      await stagePicker.getByRole("button", { name: "初中", exact: true }).click();
+      await stagePicker.getByRole("button", { name: "七上", exact: true }).click();
+    } else {
+      await page.locator('.records-book-picker [aria-label="7年级上册"]').click();
+    }
     await page.waitForFunction(() => location.hash === "#/records/g7s1", null, { timeout: 10_000 });
     await page.locator(".work-library .records-score-card").first().waitFor({ state: "visible", timeout: 90_000 });
   });

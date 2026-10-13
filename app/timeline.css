@@ -40,7 +40,7 @@
 .timeline-page button, .timeline-page input { color: inherit; font: inherit; }
 .timeline-page button { cursor: pointer; }
 
-/* The small tool rail keeps the six-book filter and title search off the painting. */
+/* The small tool rail keeps the book filter and title search off the painting. */
 .timeline-toolbar {
   z-index: 11;
   display: flex;

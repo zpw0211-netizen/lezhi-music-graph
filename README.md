@@ -1,6 +1,6 @@
 # 芽谱
 
-面向中学师生的数字音乐教材网站，覆盖人音版七至九年级六册（简谱版）。学生按课看谱、听旋律、学知识点；老师上课时能整屏展示；研究者可以看六册教材之间的知识关联。
+面向中小学师生的数字音乐教材网站，整合人音版小学九册与初中六册，共十五册（简谱版）。学生按课看谱、听旋律、学知识点；老师上课时能整屏展示；研究者可以看跨册教材知识关联。
 
 页面上的内容都来自教材数据：教材里明确写出的是「教材知识」，教材之外的补充单独标注为「拓展知识」，不确定的内容不写。
 
@@ -32,14 +32,14 @@ npm run build
 npx vinext start                 # 默认 3000 端口，可用 npx vinext start --port 4335
 ```
 
-`npm run build` 依次跑 `scripts/build-graph-index.mjs`、`scripts/build-entity-details.mjs`、`scripts/build-units.mjs`（单元篇章数据 `public/data/units.json`）、`scripts/build-atlas.mjs`（音乐地图与年表数据 `atlas.json`、`timeline.json`）、`vinext build`，产物在 `dist/`。
+教材源数据或发布册目变化后，先运行 `npm run graph:canonical` 重建跨册规范图谱，再运行 `npm run build`。后者依次跑 `scripts/build-graph-index.mjs`、`scripts/build-entity-details.mjs`、`scripts/build-units.mjs`（单元篇章数据 `public/data/units.json`）、`scripts/build-atlas.mjs`（音乐地图与年表数据 `atlas.json`、`timeline.json`）、`vinext build`，产物在 `dist/`。
 
 **如果 `npm run dev` 报 `There was an access violation in the runtime` / `MiniflareCoreError [ERR_RUNTIME_FAILURE]`**：vinext 的开发服务器要启动 Cloudflare Workers 运行时（workerd），这个报错是本机缺少最新的 [Microsoft Visual C++ 运行库](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)。装好运行库再试；不想装也可以直接用上面的 `npm run build` + `npx vinext start` 预览。
 
 ### 两个必须记住的坑
 
 1. **构建一律用 PowerShell，不要用 Git Bash。** Git Bash 会把 `/lezhi-music-graph` 这类参数改写成 `D:/Git/lezhi-music-graph`，构建出来的站点读不到数据和样式。
-2. **`npm run build` 会重写 `public/data` 下 19 个生成文件**（`books/` 6 个、`details/` 6 个、`evidence/` 6 个、`graph-index.json`）。提交前一律 `git restore public/data`。
+2. **`npm run build` 会重写 `public/data` 下由已发布册目生成的数据文件**（`books/`、`details/`、`evidence/` 与 `graph-index.json`）。提交前检查差异，保留与教材源数据相对应的产物。
 
 ### 构建 GitHub Pages 版本
 
@@ -75,7 +75,7 @@ git restore public/data
 | `app/api/` | `ask/`、`import/` 两个接口，只在 Sites 构建里生效，静态导出不包含 |
 | `app/graph-schema.ts`、`app/graph-runtime.ts` | 图谱的实体/关系 schema 与运行时校验 |
 | `app/*.css`、`app/styles/` | 全局样式表，在 `layout.tsx` 里逐个 `import` |
-| `content/textbooks/` | 六册教材源数据（`g7s1.mjs` … `g9s2.mjs`）、流程说明 `PROGRESS.md`、谱例清单 `score-manifest.json` |
+| `content/textbooks/` | 十五册教材源数据（`g1s1.mjs` … `g9s2.mjs`）、流程说明 `PROGRESS.md`、谱例清单 `score-manifest.json` |
 | `public/data/` | 构建生成的网站数据，见第 5 节 |
 | `public/media/` | 钢琴采样（`instruments/piano/`）、教材谱面图（`scores/<册>/`）、人声录音（`recordings/`，目前为空） |
 | `public/art/`、`public/brand/` | 木刻插画与标志、字标字体许可（`SOURCES.md`、`README.md`、`OFL.txt`）；另有 `public/favicon.svg`、`public/og.jpg` |
@@ -90,7 +90,7 @@ git restore public/data
 | 地址 | 页面 |
 |---|---|
 | `/`（无井号） | 首页 |
-| `#/records`、`#/records/g7s1` | 按课学习：六册目录 / 指定某一册 |
+| `#/records`、`#/records/g7s1` | 按课学习：小学 / 初中目录与阶段筛选 / 指定某一册 |
 | `#/lesson/歌唱祖国` | 单课学习页 |
 | `#/work/歌唱祖国` | 单个作品的知识图谱 |
 | `#/graph`、`#/graph/<节点ID>` | 知识图谱页 / 聚焦某个节点 |
@@ -108,7 +108,7 @@ git restore public/data
 
 | 文件 | 什么时候加载 | 作用 |
 |---|---|---|
-| `public/data/graph-index.json` | 首屏（`app/layout.tsx` 预加载，`app/hooks/useGraphIndex.ts` 读取） | 全站索引：六册目录与规范图谱，约 2.0 MB |
+| `public/data/graph-index.json` | 首屏（`app/layout.tsx` 预加载，`app/hooks/useGraphIndex.ts` 读取） | 全站索引：十五册目录与规范图谱 |
 | `public/data/books/<册>.json` | 打开某一册时按需加载（`useBookData`） | 该册的实体、关系、教材证据；按册懒加载，首页用不到 |
 | `public/data/evidence/<册>.json` | 需要引用教材原文时按需加载 | 逐条关系的教材证据：页码、原文，以及是「教材明确」还是「根据教材归纳」 |
 | `public/data/details/CAN_<id>.json` | 点开某个知识节点时按需加载（`app/lib/graph/knowledge-detail.ts`） | 单个规范实体的阅读页：实体、出现位置、关系；构建生成，不入库 |
@@ -121,8 +121,8 @@ git restore public/data
 
 | 命令 | 检查什么 |
 |---|---|
-| `npm run -s quality:audit` | 六册数据自身的完整性：关系重复、subject/object 指向缺失、证据缺失；按册打印 `published / candidates / structural`。`quality:check` 是同一个脚本（`scripts/audit-quality.mjs`） |
-| `npm run -s quality:p0` | P0 回归保护网：六册齐备、每册实体和关系非空、每条关系都有教材证据，并核对页面源码与 schema 里保留了关键搜索样本 |
+| `npm run -s quality:audit` | 已发布教材数据的完整性：关系重复、subject/object 指向缺失、证据缺失；按册打印 `published / candidates / structural`。`quality:check` 是同一个脚本（`scripts/audit-quality.mjs`） |
+| `npm run -s quality:p0` | P0 回归保护网：已发布教材齐备、每册实体和关系非空、每条关系都有教材证据，并核对页面源码与 schema 里保留了关键搜索样本 |
 | `npm run -s quality:v21` | 规范图谱：融合后的节点/关系数、孤立点、悬空引用、被融合的重复数、连通分量 |
 | `npm run -s quality:v22` | 研究分析页：图谱最近邻距离、教材覆盖缺口、证据覆盖率，并核对研究视图还在页面上 |
 | `npm run -s quality:v23` | 大图渲染：力导向布局的节点/边数、半径与十二扇区分布，并核对画布的渲染路径 |
@@ -133,7 +133,7 @@ git restore public/data
 | `npm run -s quality:explorer` | 知识图谱页：示例查询的聚焦实体、十类筛选、schema 边与字面属性，并确认数据没被改动 |
 | `npm run -s quality:constellation` | 节点详情页：1428 个 `details/CAN_*.json` 与规范图谱逐条一致，无孤立点和悬空引用 |
 | `npm run lint`、`npx tsc --noEmit -p .` | ESLint（Next 预设）与 TypeScript 类型检查 |
-| `node scripts/audit-ai-worker.mjs`、`node scripts/check-melodies.mjs` | AI 接口的数据校验（六册齐备，拒绝重复 id 与悬空引用）；旋律数据统计（各册多少课有可播放旋律） |
+| `node scripts/audit-ai-worker.mjs`、`node scripts/check-melodies.mjs` | AI 接口的数据校验（拒绝重复 id 与悬空引用）；旋律数据统计（各册多少课有可播放旋律） |
 | **目前跑不通的两条** | `quality:rebuild` 要从外部提取目录重建 `music-graph.json` / `canonical-graph.json`，该目录不在仓库里；`quality:v3` 是早期的图谱页验收脚本，三条断言指向已重构掉的代码，CI 未使用。这两条要么补齐来源/更新断言，要么删掉 |
 
 审计脚本是功能保护网，不要为了让检查通过去改它们。
@@ -166,6 +166,6 @@ git restore public/data
 
 ## 9. 智能问答的现状
 
-AI 问答当前为本地检索模式：回答由 `app/lib/ai/` 在浏览器里检索六册教材数据后生成，会标出依据的教材内容和页码，不调用大模型，页面上也会写明「尚未接入 AI 大模型」（`app/components/assistant/AssistantPage.tsx`）。
+AI 问答当前为本地检索模式：回答由 `app/lib/ai/` 在浏览器里检索十五册教材数据后生成，会标出依据的教材内容和页码，不调用大模型，页面上也会写明「尚未接入 AI 大模型」（`app/components/assistant/AssistantPage.tsx`）。
 
 `worker/ai-api.ts` 是为将来部署到 Cloudflare Workers 准备的 AI 接口，尚未部署。

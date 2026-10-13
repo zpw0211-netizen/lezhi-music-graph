@@ -315,13 +315,17 @@ t("谱例吸附：稀疏分散的单行片段和明显偏移都转人工", () =>
 
 // --- textbook registry and source checks ------------------------------------
 
-t("教材册目：登记 15 册并只发布原有六册", () => {
+t("教材册目：发布小学九册与初中六册", () => {
   assert.deepEqual(BOOK_REGISTRY.map((book) => book.key), [
     "g1s1", "g1s2", "g2s1", "g2s2", "g3s1", "g3s2", "g4s1", "g5s1", "g6s1",
     "g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2",
   ]);
-  assert.deepEqual(PUBLISHED_BOOK_KEYS, ["g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2"]);
-  assert.equal(BOOK_BY_KEY.get("g1s1").published, false);
+  assert.deepEqual(PUBLISHED_BOOK_KEYS, [
+    "g1s1", "g1s2", "g2s1", "g2s2", "g3s1", "g3s2", "g4s1", "g5s1", "g6s1",
+    "g7s1", "g7s2", "g8s1", "g8s2", "g9s1", "g9s2",
+  ]);
+  assert.equal(BOOK_REGISTRY.filter((book) => book.published && book.stage === "小学").length, 9);
+  assert.equal(BOOK_REGISTRY.filter((book) => book.published && book.stage === "初中").length, 6);
   assert.ok(BOOK_REGISTRY.every((book) => book.stage && book.grade && book.semester && book.shortName && book.fullName));
 });
 
@@ -586,8 +590,8 @@ t("容错：timeline 忽略不使用的多余路径段", () => {
   assert.deepEqual(parseRoute("#/timeline/extra"), { view: "timeline" });
 });
 
-t("年表作品链接：全量 362 条只链接 records 中可解析的 212 条", () => {
-  assert.equal(timelineData.works.length, 362);
+t("年表作品链接：全量 664 条只链接 records 中可解析的 470 条", () => {
+  assert.equal(timelineData.works.length, 664);
   let linked = 0;
   let plainText = 0;
   for (const work of timelineData.works) {
@@ -608,8 +612,8 @@ t("年表作品链接：全量 362 条只链接 records 中可解析的 212 条"
       work: work.name.replace(/^《|》$/g, ""),
     }, `作品链接未解析到正确册别与作品：${work.id}`);
   }
-  assert.equal(linked, 212);
-  assert.equal(plainText, 150);
+  assert.equal(linked, 470);
+  assert.equal(plainText, 194);
 });
 
 t("records 默认册改为七上且不改图谱使用的全局默认册", () => {

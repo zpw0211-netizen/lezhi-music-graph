@@ -1,28 +1,28 @@
 {
   "version": "2.1",
   "raw": {
-    "totalNodes": 1784,
-    "totalRelationships": 5516,
+    "totalNodes": 3573,
+    "totalRelationships": 9864,
     "isolatedNodeCount": 0,
     "isolatedNodes": [],
     "danglingRelationshipCount": 0,
     "danglingRelationships": [],
-    "duplicateEntityGroupCount": 210,
-    "duplicateEntityRecordCount": 356,
-    "connectedComponentCount": 65,
+    "duplicateEntityGroupCount": 394,
+    "duplicateEntityRecordCount": 930,
+    "connectedComponentCount": 117,
     "largestConnectedComponentNodeCount": 418
   },
   "canonical": {
-    "totalNodes": 1428,
-    "totalRelationships": 7206,
-    "occurrenceCount": 1784,
-    "occurrenceRelationshipCount": 3562,
+    "totalNodes": 2643,
+    "totalRelationships": 13139,
+    "occurrenceCount": 3573,
+    "occurrenceRelationshipCount": 7131,
     "isolatedNodeCount": 0,
     "isolatedNodes": [],
     "danglingRelationshipCount": 0,
     "connectedComponentCount": 1,
-    "largestConnectedComponentNodeCount": 1428,
+    "largestConnectedComponentNodeCount": 2643,
     "collapsedSelfRelationshipCount": 0,
-    "sharedEntityCount": 210
+    "sharedEntityCount": 394
   }
 }

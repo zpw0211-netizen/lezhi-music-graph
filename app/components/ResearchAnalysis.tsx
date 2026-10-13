@@ -205,7 +205,7 @@ export function ResearchAnalysis({
                     <b>{String(index + 1).padStart(2, "0")}</b>
                     <i style={{ background: semantic.color }} />
                     <span><strong>{entity.name}</strong><small>{semantic.label}</small></span>
-                    <em>{entity.textbookCount ?? 1}/6</em>
+                    <em>{entity.textbookCount ?? 1}/{PUBLISHED_BOOK_COUNT_LABEL}</em>
                     <em>{entity.occurrenceCount ?? 1}</em>
                     <em>{entity.calculatedDegree}</em>
                     <em>{entity.relationCount ?? entity.calculatedDegree}</em>

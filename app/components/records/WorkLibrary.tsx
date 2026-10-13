@@ -12,6 +12,7 @@ import { bareWorkName, type Book, type BookDirectory, type Entity, type Triple }
 import { BOOK_BY_KEY, volumeNumeral } from "../../lib/app/books";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
+import { unitArtPath } from "../../lib/app/unit-art";
 import type { BookDataStatus } from "../../hooks/useGraphIndex";
 import { playPageTurn, playStamp, readBookSoundOn, saveBookSoundOn } from "../../lib/records/book-sounds";
 
@@ -116,7 +117,7 @@ function routeTitleFor(work: UnitWork, works: readonly UnitWork[]) {
 function unitArtwork(unit: TextbookUnit) {
   return unit.kind === "project"
     ? `art/${unit.bookKey}.webp`
-    : `art/units/${unit.bookKey}-u${unit.order}.webp`;
+    : unitArtPath(unit.bookKey, unit.order) ?? `art/${unit.bookKey}.webp`;
 }
 
 function bookIntroduction(units: readonly TextbookUnit[]) {

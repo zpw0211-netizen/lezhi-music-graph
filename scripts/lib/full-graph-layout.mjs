@@ -41,7 +41,7 @@ const knowledgeRelationship = (relationship, entityMap) => {
 
 const importanceScore = (entity, structuralDegree) =>
   Math.log1p(structuralDegree) * 0.48 +
-  ((entity.textbookCount ?? 1) / 6) * 1.7 +
+  ((entity.textbookCount ?? 1) / Math.max(1, PUBLISHED_BOOK_KEYS.length)) * 1.7 +
   Math.log1p(entity.occurrenceCount ?? 1) * 0.34 +
   Math.log1p(entity.relationCount ?? structuralDegree) * 0.3;
 
@@ -509,7 +509,7 @@ export function buildBookLayout(entities, relationships) {
   }));
 }
 
-/** The six-book network: communities as islands, fitted into the shared canvas. */
+/** The full published-book network: communities as islands, fitted into the shared canvas. */
 function buildKnowledgeIslands(entities, relationships, importanceById) {
   const entityMap = new Map(entities.map((entity) => [entity.id, entity]));
   const links = relationships.filter((relationship) => knowledgeRelationship(relationship, entityMap));

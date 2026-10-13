@@ -95,7 +95,7 @@ export type GraphIndexState = {
   generatedAt?: string;
 };
 
-/** Loads the six-textbook graph index once. */
+/** Loads the published-textbook graph index once. */
 export function useGraphIndex() {
   const [state, setState] = useState<GraphIndexState>({ status: "loading", dataset: null, canonicalGraph: null });
   useEffect(() => {

@@ -11,6 +11,7 @@ import { loadPeopleSupplement } from "../../lib/timeline/peopleSupplement";
 import { loadYearSupplement } from "../../lib/timeline/yearSupplement";
 import { MELODIES, type Melody } from "../../lib/lesson/melodies";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
+import { unitArtPath } from "../../lib/app/unit-art";
 import {
   BOOKS,
   BOOK_ORDER,
@@ -238,12 +239,12 @@ function workYearMark(work: TimelineDisplayWork) {
 
 function getUnitArt(work: TimelineWork, units: TimelineUnit[]) {
   const unit = units.find(candidate => candidate.bookKey === work.bookKey && candidate.name === work.unit);
-  return unit && unit.order <= 6 ? `art/units/${unit.bookKey}-u${unit.order}.webp` : null;
+  return unit ? unitArtPath(unit.bookKey, unit.order) : null;
 }
 
 function artForEra(era: TimelineEraGroup, units: TimelineUnit[], used: Set<string>, index: number) {
   const candidates = [...new Set(era.works.flatMap(work => work.records.map(record => getUnitArt(record, units)).filter((path): path is string => Boolean(path))))];
-  const available = units.filter(unit => unit.order <= 6).map(unit => `art/units/${unit.bookKey}-u${unit.order}.webp`);
+  const available = units.map(unit => unitArtPath(unit.bookKey, unit.order)).filter((path): path is string => Boolean(path));
   const selected = candidates.find(path => !used.has(path)) ?? candidates[0] ?? available[(index * 5) % Math.max(1, available.length)] ?? null;
   if (selected) used.add(selected);
   return selected;

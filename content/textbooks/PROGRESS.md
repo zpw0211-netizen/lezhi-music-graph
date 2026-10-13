@@ -8,7 +8,7 @@
 3. `node scripts/build-textbook-source.mjs <key>` → `python scripts/crop-scores.py <key>`
    → `python ../textbook-scan/contact_sheet.py <key>` 逐张核对谱例裁剪。
 4. `node scripts/build-canonical-graph.mjs && node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs`，再跑全部 audit。
-5. 全部完成后导出六册“拓展知识清单”给用户。
+5. 全部完成后按发布范围导出“拓展知识清单”给用户。
 
 | 册 | key | PDF偏移 | 状态 |
 |---|---|---|---|

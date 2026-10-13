@@ -1,4 +1,4 @@
-// Community ("island") layout for the six-book knowledge network.
+// Community ("island") layout for the full published-book knowledge network.
 // Tightly linked knowledge (a work with its composer, genre, instruments and
 // the concepts it teaches) forms one island; islands are packed side by side
 // around a central core of textbook nodes and very general hub concepts

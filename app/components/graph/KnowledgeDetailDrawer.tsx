@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { schemaCategoryMeta } from "../../graph-schema";
 import { loadKnowledgeDetail } from "../../lib/graph/knowledge-detail";
+import { PUBLISHED_BOOK_COUNT_LABEL } from "../../lib/app/books";
 import type { DetailEntity, DetailOccurrence, DetailRelationship, KnowledgeDetail } from "../../lib/graph/knowledge-detail";
 
 type Props = {
@@ -98,7 +99,7 @@ export function KnowledgeDetailDrawer({ entity, entities, relationships, occurre
       <section><h3>教材位置</h3><ul className="knowledge-locations">{locations.map(item => <li key={item.id}><strong>{item.textbookTitle}</strong><span>{formatPageReferences(item.unit || item.lesson || "教材收录")} · {item.page != null ? `PDF 第 ${item.page} 页` : "页码未记录"}</span></li>)}</ul>{!locations.length && <p className="knowledge-empty">该知识点未记录教材位置。</p>}</section>
       <section><h3>教材出处</h3>{evidence.length ? evidence.map((item, index) => <article className="knowledge-evidence" key={index}><small>{item.bookTitle} · {citationPageLabel(item.textbookPage, item.pdfPage)}</small><p>{formatPageReferences(item.summary || "教材来源记录")}</p><span className={/拓展|补充/.test(item.region ?? "") ? "is-extended" : ""} title={item.region ?? undefined}>{item.region ? (/拓展|补充/.test(item.region) ? "拓展知识" : "教材内容") : item.relation}</span></article>) : <p className="knowledge-empty">暂无独立出处摘录，已保留上方教材位置；不能把知识联系当作原文引述。</p>}</section>
       <section><h3>知识联系</h3>{renderFacts(facts)}</section>
-      <section><h3>跨册关联</h3><p>覆盖 {entity.textbookCount ?? entity.bookKeys?.length ?? 1} / 6 册 · 出现 {entity.occurrenceCount ?? locations.length} 次</p>{renderFacts(facts.filter(item => item.edge.crossBook))}</section>
+      <section><h3>跨册关联</h3><p>覆盖 {entity.textbookCount ?? entity.bookKeys?.length ?? 1} / {PUBLISHED_BOOK_COUNT_LABEL} · 出现 {entity.occurrenceCount ?? locations.length} 次</p>{renderFacts(facts.filter(item => item.edge.crossBook))}</section>
       <section><h3>教学应用</h3>{renderFacts(facts.filter(item => /学习|教学|实践|任务|目标|前置|深化|扩展/.test(item.label)))}</section>
       {!!current.media?.filter(asset => safeMediaUrl(asset.url)).length && <section><h3>学习资源</h3>{current.media.filter(asset => safeMediaUrl(asset.url)).map((asset, index) => <figure key={index}><DetailMedia asset={asset} basePath={basePath} /><figcaption>{formatPageReferences(asset.title)} {formatPageReferences(asset.source)}</figcaption></figure>)}</section>}
       <section><h3>AI 问答入口</h3><p className="knowledge-empty">带着当前知识进入已有问答页面。</p><button className="knowledge-ask" onClick={() => onAsk(entity.name)}>了解「{entity.name}」的教材内容 <WorkbenchIcon name="arrow" /></button></section>

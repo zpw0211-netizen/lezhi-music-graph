@@ -194,7 +194,7 @@ button,input { font:inherit; } button { cursor:pointer; }
 }
 
 /* Full Graph performance renderer: keep the existing Bloom workspace while the
-   large six-book scene is painted into one Canvas instead of 13k SVG nodes. */
+   large cross-book scene is painted into one Canvas instead of 13k SVG nodes. */
 .neo-canvas .full-graph-canvas {
   position: relative;
   z-index: 1;
