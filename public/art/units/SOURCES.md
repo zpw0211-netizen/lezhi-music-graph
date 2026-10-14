@@ -805,3 +805,1174 @@ Use case: illustration-story. Asset: music-textbook chapter header. Scene: an el
 - 八年级下册：我的音乐网页（综合实践，非音乐单元；未生成）
 - 九年级上册：我的音乐网页（综合实践，非音乐单元；未生成）
 - 九年级下册：我的音乐网页（综合实践，非音乐单元；未生成）
+
+
+---
+
+# T072 小学九册单元插图（54 张，Codex1，2026-10-14）
+
+
+本目录交付 54 张单元图，覆盖小学九册（g1s1–g6s1），每册六单元。所有成品为 1600×640 WebP，单张不超过 180,000 字节。原始 PNG 在 `E:\Projects\.tmp\codex1\T072\raw\`（含一张重画初稿备份）。
+
+工具：内置 image_gen；生成模型标识未在工具返回信息中提供，因此不臆测。风格依据 `E:\Projects\yapu-worktrees\primary-merge\public\art\units\SOURCES.md` 中 T008 说明，并目视参考 `g7s1-u1.webp`、`g8s2-u3.webp` 和 `g9s1-u5.webp`。每条提示词中的 “Style/medium and avoid list” 与 T008 原文保持一致。导出使用现有 sharp：`E:\Projects\music-graph-site\node_modules\sharp`；先按质量 78 导出，超出体积限制时自动下调，实际质量范围 66–78。没有运行 npm install，没有修改任何仓库/工作树文件，也没有运行 git。
+
+## 图片记录
+
+## g1s1-u1.webp — 第一单元 好朋友
+
+- 册别：一年级上册
+- 教材曲目：《你的名字叫什么？》、《音乐是我好朋友》、《快乐进行曲》、《口哨与小狗》
+- 成品：1600×640 WebP，166730 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s1-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级上册 第一单元「好朋友」, based only on its listed works: 《你的名字叫什么？》、《音乐是我好朋友》、《快乐进行曲》、《口哨与小狗》.
+Scene/backdrop: A quiet schoolyard path in gentle morning light. On the right two-thirds, two young schoolchildren seen from behind walk together with a small friendly dog; a few simple trees and a path suggest a shared playful day. Keep figures small and distant, no face detail. Do not show a whistle or any instrument.
+Composition and constraints: make the scene warm and playful for children aged 6–12, but visually restrained and editorial, not cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. No text or mark anywhere.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s1-u2.webp — 第二单元 祖国您好
+
+- 册别：一年级上册
+- 教材曲目：《中华人民共和国国歌》、《国旗国旗真美丽》、《同唱一首歌》、《我们美丽的祖国》、《颂祖国》、《大雨小雨》
+- 成品：1600×640 WebP，152540 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s1-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级上册 第二单元 祖国您好, based only on its listed works: 《中华人民共和国国歌》、《国旗国旗真美丽》、《同唱一首歌》、《我们美丽的祖国》、《颂祖国》、《大雨小雨》.
+Scene/backdrop: A bright school courtyard after a spring shower: a small group of children seen from behind stand together facing a simple red flag in the distance; rain-washed paving, soft clouds, and a civic avenue suggest greeting the homeland. The flag has no lettering or extra emblem details.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s1-u3.webp — 第三单元 快乐的一天
+
+- 册别：一年级上册
+- 教材曲目：《其多列》、《跳绳》
+- 成品：1600×640 WebP，159164 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s1-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级上册 第三单元 快乐的一天, based only on its listed works: 《其多列》、《跳绳》.
+Scene/backdrop: Two small children take turns jumping rope on a sunny school path, with a long shadow and a simple schoolyard tree suggesting an active, happy day. Keep the children distant and seen from behind.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g1s1-u4.webp — 第四单元 可爱的动物
+
+- 册别：一年级上册
+- 教材曲目：《动物说话》、《两只小象》、《小青蛙》、《大象》
+- 成品：1600×640 WebP，167908 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s1-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级上册 第四单元 可爱的动物, based only on its listed works: 《动物说话》、《两只小象》、《小青蛙》、《大象》.
+Scene/backdrop: A calm pond-edge garden with two small elephants walking side by side, a frog on a broad leaf, and a few birds in the branches; friendly animals in a natural landscape, no human figure.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s1-u5.webp — 第五单元 爱劳动
+
+- 册别：一年级上册
+- 教材曲目：《大家来劳动》、《粉刷匠》、《劳动最光荣》、《三个和尚》、《铁匠波尔卡》
+- 成品：1600×640 WebP，153814 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s1-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级上册 第五单元 爱劳动, based only on its listed works: 《大家来劳动》、《粉刷匠》、《劳动最光荣》、《三个和尚》、《铁匠波尔卡》.
+Scene/backdrop: Children seen at a distance work together in a school garden: one paints a low fence, another sweeps the path, and another carries a small basket. Keep tools simple and ordinary, and the scene orderly and cheerful.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s1-u6.webp — 第六单元 过新年
+
+- 册别：一年级上册
+- 教材曲目：《龙咚锵》、《新年好》、《春节序曲（片段）》、《小拜年》
+- 成品：1600×640 WebP，166566 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s1-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级上册 第六单元 过新年, based only on its listed works: 《龙咚锵》、《新年好》、《春节序曲（片段）》、《小拜年》.
+Scene/backdrop: A family courtyard prepared for Lunar New Year, with plain red lanterns, a flowering branch, and a table of simple festive treats; a few distant children visit elders from behind. No firework effects or writing on decorations.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s2-u1.webp — 第一单元 春天
+
+- 册别：一年级下册
+- 教材曲目：《布谷》、《小雨沙沙》、《春晓》、《杜鹃圆舞曲》
+- 成品：1600×640 WebP，168396 B，编码质量 76；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s2-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级下册 第一单元 春天, based only on its listed works: 《布谷》、《小雨沙沙》、《春晓》、《杜鹃圆舞曲》.
+Scene/backdrop: Soft spring rain falls over new green shoots and blossoming branches; a cuckoo-like small bird perches high among the leaves while the path and garden open into fresh morning air.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g1s2-u2.webp — 第二单元 童谣
+
+- 册别：一年级下册
+- 教材曲目：《牧童谣》、《竹子冒尖尖》、《牧童短笛》、《水牛儿》
+- 成品：1600×640 WebP，164954 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s2-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级下册 第二单元 童谣, based only on its listed works: 《牧童谣》、《竹子冒尖尖》、《牧童短笛》、《水牛儿》.
+Scene/backdrop: New bamboo shoots emerge beside a village path as a small water buffalo grazes and a shepherd child, seen from behind at a distance, walks nearby. Do not show a flute or another instrument.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s2-u3.webp — 第三单元 亲又亲
+
+- 册别：一年级下册
+- 教材曲目：《雁群飞》、《数鸭子》、《拉勾勾》、《鸭子拌嘴》
+- 成品：1600×640 WebP，130842 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s2-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级下册 第三单元 亲又亲, based only on its listed works: 《雁群飞》、《数鸭子》、《拉勾勾》、《鸭子拌嘴》.
+Scene/backdrop: A pond with a line of ducks paddling together, a flock of geese crossing the open sky, and two children seen from behind standing side by side at the bank; gentle friendship and animal companionship.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s2-u4.webp — 第四单元 游戏
+
+- 册别：一年级下册
+- 教材曲目：《理发师》、《火车开啦》、《火车波尔卡》、《跳绳》
+- 成品：1600×640 WebP，159198 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s2-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级下册 第四单元 游戏, based only on its listed works: 《理发师》、《火车开啦》、《火车波尔卡》、《跳绳》.
+Scene/backdrop: A playful neighborhood lane with a small toy train rolling along the ground, children jumping rope nearby, and a modest barber's doorway in the background with only a comb and scissors visible; no signboard or lettering.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g1s2-u5.webp — 第五单元 可爱的家
+
+- 册别：一年级下册
+- 教材曲目：《小宝宝睡着了》、《我是一个甜果果》、《吉祥三宝》、《摇篮曲》
+- 成品：1600×640 WebP，175916 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s2-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级下册 第五单元 可爱的家, based only on its listed works: 《小宝宝睡着了》、《我是一个甜果果》、《吉祥三宝》、《摇篮曲》.
+Scene/backdrop: A quiet, welcoming home interior: a baby sleeps in a cradle near a window, a fruit bowl rests on a low table, and two family members are seen from behind nearby. Soft domestic warmth, no close faces.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g1s2-u6.webp — 第六单元 时间的歌
+
+- 册别：一年级下册
+- 教材曲目：《这是什么？》、《时间像小马车》、《在钟表店里》、《调皮的小闹钟》
+- 成品：1600×640 WebP，161848 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g1s2-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 一年级下册 第六单元 时间的歌, based only on its listed works: 《这是什么？》、《时间像小马车》、《在钟表店里》、《调皮的小闹钟》.
+Scene/backdrop: A tidy clockmaker's room with a large round clock whose face has hands but no numbers, a few smaller clocks, and a small wooden horse cart on a shelf; no labels, writing, or readable dial numerals.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s1-u1.webp — 第一单元 幸福的歌
+
+- 册别：二年级上册
+- 教材曲目：《中华人民共和国国歌》、《彝家娃娃真幸福》、《乃哟乃》、《阳光下的孩子》、《快乐的罗嗦》
+- 成品：1600×640 WebP，151444 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s1-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级上册 第一单元 幸福的歌, based only on its listed works: 《中华人民共和国国歌》、《彝家娃娃真幸福》、《乃哟乃》、《阳光下的孩子》、《快乐的罗嗦》.
+Scene/backdrop: Children seen from behind dance in a sunny open schoolyard near a small red flag; trees and long morning shadows frame a joyful, communal scene. Avoid specific ethnic costume details.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s1-u2.webp — 第二单元 童趣
+
+- 册别：二年级上册
+- 教材曲目：《拍皮球》、《打花巴掌》、《小狗圆舞曲》、《跳圆舞曲的小猫》
+- 成品：1600×640 WebP，150432 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s1-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级上册 第二单元 童趣, based only on its listed works: 《拍皮球》、《打花巴掌》、《小狗圆舞曲》、《跳圆舞曲的小猫》.
+Scene/backdrop: In a sunny courtyard, a child bounces a ball while a small dog and cat circle playfully around it; keep the animals and child at a distance, with no face detail.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s1-u3.webp — 第三单元 跳起舞
+
+- 册别：二年级上册
+- 教材曲目：《小红帽》、《洋娃娃和小熊跳舞》、《糖果仙子舞曲》、《四小天鹅舞曲》
+- 成品：1600×640 WebP，176750 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s1-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级上册 第三单元 跳起舞, based only on its listed works: 《小红帽》、《洋娃娃和小熊跳舞》、《糖果仙子舞曲》、《四小天鹅舞曲》.
+Scene/backdrop: A generic child in a plain red hood dances with a simple teddy bear on a woodland clearing, with a few swan silhouettes on a nearby pond; storybook-like but rendered as restrained editorial woodblock art, not a cartoon.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g2s1-u4.webp — 第四单元 小小音乐家
+
+- 册别：二年级上册
+- 教材曲目：《箫》、《快乐的小笛子》、《号手与鼓手》、《会跳舞的洋娃娃》、《星光圆舞曲》
+- 成品：1600×640 WebP，141074 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s1-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级上册 第四单元 小小音乐家, based only on its listed works: 《箫》、《快乐的小笛子》、《号手与鼓手》、《会跳舞的洋娃娃》、《星光圆舞曲》.
+Scene/backdrop: A small rehearsal room with a few children seen from behind watching a simple doll turn on a low stage; blank music stands and rhythmic floor shadows imply a young music gathering. Do not depict instruments or written notes.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s1-u5.webp — 第五单元 美好的夜
+
+- 册别：二年级上册
+- 教材曲目：《闪烁的小星星》、《星光恰恰恰》、《小小的船》、《摇篮曲》、《月亮—油黄的金桔》
+- 成品：1600×640 WebP，139114 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s1-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级上册 第五单元 美好的夜, based only on its listed works: 《闪烁的小星星》、《星光恰恰恰》、《小小的船》、《摇篮曲》、《月亮—油黄的金桔》.
+Scene/backdrop: A crescent moon and stars above a small boat gliding on calm water; at the far right a child sleeps by an open window under a simple blanket, seen from behind and at a distance.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s1-u6.webp — 第六单元 新春乐
+
+- 册别：二年级上册
+- 教材曲目：《小拜年》、《过新年》、《晚会》
+- 成品：1600×640 WebP，158674 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s1-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级上册 第六单元 新春乐, based only on its listed works: 《小拜年》、《过新年》、《晚会》.
+Scene/backdrop: A cheerful Lunar New Year evening in a courtyard, with plain lanterns, a round table, oranges, and children seen from behind greeting grandparents; no writing on ornaments and no fireworks.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s2-u1.webp — 第一单元 绿色的祝福
+
+- 册别：二年级下册
+- 教材曲目：《中华人民共和国国歌》、《小树快长高》、《大树妈妈》、《郊游》、《春之歌》、《绿色的祖国》
+- 成品：1600×640 WebP，174578 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s2-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级下册 第一单元 绿色的祝福, based only on its listed works: 《中华人民共和国国歌》、《小树快长高》、《大树妈妈》、《郊游》、《春之歌》、《绿色的祖国》.
+Scene/backdrop: Children plant small saplings beside an older broad-canopy tree in a green spring landscape; a footpath leads toward open fields under a fresh sky. No text or flags.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g2s2-u2.webp — 第二单元 难忘的歌
+
+- 册别：二年级下册
+- 教材曲目：《共产儿童团歌》、《卖报歌》、《酸枣刺》、《中国少年先锋队队歌》
+- 成品：1600×640 WebP，167110 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s2-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级下册 第二单元 难忘的歌, based only on its listed works: 《共产儿童团歌》、《卖报歌》、《酸枣刺》、《中国少年先锋队队歌》.
+Scene/backdrop: A quiet old-town lane at dawn with a neat bundle of blank newspapers on a low stool and a red scarf draped over a rail; distant small figures walk down the lane, no faces, signs, or printed marks.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s2-u3.webp — 第三单元 飞呀飞
+
+- 册别：二年级下册
+- 教材曲目：《小蜜蜂》、《飞飞曲》、《蝴蝶》、《蜜蜂》、《采茶扑蝶》
+- 成品：1600×640 WebP，147010 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s2-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级下册 第三单元 飞呀飞, based only on its listed works: 《小蜜蜂》、《飞飞曲》、《蝴蝶》、《蜜蜂》、《采茶扑蝶》.
+Scene/backdrop: Bees and butterflies fly among wildflowers and tea shrubs on a gentle hillside; the composition follows their light movement across the right side without adding people or instruments.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s2-u4.webp — 第四单元 美丽家园
+
+- 册别：二年级下册
+- 教材曲目：《我的家在日喀则》、《草原上》、《新疆舞曲第一号》、《我是人民小骑兵》
+- 成品：1600×640 WebP，148706 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s2-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级下册 第四单元 美丽家园, based only on its listed works: 《我的家在日喀则》、《草原上》、《新疆舞曲第一号》、《我是人民小骑兵》.
+Scene/backdrop: A broad pastoral landscape with a grazing horse, a river bend, rolling grassland, and distant mountain homes; a tiny rider seen from far behind crosses the open field. Avoid specific cultural costume or architecture.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g2s2-u5.webp — 第五单元 快乐的舞蹈
+
+- 册别：二年级下册
+- 教材曲目：《新疆是个好地方》、《金孔雀轻轻跳》、《单簧管波尔卡》、《加伏特舞曲》、《霍拉舞曲》、《阿西里西》
+- 成品：1600×640 WebP，163808 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s2-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级下册 第五单元 快乐的舞蹈, based only on its listed works: 《新疆是个好地方》、《金孔雀轻轻跳》、《单簧管波尔卡》、《加伏特舞曲》、《霍拉舞曲》、《阿西里西》.
+Scene/backdrop: A distant circle of children dancing in an open courtyard, their skirts and simple ribbons making broad rhythmic shapes; no close faces, instruments, or costume claims tied to a specific region.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g2s2-u6.webp — 第六单元 龙里格龙
+
+- 册别：二年级下册
+- 教材曲目：《龙里格龙》、《大闹天宫（片段）》
+- 成品：1600×640 WebP，126728 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g2s2-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 二年级下册 第六单元 龙里格龙, based only on its listed works: 《龙里格龙》、《大闹天宫（片段）》.
+Scene/backdrop: A large paper dragon lantern winds above an empty traditional stage with soft cloud-shaped scenery and a distant red curtain, suggesting a lively legendary celebration; no performer close-ups, text, or instrument.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s1-u1.webp — 第一单元 我们多么幸福
+
+- 册别：三年级上册
+- 教材曲目：《摇啊摇》、《捉迷藏》、《在阳光下》、《我们多么幸福》
+- 成品：1600×640 WebP，167236 B，编码质量 76；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s1-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级上册 第一单元 我们多么幸福, based only on its listed works: 《摇啊摇》、《捉迷藏》、《在阳光下》、《我们多么幸福》.
+Scene/backdrop: Two children play hide-and-seek beside a simple garden swing beneath bright trees; sunlight crosses a quiet path and meadow, creating a carefree childhood scene.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s1-u2.webp — 第二单元 劳动的歌
+
+- 册别：三年级上册
+- 教材曲目：《舂米歌》、《哈腰挂》、《打麦号子》、《平水号子》、《竖笛练习（一）》、《好伙伴》、《骑上我的小摩托》
+- 成品：1600×640 WebP，174672 B，编码质量 76；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s1-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级上册 第二单元 劳动的歌, based only on its listed works: 《舂米歌》、《哈腰挂》、《打麦号子》、《平水号子》、《竖笛练习（一）》、《好伙伴》、《骑上我的小摩托》.
+Scene/backdrop: Far across a harvested field, several workers carry grain bundles and baskets in a steady shared rhythm; rice and wheat sheaves fill the foreground. No identifiable machine or instrument.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s1-u3.webp — 第三单元 丰收歌舞
+
+- 册别：三年级上册
+- 教材曲目：《桔梗谣》、《丰收锣鼓》、《丰收歌》、《丰收的节日》
+- 成品：1600×640 WebP，177890 B，编码质量 72；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s1-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级上册 第三单元 丰收歌舞, based only on its listed works: 《桔梗谣》、《丰收锣鼓》、《丰收歌》、《丰收的节日》.
+Scene/backdrop: A harvest celebration among neat grain sheaves and baskets of orchard fruit, with small distant villagers dancing in a clearing; joyful movement, no faces or instruments.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g3s1-u4.webp — 第四单元 我爱妈妈
+
+- 册别：三年级上册
+- 教材曲目：《妈妈格桑拉》、《妈妈》、《母亲教我的歌》、《快乐五兄弟》、《两把大提琴》、《玛丽有只小羊羔》
+- 成品：1600×640 WebP，163848 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s1-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级上册 第四单元 我爱妈妈, based only on its listed works: 《妈妈格桑拉》、《妈妈》、《母亲教我的歌》、《快乐五兄弟》、《两把大提琴》、《玛丽有只小羊羔》.
+Scene/backdrop: A mother and child seen from behind sit together beneath a tree while a small lamb stands nearby; gentle pastoral setting, no instrument and no close face.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s1-u5.webp — 第五单元 钟声
+
+- 册别：三年级上册
+- 教材曲目：《音乐小屋》、《钟声叮叮当》、《维也纳的音乐钟》、《美丽的黄昏》、《时钟交响曲》
+- 成品：1600×640 WebP，113236 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s1-u5.png`
+- 重画次数：1 次
+- 重画原因：首稿画成与伦敦大本钟相似的钟楼，和曲目《维也纳的音乐钟》不符；定向修改为不指向具体城市的普通中欧钟楼。
+- 重画初稿 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s1-u5-initial.png`
+
+初次生成完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级上册 第五单元 钟声, based only on its listed works: 《音乐小屋》、《钟声叮叮当》、《维也纳的音乐钟》、《美丽的黄昏》、《时钟交响曲》.
+Scene/backdrop: A distant clock tower rises above a small European-style town at sunset, with a simple wall clock whose face has no numbers and a few birds in flight; no musical instruments.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+定向重画提示词：
+
+```text
+Use case: illustration-story
+Edit Image 1, a Chinese woodblock and screen-print chapter illustration for 三年级上册第五单元「钟声」.
+Change only the oversized clock tower: replace its unmistakable London Big Ben silhouette with a modest, generic Central European town clock tower that does not resemble any famous landmark. Keep the clock face simple with hands and non-numeric markers only.
+Preserve the river town, sunset, birds, rooflines, four-color palette, paper grain, ink registration, 5:2 wide framing, and the entire quiet left-third title area exactly as they are. Keep the clock tower on the right side. No new instruments, people, letters, pseudo-writing, numbers, logos, or watermark.
+```
+
+- 自检：复核后钟楼已改为不指向具体城市的普通中欧钟楼，避免初稿的伦敦地标误读。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s1-u6.webp — 第六单元 四季童趣
+
+- 册别：三年级上册
+- 教材曲目：《西风的话》、《四季童趣》、《捉迷藏（合唱）》、《雪花飞舞》、《秋日素描》、《竖笛练习（5 6 7）》
+- 成品：1600×640 WebP，179464 B，编码质量 66；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s1-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级上册 第六单元 四季童趣, based only on its listed works: 《西风的话》、《四季童趣》、《捉迷藏（合唱）》、《雪花飞舞》、《秋日素描》、《竖笛练习（5 6 7）》.
+Scene/backdrop: One large tree and a winding path move through four seasonal panels: spring buds, summer shade, autumn leaves, and winter snow; tiny children play along the path, seen only at a distance.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g3s2-u1.webp — 第一单元 爱祖国
+
+- 册别：三年级下册
+- 教材曲目：《祖国祖国我们爱你》、《思乡曲》、《卢沟谣》、《只怕不抵抗》、《竖笛练习（一）》、《闪烁的小星星》、《手指伸展练习》
+- 成品：1600×640 WebP，146934 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s2-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级下册 第一单元 爱祖国, based only on its listed works: 《祖国祖国我们爱你》、《思乡曲》、《卢沟谣》、《只怕不抵抗》、《竖笛练习（一）》、《闪烁的小星星》、《手指伸展练习》.
+Scene/backdrop: Children seen from behind look across a broad river-and-field landscape at dawn, with a small red flag on a distant rise; no lettering or military imagery.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s2-u2.webp — 第二单元 空山鸟语
+
+- 册别：三年级下册
+- 教材曲目：《顽皮的杜鹃》、《空山鸟语》、《荫中鸟》、《一只鸟仔》、《竖笛练习（二）》、《顽皮的杜鹃（口风琴合奏）》
+- 成品：1600×640 WebP，179676 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s2-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级下册 第二单元 空山鸟语, based only on its listed works: 《顽皮的杜鹃》、《空山鸟语》、《荫中鸟》、《一只鸟仔》、《竖笛练习（二）》、《顽皮的杜鹃（口风琴合奏）》.
+Scene/backdrop: A quiet mountain forest of pine and bamboo opens into a distant valley; several small birds fly between branches, with a stream below. No instruments or human figures.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s2-u3.webp — 第三单元 春之声
+
+- 册别：三年级下册
+- 教材曲目：《柳树姑娘》、《春》、《嘀哩嘀哩》、《春天来了（片段）》
+- 成品：1600×640 WebP，169548 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s2-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级下册 第三单元 春之声, based only on its listed works: 《柳树姑娘》、《春》、《嘀哩嘀哩》、《春天来了（片段）》.
+Scene/backdrop: Fresh willow branches sweep over a spring path with blossoms and young grass; two children run in the distance beneath a broad open sky.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s2-u4.webp — 第四单元 师生情
+
+- 册别：三年级下册
+- 教材曲目：《甜甜的秘密》、《苔》、《每当我走过老师窗前》、《书简舞（片段）》
+- 成品：1600×640 WebP，138550 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s2-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级下册 第四单元 师生情, based only on its listed works: 《甜甜的秘密》、《苔》、《每当我走过老师窗前》、《书简舞（片段）》.
+Scene/backdrop: A teacher and several students, seen from behind and far away, tend small plants in a school garden beside a warm classroom window; no faces or written notes.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g3s2-u5.webp — 第五单元 京腔京韵
+
+- 册别：三年级下册
+- 教材曲目：《唱脸谱》、《京调》
+- 成品：1600×640 WebP，169420 B，编码质量 74；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s2-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级下册 第五单元 京腔京韵, based only on its listed works: 《唱脸谱》、《京调》.
+Scene/backdrop: An empty Beijing-opera stage with a folded embroidered robe, painted opera mask placed small in the background, and deep red curtains; no actor, no close face, no text or pseudo-writing.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g3s2-u6.webp — 第六单元 音乐会
+
+- 册别：三年级下册
+- 教材曲目：《金蛇狂舞》、《我是小音乐家》、《春天举行音乐会》、《回声》、《口风琴练习》、《星光恰恰恰》
+- 成品：1600×640 WebP，130538 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g3s2-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 三年级下册 第六单元 音乐会, based only on its listed works: 《金蛇狂舞》、《我是小音乐家》、《春天举行音乐会》、《回声》、《口风琴练习》、《星光恰恰恰》.
+Scene/backdrop: A modest school concert hall viewed from the back of the audience, with a small stage, curtain, and distant child performers as silhouettes; no visible instruments or readable sheet music.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g4s1-u1.webp — 第一单元 歌唱祖国
+
+- 册别：四年级上册
+- 教材曲目：《中华人民共和国国歌》、《阳光牵着我的手》、《中国，中国，鲜红的太阳永不落》、《钢铁洪流进行曲》、《歌唱祖国》
+- 成品：1600×640 WebP，134264 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g4s1-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 四年级上册 第一单元 歌唱祖国, based only on its listed works: 《中华人民共和国国歌》、《阳光牵着我的手》、《中国，中国，鲜红的太阳永不落》、《钢铁洪流进行曲》、《歌唱祖国》.
+Scene/backdrop: A broad sunrise over a civic square, with a distant group of children seen from behind and a plain red banner moving gently in the wind; grounded, hopeful, no slogans or military equipment.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g4s1-u2.webp — 第二单元 民歌寻趣
+
+- 册别：四年级上册
+- 教材曲目：《杨柳青》、《杨柳青青》、《猜调》、《摇船调》、《数蛤蟆》、《雪绒花》、《春游去》、《祝你生日快乐》
+- 成品：1600×640 WebP，170792 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g4s1-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 四年级上册 第二单元 民歌寻趣, based only on its listed works: 《杨柳青》、《杨柳青青》、《猜调》、《摇船调》、《数蛤蟆》、《雪绒花》、《春游去》、《祝你生日快乐》.
+Scene/backdrop: A quiet riverside with drooping willow branches, a small boat, spring flowers, and a frog on a broad stone near the water; a varied but connected folk-song landscape.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g4s1-u3.webp — 第三单元 快乐校园
+
+- 册别：四年级上册
+- 教材曲目：《乒乓变奏曲》、《哦，十分钟》、《打字机》、《校园夕歌》、《老八板》
+- 成品：1600×640 WebP，153000 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g4s1-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 四年级上册 第三单元 快乐校园, based only on its listed works: 《乒乓变奏曲》、《哦，十分钟》、《打字机》、《校园夕歌》、《老八板》.
+Scene/backdrop: At a school recess, two children play table tennis in the courtyard while other students stroll near the school building; a simple clock in the background has hands but no numerals.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g4s1-u4.webp — 第四单元 甜梦
+
+- 册别：四年级上册
+- 教材曲目：《愉快的梦》、《梦幻曲》、《小夜曲》、《月亮月光光》、《美丽的黄昏》、《红蜻蜓》
+- 成品：1600×640 WebP，141802 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g4s1-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 四年级上册 第四单元 甜梦, based only on its listed works: 《愉快的梦》、《梦幻曲》、《小夜曲》、《月亮月光光》、《美丽的黄昏》、《红蜻蜓》.
+Scene/backdrop: A quiet bedroom at twilight, a small child asleep beneath a window with a crescent moon and one tiny red dragonfly outside; distant, gentle and uncluttered.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g4s1-u5.webp — 第五单元 水上的歌
+
+- 册别：四年级上册
+- 教材曲目：《让我们荡起双桨》、《天鹅》、《蜜蜂过江》、《小螺号》
+- 成品：1600×640 WebP，154266 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g4s1-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 四年级上册 第五单元 水上的歌, based only on its listed works: 《让我们荡起双桨》、《天鹅》、《蜜蜂过江》、《小螺号》.
+Scene/backdrop: A small rowboat with two paddles glides across a lake near a pair of swans; a single seashell lies on the nearby shore, with bees crossing above flowers. No faces or instruments.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g4s1-u6.webp — 第六单元 跳起来
+
+- 册别：四年级上册
+- 教材曲目：《跳竹竿》、《幸福拍手歌》、《北京的金山上》、《那不勒斯舞曲》、《春之声圆舞曲（片段）》
+- 成品：1600×640 WebP，150182 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g4s1-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 四年级上册 第六单元 跳起来, based only on its listed works: 《跳竹竿》、《幸福拍手歌》、《北京的金山上》、《那不勒斯舞曲》、《春之声圆舞曲（片段）》.
+Scene/backdrop: A few children seen from a distance jump in turn between two straight bamboo poles on a school lawn; rhythmic footprints and a broad sunny sky suggest movement, no close faces.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g5s1-u1.webp — 第一单元 朝夕
+
+- 册别：五年级上册
+- 教材曲目：《中华人民共和国国歌》、《太阳——熟透的苹果》、《晚风》、《噢！苏珊娜（口风琴版）》
+- 成品：1600×640 WebP，167842 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g5s1-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 五年级上册 第一单元 朝夕, based only on its listed works: 《中华人民共和国国歌》、《太阳——熟透的苹果》、《晚风》、《噢！苏珊娜（口风琴版）》.
+Scene/backdrop: A quiet village path at the edge of sunset, with a low red sun, apple tree branches, and leaves moving in the evening breeze; two students seen from behind walk home. Do not depict an instrument.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g5s1-u2.webp — 第二单元 足迹
+
+- 册别：五年级上册
+- 教材曲目：《大路歌》、《雨花石》、《我怎样长大》、《歌唱二小放牛郎》
+- 成品：1600×640 WebP，172968 B，编码质量 76；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g5s1-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 五年级上册 第二单元 足迹, based only on its listed works: 《大路歌》、《雨花石》、《我怎样长大》、《歌唱二小放牛郎》.
+Scene/backdrop: A winding rural footpath marked by small footprints and smooth river stones crosses fields toward distant hills; one child seen from behind walks forward, suggesting growth and memory.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g5s1-u3.webp — 第三单元 美丽乡村
+
+- 册别：五年级上册
+- 教材曲目：《苹果丰收》、《牧场上的家》、《山村变了样》、《我为家乡画幅画》、《别处哪儿有》、《噢！苏珊娜（竖笛版）》、《土风舞》
+- 成品：1600×640 WebP，175584 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g5s1-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 五年级上册 第三单元 美丽乡村, based only on its listed works: 《苹果丰收》、《牧场上的家》、《山村变了样》、《我为家乡画幅画》、《别处哪儿有》、《噢！苏珊娜（竖笛版）》、《土风舞》.
+Scene/backdrop: An orchard full of ripe apples borders a calm pasture and a small village; a few children gather fruit in the distance while a horse grazes near a fence. No instrument.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g5s1-u4.webp — 第四单元 快乐少年
+
+- 册别：五年级上册
+- 教材曲目：《少年，少年，祖国的春天》、《叮铃铃》
+- 成品：1600×640 WebP，144962 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g5s1-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 五年级上册 第四单元 快乐少年, based only on its listed works: 《少年，少年，祖国的春天》、《叮铃铃》.
+Scene/backdrop: A group of schoolchildren seen from behind run across an open field beneath a breezy sky, with small trees and long shadows suggesting youthful energy and spring.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g5s1-u5.webp — 第五单元 远山的歌
+
+- 册别：五年级上册
+- 教材曲目：曲目未列出
+- 成品：1600×640 WebP，161352 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g5s1-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 五年级上册 第五单元 远山的歌, based only on its listed works: —.
+Scene/backdrop: Layered distant mountains, a narrow path, and a small cluster of homes sit under a broad quiet sky; a tiny figure seen from behind pauses on the path. Use only the unit title as guidance.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：需要人工留意：教材清单未提供曲目，只能依据单元名「远山的歌」表现远山、路径与村落。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g5s1-u6.webp — 第六单元 冬雪
+
+- 册别：五年级上册
+- 教材曲目：《堆雪人》、《雪花带来冬天的梦》、《雏鹰之歌》、《滑雪歌》
+- 成品：1600×640 WebP，112634 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g5s1-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 五年级上册 第六单元 冬雪, based only on its listed works: 《堆雪人》、《雪花带来冬天的梦》、《雏鹰之歌》、《滑雪歌》.
+Scene/backdrop: Children seen from a distance build a snowman beside a gentle ski slope; an eagle glides over the far snowy ridge, with pine trees framing the winter scene.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g6s1-u1.webp — 第一单元 芬芳茉莉
+
+- 册别：六年级上册
+- 教材曲目：《中华人民共和国国歌》、《茉莉花（江苏民歌）》、《茉莉花（合唱版）》、《茉莉花（东北民歌）》、《茉莉花（河北民歌）》、《茉莉花（中国民歌）》
+- 成品：1600×640 WebP，142790 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g6s1-u1.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 六年级上册 第一单元 芬芳茉莉, based only on its listed works: 《中华人民共和国国歌》、《茉莉花（江苏民歌）》、《茉莉花（合唱版）》、《茉莉花（东北民歌）》、《茉莉花（河北民歌）》、《茉莉花（中国民歌）》.
+Scene/backdrop: A flowering jasmine branch and several small white blossoms fill a quiet garden corner beside a low lattice window; leaves and petals move gently in the breeze. No people or instruments.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g6s1-u2.webp — 第二单元 赞美祖国
+
+- 册别：六年级上册
+- 教材曲目：《我的祖国（歌曲版）》、《祖国有我》、《五彩缤纷的大地（节选）》、《老爷爷赶鹅》
+- 成品：1600×640 WebP，168198 B，编码质量 76；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g6s1-u2.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 六年级上册 第二单元 赞美祖国, based only on its listed works: 《我的祖国（歌曲版）》、《祖国有我》、《五彩缤纷的大地（节选）》、《老爷爷赶鹅》.
+Scene/backdrop: A wide countryside of river, fields, terraces, and distant mountains, with a flock of geese crossing above the land; no people or flags, a calm landscape honoring the homeland.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
+## g6s1-u3.webp — 第三单元 乡音乡情
+
+- 册别：六年级上册
+- 教材曲目：《鄂伦春小调》
+- 成品：1600×640 WebP，172228 B，编码质量 74；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g6s1-u3.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 六年级上册 第三单元 乡音乡情, based only on its listed works: 《鄂伦春小调》.
+Scene/backdrop: A northern birch forest opens to a clear river and a small wooden cabin; a narrow path leads toward the water. Avoid specific clothing, ceremonial objects, or cultural claims.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g6s1-u4.webp — 第四单元 奇思妙想
+
+- 册别：六年级上册
+- 教材曲目：《月亮姐姐快下来》、《木偶兵进行曲》
+- 成品：1600×640 WebP，113868 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g6s1-u4.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 六年级上册 第四单元 奇思妙想, based only on its listed works: 《月亮姐姐快下来》、《木偶兵进行曲》.
+Scene/backdrop: A small group of wooden toy soldiers march across a tabletop beneath a round moon framed by a window; the toys are tiny and viewed from a distance, with simple shapes and no badges or writing.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g6s1-u5.webp — 第五单元 同是一家人
+
+- 册别：六年级上册
+- 教材曲目：《阿里山的姑娘（演唱版）》、《半屏山》
+- 成品：1600×640 WebP，169476 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g6s1-u5.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 六年级上册 第五单元 同是一家人, based only on its listed works: 《阿里山的姑娘（演唱版）》、《半屏山》.
+Scene/backdrop: A family seen from behind stands together at a mountain overlook, looking toward layered green peaks and a distant island ridge; no specific costume or close faces.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+## g6s1-u6.webp — 第六单元 七彩光彩
+
+- 册别：六年级上册
+- 教材曲目：《七色光之歌》、《星星海》、《丢丢铜》
+- 成品：1600×640 WebP，164558 B，编码质量 78；原始 PNG：`E:\Projects\.tmp\codex1\T072\raw\g6s1-u6.png`
+- 重画次数：0 次
+- 重画原因：无（首稿通过）
+
+完整提示词：
+
+```text
+Use case: illustration-story
+Asset type: wide chapter-header illustration for a Chinese primary-school music textbook, awaiting human review.
+Primary request: illustrate 六年级上册 第六单元 七彩光彩, based only on its listed works: 《七色光之歌》、《星星海》、《丢丢铜》.
+Scene/backdrop: A broad hillside beneath a rainbow fades gently toward a deepening night sky filled with small stars; tiny children walk along the ridge, no text or instruments.
+Composition and constraints: Make the scene warm and playful for readers aged 6–12, while keeping it restrained and editorial rather than cute-cartoon. Leave the entire left third calm warm paper for title placement; all meaningful subjects stay on the right two-thirds. Use only details supported by this unit title or its listed songs. Do not add an unverified instrument, lettering, readable marks, pseudo-writing, or extra narrative symbols.
+Style/medium and avoid list: Chinese woodblock and screen-print illustration, hand-carved lines, warm paper grain and slight ink misregistration. Use only four spot inks: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C and amber #E9A83A on warm off-white paper #F7F3EA. Flat editorial shapes, no gradients, glow, neon, 3D or photorealism. Wide 5:2 panoramic chapter header at 1600x640; keep all meaningful subjects to the right two-thirds and leave the left third quiet warm paper for the title. No text, letters, pseudo-writing, numbers, watermark, logo or close-up face. Avoid glowing networks, sci-fi, holograms, bokeh, lens flare, glossy surfaces, generic ink-wash mountains, clip art, emoji and cartoon mascots.
+```
+
+- 自检：主题与单元标题/曲目意象相符。左侧三分之一保留安静纸色留白；主体在右侧；未见文字、字母、伪文字、数字、水印、Logo 或面部特写；套色木刻风格目检通过。画面未出现可辨识乐器，无需器形核对。
+
+
