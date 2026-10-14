@@ -68,6 +68,24 @@ const LATER_PRIMARY_ACTIVITY_MODES = ["演唱", "欣赏", "知识与技能"];
 // Per-viewer conveniences only: which works this browser has opened or played, and the last page per book.
 const LEARNED_STORAGE_KEY = "yapu-learned-works";
 const PAGE_STORAGE_PREFIX = "yapu-records-page:";
+/** What a pupil does with a work in class: sing, listen, play an instrument, or a music game. */
+const ACTIVITY_GROUPS = [
+  { key: "sing", label: "唱", title: "唱一唱", modes: ["唱歌", "演唱", "视唱", "背唱", "选听选唱"] },
+  { key: "listen", label: "听", title: "听一听", modes: ["聆听", "欣赏", "选听选唱"] },
+  { key: "play", label: "奏", title: "奏一奏", modes: ["演奏"] },
+  { key: "move", label: "玩", title: "玩一玩", modes: ["音乐游戏", "情境表演", "编创与展示", "律动", "音乐情景剧", "小小音乐剧"] },
+] as const;
+type ActivityKey = (typeof ACTIVITY_GROUPS)[number]["key"];
+// Keyword types a pupil can read at a glance; key, meter and tempo marks and long theme sentences stay in the graph.
+const FRIENDLY_KEYWORD_TYPES = new Set(["乐器", "民族", "地域", "音乐体裁", "表演形式"]);
+const FRIENDLY_KEYWORD_LIMIT = 8;
+
+function workActivities(work: UnitWork): ActivityKey[] {
+  const modes: readonly string[] = work.modes ?? [];
+  const keys = ACTIVITY_GROUPS.filter((group) => group.modes.some((mode) => modes.includes(mode))).map((group) => group.key);
+  if (keys.length) return keys;
+  return [/歌|唱|谣|号子/.test(work.type) ? "sing" : "listen"];
+}
 
 function unitAnchorId(bookKey: string, unitId: string) {
   return `records-${bookKey}-${unitId}`;
@@ -697,6 +715,16 @@ export function WorkLibrary({
     setRetryUnits((value) => value + 1);
   };
 
+  const [activityFilters, setActivityFilters] = useState<Record<string, ActivityKey>>({});
+  const toggleActivity = useCallback((unitId: string, key: ActivityKey | null) => {
+    setActivityFilters((current) => {
+      const next = { ...current };
+      if (!key || next[unitId] === key) delete next[unitId];
+      else next[unitId] = key;
+      return next;
+    });
+  }, []);
+
   const toggleTasks = useCallback((unitId: string, show: boolean) => {
     setTaskUnits((current) => {
       const next = new Set(current);
@@ -711,8 +739,15 @@ export function WorkLibrary({
     const tasks = unit.kind === "project" ? [] : (unit.tasks ?? []);
     const showTasks = tasks.length > 0 && taskUnits.has(unit.id);
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
-    const sortedKeywords = [...(unit.keywords ?? [])]
-      .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"));
+    const friendlyKeywords = (unit.keywords ?? [])
+      .filter((keyword) => keyword.type && FRIENDLY_KEYWORD_TYPES.has(keyword.type) && keyword.name.length <= 8)
+      .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"))
+      .slice(0, FRIENDLY_KEYWORD_LIMIT);
+    const activityCounts = ACTIVITY_GROUPS
+      .map((group) => ({ group, count: unit.works.filter((work) => workActivities(work).includes(group.key)).length }))
+      .filter((entry) => entry.count > 0);
+    const activityFilter = activityFilters[unit.id];
+    const activityTitle = ACTIVITY_GROUPS.find((group) => group.key === activityFilter)?.title;
     // Textbook order: by printed page; a work without a page stays right after the work before it.
     let lastPage = 0;
     const pageKeys = unit.works.map((work) => {
@@ -720,6 +755,7 @@ export function WorkLibrary({
       return { work, page: lastPage };
     });
     const sortedWorks = pageKeys.sort((left, right) => left.page - right.page).map((entry) => entry.work);
+    const shownWorks = activityFilter ? sortedWorks.filter((work) => workActivities(work).includes(activityFilter)) : sortedWorks;
     const featuredQuote = unit.works.find((work) => work.starred && work.summary)
       ?? unit.works.find((work) => work.summary);
     const unitLearned = learnedIn(unit.works);
@@ -751,10 +787,27 @@ export function WorkLibrary({
           <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
         </section>}
 
-        {unit.kind !== "project" && sortedKeywords.length > 0 && <section aria-label="本单元关键词" className="records-unit-notes">
-          <p className="records-notes-label">本单元关键词</p>
-          <ul className="records-keywords">{sortedKeywords.map((keyword) => <li key={`${keyword.name}-${keyword.type ?? ""}`}>
-            <button type="button" onClick={() => onKnowledge(keyword.name, keyword.type)}><span>{keyword.name}</span><small>×{keyword.count}</small></button>
+        {unit.kind !== "project" && activityCounts.length > 0 && <section aria-label="这一单元学什么" className="records-unit-activities">
+          <p className="records-notes-label">这一单元</p>
+          <div aria-label="按学习方式挑选作品" className="records-activity-tiles" role="group">
+            {activityCounts.map(({ group, count }) => <button
+              aria-pressed={activityFilter === group.key}
+              className="records-activity-tile"
+              data-activity={group.key}
+              key={group.key}
+              onClick={() => { toggleTasks(unit.id, false); toggleActivity(unit.id, group.key); }}
+              type="button"
+            >
+              <span aria-hidden="true" className="records-activity-seal">{group.label}</span>
+              <span className="records-activity-copy"><strong>{group.title}</strong><small>{count} 首</small></span>
+            </button>)}
+          </div>
+        </section>}
+
+        {unit.kind !== "project" && friendlyKeywords.length > 0 && <section aria-label="音乐小知识" className="records-unit-notes">
+          <p className="records-notes-label">音乐小知识</p>
+          <ul className="records-keywords">{friendlyKeywords.map((keyword) => <li key={`${keyword.name}-${keyword.type ?? ""}`}>
+            <button type="button" onClick={() => onKnowledge(keyword.name, keyword.type)}><small>{keyword.type}</small><span>{keyword.name}</span></button>
           </li>)}</ul>
         </section>}
 
@@ -788,8 +841,12 @@ export function WorkLibrary({
             </li>)}</ol>
           </section>
           : <section aria-label="作品名录" className="records-chapter-works">
+            {activityTitle && <p className="records-activity-note">
+              正在看「{activityTitle}」的 {shownWorks.length} 首作品
+              <button onClick={() => toggleActivity(unit.id, null)} type="button">看全部</button>
+            </p>}
             <div className="records-score-grid">
-              {sortedWorks.map((work, workIndex) => {
+              {shownWorks.map((work, workIndex) => {
                 const starred = Boolean(work.starred);
                 const isLearned = learned.has(learnedKey(currentBookKey, work.id));
                 const melodies = MELODIES[bareWorkName(work.name)] ?? MELODIES[work.name] ?? [];
@@ -831,7 +888,7 @@ export function WorkLibrary({
           </section>}
       </div>
     </article>;
-  }), [currentBookKey, directory?.grade, isPrimaryBook, learned, learnedIn, markLearned, onKnowledge, openWork, taskUnits, toggleTasks, units, worksById]);
+  }), [activityFilters, currentBookKey, directory?.grade, isPrimaryBook, learned, learnedIn, markLearned, onKnowledge, openWork, taskUnits, toggleActivity, toggleTasks, units, worksById]);
 
   if (!directory) return null;
   const displayTitle = directory.title.replace(/^人音版/, "");
