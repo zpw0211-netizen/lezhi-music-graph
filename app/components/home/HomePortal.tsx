@@ -53,6 +53,9 @@ const PENTATONIC_PHRASE: Melody = {
   key: "1=C", tonic: "C", tonicMidi: 60, meter: "4/4", bpm: 168, source: "五声音阶交互示范",
   bars: [[1, 2, 3, 5, 6, 5, 3, 2, 1].map(degree => ({ d: degree, b: 0.5 }))],
 };
+// The shelf only needs each book's key, title, grade and term, which ship with the page; drawing it from
+// them means the shelf appears at once instead of popping in after the ~3.6MB graph index arrives.
+const STATIC_SHELF_BOOKS = PUBLISHED_BOOKS.map((book) => ({ key: book.key, title: book.title, grade: book.grade, semester: book.semester, pages: book.pages, entityCount: 0, tripleCount: 0, workCount: 0 }));
 const bookArt = (book: { key: string; title: string }) => BOOK_ART[book.key] ?? { file: `art/${book.key}.webp`, alt: `${book.title.replace(/^人音版/, "")}封面插画` };
 const shortBookTitle = (book: { title: string }) => book.title.replace(/^人音版/, "");
 /** "六年级上册（简谱）" → ["六年级", "上册（简谱）"], so a label never wraps a lone character onto its own line. */
@@ -91,7 +94,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   const [openBookKey, setOpenBookKey] = useState<string | null>(null);
   const storedLastReadBookKey = useSyncExternalStore(subscribeToHomeLastRead, getHomeLastReadSnapshot, getHomeLastReadServerSnapshot);
   const [activeNote, setActiveNote] = useState<string | null>(null);
-  const orderedBooks = useMemo(() => [...books].sort((a, b) => a.grade - b.grade || (a.semester === b.semester ? 0 : a.semester === "上册" ? -1 : 1)), [books]);
+  const shelfBooks = books.length ? books : (STATIC_SHELF_BOOKS as unknown as B[]);
+  const orderedBooks = useMemo(() => [...shelfBooks].sort((a, b) => a.grade - b.grade || (a.semester === b.semester ? 0 : a.semester === "上册" ? -1 : 1)), [shelfBooks]);
   const stageBooks = useMemo(() => booksForStage(orderedBooks, bookStage), [bookStage, orderedBooks]);
   const lastReadBookKey = orderedBooks.some(book => book.key === storedLastReadBookKey) ? storedLastReadBookKey : null;
   const activeBookKey = stageBooks.some(book => book.key === openBookKey)
