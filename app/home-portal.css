@@ -185,8 +185,15 @@ body::before {
 }
 .home-portal .home-hero-primary { display: flex; align-items: flex-end; gap: clamp(21px, 2.6vw, 55px); min-width: 0; }
 .home-portal .home-title-plate { flex: 0 0 auto; }
-.home-portal .home-wordmark { position: relative; width: clamp(190px, 17vw, 290px); }
-.home-portal .brand-wordmark-svg { width: 100%; height: auto; overflow: visible; color: var(--ink); }
+/* Logo mark + wordmark: the mark is 0.618 of the wordmark width, so the pair keeps the golden proportion. */
+.home-portal .home-wordmark { position: relative; display: flex; align-items: center; gap: clamp(8px, .9vw, 13px); }
+.home-portal .brand-mark-svg { flex: 0 0 auto; width: calc(clamp(190px, 17vw, 290px) * .382); height: auto; overflow: visible; }
+.home-portal .brand-wordmark-svg { flex: 0 0 auto; width: clamp(190px, 17vw, 290px); height: auto; overflow: visible; color: var(--ink); }
+.home-portal .brand-mark-stem { transform-box: fill-box; transform-origin: 50% 100%; animation: home-mark-stem .7s var(--ease) .1s both; }
+.home-portal .brand-mark-head { transform-box: fill-box; transform-origin: 60% 30%; animation: home-mark-pop .5s cubic-bezier(.34, 1.56, .64, 1) both; }
+.home-portal .brand-mark-leaf { transform-box: fill-box; }
+.home-portal .brand-mark-leaf--left { transform-origin: 100% 100%; animation: home-mark-leaf .8s cubic-bezier(.34, 1.56, .64, 1) .55s both, home-mark-sway-l 5.5s ease-in-out 1.4s infinite; }
+.home-portal .brand-mark-leaf--right { transform-origin: 0% 100%; animation: home-mark-leaf .8s cubic-bezier(.34, 1.56, .64, 1) .7s both, home-mark-sway-r 6.2s ease-in-out 1.6s infinite; }
 .home-portal .brand-wordmark-svg path {
   fill: var(--ink);
   stroke: var(--ink);
@@ -686,6 +693,11 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
   78% { fill: transparent; stroke-dashoffset: 0; }
   100% { fill: currentColor; stroke-dashoffset: 0; }
 }
+@keyframes home-mark-stem { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes home-mark-pop { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: none; } }
+@keyframes home-mark-leaf { from { opacity: 0; transform: scale(.1) rotate(-12deg); } to { opacity: 1; transform: none; } }
+@keyframes home-mark-sway-l { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-5deg); } }
+@keyframes home-mark-sway-r { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(4deg); } }
 @keyframes home-feature-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes home-scroll-pan { from { transform: scale(1); } to { transform: scale(1.09); } }
 @keyframes home-hero-retreat { from { transform: translateY(0) scale(1); } to { transform: translateY(-20px) scale(.94); } }
@@ -714,7 +726,8 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
   .home-portal .home-hero::before { background-position: 60% 46%; }
   .home-portal .home-hero-inner { grid-template-columns: 1fr; gap: 8px; }
   .home-portal .home-hero-primary { gap: 21px; }
-  .home-portal .home-wordmark { width: clamp(150px, 42vw, 220px); }
+  .home-portal .brand-wordmark-svg { width: clamp(140px, 38vw, 210px); }
+  .home-portal .brand-mark-svg { width: calc(clamp(140px, 38vw, 210px) * .382); }
   .home-portal .home-hero-kicker { margin: 0 0 8px; font-size: 12px; letter-spacing: .24em; }
   .home-portal .home-hero-lead { margin: 0 0 8px; font-size: clamp(16px, 4.6vw, 20px); }
   .home-portal .home-hero-search-column { padding: 0; }

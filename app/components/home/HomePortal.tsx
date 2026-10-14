@@ -17,6 +17,7 @@ import {
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { AppTopNav } from "../AppTopNav";
+import { BrandMark } from "./BrandMark";
 import { BrandWordmark } from "./BrandWordmark";
 import type { MelodyPlayer as MelodyPlayerComponent } from "../lesson/MelodyPlayer";
 type PortalEntity = { id: string; name: string; type: string; category?: string; textbookCount?: number; degree?: number; bookKeys?: string[] };
@@ -166,7 +167,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           <div className="home-hero-primary">
             <div className="home-title-plate">
               <p className="home-hero-kicker">人音版 · {PUBLISHED_GRADE_RANGE_LABEL}</p>
-              <div className="home-wordmark"><BrandWordmark /><h1 id="home-title" className="home-title-accessible">芽谱</h1></div>
+              <div className="home-wordmark"><BrandMark /><BrandWordmark /><h1 id="home-title" className="home-title-accessible">芽谱</h1></div>
             </div>
             <p className="home-hero-lead">翻开一册，<br />从这一课开始。</p>
           </div>
