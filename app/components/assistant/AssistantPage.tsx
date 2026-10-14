@@ -205,14 +205,14 @@ export function AssistantPage({
     ? `已提问：“${currentMessage.question}” · 输入新问题回车可重查……`
     : "想问教材什么？比如：《歌唱祖国》是谁写的？";
 
-  // 学生题与备课题交错排开，像一群各自漂浮的聊天气泡。
+  // 学生题与备课题交错排开，只留两行（六个）气泡，各自漂浮。
   const bubbles = SAMPLE_QUESTIONS.student.flatMap((item, index) => {
     const teacher = SAMPLE_QUESTIONS.teacher[index];
     return [
       { ...item, group: "student" as const },
       ...(teacher ? [{ ...teacher, group: "teacher" as const }] : []),
     ];
-  });
+  }).slice(0, 6);
 
   const composer = (variant: "hero" | "folio") => (
     <form
@@ -266,7 +266,7 @@ export function AssistantPage({
 
           <div className="ask-bubbles" role="list" aria-label="示例问题">
             {bubbles.map((item, index) => (
-              <div className="ask-bubble-slot" role="listitem" key={item.q} style={{ "--offset": `${[0, 18, 6, 26, 2, 22, 10, 30, 4, 14][index % 10]}px`, "--nudge": `${[8, 0, 22, 30, 4, 16, 0, 26, 12, 6][index % 10]}px`, "--drift": `${6 + (index * 5) % 7}px`, "--period": `${5.2 + index * 0.37}s`, "--delay": `${-index * 0.83}s` } as CSSProperties}>
+              <div className="ask-bubble-slot" role="listitem" key={item.q} style={{ "--i": index, "--offset": `${[0, 22, 8, 26, 2, 16][index]}px`, "--nudge": `${[8, 0, 2, 30, 4, 16][index]}px`, "--dx": `${[9, -11, 7, -8, 12, -10][index]}px`, "--dy": `${[12, 9, 14, 10, 8, 13][index]}px`, "--period": `${[6.2, 7.4, 5.6, 6.8, 7.9, 5.9][index]}s`, "--delay": `${[-1.1, -4.3, -2.6, -5.8, -.4, -3.5][index]}s` } as CSSProperties}>
                 <button
                   type="button"
                   className={`ask-bubble ask-bubble--${item.group} tone-${index % 6}`}
@@ -280,10 +280,6 @@ export function AssistantPage({
               </div>
             ))}
           </div>
-
-          <p className="modest-notice ask-hero-notice">
-            <span>※ 尚未接入 AI 大模型，回答只用教材内容；所引页码都能在纸质课本中翻到。</span>
-          </p>
         </main>
       </section>
     );
