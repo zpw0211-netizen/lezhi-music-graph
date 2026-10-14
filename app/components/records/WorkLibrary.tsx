@@ -7,7 +7,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { flushSync } from "react-dom";
 import type { CSSProperties, RefObject } from "react";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
-import { MELODIES } from "../../lib/lesson/melodies";
+import { melodiesFor } from "../../lib/lesson/melodies";
 import { bareWorkName, type Book, type BookDirectory, type Entity, type Triple } from "../../lib/app/types";
 import { BOOK_BY_KEY, volumeNumeral } from "../../lib/app/books";
 import { publicAssetUrl } from "../../lib/app/assets";
@@ -222,7 +222,7 @@ function WorkDetail({
   const triples = useMemo(() => bookData?.triples.filter((triple) => triple.subject === work?.id) ?? [], [bookData, work?.id]);
   const knowledge = useMemo(() => workKnowledge(triples, entitiesById), [entitiesById, triples]);
   const score = work?.scores?.[0];
-  const melodies = work ? (MELODIES[bareWorkName(work.name)] ?? MELODIES[work.name] ?? []) : [];
+  const melodies = work ? melodiesFor(unit?.bookKey, bareWorkName(work.name), work.name) : [];
   const scoreStyle = work ? ({ viewTransitionName: "work-cover" } as CSSProperties) : undefined;
   const isLoading = unitsStatus === "loading" || bookDataStatus === "loading" || bookDataStatus === "idle";
   const hasLoadError = unitsStatus === "error" || bookDataStatus === "error";
@@ -849,7 +849,7 @@ export function WorkLibrary({
               {shownWorks.map((work, workIndex) => {
                 const starred = Boolean(work.starred);
                 const isLearned = learned.has(learnedKey(currentBookKey, work.id));
-                const melodies = MELODIES[bareWorkName(work.name)] ?? MELODIES[work.name] ?? [];
+                const melodies = melodiesFor(currentBookKey, bareWorkName(work.name), work.name);
                 const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
                 const credits = [work.type, authors].filter(Boolean).join(" · ");
                 const modes = isPrimaryBook ? work.modes?.join("、") : "";

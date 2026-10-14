@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { MELODIES } from "../../lib/lesson/melodies";
+import { melodiesFor } from "../../lib/lesson/melodies";
 import { VocalDemo } from "./VocalDemo";
 import { MelodySet } from "./MelodyPlayer";
 import type { Melody } from "../../lib/lesson/melodies";
@@ -140,7 +140,8 @@ export function LessonPage({
   useEffect(() => { window.scrollTo?.({ top: 0 }); }, [workId]);
 
   if (!work) return <section className="lesson-empty"><p>没有找到这一课。</p><button type="button" onClick={onBack}>返回</button></section>;
-  const melody = MELODIES[work.name];
+  const bookMelodies = melodiesFor(lesson.book?.bookKeys?.[0], work.name);
+  const melody = bookMelodies.length ? bookMelodies : undefined;
   const starred = isStarredWork(relationships.filter((relation) => relation.subject === workId));
   const creators = lesson.own.filter((relation) => /^(作词|作曲|词曲作者|编曲|改编)$/.test(relation.predicate));
   const scoreMedia = getScoreMedia(work.media);

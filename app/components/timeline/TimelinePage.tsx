@@ -9,7 +9,7 @@ import type { BookDirectory } from "../../lib/app/types";
 import type { AppRoute } from "../../lib/app/routing";
 import { loadPeopleSupplement } from "../../lib/timeline/peopleSupplement";
 import { loadYearSupplement } from "../../lib/timeline/yearSupplement";
-import { MELODIES, type Melody } from "../../lib/lesson/melodies";
+import { melodiesFor, type Melody } from "../../lib/lesson/melodies";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { unitArtPath } from "../../lib/app/unit-art";
 import {
@@ -100,7 +100,7 @@ function StudentTimelineEntry({
   const songs = useMemo(() => {
     const unique = new Map<string, StudentSong>();
     works.forEach((work) => {
-      const melody = MELODIES[work.name]?.[0];
+      const melody = melodiesFor(work.bookKey, work.name)[0];
       if (work.yearRange && melody && !unique.has(work.name)) unique.set(work.name, { work, melody });
     });
     return [...unique.values()].sort((a, b) => (a.work.yearRange?.[0] ?? Infinity) - (b.work.yearRange?.[0] ?? Infinity));

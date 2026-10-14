@@ -13,7 +13,7 @@ for (const name of readdirSync("app/lib/lesson").filter((item) => item.endsWith(
   writeFileSync(path.join(dir, name.replace(/\.ts$/, ".mjs")), code.replace(/from "\.\/([\w-]+)"/g, 'from "./$1.mjs"'));
 }
 const file = path.join(dir, "melodies.mjs");
-const { MELODIES, checkMelody } = await import(pathToFileURL(file).href);
+const { MELODIES, BOOK_MELODIES, checkMelody } = await import(pathToFileURL(file).href);
 
 let failures = 0;
 const only = process.argv.slice(2).find((arg) => !arg.startsWith("--"));
@@ -21,7 +21,11 @@ let count = 0;
 let verified = 0;
 let drafts = 0;
 let unmeteredDrafts = 0;
-for (const [name, segments] of Object.entries(MELODIES)) {
+// A work printed in several books keeps each book's version (see BOOK_MELODIES); check those copies as well.
+const extraCopies = Object.entries(BOOK_MELODIES).flatMap(([bookKey, book]) => Object.entries(book)
+  .filter(([name, segments]) => !segments.every((melody) => MELODIES[name]?.includes(melody)))
+  .map(([name, segments]) => [`${name}（${bookKey}）`, segments]));
+for (const [name, segments] of [...Object.entries(MELODIES), ...extraCopies]) {
   count += 1;
   if (only && !name.includes(only)) continue;
   if (segments.every((melody) => melody.quality === "draft")) drafts += 1;
