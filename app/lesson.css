@@ -312,7 +312,8 @@
 .melody-lyric-cell { grid-row:2; }
 .melody-digit { position:relative; display:inline-block; flex:0 0 .7em; width:.7em; height:1em; margin-top:.4em; padding:0; font-size:inherit; font-weight:700; font-variant-numeric:tabular-nums; text-align:center; line-height:1; transition:opacity var(--motion-fast) var(--ease-out); }
 .melody-octave-dot { position:absolute; left:50%; width:.13em; height:.13em; margin-left:-.065em; border-radius:50%; background:currentColor; pointer-events:none; }
-.melody-dot { position:absolute; top:0; left:calc(100% + .03em); font-style:normal; margin:0; }
+/* 附点：画成与高低音点同样的小圆点，紧贴本音右侧、居数字中线（「·」字形的盒子有一整个字宽，圆点会落到下一个音前面）。 */
+.melody-dot { position:absolute; top:.44em; left:calc(100% + .05em); width:.13em; height:.13em; overflow:hidden; border-radius:50%; background:currentColor; font-style:normal; text-indent:1em; white-space:nowrap; margin:0; pointer-events:none; }
 .melody-dash { position:absolute; top:.4em; font-size:inherit; color:#3C4742; line-height:1; }
 .melody-note.is-tie .melody-digit { color:#8A968F; }
 .melody-head-cell.is-tie .melody-digit { color:#8A968F; }
