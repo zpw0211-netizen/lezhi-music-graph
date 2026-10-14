@@ -269,5 +269,13 @@ const MELODIES: Record<string, Melody[]> = {
       "哈 哈 呵 呵 呵 呵 嗨 嗨 嘿 嘿 好 ~ 大 家 都 好 快 活 不 小 ~ 哈 哈 呵 呵 呵 呵 嗨 嗨 嘿 嘿 好",
       { note: "齐唱自第 12 小节起（「平平朋朋！」两遍）；第 14–17 小节「嘿！有人敲门。」「嘿！有人敲门。」；第 18–21 小节为主人唱、梅客唱对唱（谁呀？／我呀！／你是谁？／我姓梅。），歌词按唱句列入；第 61 页续唱至全曲结束，X 为拍掌；末音带延长记号；弧线处为一字拖腔" }),
   ],
+  "《玛丽有只小羊羔》": [
+    segment(B, 37, "1=C", "2/4", 100,
+      "3/ 2/ 1/ 2/ | 3/ 3/ 3 | 2/ 2/ 2 | 3/ 5/ 5 | 3/ 2/ 1/ 2/ | 3/ 3/ 3/ 1/ | 2/ 2/ 3/ 2/ | 1 -",
+      "Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu",
+      { note: "口风琴合奏（四、合奏），两个声部都用「Tu」吹奏；圈码为指法", voices: [{ label: "第二声部",
+        notes: "1 5, | 1 5, | 7, 5, | 1 5, | 1 5, | 1 5, | 7, 5, | 1/ 5,/ 1",
+        lyrics: "Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu Tu" }] }),
+  ],
 };
 export default MELODIES;
