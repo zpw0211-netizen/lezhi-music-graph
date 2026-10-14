@@ -952,5 +952,36 @@ Invoke the workspace-bundled Node runtime on project scripts directly instead of
 ### Resolution
 - **Resolved**: 2026-10-11T00:00:00+08:00
 - **Notes**: Switched to the project-local command shims.
+- **Recurrence**: 2026-10-14 `npm run build` again failed because `npm` is not on this PowerShell PATH; invoke the bundled Node runtime directly on the project build entrypoints.
+- **Recurrence-Count**: 2
+- **First-Seen**: 2026-10-11
+- **Last-Seen**: 2026-10-14
+
+---
+
+## [ERR-20261014-001] vinext-build-windows-shutdown-assertion
+
+**Logged**: 2026-10-14T18:08:35+08:00
+**Priority**: medium
+**Status**: pending
+**Area**: infra
+
+### Summary
+The GitHub Pages build completed and emitted the static client, then the bundled Windows Node process aborted during shutdown.
+
+### Error
+`Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\\win\\async.c, line 94`
+
+### Context
+- Invoked the existing project build entrypoints with `GITHUB_PAGES=true`, `NEXT_PUBLIC_STATIC_EXPORT=1`, and `NEXT_PUBLIC_BASE_PATH=/lezhi-music-graph`.
+- Vinext reported `Build complete`; the bundled Node process then exited with `-1073740791` before the final artifact-preparation step.
+- Running `scripts/prepare-github-pages.mjs` separately succeeded.
+
+### Suggested Fix
+Investigate the Windows Node/Vinext shutdown assertion. Treat the build as complete only after confirming the client output and run the artifact-preparation step separately if the process aborts after `Build complete`.
+
+### Metadata
+- Reproducible: yes
+- Related Files: package.json, vite.config.ts, scripts/prepare-github-pages.mjs
 
 ---

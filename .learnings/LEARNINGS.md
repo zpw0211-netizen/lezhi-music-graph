@@ -4,6 +4,29 @@ Corrections, insights, and knowledge gaps captured during development.
 
 ---
 
+## [LRN-20261014-001] correction
+
+**Logged**: 2026-10-14T19:00:00+08:00
+**Priority**: high
+**Status**: resolved
+**Area**: frontend
+
+### Summary
+简谱减时线必须与数字放在独立音符行中，不能相对包含歌词的整组定位。
+
+### Details
+用户指出节拍连线穿过歌词且谱面不标准。渲染时应将音符头、节拍连线和歌词拆成独立行；按小节拍值分组，并对照教材谱面检查节奏分组。视觉核对需覆盖普通课程谱例和大屏投影谱例。
+
+### Suggested Action
+保留独立音符行与歌词行的网格结构；若更改记谱排版，检查连线不会与歌词、八度点或延长线冲突，并确认节拍边界与小节线清楚。
+
+### Metadata
+- Source: user_feedback
+- Related Files: app/components/lesson/MelodyPlayer.tsx, app/lesson.css
+- Tags: jianpu, notation, beaming, lyrics
+
+---
+
 ## [LRN-20260827-004] correction
 
 **Logged**: 2026-08-27T00:20:00+08:00
@@ -95,5 +118,29 @@ Corrections, insights, and knowledge gaps captured during development.
 - Source: user_feedback
 - Related Files: scripts/build-graph-data.mjs, db/schema.ts
 - Tags: ontology, triples, music-education, evidence
+
+---
+
+## [LRN-20261014-002] correction
+
+**Logged**: 2026-10-14T19:43:39+08:00
+**Priority**: high
+**Status**: resolved
+**Area**: frontend
+
+### Summary
+简谱横梁必须表示各音符实际的减时线层级，不能把所有连线简化成相邻音符格的同一条底边。
+
+### Details
+用户多次指出《苹果丰收》的减时线仍不符合教材。直接查看 public/media/scores/g5s1/14hwy5m-1.webp 后确认：第一层连续线在上，附加层向下；端点覆盖首尾数字全宽，不能套用五线谱的中心端点或半格 hook；孤立十六分音符的第二层是数字下的完整短线；低八度点在该音最后一层减时线下方。详情页数字字号与横线 em 尺度不一致也会错位。同色 inset box-shadow 叠加会填成实心带，不能用来表示分层细线。
+
+### Suggested Action
+保留按拍计算的各层分组，用独立线元素绘制，共享数字框宽度、字号及第一层基线，各附加层往下排。低音点在该音自己的减时线下方，按整个声部的最大深度统一歌词基线；附点和变音符不改变数字中心。针对教材前六小节的十二个层分组做确定值核对，并在详情页、合唱和完整学习页检查实际端点、连续性、字号和音点间距。已完成此项修复。
+
+### Metadata
+- Source: user_feedback
+- Related Files: app/components/lesson/MelodyPlayer.tsx, app/lesson.css
+- Tags: jianpu, beams, compound-meter, music-notation
+- See Also: LRN-20261014-001
 
 ---

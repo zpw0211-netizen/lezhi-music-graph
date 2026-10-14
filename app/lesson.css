@@ -55,6 +55,7 @@
 .lesson .melody-score { background:var(--sheet); border:1px solid var(--line); border-radius:2px; box-shadow:0 1px 0 var(--paper-3),0 8px 18px -14px rgba(40,30,10,.5); font-family:var(--serif); }
 .lesson .melody-bar { border-right-color:var(--ink-2); }
 .lesson .melody-note.is-active .melody-digit { background:var(--amber-hi); color:var(--ink); transform:translateY(-3px); }
+.lesson .melody-head-cell.is-active .melody-digit { background:var(--amber-hi); color:var(--ink); transform:translateY(-3px); }
 /* 强调只用颜色/描边，不改字重——font-weight 变化会改变字形宽度，播放时整行谱例跳动 */
 .lesson .melody-note.is-active .melody-lyric { color:var(--ink); text-shadow:.45px 0 0 currentColor; }
 .lesson .melody-source { color:var(--ink-3); }
@@ -192,7 +193,7 @@
 .present-score-nav button { min-width:88px; height:44px; padding:0 20px; border:1px solid var(--brand-paper-deep); border-radius:4px; background:var(--brand-paper); color:var(--brand-ink); font-size:clamp(15px,1.3vw,20px); font-weight:600; }
 .present-score-nav button:hover:not(:disabled) { border-color:var(--brand-sprout-deep); color:var(--brand-sprout-deep); }
 .present-score-nav button:disabled { opacity:.35; cursor:default; }
-.melody-player.is-large .melody-digit { font-size:clamp(64px,8vh,88px); }
+.melody-player.is-large { --melody-note-size:clamp(64px,8vh,88px); }
 .melody-player.is-large .melody-lyric { font-size:clamp(18px,2.3vh,24px); }
 .melody-player.is-large .melody-note { min-width:clamp(46px,5.5vh,62px); }
 .melody-player.is-large .melody-dash { font-size:clamp(30px,4vh,38px); }
@@ -275,7 +276,7 @@
   .present-nav button { min-width:40px; height:40px; padding:0 8px; }
   .present-nav button span { display:none; }
   .present .melody-player.is-large .melody-play { left:12px; bottom:10px; height:44px; padding:0 12px; font-size:14px; }
-  .melody-player.is-large .melody-digit { font-size:clamp(48px,8vh,64px); }
+  .melody-player.is-large { --melody-note-size:clamp(48px,8vh,64px); }
   .melody-player.is-large .melody-lyric { font-size:16px; }
   .melody-player.is-large .melody-note { min-width:42px; }
   .melody-player.is-large .melody-score { padding:18px 10px 14px; }
@@ -301,30 +302,28 @@
 .melody-tempo { display:inline-flex; align-items:center; gap:8px; margin-left:auto; font-size:12px; color:var(--text-secondary); }
 .melody-tempo input { width:110px; accent-color:var(--accent); }
 .melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }
-.melody-score { display:flex; flex-wrap:wrap; row-gap:14px; margin-top:16px; padding:18px 12px 12px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
+.melody-score { display:flex; flex-wrap:wrap; overflow-x:auto; row-gap:14px; margin-top:16px; padding:18px 12px 12px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
   font-family:"Arial","Microsoft YaHei",sans-serif; }
-.melody-bar { display:inline-flex; align-items:stretch; flex-direction:column; padding:0 10px; border-right:1.5px solid #9AA7A0; }
+.melody-bar { display:inline-flex; flex:0 0 auto; align-items:stretch; flex-direction:column; padding:0 10px; border-right:1.5px solid #9AA7A0; }
 .melody-bar:last-child { border-right:3px double #6B7771; }
-.melody-note { display:inline-flex; flex-direction:column; align-items:center; min-width:26px; position:relative; }
-.melody-digit { position:relative; display:inline-block; padding:4px 3px 5px; font-size:20px; font-weight:700; line-height:1; border-radius:6px; transition:opacity var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out); }
-.melody-digit.lines-1 { box-shadow:inset 0 -2px 0 #3C4742; }
-.melody-digit.lines-2 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -6px 0 #FAFCFB, inset 0 -8px 0 #3C4742; padding-bottom:9px; }
-.melody-digit.is-high::before, .melody-digit.is-low::after { content:""; position:absolute; left:50%; width:4px; height:4px; margin-left:-2px; border-radius:50%; background:currentColor; }
-.melody-digit.is-high::before { top:-3px; }
-.melody-digit.is-low::after { bottom:-6px; }
-.melody-digit.lines-2.is-low::after { bottom:-9px; }
-.melody-dot { font-style:normal; margin-left:1px; }
-.melody-dash { position:absolute; top:4px; left:100%; font-size:18px; color:#3C4742; padding-left:6px; }
-.melody-note:has(.melody-dash) { margin-right:22px; }
+.melody-note { display:inline-flex; flex-direction:column; align-items:center; min-width:1.3em; position:relative; }
+.melody-head-cell, .melody-lyric-cell { display:flex; justify-content:center; align-items:flex-start; min-width:1.3em; position:relative; box-sizing:border-box; }
+.melody-head-cell { grid-row:1; height:var(--melody-head-height,1.72em); }
+.melody-lyric-cell { grid-row:2; }
+.melody-digit { position:relative; display:inline-block; flex:0 0 .7em; width:.7em; height:1em; margin-top:.4em; padding:0; font-size:inherit; font-weight:700; font-variant-numeric:tabular-nums; text-align:center; line-height:1; transition:opacity var(--motion-fast) var(--ease-out); }
+.melody-octave-dot { position:absolute; left:50%; width:.13em; height:.13em; margin-left:-.065em; border-radius:50%; background:currentColor; pointer-events:none; }
+.melody-dot { position:absolute; top:0; left:calc(100% + .03em); font-style:normal; margin:0; }
+.melody-dash { position:absolute; top:.4em; font-size:inherit; color:#3C4742; line-height:1; }
 .melody-note.is-tie .melody-digit { color:#8A968F; }
-.melody-lyric { margin-top:8px; font-size:14px; color:var(--text-secondary); white-space:nowrap; font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
-.melody-note.is-active .melody-digit { background:transparent; color:var(--brand-amber, #E9A83A); transform:translateY(-3px) scale(1.12); box-shadow:none; }
+.melody-head-cell.is-tie .melody-digit { color:#8A968F; }
+.melody-lyric { margin-top:4px; font-size:14px; color:var(--text-secondary); white-space:nowrap; font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
+.melody-lyric-cell.is-active .melody-lyric { color:var(--accent); font-weight:700; }
+.melody-note.is-active .melody-digit, .melody-head-cell.is-active .melody-digit,
+.lesson .melody-note.is-active .melody-digit, .lesson .melody-head-cell.is-active .melody-digit { background:transparent; color:var(--brand-amber, #E9A83A); transform:none; box-shadow:none; }
 .melody-note.is-active .melody-lyric { color:var(--accent); font-weight:700; }
 .melody-source { margin:10px 2px 0; font-size:12px; color:var(--text-tertiary); }
-.melody-accidental { font-size:.6em; font-weight:600; margin-right:1px; vertical-align:.5em; }
-.melody-digit.lines-3 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -6px 0 #FAFCFB, inset 0 -8px 0 #3C4742, inset 0 -12px 0 #FAFCFB, inset 0 -14px 0 #3C4742; padding-bottom:15px; }
-.melody-digit.lines-3.is-low::after { bottom:-9px; }
-.melody-note.is-active .melody-digit.lines-2, .melody-note.is-active .melody-digit.lines-3 { box-shadow:none; }
+.melody-accidental { position:absolute; right:100%; top:0; font-size:.6em; font-weight:600; margin:0; vertical-align:baseline; }
+.melody-head-cell.has-accidental, .melody-lyric-cell.has-accidental { min-width:1.7em; }
 
 /* 多声部 / 多片段谱例 */
 .melody-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
@@ -338,17 +337,20 @@
 .melody-voices label.voice-1 { color:#2466B8; background:#EEF4FC; }
 .melody-voices label.voice-2 { color:#7A5AB8; background:#F3EFFB; }
 .melody-voices input { accent-color:currentColor; }
-.melody-voice { display:flex; align-items:flex-start; }
+.melody-voice { display:flex; align-items:flex-start; font-size:var(--melody-note-size,20px); }
 .melody-player.is-choral .melody-voice + .melody-voice { margin-top:6px; padding-top:6px; border-top:1px dashed #D5DED9; }
 .melody-player.is-choral .melody-voice.voice-1 .melody-digit { color:#2466B8; }
 .melody-player.is-choral .melody-voice.voice-1 .melody-lyric:empty, .melody-player.is-choral .melody-voice.voice-1 .melody-lyric { font-size:12px; }
-.melody-note.is-active .melody-digit { color:var(--brand-amber, #E9A83A) !important; }
+.melody-note.is-active .melody-digit, .melody-head-cell.is-active .melody-digit { color:var(--brand-amber, #E9A83A) !important; }
 .melody-player.is-choral .melody-voice.voice-1 .melody-note.is-active .melody-digit { background:transparent; }
-/* Two octave dots (倍高/倍低音) */
-.melody-digit.is-double.is-high::before { top:-9px; box-shadow:0 6px 0 currentColor; }
-.melody-digit.is-double.is-low::after { bottom:-12px; box-shadow:0 -6px 0 currentColor; }
-.melody-digit.lines-4 { box-shadow:inset 0 -2px 0 #3C4742, inset 0 -5px 0 #FAFCFB, inset 0 -7px 0 #3C4742, inset 0 -10px 0 #FAFCFB, inset 0 -12px 0 #3C4742, inset 0 -15px 0 #FAFCFB, inset 0 -17px 0 #3C4742; padding-bottom:18px; }
-.melody-note.is-active .melody-digit.lines-4 { box-shadow:none; }
+/* 连线只占音符行；歌词独立排在第二行，节拍组之间留出断口。 */
+.melody-beam-group { position:relative; display:inline-grid; grid-template-rows:auto auto; flex:0 0 auto; align-items:start; column-gap:0; row-gap:0; margin-right:.22em; vertical-align:top; font-size:inherit; }
+.melody-beam-group .melody-head-cell { align-self:start; }
+.melody-beam-group .melody-lyric-cell { align-self:start; }
+/* 第一层贴近数字，附加层向下；首尾线覆盖整个数字框。 */
+.melody-beam-segment { position:absolute; left:0; right:0; height:clamp(1px,.05em,1.75px); background:#3C4742; pointer-events:none; }
+.melody-beam-segment.is-start, .melody-beam-segment.is-single { left:calc(50% - .35em); }
+.melody-beam-segment.is-end, .melody-beam-segment.is-single { right:calc(50% - .35em); }
 
 /* —— T010 旋律页：上课模式「看谱 · 听旋律」页此前随 fit 整页缩放，
    1280×720 下速度/出处标签有效字号被压到 9–10px。改法：
@@ -362,9 +364,9 @@
 .present-score .melody-tempo input { height:24px; }
 .present-score .melody-source { font-size:14px; line-height:1.6; }
 /* 谱例块视口自适应：高度紧张时音数字号随 vh 收缩，宽度随之收紧让每行容纳更多小节 */
-.melody-player.is-large .melody-digit { font-size:clamp(40px,5.5vh,80px); }
+.melody-player.is-large { --melody-note-size:clamp(40px,5.5vh,80px); }
 .melody-player.is-large .melody-lyric { font-size:clamp(14px,1.9vh,24px); }
-.melody-player.is-large .melody-note { min-width:clamp(26px,2.8vh,48px); }
-.melody-player.is-large .melody-dash { font-size:clamp(22px,3vh,38px); }
+.melody-player.is-large .melody-note, .melody-player.is-large .melody-head-cell, .melody-player.is-large .melody-lyric-cell { min-width:1.3em; }
+.melody-player.is-large .melody-head-cell.has-accidental, .melody-player.is-large .melody-lyric-cell.has-accidental { min-width:1.7em; }
+.melody-player.is-large .melody-dash { font-size:inherit; }
 .melody-player.is-large .melody-score { row-gap:clamp(8px,1.2vh,22px); padding:clamp(10px,1.5vh,20px) clamp(10px,1.4vw,18px); }
-.present-score .melody-note:has(.melody-dash) { margin-right:14px; }

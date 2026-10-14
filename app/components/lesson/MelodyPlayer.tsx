@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { midiOf, notation } from "../../lib/lesson/melodies";
 import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
 import { getPianoAudioContext, loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
@@ -8,6 +9,103 @@ import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesso
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 
 type Line = { label: string; bars: MelodyNote[][] };
+type BeamRun = { start: number; end: number; level: number };
+type BeamFragment = { level: number; edge: "start" | "middle" | "end" | "single" };
+
+const UNDERLINE_TOP = 1.42;
+const UNDERLINE_GAP = 0.16;
+
+/** Low octave dots sit below this note's diminution lines, as in the textbook. */
+function lowDotTop(note: MelodyNote) {
+  const { lines } = notation(note);
+  return lines ? UNDERLINE_TOP + (lines - 1) * UNDERLINE_GAP + 0.15 : 1.48;
+}
+
+function noteHeadHeight(notes: MelodyNote[]) {
+  return Math.max(1.72, ...notes.map((note) => {
+    const lowDots = Math.max(0, -(note.o ?? 0));
+    if (lowDots) return lowDotTop(note) + 0.13 + (lowDots - 1) * 0.2 + 0.08;
+    const { lines } = notation(note);
+    return lines ? UNDERLINE_TOP + (lines - 1) * UNDERLINE_GAP + 0.14 : 1.5;
+  }));
+}
+
+/** Simplified-notation beams stay inside the metrical group, never across a bar line. */
+function getBeamRuns(notes: MelodyNote[], meter: string): BeamRun[] {
+  if (!notes.length || meter.includes("散")) return [];
+  const signatures = [...meter.matchAll(/(\d+)\s*\/\s*(\d+)/g)].map((match) => ({
+    numerator: Number(match[1]),
+    denominator: Number(match[2]),
+  }));
+  if (!signatures.length) return [];
+
+  const total = notes.reduce((sum, note) => sum + note.b, 0);
+  const signature = signatures.find(({ numerator, denominator }) => Math.abs(total - numerator * 4 / denominator) < 1e-6) ?? signatures[0];
+  const { numerator, denominator } = signature;
+  const runs: BeamRun[] = [];
+  const maxLines = Math.max(...notes.map((note) => notation(note).lines));
+  const unit = 4 / denominator;
+  const baseBeatPattern = denominator === 8
+    ? numerator >= 6 && numerator % 3 === 0
+      ? Array(numerator / 3).fill(unit * 3)
+      : numerator === 5
+        ? [unit * 3, unit * 2] // common 3+2 grouping
+        : numerator === 7
+          ? [unit * 3, unit * 2, unit * 2] // common 3+2+2 grouping
+          : Array(numerator).fill(unit)
+    : Array(numerator).fill(unit);
+  const beatPatternForLevel = (level: number) => {
+    // Keep the first two beam levels inside the notated pulse (including dotted-quarter
+    // pulses in compound meter). Split only higher levels into progressively smaller groups.
+    const subdivisions = level > 2 ? 2 ** (level - 2) : 1;
+    return baseBeatPattern.flatMap((beat) => Array(subdivisions).fill(beat / subdivisions));
+  };
+
+  for (let level = 1; level <= maxLines; level += 1) {
+    const beatPattern = beatPatternForLevel(level);
+    const beatRanges: Array<{ start: number; end: number }> = [];
+    let beatStart = 0;
+    for (let index = 0; beatStart < total - 1e-6; index += 1) {
+      const end = Math.min(total, beatStart + beatPattern[index % beatPattern.length]);
+      beatRanges.push({ start: beatStart, end });
+      beatStart = end;
+    }
+
+    let cursor = 0;
+    const noteBeats = notes.map((note) => {
+      const start = cursor;
+      const end = start + note.b;
+      cursor = end;
+      return beatRanges.findIndex((beat) => start >= beat.start - 1e-6 && end <= beat.end + 1e-6);
+    });
+    let runStart = -1;
+    let runBeat = -1;
+    const flush = (end: number) => {
+      if (runStart >= 0) {
+        const runEnd = end - 1;
+        // Jianpu uses a full short underline beneath an isolated subdivision,
+        // rather than the sideways beam hook used in staff notation.
+        runs.push({ start: runStart, end: runEnd, level });
+      }
+      runStart = -1;
+      runBeat = -1;
+    };
+
+    notes.forEach((note, index) => {
+      const lines = notation(note).lines;
+      const beatIndex = noteBeats[index];
+      const canBeam = lines >= level && note.d !== 0 && beatIndex >= 0;
+      if (!canBeam || (runStart >= 0 && beatIndex !== runBeat)) flush(index);
+      if (canBeam && runStart < 0) {
+        runStart = index;
+        runBeat = beatIndex;
+      }
+    });
+    flush(notes.length);
+  }
+  return runs;
+}
+
 // One audio context and one decoded piano bank for the whole session, so
 // switching excerpts or lessons never re-decodes the samples.
 let sharedSampler: PianoSampler | null = null;
@@ -61,7 +159,17 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   const stopRef = useRef<() => void>(() => {});
   const playRequestRef = useRef(0);
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
+  const headHeights = useMemo(() => flats.map(noteHeadHeight), [flats]);
   const offsets = useMemo(() => lines.map((line) => line.bars.reduce<number[]>((acc, bar, i) => [...acc, i ? acc[i - 1] + line.bars[i - 1].length : 0], [])), [lines]);
+  const beamRuns = useMemo(() => lines.map((line) => line.bars.map((notes) => {
+    const byLevel = new Map<number, Map<number, BeamRun>>();
+    getBeamRuns(notes, melody.meter).forEach((run) => {
+      const levelRuns = byLevel.get(run.level) ?? new Map<number, BeamRun>();
+      levelRuns.set(run.start, run);
+      byLevel.set(run.level, levelRuns);
+    });
+    return byLevel;
+  })), [lines, melody.meter]);
 
   const stop = useCallback(() => {
     const shouldAnnounceStop = playbackActive.current || pianoLoading.current;
@@ -208,14 +316,31 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     setAnnouncement(pianoLoadFailed ? "钢琴音色加载失败，改用电子音色。开始播放" : "开始播放");
   };
 
-  const renderNote = (note: MelodyNote, key: number, active: boolean) => {
+  const renderNoteHead = (note: MelodyNote, key: number | string, active: boolean, beamSegments?: BeamFragment[]) => {
     const { lines: underlines, dotted, dashes } = notation(note);
-    return <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
-      <span className={`melody-digit lines-${underlines} ${(note.o ?? 0) > 0 ? "is-high" : ""} ${(note.o ?? 0) < 0 ? "is-low" : ""} ${Math.abs(note.o ?? 0) === 2 ? "is-double" : ""}`}><span className="melody-digit-highlight" />{note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}{note.d === 9 ? "×" : note.d || "0"}{dotted && <i className="melody-dot">·</i>}</span>
-      {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash">–</span>)}
-      <span className="melody-lyric">{note.lyric || " "}</span>
+    const fragments = beamSegments ?? Array.from({ length: underlines }, (_, index) => ({ level: index + 1, edge: "single" as const }));
+    const octave = note.o ?? 0;
+    return <span key={key} aria-hidden="true" className={`melody-head-cell ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""} ${note.a ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}>
+      <span className="melody-digit">
+        <span className="melody-digit-highlight" />
+        {note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}
+        {note.d === 9 ? "×" : note.d || "0"}
+        {dotted && <i className="melody-dot">·</i>}
+        {Array.from({ length: Math.abs(octave) }, (_, index) => <i key={`octave-${index}`} className="melody-octave-dot" style={{ top: `${octave > 0 ? -0.18 - index * 0.2 : lowDotTop(note) - 0.4 + index * 0.2}em` }} />)}
+      </span>
+      {fragments.map((run, index) => <i key={`beam-${run.level}-${index}`} className={`melody-beam-segment is-${run.edge}`} style={{ top: `${UNDERLINE_TOP + (run.level - 1) * UNDERLINE_GAP}em` }} />)}
+      {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash" style={{ left: `calc(50% + ${0.7 + k * 1.1}em)` }}>–</span>)}
     </span>;
   };
+  const renderNoteLyric = (note: MelodyNote, active: boolean, key: number | string) => {
+    const { dashes } = notation(note);
+    return <span key={key} aria-hidden="true" className={`melody-lyric-cell ${active ? "is-active" : ""} ${note.a ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}><span className="melody-lyric">{note.lyric || " "}</span></span>;
+  };
+  const renderNote = (note: MelodyNote, key: number, active: boolean) =>
+    <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
+      {renderNoteHead(note, `head-${key}`, active)}
+      {renderNoteLyric(note, active, `lyric-${key}`)}
+    </span>;
 
   return <div className={`melody-player ${large ? "is-large" : ""} ${lines.length > 1 ? "is-choral" : ""}`}>
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
@@ -240,9 +365,43 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     </div>
     <div className="melody-score" role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${melody.meter} 拍`}>
       {melody.bars.map((_, barIndex) => <span key={barIndex} className="melody-bar">
-        {lines.map((line, voice) => <span key={voice} className={`melody-voice voice-${voice}`}>
-          {(line.bars[barIndex] ?? []).map((note, noteIndex) => renderNote(note, noteIndex, offsets[voice][barIndex] + noteIndex === current[voice]))}
-        </span>)}
+        {lines.map((line, voice) => {
+          const notes = line.bars[barIndex] ?? [];
+          const runsByLevel = beamRuns[voice]?.[barIndex] ?? new Map<number, Map<number, BeamRun>>();
+          const rendered: ReturnType<typeof renderNote>[] = [];
+
+          function renderBeamGroup(start: number, end: number): ReturnType<typeof renderNote> {
+            const groupNotes = notes.slice(start, end + 1);
+            const containedRuns = [...runsByLevel.entries()].flatMap(([level, levelRuns]) =>
+              [...levelRuns.values()].filter((run) => run.start >= start && run.end <= end).map((run) => ({ ...run, level })),
+            );
+            return <span key={`beam-${start}-${end}`} className="melody-beam-group" style={{ gridTemplateColumns: `repeat(${groupNotes.length}, max-content)` }}>
+              {groupNotes.map((note, offset) => {
+                const index = start + offset;
+                const active = offsets[voice][barIndex] + index === current[voice];
+                const noteBeams: BeamFragment[] = containedRuns.filter((run) => index >= run.start && index <= run.end).map((run) => ({
+                  level: run.level,
+                  edge: run.start === run.end ? "single" : run.start === index ? "start" : run.end === index ? "end" : "middle",
+                }));
+                return renderNoteHead(note, `head-${index}`, active, noteBeams);
+              })}
+              {groupNotes.map((note, offset) => renderNoteLyric(note, offsets[voice][barIndex] + start + offset === current[voice], `lyric-${start + offset}`))}
+            </span>;
+          }
+
+          for (let noteIndex = 0; noteIndex < notes.length;) {
+            const run = runsByLevel.get(1)?.get(noteIndex);
+            if (run) {
+              rendered.push(renderBeamGroup(run.start, run.end));
+              noteIndex = run.end + 1;
+            } else {
+              const note = notes[noteIndex];
+              rendered.push(renderNote(note, noteIndex, offsets[voice][barIndex] + noteIndex === current[voice]));
+              noteIndex += 1;
+            }
+          }
+          return <span key={voice} className={`melody-voice voice-${voice}`} style={{ "--melody-head-height": `${headHeights[voice]}em` } as CSSProperties}>{rendered}</span>;
+        })}
       </span>)}
     </div>
     <p className="melody-source">{melody.source}。{rhythmOnly ? "节奏示范，仅供练习参考。" : audioMode === "synth" ? "电子音色示范，仅供视唱参考。" : <>钢琴音色示范，仅供视唱参考。钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）。</>}</p>

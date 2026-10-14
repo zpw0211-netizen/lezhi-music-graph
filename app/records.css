@@ -1021,6 +1021,7 @@
 .records-detail-melody .melody-player.is-large .melody-tempo input { width: clamp(74px, 8vw, 110px); }
 .records-detail-melody .melody-player.is-large .melody-voices { flex-wrap: wrap; }
 .records-detail-melody .melody-player.is-large .melody-score {
+  --melody-note-size: clamp(22px, 1.8vw, 26px);
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -1032,12 +1033,12 @@
   background: var(--sheet, #FBF8F0);
   font-family: var(--serif, "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif);
 }
-.records-detail-melody .melody-player.is-large .melody-bar { box-sizing: border-box; max-width: 100%; padding-right: clamp(3px, .55vw, 8px); padding-left: clamp(3px, .55vw, 8px); }
-.records-detail-melody .melody-player.is-large .melody-voice { min-width: 0; max-width: 100%; flex-wrap: wrap; }
-.records-detail-melody .melody-player.is-large .melody-note { min-width: clamp(26px, 1.8vw, 29px); }
-.records-detail-melody .melody-player.is-large .melody-digit { padding: 3px 2px 4px; font-family: var(--serif, "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif); font-size: clamp(22px, 1.8vw, 26px); font-weight: 600; }
+.records-detail-melody .melody-player.is-large .melody-bar { box-sizing: border-box; padding-right: clamp(3px, .55vw, 8px); padding-left: clamp(3px, .55vw, 8px); }
+.records-detail-melody .melody-player.is-large .melody-voice { min-width: 0; flex-wrap: nowrap; }
+.records-detail-melody .melody-player.is-large .melody-note { min-width: 1.3em; }
+.records-detail-melody .melody-player.is-large .melody-digit { font-family: var(--serif, "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif); font-weight: 600; }
 .records-detail-melody .melody-player.is-large .melody-lyric { font-size: clamp(11px, .9vw, 14px); }
-.records-detail-melody .melody-player.is-large .melody-dash { font-size: clamp(13px, 1.35vw, 19px); }
+.records-detail-melody .melody-player.is-large .melody-dash { font-size: inherit; }
 .records-detail-melody .melody-source { color: var(--ink-3, #7A7F72); }
 
 .records-detail-knowledge { margin: 30px 0 32px; padding-top: 22px; border-top: 1px solid var(--line, #CFC4AC); }
