@@ -2,7 +2,7 @@
 // 知识图谱 page: sidebar filters, textbook tabs, the graph canvas and the
 // node inspector. Explorer state comes from useGraphExplorer; everything here
 // is derived for rendering and only computed while this page is shown.
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
 import nextDynamic from "next/dynamic";
 import { relationVisualKind, schemaCategoryFor, schemaCategoryMeta, type SchemaCategoryKey } from "../../graph-schema";
@@ -202,7 +202,9 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
   const [panStart, setPanStart] = useState<{ pointerId: number; clientX: number; clientY: number; originX: number; originY: number } | null>(null);
   const [motionPhase, setMotionPhase] = useState(0);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [sigmaViewport, setSigmaViewport] = useState<{ minX: number; minY: number; maxX: number; maxY: number } | null>(null);
+  // The camera viewport only feeds the minimap; keep it in a tiny store so a pan or zoom
+  // re-renders the minimap alone instead of this whole page.
+  const [viewportStore] = useState(createViewportStore);
   const [evidencePayloads, setEvidencePayloads] = useState<Record<string, EvidencePayload>>({});
   const evidenceRequestCache = useRef(new Map<string, Promise<EvidencePayload>>());
   const explorerRef = useRef(explorer);
@@ -973,7 +975,7 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
             onContextMenu={handleCanvasContextMenu}
             onNodePosition={handleNodePosition}
             onMetrics={ignoreMetrics}
-            onViewportChange={setSigmaViewport}
+            onViewportChange={viewportStore.set}
             onClearFocus={handleClearSigmaFocus}
           />
         ) : (
@@ -1003,7 +1005,7 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
       onContextMenu={handleBookContextMenu}
       onNodePosition={handleNodePosition}
       onMetrics={ignoreMetrics}
-      onViewportChange={setSigmaViewport}
+      onViewportChange={viewportStore.set}
       onClearFocus={handleBookClearFocus}
     />
   );
@@ -1360,12 +1362,13 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
                       复位
                     </button>
                   </div>
-                  <FullGraphMiniMap
+                  <LiveMiniMap
+                    store={viewportStore}
+                    followCamera={fullGraphRenderer === "sigma"}
                     nodes={canonicalGroup.nodes}
                     visibleNodeIds={fullGraphVisibleIds}
                     zoom={zoom}
                     pan={canvasPan}
-                    viewport={fullGraphRenderer === "sigma" ? sigmaViewport : null}
                     draggedPositions={dragPositions}
                     sceneKey={`canonical:${fullGraphLayout}`}
                   />
@@ -1414,4 +1417,29 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
       </div>
     </>
   );
+}
+
+type ViewportBounds = { minX: number; minY: number; maxX: number; maxY: number };
+type ViewportStore = { get: () => ViewportBounds | null; set: (next: ViewportBounds) => void; subscribe: (listener: () => void) => () => void };
+function createViewportStore(): ViewportStore {
+  let value: ViewportBounds | null = null;
+  const listeners = new Set<() => void>();
+  return {
+    get: () => value,
+    set: (next) => { value = next; listeners.forEach((listener) => listener()); },
+    subscribe: (listener) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
+  };
+}
+const NO_VIEWPORT = () => null;
+function LiveMiniMap({ store, followCamera, ...props }: { store: ViewportStore; followCamera: boolean } & Omit<Parameters<typeof FullGraphMiniMap>[0], "viewport">) {
+  const viewport = useSyncExternalStore(store.subscribe, store.get, NO_VIEWPORT);
+  // Lazy: the minimap is a helper, so it waits until the browser is idle after the graph has drawn.
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((callback: () => void) => window.setTimeout(callback, 400));
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout;
+    const handle = idle(() => setReady(true), { timeout: 1500 });
+    return () => cancel(handle);
+  }, []);
+  return ready ? <FullGraphMiniMap {...props} viewport={followCamera ? viewport : null} /> : null;
 }

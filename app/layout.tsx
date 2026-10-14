@@ -23,6 +23,7 @@ import "./atlas.css";
 import "./lab.css";
 import "./timeline.css";
 import "./exploration.css";
+import "./graph-compact.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

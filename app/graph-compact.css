@@ -1,0 +1,82 @@
+/* 知识图谱紧凑版（2026-10-15）：画布尽量大，四周的栏收窄；点开知识点时，
+   信息卡浮在画布右上角，不再占一整列把画布挤窄。只作用于桌面宽度；
+   ≤1100px 仍按 mobile-layout.css 的底部抽屉。最后加载，覆盖前面的层叠。 */
+@media (min-width: 1101px) {
+  /* Narrower left sidebar (296 → 232) and a tighter gutter. */
+  .ink-app.theme-light.network-mode > .explorer-sidebar:not(.is-collapsed) { width: 232px; flex-basis: 232px; }
+  .ink-app.theme-light.network-mode > .workspace {
+    --graph-nav-left-inset: 244px;
+    --graph-nav-right-inset: 12px;
+    padding: 0 12px 12px 244px;
+  }
+  .ink-app.theme-light.network-mode:has(> .explorer-sidebar.is-collapsed) > .workspace { --graph-nav-left-inset: 68px; padding-left: 68px; }
+  .ink-app.theme-light.network-mode > .explorer-sidebar { font-size: 12px; }
+  .ink-app.theme-light.network-mode > .explorer-sidebar :is(h2, h3, summary) { font-size: 13px; }
+
+  /* One slim row for the book range and zoom tools. */
+  .ink-app.theme-light.network-mode .graph-rangebar { min-height: 0; margin: 6px 0 0; padding: 2px 0; }
+  .ink-app.theme-light.network-mode .graph-rangebar :is(button, .book-tab) { min-height: 30px; padding-block: 3px; font-size: 13px; }
+  .ink-app.theme-light.network-mode .graph-rangebar .graph-toolbar-tools button { width: 30px; height: 30px; min-width: 30px; }
+  .ink-app.theme-light.network-mode .full-graph-filterbar { min-height: 0; padding-block: 2px; }
+  .ink-app.theme-light.network-mode .full-graph-filterbar button { min-height: 30px; font-size: 13px; }
+
+  /* The canvas takes every remaining pixel of the window. */
+  .ink-app.theme-light.network-mode .neo-layout,
+  .ink-app.theme-light.network-mode.inspector-open .neo-layout,
+  .ink-app.theme-light.network-mode.detail-open .neo-layout {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    height: calc(100dvh - 148px);
+    padding: 6px 0 0;
+  }
+
+  /* Node card: floats over the canvas, top-right, at most 0.618 of its height. */
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector {
+    position: absolute;
+    z-index: 40;
+    top: 50px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 288px;
+    height: auto;
+    max-height: calc((100% - 60px) * .618);
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid #CFC4AC;
+    border-radius: 4px;
+    background: #FBF8F0;
+    box-shadow: 0 18px 40px -24px rgb(30 24 12 / 55%);
+  }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-titlebar { flex: 0 0 auto; min-height: 0; padding: 6px 10px; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-card { flex: 1 1 auto; min-height: 0; height: auto; overflow-y: auto; border: 0; box-shadow: none; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-header { padding: 10px 13px; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-header h2 { font-size: 19px; line-height: 1.3; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-icon { width: 30px; height: 30px; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-tabs button { min-height: 0; padding: 5px 2px; font-size: 11px; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-body { height: auto; max-height: none; overflow: visible; padding: 10px 13px; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector :is(p, dt, dd) { font-size: 12px; line-height: 1.6; }
+  .ink-app.theme-light.network-mode.graph-first.inspector-open:not(.detail-open) .neo-layout > .inspector .inspector-body dl div { padding: 5px 8px; }
+
+  /* Full knowledge detail: a floating side card (≤ 400px) instead of a 520–760px column. */
+  .ink-app.theme-light.network-mode.graph-first .neo-layout > .knowledge-detail-drawer {
+    position: absolute;
+    z-index: 41;
+    top: 50px;
+    right: 10px;
+    bottom: 10px;
+    width: clamp(340px, 24vw, 400px);
+    height: auto;
+    box-shadow: 0 20px 44px -24px rgb(30 24 12 / 60%);
+  }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-header { padding: 14px 18px 12px; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-navigation { flex-wrap: wrap; row-gap: 8px; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-navigation > span { white-space: nowrap; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-navigation button { padding: 4px 8px; white-space: nowrap; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-meta > div { white-space: nowrap; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-header h2 { margin: 10px 0 6px; font-size: 24px; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-body { padding: 0 18px 18px; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-body section { padding: 13px 0; }
+  .ink-app.theme-light.network-mode.graph-first .knowledge-body p { font-size: 13px; line-height: 1.75; }
+}

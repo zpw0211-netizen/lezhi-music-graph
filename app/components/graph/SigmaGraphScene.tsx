@@ -455,16 +455,19 @@ function SigmaController<E extends GraphEntity>({
       dragMoved.current = false;
     };
     let cameraSyncTimer: ReturnType<typeof setTimeout> | undefined;
+    // While the wheel or a drag is still moving the camera, do nothing but let Sigma draw.
+    // The label tier (which re-runs the reducers over every node and edge) and the minimap
+    // catch up once the camera has rested, so no full refresh lands in the middle of a zoom.
     const syncViewport = () => {
-      setZoomTier(semanticZoomTier(sigma.getCamera().getState().ratio));
       clearTimeout(cameraSyncTimer);
       cameraSyncTimer = setTimeout(() => {
+        setZoomTier(semanticZoomTier(sigma.getCamera().getState().ratio));
         const { width, height } = sigma.getDimensions();
         const a = sigma.viewportToGraph({ x: 0, y: 0 });
         const b = sigma.viewportToGraph({ x: width, y: height });
         onViewportChange({ minX: Math.min(a.x, b.x), minY: Math.min(a.y, b.y), maxX: Math.max(a.x, b.x), maxY: Math.max(a.y, b.y) });
         setViewportTick(value => value + 1);
-      }, 60);
+      }, 140);
     };
     registerEvents({
       updated: syncViewport,
@@ -668,6 +671,8 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
       defaultDrawNodeHover: drawConstellationHalo,
       minCameraRatio: 0.08,
       maxCameraRatio: 8,
+      // Snappier wheel zoom (Sigma's default animates each notch for 250ms).
+      zoomDuration: 140,
     }),
     [],
   );

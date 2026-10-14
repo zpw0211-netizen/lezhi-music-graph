@@ -885,16 +885,61 @@ type MiniMapProps = {
 
 function MiniMap({ nodes, visibleNodeIds, zoom, pan, viewport, draggedPositions, sceneKey }: MiniMapProps) {
   const ref = useRef<HTMLCanvasElement>(null);
+  // The dots only change with the data, filters or a drag; a pan/zoom just moves the frame.
+  // Draw the dots once into an offscreen layer and blit it, instead of redrawing ~2,600 arcs per camera move.
+  const layer = useRef<{ key: unknown[]; canvas: HTMLCanvasElement } | null>(null);
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
     const context = canvas.getContext("2d");
     if (!context) return;
-    const rect = canvas.getBoundingClientRect();
+    const rect = { width: canvas.clientWidth, height: canvas.clientHeight };
     const ratio = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.max(1, Math.round(rect.width * ratio));
-    canvas.height = Math.max(1, Math.round(rect.height * ratio));
+    const width = Math.max(1, Math.round(rect.width * ratio));
+    const height = Math.max(1, Math.round(rect.height * ratio));
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+    const key = [nodes, visibleNodeIds, draggedPositions, sceneKey, width, height];
+    if (!layer.current || layer.current.key.some((item, index) => item !== key[index])) {
+      const offscreen = layer.current?.canvas ?? document.createElement("canvas");
+      offscreen.width = width;
+      offscreen.height = height;
+      const dots = offscreen.getContext("2d");
+      if (dots) {
+        dots.setTransform(ratio, 0, 0, ratio, 0, 0);
+        drawMiniMapDots(dots, rect, nodes, visibleNodeIds, draggedPositions, sceneKey);
+      }
+      layer.current = { key, canvas: offscreen };
+    }
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, width, height);
+    context.drawImage(layer.current.canvas, 0, 0);
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const canvasZoom = Math.max(0.4, zoom) * CANVAS_GRAPH_SCALE;
+    const viewportWidth = rect.width / canvasZoom;
+    const viewportHeight = rect.height / canvasZoom;
+    const centerX = rect.width / 2 - (pan.x / Math.max(0.4, zoom) / 2400) * rect.width;
+    const centerY = rect.height / 2 - (pan.y / Math.max(0.4, zoom) / 1500) * rect.height;
+    context.strokeStyle = "#3e6b91";
+    context.lineWidth = 1;
+    context.strokeRect(
+      viewport ? (viewport.minX / 2400) * rect.width : centerX - viewportWidth / 2,
+      viewport ? (viewport.minY / 1500) * rect.height : centerY - viewportHeight / 2,
+      viewport ? ((viewport.maxX - viewport.minX) / 2400) * rect.width : viewportWidth,
+      viewport ? ((viewport.maxY - viewport.minY) / 1500) * rect.height : viewportHeight,
+    );
+  }, [draggedPositions, nodes, pan.x, pan.y, sceneKey, viewport, visibleNodeIds, zoom]);
+  return <canvas ref={ref} aria-hidden="true" />;
+}
+
+function drawMiniMapDots(
+  context: CanvasRenderingContext2D,
+  rect: { width: number; height: number },
+  nodes: CanvasNode[],
+  visibleNodeIds: Set<string>,
+  draggedPositions: MiniMapProps["draggedPositions"],
+  sceneKey: string | undefined,
+) {
     context.clearRect(0, 0, rect.width, rect.height);
     context.fillStyle = "#edf1f3";
     context.fillRect(0, 0, rect.width, rect.height);
@@ -913,21 +958,6 @@ function MiniMap({ nodes, visibleNodeIds, zoom, pan, viewport, draggedPositions,
         SEMANTIC_PALETTE[schemaCategoryFor(node.entity.type)].fill;
       context.fill();
     }
-    const canvasZoom = Math.max(0.4, zoom) * CANVAS_GRAPH_SCALE;
-    const viewportWidth = rect.width / canvasZoom;
-    const viewportHeight = rect.height / canvasZoom;
-    const centerX = rect.width / 2 - (pan.x / Math.max(0.4, zoom) / 2400) * rect.width;
-    const centerY = rect.height / 2 - (pan.y / Math.max(0.4, zoom) / 1500) * rect.height;
-    context.strokeStyle = "#3e6b91";
-    context.lineWidth = 1;
-    context.strokeRect(
-      viewport ? (viewport.minX / 2400) * rect.width : centerX - viewportWidth / 2,
-      viewport ? (viewport.minY / 1500) * rect.height : centerY - viewportHeight / 2,
-      viewport ? ((viewport.maxX - viewport.minX) / 2400) * rect.width : viewportWidth,
-      viewport ? ((viewport.maxY - viewport.minY) / 1500) * rect.height : viewportHeight,
-    );
-  }, [draggedPositions, nodes, pan.x, pan.y, sceneKey, viewport, visibleNodeIds, zoom]);
-  return <canvas ref={ref} aria-hidden="true" />;
 }
 
 export const FullGraphMiniMap = memo(MiniMap);

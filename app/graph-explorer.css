@@ -153,9 +153,9 @@
 @media (max-width:768px) {
   .ink-app.theme-light.network-mode > .workspace { padding-left:20px; --graph-nav-left-inset:20px; --graph-nav-right-inset:0px; }
 }
-/* 详情抽屉打开时侧栏被压成 56px rail（knowledge-detail.css，1001–1500px
+/* 详情抽屉打开时侧栏被压成 56px rail（knowledge-detail.css，1001–1100px；更宽时抽屉浮在画布上，见 graph-compact.css
    视口），预留随之回落为 56+20，否则 rail 右侧空出约 260px、画布被挤窄。 */
-@media (max-width:1500px) and (min-width:1001px) {
+@media (max-width:1100px) and (min-width:1001px) {
   .ink-app.theme-light.network-mode.detail-open > .workspace { padding-left:76px; --graph-nav-left-inset:76px; }
 }
 
