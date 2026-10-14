@@ -130,3 +130,10 @@ The same sprout-and-staff motif as the hero, centered, with wide empty paper mar
 | `g4s1.webp` | `g4s1/read/p06.jpg` | 日出时的公共广场、树影与素色红旗 |
 | `g5s1.webp` | `g5s1/read/p06.jpg` | 一条连贯河流串联晨光、暮色与归舟 |
 | `g6s1.webp` | `g6s1/read/p04.jpg` | 茉莉花枝、江南水巷、石桥与民居 |
+
+## 首页背景 `home-sprouts.webp`
+
+- 生成日期：2026-10-14
+- 工具：由 Claude 用代码绘制（程序生成的 SVG，经 Microsoft Edge 渲染后导出），未使用任何第三方素材
+- 生成脚本：`E:\Projects\.tmp\claude\sprout\make-svg.mjs`（木刻版画风格：土层剖面、根系、子叶、远山与太阳；配色取站点四个专色）
+- 导出：1800×675 WebP，页面中以 20% 不透明度（淡化 80%）显示

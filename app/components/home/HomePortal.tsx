@@ -1,13 +1,12 @@
 "use client";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { publicAssetUrl } from "../../lib/app/assets";
 import {
   PUBLISHED_BOOK_COUNT_LABEL,
   PUBLISHED_BOOKS,
-  PUBLISHED_BOOK_SHORT_NAMES,
   PUBLISHED_GRADE_RANGE_LABEL,
   availableBookStages,
   bookStageForKey,
@@ -33,8 +32,8 @@ const HOT_SEARCHES = ["黄河", "京剧", "民歌", "五声调式", "歌唱祖�
 const HOME_LAST_READ_BOOK_KEY = "yapu-home-last-book";
 const HOME_LAST_READ_CHANGE_EVENT = "yapu:home-last-book-change";
 const BOOKMARKS = [
-  { label: "声音与音乐探索", description: "在地图、年表与律盘之间切换，看音乐的地域、年代与声音。", file: "art/bookmarks/map.webp", href: "#/atlas" },
-  { label: "知识图谱", description: "从一个知识点查看它和作品的联系。", file: "art/bookmarks/graph.webp", href: null },
+  { label: "声音与音乐探索", lines: ["声音与", "音乐探索"], description: "在地图、年表与律盘之间切换，看音乐的地域、年代与声音。", file: "art/bookmarks/map.webp", href: "#/atlas" },
+  { label: "知识图谱", lines: ["知识", "图谱"], description: "从一个知识点查看它和作品的联系。", file: "art/bookmarks/graph.webp", href: null },
 ] as const;
 const PENTATONIC = [
   { name: "宫", degree: 1, note: "do" }, { name: "商", degree: 2, note: "re" },
@@ -52,6 +51,13 @@ const LAB_MELODIES: Melody[] = PENTATONIC.map(note => ({
 const PENTATONIC_PHRASE: Melody = {
   key: "1=C", tonic: "C", tonicMidi: 60, meter: "4/4", bpm: 168, source: "五声音阶交互示范",
   bars: [[1, 2, 3, 5, 6, 5, 3, 2, 1].map(degree => ({ d: degree, b: 0.5 }))],
+};
+const bookArt = (book: { key: string; title: string }) => BOOK_ART[book.key] ?? { file: `art/${book.key}.webp`, alt: `${book.title.replace(/^人音版/, "")}封面插画` };
+const shortBookTitle = (book: { title: string }) => book.title.replace(/^人音版/, "");
+/** "六年级上册（简谱）" → ["六年级", "上册（简谱）"], so a label never wraps a lone character onto its own line. */
+const splitBookTitle = (book: { title: string }): [string, string] => {
+  const match = shortBookTitle(book).match(/^(.+?年级)(.+)$/);
+  return match ? [match[1], match[2]] : [shortBookTitle(book), ""];
 };
 const MelodyPlayer = dynamic<PropsOf<typeof MelodyPlayerComponent>>(
   () => import("../lesson/MelodyPlayer").then(module => module.MelodyPlayer),
@@ -92,6 +98,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
     : stageBooks.some(book => book.key === lastReadBookKey)
       ? lastReadBookKey ?? ""
       : stageBooks[0]?.key ?? "";
+  const activeBook = stageBooks.find(book => book.key === activeBookKey);
   const unitsByBook = useMemo(() => {
     const grouped = new Map<string, PortalUnit[]>();
     for (const unit of units) grouped.set(unit.bookKey, [...(grouped.get(unit.bookKey) ?? []), unit]);
@@ -124,9 +131,6 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
     setOpenBookKey(firstBook.key);
     onStageChange(stage);
   };
-  const selectShelfBook = (bookKey: string) => {
-    if (stageBooks.some((book) => book.key === bookKey)) setOpenBookKey(bookKey);
-  };
   useEffect(() => {
     let active = true;
     fetch(publicAssetUrl("data/units.json"))
@@ -152,18 +156,20 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
-  return <div className="home-portal">
+  return <div className="home-portal" style={{ "--home-sprouts": `url("${publicAssetUrl("art/home-sprouts.webp")}")` } as CSSProperties}>
     <AppTopNav active="home" onAbout={onResearchInfo}
       onNavigate={view => { if (view === "graph") onOpenFullGraph(); else if (view !== "home") onView(view); }}
       trailing={<button type="button" className="home-nav-search" onClick={focusSearch} aria-label="搜索"><WorkbenchIcon name="search" /></button>} />
     <main>
       <section className="home-hero" aria-labelledby="home-title">
         <div className="home-hero-inner">
-          <div className="home-title-plate">
-            <p className="home-hero-kicker">人音版 · {PUBLISHED_GRADE_RANGE_LABEL}</p>
-            <div className="home-wordmark"><BrandWordmark /><h1 id="home-title" className="home-title-accessible">芽谱</h1></div>
+          <div className="home-hero-primary">
+            <div className="home-title-plate">
+              <p className="home-hero-kicker">人音版 · {PUBLISHED_GRADE_RANGE_LABEL}</p>
+              <div className="home-wordmark"><BrandWordmark /><h1 id="home-title" className="home-title-accessible">芽谱</h1></div>
+            </div>
+            <p className="home-hero-lead">翻开一册，<br />从这一课开始。</p>
           </div>
-          <p className="home-hero-lead">翻开一册，从这一课开始。</p>
           <div className="home-hero-search-column">
             <form className="home-search" role="search" onSubmit={onSearch}>
               <input ref={searchInput} value={query} onChange={event => onQuery(event.target.value)} placeholder="搜索作品、人物、乐理或教材内容" aria-label="搜索作品、人物、乐理或教材内容" />
@@ -178,53 +184,55 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           </div>
         </div>
       </section>
-      <section className="home-scrolls" id="home-scrolls" aria-label={`${bookStage}教材画卷`}>
-        {availableBookStages(orderedBooks).length > 1 && <div className="home-scroll-controls">
-          <div className="home-stage-tabs" role="group" aria-label="选择学段">
+      <section className="home-scrolls" id="home-scrolls" aria-label={`${bookStage}教材`}>
+        {activeBook && (() => {
+          const book = activeBook;
+          const art = bookArt(book);
+          const bookUnits = unitsByBook.get(book.key) ?? [];
+          const workCount = bookUnits.reduce((sum, unit) => sum + (unit.works?.length ?? 0), 0);
+          const volume = volumeNumeral(book.key, orderedBooks);
+          return <article key={book.key} className="home-feature" id="home-book-feature" aria-live="polite" aria-label={`卷${volume}，${book.title}`}>
+            <div className="home-feature-art" aria-hidden="true">
+              <Image src={publicAssetUrl(art.file)} alt="" width={1200} height={750} priority decoding="async" unoptimized />
+            </div>
+            <span className="home-scroll-stamp" aria-label="上次读到" hidden={lastReadBookKey !== book.key}>上次读到</span>
+            <div className="home-scroll-copy">
+              <p className="home-scroll-overline">卷 {volume} · 人音版</p>
+              <h3>{shortBookTitle(book)}</h3>
+              <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
+              <p className="home-scroll-countline">{bookUnits.length} 个单元 · {fmt(workCount)} 首作品</p>
+              <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>
+                <button type="button" aria-label={`${unit.numeral || unit.order}，${unit.name || unit.title}，进入${book.title}`} onClick={() => openUnit(book, unit)}>
+                  <span className="home-unit-number">{unit.numeral || unit.order}</span><span className="home-unit-title">{unit.title || unit.name}</span>
+                </button>
+              </li>)}</ol>
+              <button type="button" className="home-scroll-cta" onClick={() => openBook(book)}>翻开这一册 <WorkbenchIcon name="right" /></button>
+            </div>
+          </article>;
+        })()}
+        <div className="home-shelf-index">
+          {availableBookStages(orderedBooks).length > 1 && <div className="home-stage-tabs" role="group" aria-label="选择学段">
             {availableBookStages(orderedBooks).map((stage) => <button key={stage} type="button" aria-pressed={bookStage === stage} onClick={() => selectStage(stage)}>{stage}</button>)}
+          </div>}
+          <div className="home-book-grid" role="group" aria-label={`${bookStage}各册，点选查看，再点一次翻开`}>
+            {stageBooks.map((book, index) => {
+              const isOpen = activeBookKey === book.key;
+              const volume = volumeNumeral(book.key, orderedBooks);
+              const [grade, rest] = splitBookTitle(book);
+              return <button key={book.key} type="button" className={"home-scroll-trigger" + (isOpen ? " is-open" : "")}
+                aria-label={`卷${volume}，${book.title}${isOpen ? "，再点一次翻开" : ""}`} aria-pressed={isOpen} aria-controls="home-book-feature"
+                onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}
+                onFocus={() => setOpenBookKey(book.key)}
+                onClick={() => { if (isOpen) openBook(book); else setOpenBookKey(book.key); }}>
+                <Image src={publicAssetUrl(bookArt(book).file)} alt="" width={1200} height={750} loading={index < 3 ? "eager" : "lazy"} decoding="async" unoptimized />
+                <span className="home-book-card-label">
+                  <span className="home-scroll-number">卷{volume}</span>
+                  <span className="home-scroll-name"><span>{grade}</span><span>{rest}</span></span>
+                </span>
+                {lastReadBookKey === book.key && <span className="home-book-card-mark" aria-hidden="true" title="上次读到" />}
+              </button>;
+            })}
           </div>
-          <div className="home-stage-mobile">
-            <label><span>学段</span><select aria-label="选择学段" value={bookStage} onChange={(event) => selectStage(event.currentTarget.value as BookStage)}>
-              {availableBookStages(orderedBooks).map((stage) => <option key={stage} value={stage}>{stage}</option>)}
-            </select></label>
-            <label><span>册别</span><select aria-label="选择册别" value={activeBookKey} onChange={(event) => selectShelfBook(event.currentTarget.value)}>
-              {stageBooks.map((book) => <option key={book.key} value={book.key}>{PUBLISHED_BOOK_SHORT_NAMES[book.key] ?? `${book.grade}${book.semester.replace(/册$/, "")}`}</option>)}
-            </select></label>
-          </div>
-        </div>}
-        <div className="home-book-scrolls">
-          {stageBooks.map((book, index) => {
-            const art = BOOK_ART[book.key] ?? { file: `art/${book.key}.webp`, alt: `${book.title.replace(/^人音版/, "")}封面插画` };
-            const bookUnits = unitsByBook.get(book.key) ?? []; const isOpen = activeBookKey === book.key;
-            const workCount = bookUnits.reduce((sum, unit) => sum + (unit.works?.length ?? 0), 0);
-            const shortTitle = book.title.replace(/^人音版/, "");
-            const volume = volumeNumeral(book.key, orderedBooks);
-            return <article key={book.key} className={"home-book-scroll " + (isOpen ? "is-open" : "")} onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}>
-                <div className="home-scroll-art" aria-hidden="true">
-                  <Image src={publicAssetUrl(art.file)} alt="" width={1200} height={750} priority={index === 0} loading={index === 0 ? "eager" : "lazy"} decoding="async" unoptimized />
-                </div>
-              <span className="home-scroll-rod home-scroll-rod-top" aria-hidden="true" />
-              <span className="home-scroll-rod home-scroll-rod-bottom" aria-hidden="true" />
-              <button type="button" className="home-scroll-trigger" aria-label={`${isOpen ? "已展开" : "展开"}卷${volume}，${book.title}`} aria-expanded={isOpen} aria-controls={"home-book-" + book.key} onFocus={() => setOpenBookKey(book.key)} onClick={() => setOpenBookKey(book.key)}>
-                <span className="home-scroll-tag"><span className="home-scroll-number">卷{volume}</span><span className="home-scroll-name">{shortTitle}</span></span>
-              </button>
-              <div className="home-scroll-body" id={"home-book-" + book.key} hidden={!isOpen} aria-hidden={!isOpen}>
-                <span className="home-scroll-stamp" aria-label="上次读到" hidden={lastReadBookKey !== book.key}>上次读到</span>
-                <div className="home-scroll-copy">
-                  <p className="home-scroll-overline">卷 {volume} · 人音版</p>
-                  <h3>{shortTitle}</h3>
-                  <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
-                  <p className="home-scroll-countline">{bookUnits.length} 个单元 · {fmt(workCount)} 首作品</p>
-                  <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>
-                    <button type="button" aria-label={`${unit.numeral || unit.order}，${unit.name || unit.title}，进入${book.title}`} onClick={() => openUnit(book, unit)}>
-                      <span className="home-unit-number">{unit.numeral || unit.order}</span><span className="home-unit-title">{unit.title || unit.name}</span>
-                    </button>
-                  </li>)}</ol>
-                  <button type="button" className="home-scroll-cta" onClick={() => openBook(book)}>翻开这一册 <WorkbenchIcon name="right" /></button>
-                </div>
-              </div>
-            </article>;
-          })}
         </div>
       </section>
       <section className="home-lab" aria-labelledby="home-lab-title">
@@ -256,7 +264,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
                 <span className="home-bookmark-string" /><span className="home-bookmark-knot" /><span className="home-bookmark-tassel" />
                 <span className="home-bookmark-paper">
                   <Image src={publicAssetUrl(bookmark.file)} alt="" width={360} height={900} loading="lazy" decoding="async" unoptimized />
-                  <span className="home-bookmark-seal">芽谱</span><span className="home-bookmark-label">{bookmark.label}</span>
+                  <span className="home-bookmark-seal">芽谱</span><span className="home-bookmark-label">{bookmark.lines.map(line => <span key={line}>{line}</span>)}</span>
                 </span>
               </span>
               <span className="home-bookmark-copy"><strong>{bookmark.label}</strong><span>{bookmark.description}</span></span>

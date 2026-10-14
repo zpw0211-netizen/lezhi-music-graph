@@ -252,7 +252,7 @@
 
 @media (max-width: 480px) {
   .home-nav-inner { gap: 4px 8px; padding: 7px 12px; }
-  .home-nav-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+  .home-nav-links { display: grid; grid-template-columns: repeat(2, max-content); justify-content: end; gap: 0 13px; }
   .home-nav-links button { width: 100%; padding: 4px 5px; font-size: 12px; text-align: center; }
   .ink-app.network-mode .home-nav-links button { padding: 4px 5px; font-size: 12px; }
   .home-nav-actions { gap: 8px; }
