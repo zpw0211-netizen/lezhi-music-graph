@@ -48,8 +48,14 @@ export const metadata: Metadata = {
   title: `芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`,
   description:
     `人音版${PUBLISHED_GRADE_RANGE_LABEL}${PUBLISHED_BOOK_COUNT_LABEL}音乐教材的知识图谱：作品、人物、音乐要素与教材出处，一册一册看清楚。`,
+  // favicon.ico + PNG for browsers without SVG favicon support (they showed a default icon), SVG for the rest.
   icons: {
-    icon: `${publicBasePath}/favicon.svg`,
+    icon: [
+      { url: `${publicBasePath}/favicon.ico`, sizes: "16x16 32x32 48x48" },
+      { url: `${publicBasePath}/favicon.svg`, type: "image/svg+xml" },
+      { url: `${publicBasePath}/icon-192.png`, type: "image/png", sizes: "192x192" },
+    ],
+    apple: { url: `${publicBasePath}/apple-touch-icon.png`, sizes: "180x180" },
   },
   openGraph: {
     title: `芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`,

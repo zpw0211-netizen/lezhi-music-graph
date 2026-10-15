@@ -9,6 +9,8 @@ const requiredFiles = [
   "index.html",
   "404.html",
   "favicon.svg",
+  "favicon.ico",
+  "apple-touch-icon.png",
   "og.jpg",
   "data/graph-quality.json",
   "data/graph-index.json",
