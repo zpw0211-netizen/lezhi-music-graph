@@ -47,15 +47,27 @@ for (let index = 0; index < textbookEntities.length; index += 1)
     );
 
 const quality = graph.canonicalGraph.quality.canonical;
+
+// The thresholds were set for the original six books (25 / 16 / 520 on the 2400×1500 canvas).
+// With more books the same canvas holds more nodes, so the spacing limits scale with the book count:
+// node spacing with density (×√(6/n)); textbook anchors with an even share of the outer ring,
+// 0.55 × ring perimeter ÷ n (which is the original 520 when n = 6).
+const bookCount = Math.max(6, textbookEntities.length);
+const density = Math.sqrt(6 / bookCount);
+const ringX = 2400 / 2 - 90, ringY = 1500 / 2 - 90;
+const ringPerimeter = Math.PI * (3 * (ringX + ringY) - Math.sqrt((3 * ringX + ringY) * (ringX + 3 * ringY)));
+const minAverageNearest = 25 * density;
+const minNearest = 16 * density;
+const minTextbookGap = Math.min(520, 0.55 * ringPerimeter / bookCount);
 const failures = [];
 if (entities.length < 1000) failures.push("full graph data was reduced");
 if (graph.canonicalGraph.relationships.length < 3000)
   failures.push("full graph relationships were reduced");
-if (averageNearestDistance < 25)
+if (averageNearestDistance < minAverageNearest)
   failures.push(`average nearest-node distance too small: ${averageNearestDistance}`);
-if (minimumDistance < 16)
+if (minimumDistance < minNearest)
   failures.push(`minimum node distance too small: ${minimumDistance}`);
-if (minimumTextbookDistance < 520)
+if (minimumTextbookDistance < minTextbookGap)
   failures.push(`textbook clusters too close: ${minimumTextbookDistance}`);
 if ((quality.evidenceCoverageRate ?? 0) < 0.9)
   failures.push("evidence coverage missing or too low");

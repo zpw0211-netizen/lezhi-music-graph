@@ -1,0 +1,5 @@
+project_id = "yapu"
+
+[functions.yapu-login]
+# Login precedes a user JWT; the handler checks credentials and throttles requests.
+verify_jwt = false

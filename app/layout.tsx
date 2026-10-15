@@ -24,6 +24,8 @@ import "./lab.css";
 import "./timeline.css";
 import "./exploration.css";
 import "./graph-compact.css";
+import "./account.css";
+import { AccountProvider } from "./components/account/AccountProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,9 +38,9 @@ const geistMono = Geist_Mono({
 });
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
-const publicBasePath = isGitHubPages ? "/lezhi-music-graph" : "";
+const publicBasePath = isGitHubPages ? (process.env.NEXT_PUBLIC_BASE_PATH ?? "") : "";
 const publicOrigin = isGitHubPages
-  ? "https://zpw0211-netizen.github.io/"
+  ? "https://yapu.studio/"
   : "https://lezhi-music-graph.zpw0211.chatgpt.site/";
 
 export const metadata: Metadata = {
@@ -80,7 +82,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AccountProvider>{children}</AccountProvider>
       </body>
     </html>
   );

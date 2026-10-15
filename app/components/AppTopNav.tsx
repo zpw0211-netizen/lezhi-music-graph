@@ -1,8 +1,11 @@
 "use client";
-import { useSyncExternalStore, type FormEvent, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import Image from "next/image";
 import { publicAssetUrl } from "../lib/app/assets";
 import { WorkbenchIcon } from "./WorkbenchIcon";
+import { AccountDialog } from "./account/AccountDialog";
+import type { AccountView } from "./account/AccountPanel";
+import { useAccount } from "./account/AccountProvider";
 export type NavView = "home" | "records" | "graph" | "assistant" | "research" | "lab" | "atlas";
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
 type NavItem = { label: string; view: NavView; href?: string } | { label: string; view: "timeline"; href: string };
@@ -18,11 +21,15 @@ function subscribeToLocation(onChange: () => void) {
 
 const getLocationHash = () => window.location.hash;
 const getServerHash = () => "";
-export function AppTopNav({ active, onNavigate, search, trailing, centerSlot }: {
+export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, onAccount }: {
   active: NavView | null; onNavigate: (view: NavView) => void; onAbout: () => void;
   search?: { query: string; onQuery: (value: string) => void; onSubmit: (event: FormEvent) => void; hits: SearchHit[] };
   trailing?: ReactNode; centerSlot?: ReactNode;
+  /** Opens the account panel somewhere else; without it the nav shows its own dialog. */
+  onAccount?: (view: AccountView) => void;
 }) {
+  const [accountView, setAccountView] = useState<AccountView | null>(null);
+  const { profile } = useAccount();
   const locationHash = useSyncExternalStore(subscribeToLocation, getLocationHash, getServerHash);
   const items: NavItem[] = [
     { label: "按课学习", view: "records" },
@@ -36,7 +43,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot }: 
       ?? (["lab", "timeline"].includes(routeToken) ? "atlas" : undefined)
     : undefined;
   const currentView = hashView ?? active;
-  return <nav className="home-nav" aria-label="主导航">
+  return <><nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
       <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label="芽谱首页">
         <Image src={publicAssetUrl("brand/mark.svg")} alt="" aria-hidden="true" width={34} height={34} priority unoptimized /><span>芽谱</span>
@@ -64,8 +71,9 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot }: 
             </div>}
           </form>}
           {trailing}
+          <button type="button" className="account-nav-button" onClick={() => onAccount ? onAccount("login") : setAccountView("login")}>{profile ? "我的班级" : "登录／注册"}</button>
         </div>
       </div>
     </div>
-  </nav>;
+  </nav>{accountView && <AccountDialog view={accountView} onClose={() => setAccountView(null)} onBrowse={() => onNavigate("records")} />}</>;
 }

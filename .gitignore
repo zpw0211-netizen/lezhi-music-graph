@@ -46,6 +46,7 @@ public/data/details/CAN_*.json
 *.tsbuildinfo
 /.agents/
 /.claude/
+/.tmp/
 /d/
 
 # local audit reports

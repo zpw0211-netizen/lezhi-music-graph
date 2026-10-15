@@ -4,7 +4,7 @@
 
 页面上的内容都来自教材数据：教材里明确写出的是「教材知识」，教材之外的补充单独标注为「拓展知识」，不确定的内容不写。
 
-线上地址：<https://zpw0211-netizen.github.io/lezhi-music-graph/>
+线上地址：<https://yapu.studio/>（GitHub Pages 自定义域名，站点从域名根目录加载）
 
 ## 1. 技术栈
 
@@ -13,7 +13,7 @@
 | 框架 | Next.js 16 App Router，由 vinext 1.0（Vite 实现的 Next 兼容层）构建；React 19；TypeScript 5.9 |
 | 形态 | 整站是**一个静态导出页面**（`app/page.tsx`），页面切换走 URL 井号 |
 | 图谱渲染 | Sigma.js（WebGL）为主，Canvas 2D / SVG 作回退 |
-| 部署 | GitHub Pages 的 `/lezhi-music-graph/` 子路径，推送到 `main` 由 `.github/workflows/pages.yml` 发布 |
+| 部署 | GitHub Pages 自定义域名 yapu.studio（根路径），推送到 `main` 由 `.github/workflows/pages.yml` 发布 |
 | 后端 | 无。`app/api/*` 只在 Sites（Cloudflare）构建里生效，静态导出不包含 |
 
 ## 2. 本地运行
@@ -38,17 +38,17 @@ npx vinext start                 # 默认 3000 端口，可用 npx vinext start 
 
 ### 两个必须记住的坑
 
-1. **构建一律用 PowerShell，不要用 Git Bash。** Git Bash 会把 `/lezhi-music-graph` 这类参数改写成 `D:/Git/lezhi-music-graph`，构建出来的站点读不到数据和样式。
+1. **构建一律用 PowerShell，不要用 Git Bash。** Git Bash 会把以 `/` 开头的路径参数改写成 `D:/Git/...`，构建出来的站点读不到数据和样式。
 2. **`npm run build` 会重写 `public/data` 下由已发布册目生成的数据文件**（`books/`、`details/`、`evidence/` 与 `graph-index.json`）。提交前检查差异，保留与教材源数据相对应的产物。
 
 ### 构建 GitHub Pages 版本
 
-页面所在的子路径和「没有后端」的假设由三个环境变量控制：
+站点路径和「没有后端」的假设由三个环境变量控制（与 `.github/workflows/pages.yml` 一致）：
 
 ```powershell
 $env:GITHUB_PAGES = "true"
 $env:NEXT_PUBLIC_STATIC_EXPORT = "1"
-$env:NEXT_PUBLIC_BASE_PATH = "/lezhi-music-graph"
+$env:NEXT_PUBLIC_BASE_PATH = ""
 npm run build
 node scripts/prepare-github-pages.mjs
 npm run -s quality:pages
@@ -59,9 +59,9 @@ git restore public/data
 |---|---|---|
 | `GITHUB_PAGES` | `true` | 打开静态导出（`output: "export"`）、`assetPrefix`、`trailingSlash`（`next.config.ts`） |
 | `NEXT_PUBLIC_STATIC_EXPORT` | `1` | 前端按「没有后端」的模式运行（`app/lib/app/assets.ts`） |
-| `NEXT_PUBLIC_BASE_PATH` | `/lezhi-music-graph` | 所有数据和媒体 URL 的子路径前缀 |
+| `NEXT_PUBLIC_BASE_PATH` | 空 | 所有数据和媒体 URL 的路径前缀；自定义域名从根目录加载，所以留空 |
 
-这个模式下的产物在 `dist/client/lezhi-music-graph/`，要把**这个目录当作站点根目录**来预览：`npx vinext start` 提供的是根路径产物，子路径布局下 `/lezhi-music-graph/` 返回 404（已实测）。
+这个模式下的产物在 `dist/client/`，把它当作站点根目录预览即可。账号功能另需 `NEXT_PUBLIC_SUPABASE_URL` 等变量（见 `supabase/README.md`），不设时账号功能不可用（登录面板会提示服务暂未开通）。
 
 ## 3. 目录地图
 
@@ -127,7 +127,7 @@ git restore public/data
 | `npm run -s quality:v22` | 研究分析页：图谱最近邻距离、教材覆盖缺口、证据覆盖率，并核对研究视图还在页面上 |
 | `npm run -s quality:v23` | 大图渲染：力导向布局的节点/边数、半径与十二扇区分布，并核对画布的渲染路径 |
 | `npm run -s quality:performance` | 首屏体积：`graph-index.json` 相对旧数据的压缩比、节点/边数，以及各册按需文件是否存在 |
-| `npm run -s quality:pages` | 发布产物：`dist/client/lezhi-music-graph/` 里必需文件、数据文件、JS/CSS chunk 是否齐全（需先构建并跑过 `prepare-github-pages.mjs`） |
+| `npm run -s quality:pages` | 发布产物：`dist/client/` 里必需文件、数据文件、JS/CSS chunk 是否齐全（需先构建并跑过 `prepare-github-pages.mjs`） |
 | `npm run -s quality:ai` | 本地问答检索：10 个固定问题的意图识别与检索结果，确认只读、不写正式数据 |
 | `npm run -s quality:ai-candidate` | 候选知识的边界：确认生成功能关闭，`worker/`、`app/lib/ai/`、`app/api/ask/` 都不写正式数据 |
 | `npm run -s quality:explorer` | 知识图谱页：示例查询的聚焦实体、十类筛选、schema 边与字面属性，并确认数据没被改动 |
@@ -147,7 +147,7 @@ git restore public/data
 3. 静态构建（带上第 2 节的三个环境变量）
 4. `node scripts/prepare-github-pages.mjs`
 5. `npm run quality:pages`
-6. 把 `dist/client/lezhi-music-graph` 上传为 Pages 产物并发布
+6. 把 `dist/client` 上传为 Pages 产物并发布
 
 本地复现第 3–5 步，就是第 2 节「构建 GitHub Pages 版本」里的那段 PowerShell。仓库的合并和推送由项目负责人执行。
 
