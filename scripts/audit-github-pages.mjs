@@ -2,7 +2,10 @@ import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { PUBLISHED_BOOK_KEYS, PUBLISHED_EDITION_LABEL } from "../data/books.mjs";
 
-const root = path.resolve("dist/client");
+// The 人音版 app lives under NEXT_PUBLIC_BASE_PATH (/renyin on yapu.studio); the entry page is at the root.
+const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/, "");
+const artifactRoot = path.resolve("dist/client");
+const root = basePath ? path.join(artifactRoot, basePath.replace(/^\/+/, "")) : artifactRoot;
 const publicRoot = path.resolve("public");
 const requiredFiles = [
   ".nojekyll",
@@ -16,6 +19,8 @@ const requiredFiles = [
   "data/graph-index.json",
   ...PUBLISHED_BOOK_KEYS.flatMap((key) => [`data/books/${key}.json`, `data/evidence/${key}.json`]),
 ];
+// .nojekyll belongs at the artifact root; with a base path it is checked with the entry page below.
+if (basePath) requiredFiles.splice(requiredFiles.indexOf(".nojekyll"), 1);
 const excludedFiles = [
   "data/music-graph.json",
   "data/canonical-graph.json",
@@ -72,8 +77,8 @@ assert(
   "页面标题没有同步为芽谱",
 );
 assert(
-  indexHtml.includes("/_next/"),
-  "HTML 未从自定义域名根目录加载前端资源",
+  indexHtml.includes(`${basePath}/_next/`),
+  `HTML 未从 ${basePath || "/"} 加载前端资源`,
 );
 assert(
   !indexHtml.includes("/lezhi-music-graph/"),
@@ -81,7 +86,7 @@ assert(
 );
 assert(
   indexHtml.includes(
-    "https://yapu.studio/og.jpg",
+    `https://yapu.studio${basePath}/og.jpg`,
   ),
   "GitHub Pages 分享预览地址不正确",
 );
@@ -114,10 +119,22 @@ for (const forbidden of [
 }
 assert(
   !pageBundle.includes("/lezhi-music-graph/") &&
+    (!basePath || pageBundle.includes(basePath)) &&
     pageBundle.includes("data/graph-index.json") &&
     pageBundle.includes("data/evidence/"),
-  "页面客户端脚本没有从自定义域名根目录读取静态图谱数据",
+  "页面客户端脚本没有从站点路径读取静态图谱数据",
 );
+
+if (basePath) {
+  // Entry page at the domain root: links to the 人音版 module, forwards old #/ links, has its own icons.
+  const portal = await readFile(path.join(artifactRoot, "index.html"), "utf8");
+  assert(portal.includes("人音版教科书") && portal.includes("人教版教科书"), "入口页缺少教材板块");
+  assert(portal.includes(`href="${basePath}/"`), `入口页没有链接到 ${basePath}/`);
+  assert(portal.includes(`location.replace("${basePath}/"`), "入口页没有把旧链接转到人音版");
+  for (const file of [".nojekyll", "404.html", "favicon.ico", "favicon.svg", "apple-touch-icon.png", "portal-kai.woff2"])
+    await access(path.join(artifactRoot, file));
+  assert(!(await exists(path.join(artifactRoot, "_next"))), "根目录残留应用资源 _next");
+}
 
 console.log(
   `GITHUB_PAGES_AUDIT_PASSED files=${requiredFiles.length} chunks=${chunkFiles.length}`,

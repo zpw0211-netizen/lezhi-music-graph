@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # yapu.studio/ is the entry page (portal/); the 人音版 site is this app under /renyin/.
+      NEXT_PUBLIC_BASE_PATH: "/renyin"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,7 +48,6 @@ jobs:
         env:
           GITHUB_PAGES: "true"
           NEXT_PUBLIC_STATIC_EXPORT: "1"
-          NEXT_PUBLIC_BASE_PATH: ""
           NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}

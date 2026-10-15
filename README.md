@@ -4,7 +4,7 @@
 
 页面上的内容都来自教材数据：教材里明确写出的是「教材知识」，教材之外的补充单独标注为「拓展知识」，不确定的内容不写。
 
-线上地址：<https://yapu.studio/>（GitHub Pages 自定义域名，站点从域名根目录加载）
+线上地址：<https://yapu.studio/>。根目录是芽谱入口页（`portal/`，每套教科书一个板块），本应用是其中的人音版板块，发布在 <https://yapu.studio/renyin/>；人教版板块将放在 `/renjiao/`。
 
 ## 1. 技术栈
 
@@ -13,7 +13,7 @@
 | 框架 | Next.js 16 App Router，由 vinext 1.0（Vite 实现的 Next 兼容层）构建；React 19；TypeScript 5.9 |
 | 形态 | 整站是**一个静态导出页面**（`app/page.tsx`），页面切换走 URL 井号 |
 | 图谱渲染 | Sigma.js（WebGL）为主，Canvas 2D / SVG 作回退 |
-| 部署 | GitHub Pages 自定义域名 yapu.studio（根路径），推送到 `main` 由 `.github/workflows/pages.yml` 发布 |
+| 部署 | GitHub Pages 自定义域名 yapu.studio：入口页在根目录，本应用在 `/renyin/`；推送到 `main` 由 `.github/workflows/pages.yml` 发布 |
 | 后端 | 无。`app/api/*` 只在 Sites（Cloudflare）构建里生效，静态导出不包含 |
 
 ## 2. 本地运行
@@ -48,7 +48,7 @@ npx vinext start                 # 默认 3000 端口，可用 npx vinext start 
 ```powershell
 $env:GITHUB_PAGES = "true"
 $env:NEXT_PUBLIC_STATIC_EXPORT = "1"
-$env:NEXT_PUBLIC_BASE_PATH = ""
+$env:NEXT_PUBLIC_BASE_PATH = "/renyin"
 npm run build
 node scripts/prepare-github-pages.mjs
 npm run -s quality:pages
@@ -59,9 +59,9 @@ git restore public/data
 |---|---|---|
 | `GITHUB_PAGES` | `true` | 打开静态导出（`output: "export"`）、`assetPrefix`、`trailingSlash`（`next.config.ts`） |
 | `NEXT_PUBLIC_STATIC_EXPORT` | `1` | 前端按「没有后端」的模式运行（`app/lib/app/assets.ts`） |
-| `NEXT_PUBLIC_BASE_PATH` | 空 | 所有数据和媒体 URL 的路径前缀；自定义域名从根目录加载，所以留空 |
+| `NEXT_PUBLIC_BASE_PATH` | `/renyin` | 所有数据和媒体 URL 的路径前缀；`prepare-github-pages.mjs` 据此把应用放进 `dist/client/renyin/`，再把 `portal/` 入口页放到根目录 |
 
-这个模式下的产物在 `dist/client/`，把它当作站点根目录预览即可。账号功能另需 `NEXT_PUBLIC_SUPABASE_URL` 等变量（见 `supabase/README.md`），不设时账号功能不可用（登录面板会提示服务暂未开通）。
+这个模式下的产物在 `dist/client/`（入口页）和 `dist/client/renyin/`（本应用），把 `dist/client/` 当作站点根目录预览。旧链接 `yapu.studio/#/…` 由入口页转到 `/renyin/#/…`。账号功能另需 `NEXT_PUBLIC_SUPABASE_URL` 等变量（见 `supabase/README.md`），不设时账号功能不可用（登录面板会提示服务暂未开通）。
 
 ## 3. 目录地图
 
