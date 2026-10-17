@@ -3,18 +3,18 @@
   "edition": { "key": "renjiao", "label": "人教版", "press": "人民教育出版社", "basePath": "/renjiao", "unitActivities": true, "hotSearches": ["娃哈哈", "国歌", "乃哟乃", "小夜曲", "快乐的罗梭"] },
   "books": [
     { "key": "pep-g1s1", "stage": "小学", "grade": 1, "semester": "上册", "shortName": "一上", "fullName": "一年级上册", "title": "人教版一年级上册", "pages": 84, "pdfOffset": 9, "published": true, "unitArt": 8 },
-    { "key": "pep-g1s2", "stage": "小学", "grade": 1, "semester": "下册", "shortName": "一下", "fullName": "一年级下册", "title": "人教版一年级下册", "pages": 73, "pdfOffset": 7, "published": false, "unitArt": 8 },
-    { "key": "pep-g2s1", "stage": "小学", "grade": 2, "semester": "上册", "shortName": "二上", "fullName": "二年级上册", "title": "人教版二年级上册", "pages": 77, "pdfOffset": 7, "published": false, "unitArt": 8 },
-    { "key": "pep-g2s2", "stage": "小学", "grade": 2, "semester": "下册", "shortName": "二下", "fullName": "二年级下册", "title": "人教版二年级下册", "pages": 77, "pdfOffset": 7, "published": false, "unitArt": 8 },
-    { "key": "pep-g3s1", "stage": "小学", "grade": 3, "semester": "上册", "shortName": "三上", "fullName": "三年级上册", "title": "人教版三年级上册", "pages": 74, "pdfOffset": 7, "published": false, "unitArt": 6 },
-    { "key": "pep-g3s2", "stage": "小学", "grade": 3, "semester": "下册", "shortName": "三下", "fullName": "三年级下册", "title": "人教版三年级下册", "pages": 59, "pdfOffset": 7, "published": false, "unitArt": 6 },
-    { "key": "pep-g4s1", "stage": "小学", "grade": 4, "semester": "上册", "shortName": "四上", "fullName": "四年级上册", "title": "人教版四年级上册", "pages": 68, "pdfOffset": 7, "published": false, "unitArt": 6 },
-    { "key": "pep-g5s1", "stage": "小学", "grade": 5, "semester": "上册", "shortName": "五上", "fullName": "五年级上册", "title": "人教版五年级上册", "pages": 56, "pdfOffset": 7, "published": false, "unitArt": 6 },
-    { "key": "pep-g6s1", "stage": "小学", "grade": 6, "semester": "上册", "shortName": "六上", "fullName": "六年级上册", "title": "人教版六年级上册", "pages": 57, "pdfOffset": 7, "published": false, "unitArt": 4 },
-    { "key": "pep-g7s1", "stage": "初中", "grade": 7, "semester": "上册", "shortName": "七上", "fullName": "七年级上册", "title": "人教版七年级上册", "pages": 84, "pdfOffset": 5, "published": false, "unitArt": 4 },
-    { "key": "pep-g7s2", "stage": "初中", "grade": 7, "semester": "下册", "shortName": "七下", "fullName": "七年级下册", "title": "人教版七年级下册", "pages": 89, "pdfOffset": 5, "published": false, "unitArt": 4 },
-    { "key": "pep-g8s1", "stage": "初中", "grade": 8, "semester": "上册", "shortName": "八上", "fullName": "八年级上册", "title": "人教版八年级上册", "pages": 65, "pdfOffset": 5, "published": false, "unitArt": 4 },
-    { "key": "pep-g8s2", "stage": "初中", "grade": 8, "semester": "下册", "shortName": "八下", "fullName": "八年级下册", "title": "人教版八年级下册", "pages": 74, "pdfOffset": 5, "published": false, "unitArt": 4 },
-    { "key": "pep-g9s1", "stage": "初中", "grade": 9, "semester": "上册", "shortName": "九上", "fullName": "九年级上册", "title": "人教版九年级上册", "pages": 53, "pdfOffset": 5, "published": false, "unitArt": 4 }
+    { "key": "pep-g1s2", "stage": "小学", "grade": 1, "semester": "下册", "shortName": "一下", "fullName": "一年级下册", "title": "人教版一年级下册", "pages": 73, "pdfOffset": 7, "published": true, "unitArt": 8 },
+    { "key": "pep-g2s1", "stage": "小学", "grade": 2, "semester": "上册", "shortName": "二上", "fullName": "二年级上册", "title": "人教版二年级上册", "pages": 77, "pdfOffset": 7, "published": true, "unitArt": 8 },
+    { "key": "pep-g2s2", "stage": "小学", "grade": 2, "semester": "下册", "shortName": "二下", "fullName": "二年级下册", "title": "人教版二年级下册", "pages": 77, "pdfOffset": 7, "published": true, "unitArt": 8 },
+    { "key": "pep-g3s1", "stage": "小学", "grade": 3, "semester": "上册", "shortName": "三上", "fullName": "三年级上册", "title": "人教版三年级上册", "pages": 74, "pdfOffset": 7, "published": true, "unitArt": 6 },
+    { "key": "pep-g3s2", "stage": "小学", "grade": 3, "semester": "下册", "shortName": "三下", "fullName": "三年级下册", "title": "人教版三年级下册", "pages": 59, "pdfOffset": 7, "published": true, "unitArt": 6 },
+    { "key": "pep-g4s1", "stage": "小学", "grade": 4, "semester": "上册", "shortName": "四上", "fullName": "四年级上册", "title": "人教版四年级上册", "pages": 68, "pdfOffset": 7, "published": true, "unitArt": 6 },
+    { "key": "pep-g5s1", "stage": "小学", "grade": 5, "semester": "上册", "shortName": "五上", "fullName": "五年级上册", "title": "人教版五年级上册", "pages": 56, "pdfOffset": 7, "published": true, "unitArt": 6 },
+    { "key": "pep-g6s1", "stage": "小学", "grade": 6, "semester": "上册", "shortName": "六上", "fullName": "六年级上册", "title": "人教版六年级上册", "pages": 57, "pdfOffset": 7, "published": true, "unitArt": 4 },
+    { "key": "pep-g7s1", "stage": "初中", "grade": 7, "semester": "上册", "shortName": "七上", "fullName": "七年级上册", "title": "人教版七年级上册", "pages": 84, "pdfOffset": 5, "published": true, "unitArt": 4 },
+    { "key": "pep-g7s2", "stage": "初中", "grade": 7, "semester": "下册", "shortName": "七下", "fullName": "七年级下册", "title": "人教版七年级下册", "pages": 89, "pdfOffset": 5, "published": true, "unitArt": 4 },
+    { "key": "pep-g8s1", "stage": "初中", "grade": 8, "semester": "上册", "shortName": "八上", "fullName": "八年级上册", "title": "人教版八年级上册", "pages": 65, "pdfOffset": 5, "published": true, "unitArt": 4 },
+    { "key": "pep-g8s2", "stage": "初中", "grade": 8, "semester": "下册", "shortName": "八下", "fullName": "八年级下册", "title": "人教版八年级下册", "pages": 74, "pdfOffset": 5, "published": true, "unitArt": 4 },
+    { "key": "pep-g9s1", "stage": "初中", "grade": 9, "semester": "上册", "shortName": "九上", "fullName": "九年级上册", "title": "人教版九年级上册", "pages": 53, "pdfOffset": 5, "published": true, "unitArt": 4 }
   ]
 }

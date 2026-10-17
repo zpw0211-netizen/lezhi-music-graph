@@ -28,7 +28,11 @@ Module._extensions[".ts"] = (module, filename) => {
 
 const { isWorkType } = require(path.join(ROOT, "app/lib/app/types.ts"));
 const { getPrintedPage, getScoreMedia, hasMelody, isStarredWork, parseUnitTask } = require(path.join(ROOT, "app/lib/app/unit-data.ts"));
-const { MELODIES } = require(path.join(ROOT, "app/lib/lesson/melodies.ts"));
+const { MELODIES, melodiesFor } = require(path.join(ROOT, "app/lib/lesson/melodies.ts"));
+// 人教版 books only use their own transcriptions; never another edition's melody of the same title.
+const workHasMelody = (bookKey, name) => (bookKey.startsWith("pep-")
+  ? melodiesFor(bookKey, name.replace(/^《|》$/g, ""), name).length > 0
+  : hasMelody(name, MELODIES));
 
 const KEYWORD_PREDICATE_TYPES = new Map([
   ["音乐体裁", "音乐体裁"],
@@ -135,7 +139,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
       page: getPrintedPage(media),
       pdfPage: work.firstPage ?? null,
       starred: isStarredWork(ownTriples),
-      hasMelody: hasMelody(work.name, MELODIES),
+      hasMelody: workHasMelody(bookKey, work.name),
       scores,
       year: null,
       region: null,

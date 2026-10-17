@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { midiOf, notation } from "../../lib/lesson/melodies";
+import { displayMeter, midiOf, notation } from "../../lib/lesson/melodies";
 import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
 import { getPianoAudioContext, loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
 import type { PianoSampler } from "../../lib/lesson/piano-sampler";
@@ -320,10 +320,11 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     const { lines: underlines, dotted, dashes } = notation(note);
     const fragments = beamSegments ?? Array.from({ length: underlines }, (_, index) => ({ level: index + 1, edge: "single" as const }));
     const octave = note.o ?? 0;
-    return <span key={key} aria-hidden="true" className={`melody-head-cell ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""} ${note.a ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}>
+    const hasAccidental = note.a != null;
+    return <span key={key} aria-hidden="true" className={`melody-head-cell ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""} ${hasAccidental ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}>
       <span className="melody-digit">
         <span className="melody-digit-highlight" />
-        {note.a ? <sup className="melody-accidental">{note.a > 0 ? "♯" : "♭"}</sup> : null}
+        {hasAccidental ? <sup className="melody-accidental">{note.a === 0 ? "♮" : note.a! > 0 ? "♯" : "♭"}</sup> : null}
         {note.d === 9 ? "×" : note.d || "0"}
         {dotted && <i className="melody-dot">·</i>}
         {Array.from({ length: Math.abs(octave) }, (_, index) => <i key={`octave-${index}`} className="melody-octave-dot" style={{ top: `${octave > 0 ? -0.18 - index * 0.2 : lowDotTop(note) - 0.4 + index * 0.2}em` }} />)}
@@ -334,7 +335,8 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   };
   const renderNoteLyric = (note: MelodyNote, active: boolean, key: number | string) => {
     const { dashes } = notation(note);
-    return <span key={key} aria-hidden="true" className={`melody-lyric-cell ${active ? "is-active" : ""} ${note.a ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}><span className="melody-lyric">{note.lyric || " "}</span></span>;
+    const hasAccidental = note.a != null;
+    return <span key={key} aria-hidden="true" className={`melody-lyric-cell ${active ? "is-active" : ""} ${hasAccidental ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}><span className="melody-lyric">{note.lyric || " "}</span></span>;
   };
   const renderNote = (note: MelodyNote, key: number, active: boolean) =>
     <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
@@ -351,7 +353,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         {loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>
       <span role="status" aria-live="polite" aria-atomic="true" style={VISUALLY_HIDDEN}>{announcement}</span>
-      <span className="melody-key">{melody.key} · {melody.meter}</span>
+      <span className="melody-key">{melody.key} · {displayMeter(melody.meter)}</span>
       {lines.length > 1 && <span className="melody-voices" role="group" aria-label="选择声部">
         {lines.map((line, k) => <label key={line.label} className={`voice-${k}`}>
           <input type="checkbox" checked={enabled[k]} disabled={playing || loadingPiano} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
@@ -363,7 +365,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         <b>♩={tempo}</b>
       </label>
     </div>
-    <div className="melody-score" role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${melody.meter} 拍`}>
+    <div className="melody-score" role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
       {melody.bars.map((_, barIndex) => <span key={barIndex} className="melody-bar">
         {lines.map((line, voice) => {
           const notes = line.bars[barIndex] ?? [];

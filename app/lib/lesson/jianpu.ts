@@ -2,8 +2,8 @@
 // score. Degrees are jianpu digits (0 = rest, 9 = unpitched rhythm X); octave -1 is a dot below, +1 a
 // dot above; beats count quarter notes. `tie` holds the previous note (same pitch);
 // `slur` is a new pitch sung on the previous syllable (a melisma), so it sounds but takes no lyric;
-// `a` is an accidental (1 = ♯, -1 = ♭).
-export type MelodyNote = { d: number; /** octave dots: +1/+2 above, -1/-2 below */ o?: number; b: number; lyric?: string; tie?: boolean; slur?: boolean; a?: -1 | 1; tri?: boolean };
+// `a` is an accidental (1 = ♯, -1 = ♭, 0 = explicit ♮).
+export type MelodyNote = { d: number; /** octave dots above/below; supports three-dot textbook bass notes */ o?: number; b: number; lyric?: string; tie?: boolean; slur?: boolean; a?: -1 | 0 | 1; tri?: boolean; tuplet?: number };
 export type Melody = {
   /** Heading when a work has several excerpts (主题一, 引子…). */
   title?: string;
@@ -26,7 +26,7 @@ export type Melody = {
 /**
  * Compact jianpu text → bars. Bars split on "|", notes on spaces.
  *   5  quarter · 5/ eighth · 5// sixteenth · 5/// thirty-second · 5//// sixty-fourth · 5. / 5/. dotted · "-" adds a beat to the previous note
- *   5' dot above · 5, dot below · #4 sharp · b7 flat · 0 rest · ~5 tie (same pitch) or slur (new pitch, no syllable) · 5//t triplet
+ *   5' dot above · 5, dot below · #4 sharp · b7 flat · ♮4 natural · 0 rest · ~5 tie (same pitch) or slur (new pitch, no syllable) · 5//t triplet, 5//t5 quintuplet, 5//t4 quadruplet
  * Lyrics: one item per sung note (not rests or ties); "~" = melisma (no syllable).
  */
 export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
@@ -38,14 +38,15 @@ export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
     for (const token of bar.split(/\s+/)) {
       if (token === "-") { notes[notes.length - 1].b += 1; continue; }
       // Dot and slashes may come in either order ("5./" or "5/.").
-      const m = token.match(/^(~?)([#b]?)([0-79])('{0,2}|,{0,2})(\.?)(\/{0,4})(\.?)(t?)$/);
+      const m = token.match(/^(~?)([#b♯♭♮]?)([0-79])('{0,3}|,{0,3})(\.?)(\/{0,4})(\.?)(t(?:[3-9])?)?$/);
       if (!m) throw new Error(`jianpu: cannot read "${token}"`);
-      const [, tie, acc, digit, octave, dotBefore, slashes, dotAfter, triplet] = m;
+      const [, tie, acc, digit, octave, dotBefore, slashes, dotAfter, tupletMark] = m;
       const dot = dotBefore || dotAfter;
-      const b = 2 ** -slashes.length * (dot ? 1.5 : 1) * (triplet ? 2 / 3 : 1);
+      const tuplet = tupletMark ? Number(tupletMark.slice(1)) || 3 : undefined;
+      const b = 2 ** -slashes.length * (dot ? 1.5 : 1) * (tuplet ? (tuplet - 1) / tuplet : 1);
       const note: MelodyNote = { d: Number(digit), b, o: octave.startsWith("'") ? octave.length : -octave.length };
-      if (acc) note.a = acc === "#" ? 1 : -1;
-      if (triplet) note.tri = true;
+      if (tuplet) { note.tuplet = tuplet; if (tuplet === 3) note.tri = true; }
+      if (acc) note.a = acc === "#" || acc === "♯" ? 1 : acc === "b" || acc === "♭" ? -1 : 0;
       // "~" on the same pitch holds the note; on a new pitch it is a slur that still sounds.
       const samePitch = previous && previous.d === note.d && (previous.o ?? 0) === (note.o ?? 0) && (previous.a ?? 0) === (note.a ?? 0);
       if (tie && samePitch) note.tie = true;
@@ -74,19 +75,50 @@ export function checkMelody(melody: Melody) {
   return problems;
 }
 
+/** Compact consecutive per-bar meter entries for readable catalog labels. */
+export function displayMeter(meter: string) {
+  const entries = meter.split("、").filter(Boolean);
+  const groups: Array<{ meter: string; count: number }> = [];
+  for (const entry of entries) {
+    const last = groups.at(-1);
+    if (last?.meter === entry) last.count += 1;
+    else groups.push({ meter: entry, count: 1 });
+  }
+  return groups.map(({ meter: entry, count }) => count > 1 ? `${entry}×${count}` : entry).join("、");
+}
+
 function checkBars(melody: Melody, bars: MelodyNote[][]) {
-  // Free-rhythm passages (散板) are written phrase by phrase; nothing to measure.
-  if (melody.meter.includes("散")) return [];
-  // Mixed meters are written "2/4、4/4"; a bar may match any of them.
-  const allowed = melody.meter.split("、").map((meter) => { const [top, bottom] = meter.split("/").map(Number); return top * (4 / bottom); });
+  // If there is one meter entry per bar, preserve positions such as an opening
+  // 散板 bar and skip only that bar's beat-length check. Shorter lists remain
+  // sets of allowed meters for interior bars, with pickup/final bars excepted.
+  const entries = melody.meter.split("、").filter(Boolean);
+  const perBarSequence = entries.length === bars.length;
+  const beatLength = (meter: string) => {
+    if (!meter.includes("/")) return null;
+    const [top, bottom] = meter.split("/").map(Number);
+    return top * (4 / bottom);
+  };
+  const orderedBeats = perBarSequence ? entries.map(beatLength) : [];
+  const allowed = (perBarSequence ? entries : entries.filter((meter) => meter.includes("/")))
+    .map(beatLength)
+    .filter((beats): beats is number => beats !== null);
+  if (!perBarSequence && !allowed.length) return [];
   return bars
     .map((bar, index) => ({ index, total: bar.reduce((sum, note) => sum + note.b, 0) }))
-    .filter(({ index, total }) => index > 0 && index < bars.length - 1 && !allowed.some((beats) => Math.abs(total - beats) < 1e-6));
+    .filter(({ index, total }) => {
+      if (!perBarSequence && (index === 0 || index === bars.length - 1)) return false;
+      if (perBarSequence) {
+        const expected = orderedBeats[index];
+        if (expected === null || expected === undefined) return false;
+        return Math.abs(total - expected) >= 1e-6;
+      }
+      return !allowed.some((beats) => Math.abs(total - beats) < 1e-6);
+    });
 }
 
 /** How a note is drawn in jianpu: underline count, augmentation dot, extension dashes. */
 export function notation(note: MelodyNote) {
-  const base = note.tri ? note.b * 1.5 : note.b;
+  const base = note.tuplet ? note.b * note.tuplet / (note.tuplet - 1) : note.tri ? note.b * 1.5 : note.b;
   const dotted = [0.375, 0.75, 1.5, 3].some((value) => Math.abs(base - value) < 1e-6);
   const plain = dotted ? base / 1.5 : base;
   return {
@@ -108,12 +140,13 @@ export function tonicMidiOf(key: string) {
   return TONIC_MIDI[m[2]] + (m[1] === "♭" || m[1] === "b" ? -1 : m[1] ? 1 : 0);
 }
 
-type SegmentOptions = { title?: string; label?: string; voices?: Array<{ label: string; notes: string; lyrics?: string }>; note?: string; octave?: number; quality?: "draft" };
+type SegmentOptions = { title?: string; label?: string; voices?: Array<{ label: string; notes: string; lyrics?: string }>; note?: string; octave?: number; quality?: "draft"; edition?: string };
 /**
  * One excerpt of a work: key text, meter, tempo, textbook source, jianpu notes and lyrics.
  * `octave` shifts playback (e.g. -1 for scores written an octave high).
  */
 export function segment(book: string, page: number | string, key: string, meter: string, bpm: number, notes: string, lyrics = "", options: SegmentOptions = {}): Melody {
+  const edition = options.edition ?? "人音版";
   return {
     title: options.title,
     key,
@@ -122,8 +155,8 @@ export function segment(book: string, page: number | string, key: string, meter:
     meter,
     bpm,
     source: options.quality === "draft"
-      ? `人音版${book}第 ${page} 页谱例自动识别草稿${options.note ? `（${options.note}）` : ""}`
-      : `据人音版${book}第 ${page} 页谱例转写${options.note ? `（${options.note}）` : ""}`,
+      ? `${edition}${book}第 ${page} 页谱例自动识别草稿${options.note ? `（${options.note}）` : ""}`
+      : `据${edition}${book}第 ${page} 页谱例转写${options.note ? `（${options.note}）` : ""}`,
     quality: options.quality,
     bars: jianpu(notes, lyrics),
     label: options.label ?? (options.voices?.length ? "第一声部" : undefined),

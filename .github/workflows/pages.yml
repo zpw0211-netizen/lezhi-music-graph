@@ -57,10 +57,10 @@ jobs:
         run: node scripts/prepare-github-pages.mjs
       - name: Audit Pages artifact
         run: npm run quality:pages
-      # 人教版 (/renjiao/) is built from editions/renjiao on top of the same code; it stays off
-      # until the repository variable PUBLISH_RENJIAO is set to "true".
+      # 人教版 (/renjiao/) is built from editions/renjiao on top of the same code; setting the
+      # repository variable PUBLISH_RENJIAO to "false" takes it off the site.
       - name: Build 人教版 edition
-        if: ${{ vars.PUBLISH_RENJIAO == 'true' }}
+        if: ${{ vars.PUBLISH_RENJIAO != 'false' }}
         run: node scripts/build-edition.mjs renjiao
         env:
           NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}

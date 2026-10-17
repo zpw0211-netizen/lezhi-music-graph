@@ -74,11 +74,11 @@ const PAGE_STORAGE_PREFIX = "yapu-records-page:";
 /** What a pupil does with a work in class: sing, listen, play an instrument, or a music game. */
 const ACTIVITY_GROUPS = [
   // 人音版 icons first, then the 人教版 sections (小小歌唱家 …) that mean the same activity.
-  { key: "sing", label: "唱", title: "唱一唱", modes: ["唱歌", "演唱", "视唱", "背唱", "选听选唱", "小小歌唱家"] },
-  { key: "listen", label: "听", title: "听一听", modes: ["聆听", "欣赏", "选听选唱", "音乐万花筒", "音乐故事会"] },
+  { key: "sing", label: "唱", title: "唱一唱", modes: ["唱歌", "演唱", "视唱", "背唱", "选听选唱", "小小歌唱家", "印在心里的歌"] },
+  { key: "listen", label: "听", title: "听一听", modes: ["聆听", "欣赏", "选听选唱", "音乐万花筒", "音乐故事会", "中国音乐故事", "音乐考古"] },
   { key: "play", label: "奏", title: "奏一奏", modes: ["演奏", "小小演奏家"] },
-  { key: "move", label: "玩", title: "玩一玩", modes: ["音乐游戏", "情境表演", "编创与展示", "律动", "音乐情景剧", "小小音乐剧", "游戏乐翻天", "创乐工坊"] },
-  { key: "learn", label: "学", title: "学一学", modes: ["趣味乐理"] },
+  { key: "move", label: "玩", title: "玩一玩", modes: ["音乐游戏", "情境表演", "编创与展示", "律动", "音乐情景剧", "小小音乐剧", "游戏乐翻天", "创乐工坊", "小小舞蹈家"] },
+  { key: "learn", label: "学", title: "学一学", modes: ["趣味乐理", "综合探索", "学习项目"] },
 ] as const;
 type ActivityKey = (typeof ACTIVITY_GROUPS)[number]["key"];
 // Keyword types a pupil can read at a glance; key, meter and tempo marks and long theme sentences stay in the graph.
