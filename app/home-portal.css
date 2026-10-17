@@ -810,3 +810,15 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
   .home-portal .home-bookmark-paper,
   .home-portal .home-bookmark-tassel { transform: none !important; }
 }
+
+/* Books of the series that are still being prepared: same card, paper instead of art, not clickable. */
+.home-portal .home-scroll-trigger.is-upcoming {
+  cursor: default;
+  background:
+    repeating-linear-gradient(135deg, rgb(39 99 68 / 5%) 0 8px, transparent 8px 16px),
+    var(--paper-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.home-portal .home-scroll-trigger.is-upcoming::after { display: none; }
+.home-portal .home-scroll-trigger.is-upcoming .home-book-card-label { color: var(--ink-3); text-shadow: none; }
+.home-portal .home-scroll-trigger.is-upcoming .home-scroll-number { color: var(--seal); letter-spacing: .12em; }

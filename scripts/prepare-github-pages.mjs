@@ -55,7 +55,8 @@ if (!(await exists(path.join(siteRoot, "404.html"))) && (await exists(siteIndex)
   await copyFile(siteIndex, path.join(siteRoot, "404.html"));
 }
 
-if (basePath && (await exists(portalRoot))) {
+// The entry page is placed only by the primary edition build (a second edition sets PAGES_ENTRY=0).
+if (basePath && process.env.PAGES_ENTRY !== "0" && (await exists(portalRoot))) {
   // Clear whatever the app export left at the root, then place the entry page there.
   const keep = new Set([".nojekyll", basePath.replace(/^\/+/, "")]);
   for (const entry of await readdir(root)) if (!keep.has(entry)) await rm(path.join(root, entry), { recursive: true, force: true });

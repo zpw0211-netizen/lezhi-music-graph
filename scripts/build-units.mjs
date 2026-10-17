@@ -5,7 +5,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
-import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
+import { BOOK_BY_KEY, EDITION, PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_ROOT = path.join(ROOT, "public");
@@ -143,6 +143,20 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     };
   });
 
+  // Section-based books (人教版) also list activities that are not musical works — a story, a game,
+  // a theory corner — under the textbook section (学习方式) they belong to, in page order. Opt-in per edition.
+  const pdfOffset = BOOK_BY_KEY.get(bookKey)?.pdfOffset ?? 0;
+  const activities = [...unitWorkIds]
+    .map((id) => entityById.get(id))
+    .filter((entity) => EDITION.unitActivities && entity && !isWorkType(entity.type))
+    .map((entity) => ({
+      id: entity.id,
+      name: entity.name,
+      section: valueOf((triplesBySubject.get(entity.id) ?? []).find((triple) => triple.predicate === "学习方式") ?? {}, entityById).trim() || entity.type,
+      page: Number.isInteger(entity.firstPage) ? entity.firstPage - pdfOffset : null,
+    }))
+    .sort((a, b) => (a.page ?? 0) - (b.page ?? 0) || a.name.localeCompare(b.name, "zh"));
+
   const parsedTasks = unitTriples
     .filter((triple) => triple.predicate === "课堂任务")
     .map((triple) => parseUnitTask(valueOf(triple, entityById)));
@@ -201,6 +215,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     goals,
     tasks,
     works,
+    ...(activities.length ? { activities } : {}),
     keywords,
     stats: {
       works: works.length,

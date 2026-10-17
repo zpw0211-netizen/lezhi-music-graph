@@ -5,6 +5,7 @@ import { schemaCategoryFor } from "../../graph-schema";
 import { SEMANTIC_PALETTE } from "../../semantic-palette";
 import type { SemanticPaletteKey } from "../../semantic-palette";
 import { WorkbenchIcon } from "../WorkbenchIcon";
+import { EDITION, stripEditionPrefix } from "../../lib/app/books";
 
 type WorkGraphEntity = {
   id: string;
@@ -653,9 +654,9 @@ export function WorkGraph({
   }, [activeId, links]);
 
   const selected = selectedId ? nodes.find((node) => node.id === selectedId) : undefined;
-  const bookTitle = (key?: string) => books.find((book) => book.key === key)?.title.replace(/^人音版/, "") ?? "";
+  const bookTitle = (key?: string) => stripEditionPrefix(books.find((book) => book.key === key)?.title);
   // Score sources name the book and printed page ("人音版八年级上册 第23页"); PDF pages do not.
-  const scoreSource = work?.media?.find((asset) => asset.source)?.source?.replace(/^人音版/, "").replace(/\s*第(\d+)页$/, " · 教材第 $1 页");
+  const scoreSource = work?.media?.find((asset) => asset.source)?.source?.replace(new RegExp(`^${EDITION.label}`), "").replace(/\s*第(\d+)页$/, " · 教材第 $1 页");
   const bookSources = (work?.bookKeys ?? []).map(bookTitle).filter(Boolean).join("、");
   const sourceLabel = (work?.bookKeys?.length ?? 0) > 1 ? bookSources : scoreSource ?? bookSources;
   const creators = nodes.filter((node) => node.depth === 1 && node.category === "person");

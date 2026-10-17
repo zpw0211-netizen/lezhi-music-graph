@@ -1,5 +1,9 @@
 import registry from "./books.json" with { type: "json" };
 
+/** The textbook series this build serves (人音版 or 人教版): every edition-specific label comes from here. */
+export const EDITION = registry.edition;
+/** "人音版一年级上册" → "一年级上册". */
+export const stripEditionPrefix = (title) => String(title ?? "").replace(new RegExp(`^${EDITION.label}`), "");
 export const BOOK_REGISTRY = registry.books;
 export const PUBLISHED_BOOKS = BOOK_REGISTRY.filter((book) => book.published);
 export const PUBLISHED_BOOK_KEYS = PUBLISHED_BOOKS.map((book) => book.key);
@@ -10,9 +14,11 @@ const CHINESE_NUMERALS = ["零", "一", "二", "三", "四", "五", "六", "七"
 const chineseCount = (count) => count <= 10 ? CHINESE_NUMERALS[count] : count < 20 ? `十${CHINESE_NUMERALS[count - 10]}` : String(count);
 export const PUBLISHED_BOOK_COUNT_LABEL = `${chineseCount(PUBLISHED_BOOKS.length)}册`;
 const publishedGrades = PUBLISHED_BOOKS.map((book) => book.grade);
-export const PUBLISHED_GRADE_RANGE_LABEL = publishedGrades.length
-  ? `${chineseCount(Math.min(...publishedGrades))}至${chineseCount(Math.max(...publishedGrades))}年级`
-  : "教材";
+export const PUBLISHED_GRADE_RANGE_LABEL = !publishedGrades.length
+  ? "教材"
+  : Math.min(...publishedGrades) === Math.max(...publishedGrades)
+    ? `${chineseCount(publishedGrades[0])}年级`
+    : `${chineseCount(Math.min(...publishedGrades))}至${chineseCount(Math.max(...publishedGrades))}年级`;
 const allPublishedGradesHaveBothTerms = publishedGrades.length > 0 && [...new Set(publishedGrades)].every((grade) => {
   const terms = new Set(PUBLISHED_BOOKS.filter((book) => book.grade === grade).map((book) => book.semester));
   return terms.has("上册") && terms.has("下册");

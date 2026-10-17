@@ -6,7 +6,7 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { BOOK_BY_KEY, BOOK_REGISTRY } from "../data/books.mjs";
+import { BOOK_BY_KEY, BOOK_REGISTRY, stripEditionPrefix } from "../data/books.mjs";
 import { TEXTBOOK_MODES } from "./lib/textbook-modes.mjs";
 
 const root = process.cwd();
@@ -39,7 +39,7 @@ const stableHash = (value) => {
 const SENTENCE_TYPES = new Set(["学习活动", "主题与情感", "学习目标"]);
 const ATTRIBUTE_PREDICATES = new Set(["学习方式"]);
 const requested = process.argv.slice(2);
-const sourceFiles = new Set((await readdir(sourceDir)).filter((file) => /^g\ds\d\.mjs$/.test(file)));
+const sourceFiles = new Set((await readdir(sourceDir)).filter((file) => /^(pep-)?g\ds\d\.mjs$/.test(file)));
 const publishedKeys = new Set(BOOK_REGISTRY.filter((book) => book.published).map((book) => book.key));
 const available = BOOK_REGISTRY
   .filter((book) => book.published && sourceFiles.has(`${book.key}.mjs`))
@@ -131,7 +131,7 @@ for (const key of keys) {
     for (const [predicate, value, valueType, layer = "明", page = defaultPage] of facts ?? []) add(subject, predicate, value, valueType, layer, page);
   };
 
-  const bookName = source.title.replace(/^人音版/, "");
+  const bookName = stripEditionPrefix(source.title);
   const textbook = entity(bookName, "教材");
   textbook.firstPage = 1;
   addFacts(textbook, source.book, { pdf: 1 });

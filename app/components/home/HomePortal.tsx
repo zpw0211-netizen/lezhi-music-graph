@@ -5,7 +5,10 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSPro
 import type { Melody } from "../../lib/lesson/jianpu";
 import { publicAssetUrl } from "../../lib/app/assets";
 import {
+  EDITION,
+  stripEditionPrefix,
   PUBLISHED_BOOK_COUNT_LABEL,
+  BOOK_REGISTRY,
   PUBLISHED_BOOKS,
   PUBLISHED_GRADE_RANGE_LABEL,
   availableBookStages,
@@ -29,7 +32,7 @@ type PortalSearchResult<E, B extends PortalSearchBook> = { entity: E; book: B; r
 type PortalView = "graph" | "assistant" | "research" | "records" | "lab" | "atlas";
 type PortalUnit = { id: string; bookKey: string; order: number; name: string; title: string; numeral: string; theme?: string; goals?: string[]; works?: Array<unknown> };
 type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
-const HOT_SEARCHES = ["黄河", "京剧", "民歌", "五声调式", "歌唱祖国"];
+const HOT_SEARCHES = EDITION.hotSearches ?? [];
 const HOME_LAST_READ_BOOK_KEY = "yapu-home-last-book";
 const HOME_LAST_READ_CHANGE_EVENT = "yapu:home-last-book-change";
 const BOOKMARKS = [
@@ -56,8 +59,8 @@ const PENTATONIC_PHRASE: Melody = {
 // The shelf only needs each book's key, title, grade and term, which ship with the page; drawing it from
 // them means the shelf appears at once instead of popping in after the ~3.6MB graph index arrives.
 const STATIC_SHELF_BOOKS = PUBLISHED_BOOKS.map((book) => ({ key: book.key, title: book.title, grade: book.grade, semester: book.semester, pages: book.pages, entityCount: 0, tripleCount: 0, workCount: 0 }));
-const bookArt = (book: { key: string; title: string }) => BOOK_ART[book.key] ?? { file: `art/${book.key}.webp`, alt: `${book.title.replace(/^人音版/, "")}封面插画` };
-const shortBookTitle = (book: { title: string }) => book.title.replace(/^人音版/, "");
+const bookArt = (book: { key: string; title: string }) => BOOK_ART[book.key] ?? { file: `art/${book.key}.webp`, alt: `${stripEditionPrefix(book.title)}封面插画` };
+const shortBookTitle = (book: { title: string }) => stripEditionPrefix(book.title);
 /** "六年级上册（简谱）" → ["六年级", "上册（简谱）"], so a label never wraps a lone character onto its own line. */
 const splitBookTitle = (book: { title: string }): [string, string] => {
   const match = shortBookTitle(book).match(/^(.+?年级)(.+)$/);
@@ -104,6 +107,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       ? lastReadBookKey ?? ""
       : stageBooks[0]?.key ?? "";
   const activeBook = stageBooks.find(book => book.key === activeBookKey);
+  const upcomingBooks = BOOK_REGISTRY.filter(book => !book.published && book.stage === bookStage);
   const unitsByBook = useMemo(() => {
     const grouped = new Map<string, PortalUnit[]>();
     for (const unit of units) grouped.set(unit.bookKey, [...(grouped.get(unit.bookKey) ?? []), unit]);
@@ -170,7 +174,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
         <div className="home-hero-inner">
           <div className="home-hero-primary">
             <div className="home-title-plate">
-              <p className="home-hero-kicker">人音版 · {PUBLISHED_GRADE_RANGE_LABEL}</p>
+              <p className="home-hero-kicker">{EDITION.label} · {PUBLISHED_GRADE_RANGE_LABEL}</p>
               <div className="home-wordmark"><BrandMark /><BrandWordmark /><h1 id="home-title" className="home-title-accessible">芽谱</h1></div>
             </div>
             <p className="home-hero-lead">翻开一册，<br />从这一课开始。</p>
@@ -202,7 +206,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             </div>
             <span className="home-scroll-stamp" aria-label="上次读到" hidden={lastReadBookKey !== book.key}>上次读到</span>
             <div className="home-scroll-copy">
-              <p className="home-scroll-overline">卷 {volume} · 人音版</p>
+              <p className="home-scroll-overline">卷 {volume} · {EDITION.label}</p>
               <h3>{shortBookTitle(book)}</h3>
               <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
               <p className="home-scroll-countline">{bookUnits.length} 个单元 · {fmt(workCount)} 首作品</p>
@@ -236,6 +240,16 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
                 </span>
                 {lastReadBookKey === book.key && <span className="home-book-card-mark" aria-hidden="true" title="上次读到" />}
               </button>;
+            })}
+            {/* Registered books not yet published keep their place on the shelf, so the whole series is visible. */}
+            {upcomingBooks.map((book) => {
+              const [grade, rest] = splitBookTitle(book);
+              return <div key={book.key} className="home-scroll-trigger is-upcoming" aria-label={`${book.title}，整理中`}>
+                <span className="home-book-card-label">
+                  <span className="home-scroll-number">整理中</span>
+                  <span className="home-scroll-name"><span>{grade}</span><span>{rest}</span></span>
+                </span>
+              </div>;
             })}
           </div>
         </div>
@@ -285,7 +299,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
     <footer className="home-footer">
       <div><strong>芽谱</strong><p>把教材里的音乐知识，连成一张可探索的图。</p></div>
       <div className="home-footer-actions"><button type="button" onClick={() => onView("assistant")}>智能问答</button><button type="button" onClick={() => onView("research")}>研究分析</button><button type="button" onClick={onResearchInfo}>研究说明</button></div>
-      <small>人音版{PUBLISHED_GRADE_RANGE_LABEL}{PUBLISHED_BOOK_COUNT_LABEL}教材 · 内容按册、单元与作品整理</small>
+      <small>{EDITION.label}{PUBLISHED_GRADE_RANGE_LABEL}{PUBLISHED_BOOK_COUNT_LABEL}教材 · 内容按册、单元与作品整理</small>
     </footer>
   </div>;
 }

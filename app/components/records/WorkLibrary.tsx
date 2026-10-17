@@ -9,7 +9,7 @@ import type { CSSProperties, RefObject } from "react";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
 import { melodiesFor } from "../../lib/lesson/melodies";
 import { bareWorkName, type Book, type BookDirectory, type Entity, type Triple } from "../../lib/app/types";
-import { BOOK_BY_KEY, volumeNumeral } from "../../lib/app/books";
+import { BOOK_BY_KEY, EDITION, stripEditionPrefix, volumeNumeral } from "../../lib/app/books";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import { unitArtPath } from "../../lib/app/unit-art";
@@ -43,8 +43,11 @@ type TextbookUnit = {
   goals?: string[];
   tasks?: UnitTask[];
   works: UnitWork[];
+  /** Section-based books (人教版): the unit's non-work items, e.g. a story, game or theory corner. */
+  activities?: UnitActivity[];
   keywords?: UnitKeyword[];
 };
+type UnitActivity = { id: string; name: string; section: string; page?: number | null };
 type WorkEntry = { unit: TextbookUnit; work: UnitWork };
 
 const UNIT_NUMERALS = ["壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖", "拾"];
@@ -70,10 +73,12 @@ const LEARNED_STORAGE_KEY = "yapu-learned-works";
 const PAGE_STORAGE_PREFIX = "yapu-records-page:";
 /** What a pupil does with a work in class: sing, listen, play an instrument, or a music game. */
 const ACTIVITY_GROUPS = [
-  { key: "sing", label: "唱", title: "唱一唱", modes: ["唱歌", "演唱", "视唱", "背唱", "选听选唱"] },
-  { key: "listen", label: "听", title: "听一听", modes: ["聆听", "欣赏", "选听选唱"] },
-  { key: "play", label: "奏", title: "奏一奏", modes: ["演奏"] },
-  { key: "move", label: "玩", title: "玩一玩", modes: ["音乐游戏", "情境表演", "编创与展示", "律动", "音乐情景剧", "小小音乐剧"] },
+  // 人音版 icons first, then the 人教版 sections (小小歌唱家 …) that mean the same activity.
+  { key: "sing", label: "唱", title: "唱一唱", modes: ["唱歌", "演唱", "视唱", "背唱", "选听选唱", "小小歌唱家"] },
+  { key: "listen", label: "听", title: "听一听", modes: ["聆听", "欣赏", "选听选唱", "音乐万花筒", "音乐故事会"] },
+  { key: "play", label: "奏", title: "奏一奏", modes: ["演奏", "小小演奏家"] },
+  { key: "move", label: "玩", title: "玩一玩", modes: ["音乐游戏", "情境表演", "编创与展示", "律动", "音乐情景剧", "小小音乐剧", "游戏乐翻天", "创乐工坊"] },
+  { key: "learn", label: "学", title: "学一学", modes: ["趣味乐理"] },
 ] as const;
 type ActivityKey = (typeof ACTIVITY_GROUPS)[number]["key"];
 // Keyword types a pupil can read at a glance; key, meter and tempo marks and long theme sentences stay in the graph.
@@ -85,6 +90,10 @@ function workActivities(work: UnitWork): ActivityKey[] {
   const keys = ACTIVITY_GROUPS.filter((group) => group.modes.some((mode) => modes.includes(mode))).map((group) => group.key);
   if (keys.length) return keys;
   return [/歌|唱|谣|号子/.test(work.type) ? "sing" : "listen"];
+}
+
+function sectionActivity(section: string): ActivityKey {
+  return ACTIVITY_GROUPS.find((group) => (group.modes as readonly string[]).includes(section))?.key ?? "move";
 }
 
 function unitAnchorId(bookKey: string, unitId: string) {
@@ -743,10 +752,13 @@ export function WorkLibrary({
       .filter((keyword) => keyword.type && FRIENDLY_KEYWORD_TYPES.has(keyword.type) && keyword.name.length <= 8)
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"))
       .slice(0, FRIENDLY_KEYWORD_LIMIT);
+    const unitActivities = unit.activities ?? [];
+    const countUnit = unitActivities.length ? "项" : "首";
     const activityCounts = ACTIVITY_GROUPS
-      .map((group) => ({ group, count: unit.works.filter((work) => workActivities(work).includes(group.key)).length }))
+      .map((group) => ({ group, count: unit.works.filter((work) => workActivities(work).includes(group.key)).length + unitActivities.filter((item) => sectionActivity(item.section) === group.key).length }))
       .filter((entry) => entry.count > 0);
     const activityFilter = activityFilters[unit.id];
+    const shownActivities = activityFilter ? unitActivities.filter((item) => sectionActivity(item.section) === activityFilter) : unitActivities;
     const activityTitle = ACTIVITY_GROUPS.find((group) => group.key === activityFilter)?.title;
     // Textbook order: by printed page; a work without a page stays right after the work before it.
     let lastPage = 0;
@@ -799,7 +811,7 @@ export function WorkLibrary({
               type="button"
             >
               <span aria-hidden="true" className="records-activity-seal">{group.label}</span>
-              <span className="records-activity-copy"><strong>{group.title}</strong><small>{count} 首</small></span>
+              <span className="records-activity-copy"><strong>{group.title}</strong><small>{count} {countUnit}</small></span>
             </button>)}
           </div>
         </section>}
@@ -824,11 +836,11 @@ export function WorkLibrary({
               <button aria-pressed={!showTasks} onClick={() => toggleTasks(unit.id, false)} type="button">作品<small>{unit.works.length}</small></button>
               <button aria-pressed={showTasks} onClick={() => toggleTasks(unit.id, true)} type="button">课堂任务<small>{tasks.length}</small></button>
             </div>
-            : <h3>作品名录</h3>}
-          <p className={`records-unit-progress${unitLearned === unit.works.length ? " is-done" : ""}`}>
+            : <h3>{unitActivities.length ? "本单元内容" : "作品名录"}</h3>}
+          {unit.works.length > 0 && <p className={`records-unit-progress${unitLearned === unit.works.length ? " is-done" : ""}`}>
             <span aria-hidden="true" style={{ "--unit-progress": unit.works.length ? unitLearned / unit.works.length : 0 } as CSSProperties} />
             已学 <b>{unitLearned}</b> / {unit.works.length}
-          </p>
+          </p>}
         </div>
 
         {showTasks
@@ -842,10 +854,10 @@ export function WorkLibrary({
           </section>
           : <section aria-label="作品名录" className="records-chapter-works">
             {activityTitle && <p className="records-activity-note">
-              正在看「{activityTitle}」的 {shownWorks.length} 首作品
+              正在看「{activityTitle}」的 {unitActivities.length ? `${shownWorks.length + shownActivities.length} 项内容` : `${shownWorks.length} 首作品`}
               <button onClick={() => toggleActivity(unit.id, null)} type="button">看全部</button>
             </p>}
-            <div className="records-score-grid">
+            {shownWorks.length > 0 && <div className="records-score-grid">
               {shownWorks.map((work, workIndex) => {
                 const starred = Boolean(work.starred);
                 const isLearned = learned.has(learnedKey(currentBookKey, work.id));
@@ -884,14 +896,22 @@ export function WorkLibrary({
                   </span>}
                 </article>;
               })}
-            </div>
+            </div>}
+            {shownActivities.length > 0 && <section aria-label="栏目活动" className="records-unit-flow">
+              {shownWorks.length > 0 && <p className="records-notes-label">栏目活动</p>}
+              <ol>{shownActivities.map((item, itemIndex) => <li key={item.id} style={{ "--card-index": itemIndex } as CSSProperties}>
+                <span aria-hidden="true" className="records-activity-seal" data-activity={sectionActivity(item.section)}>{ACTIVITY_GROUPS.find((group) => group.key === sectionActivity(item.section))?.label}</span>
+                <span className="records-unit-flow-copy"><small>{item.section}</small><strong>{item.name}</strong></span>
+                {item.page != null && <span className="records-unit-flow-page">第 {item.page} 页</span>}
+              </li>)}</ol>
+            </section>}
           </section>}
       </div>
     </article>;
   }), [activityFilters, currentBookKey, directory?.grade, isPrimaryBook, learned, learnedIn, markLearned, onKnowledge, openWork, taskUnits, toggleActivity, toggleTasks, units, worksById]);
 
   if (!directory) return null;
-  const displayTitle = directory.title.replace(/^人音版/, "");
+  const displayTitle = stripEditionPrefix(directory.title);
   const detailsReady = bookDataStatus === "ready" && Boolean(bookData);
   const bookProgress = workCount ? learnedCount / workCount : 0;
   const endTitle = workCount && learnedCount === workCount ? "小芽开花啦！" : learnedCount ? "小芽长高了" : "种下一颗小芽";
@@ -906,7 +926,7 @@ export function WorkLibrary({
                 <img alt={`${directory.title}插画`} decoding="async" fetchPriority="high" height="750" loading="eager" src={publicAssetUrl(`art/${directory.key}.webp`)} width="1200" />
               </figure>
               <div className="records-book-hero-copy">
-                <p className="records-book-kicker">卷 {bookNumeral} · 人音版</p>
+                <p className="records-book-kicker">卷 {bookNumeral} · {EDITION.label}</p>
                 <p aria-hidden="true" className="records-book-brush">音乐 ·</p>
                 <h1 id="records-book-title">{displayTitle}</h1>
                 <p className="records-book-intro">{units.length

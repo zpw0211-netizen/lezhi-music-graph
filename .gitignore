@@ -51,3 +51,6 @@ public/data/details/CAN_*.json
 
 # local audit reports
 .tmp-audit/
+
+# Scratch copies for second-edition builds (scripts/build-edition.mjs)
+/.edition-build/

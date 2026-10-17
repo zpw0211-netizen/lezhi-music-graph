@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { SCHEMA_CATEGORIES } from "../graph-schema";
 import { publicAssetUrl } from "../lib/app/assets";
-import { PUBLISHED_EDITION_LABEL, PUBLISHED_SCOPE_LABEL } from "../lib/app/books";
+import { EDITION, PUBLISHED_EDITION_LABEL, PUBLISHED_SCOPE_LABEL } from "../lib/app/books";
 
 type Props = {
   open: boolean;
@@ -40,9 +40,9 @@ export function ResearchInfo({ open, version, generatedAt, onClose }: Props) {
           <button type="button" aria-label="关闭研究信息" onClick={onClose}>×</button>
         </header>
         <dl>
-          <div><dt>站点名称</dt><dd>芽谱 · 人音版{PUBLISHED_EDITION_LABEL}音乐教材</dd></div>
+          <div><dt>站点名称</dt><dd>芽谱 · {EDITION.label}{PUBLISHED_EDITION_LABEL}音乐教材</dd></div>
           <div><dt>研究对象</dt><dd>中小学音乐教材中的作品、人物、体裁、音乐要素、理论、文化，以及教学活动方面的知识联系</dd></div>
-          <div><dt>教材范围</dt><dd>人民音乐出版社{PUBLISHED_SCOPE_LABEL}</dd></div>
+          <div><dt>教材范围</dt><dd>{EDITION.press}{PUBLISHED_SCOPE_LABEL}</dd></div>
           <div><dt>数据版本</dt><dd>{version}</dd></div>
           <div><dt>更新时间</dt><dd>{updated}</dd></div>
           <div><dt>知识点类型体系</dt><dd>{SCHEMA_CATEGORIES.map((item) => item.label).join("、")}</dd></div>

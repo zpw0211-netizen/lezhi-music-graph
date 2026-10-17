@@ -1,6 +1,6 @@
 import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { PUBLISHED_BOOK_KEYS, PUBLISHED_EDITION_LABEL } from "../data/books.mjs";
+import { EDITION, PUBLISHED_BOOK_KEYS, PUBLISHED_EDITION_LABEL } from "../data/books.mjs";
 
 // The 人音版 app lives under NEXT_PUBLIC_BASE_PATH (/renyin on yapu.studio); the entry page is at the root.
 const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/, "");
@@ -54,7 +54,8 @@ for (const directory of [
     .map((file) => path.relative(artifactDirectory, file).split(path.sep).join("/"))
     .sort();
 
-  assert(sourceFiles.length > 0, `源目录为空：${directory.path}`);
+  // A new edition may publish its tables of contents before any score crops exist.
+  assert(sourceFiles.length > 0 || directory.path === "media/scores", `源目录为空：${directory.path}`);
   assert(
     JSON.stringify(sourceFiles) === JSON.stringify(artifactFiles),
     `Pages 产物未完整包含运行时资源：${directory.path}`,
@@ -73,7 +74,7 @@ assert(
 
 const indexHtml = await readFile(path.join(root, "index.html"), "utf8");
 assert(
-  indexHtml.includes(`芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`),
+  indexHtml.includes(`芽谱 · ${EDITION.label}${PUBLISHED_EDITION_LABEL}音乐教材`),
   "页面标题没有同步为芽谱",
 );
 assert(
@@ -125,7 +126,7 @@ assert(
   "页面客户端脚本没有从站点路径读取静态图谱数据",
 );
 
-if (basePath) {
+if (basePath && process.env.PAGES_ENTRY !== "0") {
   // Entry page at the domain root: links to the 人音版 module, forwards old #/ links, has its own icons.
   const portal = await readFile(path.join(artifactRoot, "index.html"), "utf8");
   assert(portal.includes("人音版教科书") && portal.includes("人教版教科书"), "入口页缺少教材板块");

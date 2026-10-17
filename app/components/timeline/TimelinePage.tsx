@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, 
 import Image from "next/image";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { StageBookPicker } from "../StageBookPicker";
-import { PUBLISHED_BOOK_COUNT_LABEL, availableBookStages, booksForStage, type BookStage } from "../../lib/app/books";
+import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, availableBookStages, booksForStage, type BookStage } from "../../lib/app/books";
 import type { BookDirectory } from "../../lib/app/types";
 import type { AppRoute } from "../../lib/app/routing";
 import { loadPeopleSupplement } from "../../lib/timeline/peopleSupplement";
@@ -332,7 +332,7 @@ function TimelineNote({
             {supplement?.event ? ` · ${supplement.event}` : ""}
           </blockquote>
           {record.yearSource === "textbook" ? <dl>
-            <dt>教材出处</dt><dd>人民音乐出版社 · {BOOKS[record.bookKey] ?? record.bookKey}</dd>
+            <dt>教材出处</dt><dd>{EDITION.press} · {BOOKS[record.bookKey] ?? record.bookKey}</dd>
             <dt>页码</dt><dd>{evidencePageText(evidence)}</dd>
             {record.unit && <><dt>单元</dt><dd>{record.unit}</dd></>}
           </dl> : record.yearSource === "supplement" && supplement ? <dl>
@@ -395,7 +395,7 @@ function TimelinePersonNote({
       {rows.map(({ evidence, source }) => <section className="timeline-note-source" key={`${evidence.bookKey}:${evidence.tripleId}`}>
         <blockquote>{evidence.text}</blockquote>
         <dl>
-          <dt>教材出处</dt><dd>人民音乐出版社 · {BOOKS[evidence.bookKey] ?? evidence.bookKey}</dd>
+          <dt>教材出处</dt><dd>{EDITION.press} · {BOOKS[evidence.bookKey] ?? evidence.bookKey}</dd>
           <dt>页码</dt><dd>{evidencePageText(source)}</dd>
         </dl>
       </section>)}

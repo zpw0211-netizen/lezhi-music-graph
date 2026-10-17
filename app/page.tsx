@@ -37,6 +37,7 @@ import {
   PUBLISHED_BOOK_KEYS,
   PUBLISHED_BOOK_SHORT_NAMES,
   availableBookStages,
+  EDITION,
   bookStageForKey,
   booksForStage,
   defaultBookStage,
@@ -181,7 +182,7 @@ const prefetchPages = () => {
 };
 
 const EMPTY_BOOKS: BookDirectory[] = [];
-const SITE_TITLE = `芽谱 · 人音版${PUBLISHED_EDITION_LABEL}音乐教材`;
+const SITE_TITLE = `芽谱 · ${EDITION.label}${PUBLISHED_EDITION_LABEL}音乐教材`;
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
   atlas: "声音与音乐探索 · 音乐地图",

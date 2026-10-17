@@ -11,10 +11,15 @@ export type BookRecord = {
   published: boolean;
   legacySourceDir?: string;
   coverArt?: boolean;
+  /** Units 1..n have an illustration at public/art/units/<key>-u<n>.webp. */
+  unitArt?: number;
   fullGraphPosition?: { x: number; y: number };
   explorerPosition?: { x: number; y: number };
 };
 
+export type Edition = { key: string; label: string; press: string; basePath: string; hotSearches?: string[] };
+export const EDITION: Edition;
+export function stripEditionPrefix(title: string | undefined | null): string;
 export const BOOK_REGISTRY: BookRecord[];
 export const PUBLISHED_BOOKS: BookRecord[];
 export const PUBLISHED_BOOK_KEYS: string[];

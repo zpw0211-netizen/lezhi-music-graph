@@ -1,4 +1,5 @@
 "use client";
+import { stripEditionPrefix } from "../lib/app/books";
 
 export type QualityMetrics = {
   canonical: {
@@ -43,7 +44,7 @@ export function SourceLayerPanel({ quality }: { quality: QualityMetrics }) {
             const textbook = row.教材明示 + row.乐谱可见 + row.教材归纳;
             return (
               <tr key={row.bookKey}>
-                <th>{row.title.replace("人音版", "")}{!row.reread && <small>待重新提取</small>}</th>
+                <th>{stripEditionPrefix(row.title)}{!row.reread && <small>待重新提取</small>}</th>
                 {LAYERS.map((layer) => <td key={layer}>{row[layer] || "—"}</td>)}
                 <td>{total}</td>
                 <td>{row.reread ? `${Math.round((textbook / total) * 100)}%` : "—"}</td>

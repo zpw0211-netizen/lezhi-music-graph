@@ -2,7 +2,7 @@
 import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
 import { PendingKnowledge } from "./PendingKnowledge";
-import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
+import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
 
 // 首页示例问题分「学生常问 / 备课常用」两组，全部逐题跑过本地图谱问答
 // （scripts/test-sample-questions.mjs）：答案非空、引用教材证据、口径为 supported。
@@ -293,7 +293,7 @@ export function AssistantPage({
           <header className="folio-header">
             <div className="folio-header-title">
               <span className="seal-mark">问</span>
-              <span className="folio-full-title">人音版{PUBLISHED_EDITION_LABEL}音乐教材 · 教材问答</span>
+              <span className="folio-full-title">{EDITION.label}{PUBLISHED_EDITION_LABEL}音乐教材 · 教材问答</span>
               <span className="folio-short-title">教材问答</span>
             </div>
             <div className="folio-header-actions">

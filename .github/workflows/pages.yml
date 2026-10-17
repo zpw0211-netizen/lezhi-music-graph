@@ -57,6 +57,17 @@ jobs:
         run: node scripts/prepare-github-pages.mjs
       - name: Audit Pages artifact
         run: npm run quality:pages
+      # 人教版 (/renjiao/) is built from editions/renjiao on top of the same code; it stays off
+      # until the repository variable PUBLISH_RENJIAO is set to "true".
+      - name: Build 人教版 edition
+        if: ${{ vars.PUBLISH_RENJIAO == 'true' }}
+        run: node scripts/build-edition.mjs renjiao
+        env:
+          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
+          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
