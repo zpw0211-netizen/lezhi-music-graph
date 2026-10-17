@@ -190,7 +190,7 @@ export function graphAnswer(retrieval: Retrieval, question: string): AnswerResul
         : intent === "path"
           ? facts.filter(f => retrieval.relationships.some(edge => edge.id === f.id))
           : intent === "recommend-related"
-            ? direct.filter(f => /作品|作曲|作词|音乐体裁|演唱形式|演奏形式/.test(f.predicate))
+            ? direct.filter(f => /作品|作曲|作词|音乐体裁|演唱形式|演奏形式|民族/.test(f.predicate))
             : intent === "compare"
               ? direct.filter(f => !/教材收录|收录作品|包含作品|包含单元|教材归属|学习方式/.test(f.predicate))
               : locationQuestion || intent === "progression"
@@ -206,8 +206,8 @@ export function graphAnswer(retrieval: Retrieval, question: string): AnswerResul
   }
   const confidence = !answerEvidence.length
     ? "insufficient"
-    : answerEvidence.some(item => item.sourceType === "textbook_explicit")
-      ? "supported"
-      : "limited";
+    : missingKnowledge.length || !answerEvidence.some(item => item.sourceType === "textbook_explicit")
+      ? "limited"
+      : "supported";
   return { answer: [shortAnswer, details, ...retrieval.graphInferences, ...missingKnowledge].filter(Boolean).join("\n\n"), shortAnswer, evidence: answerEvidence, relatedEntities: retrieval.relatedEntities, relatedRelationships: retrieval.relationships.map(edge => ({ id: edge.id, subject: edge.subject, objectId: edge.objectId, predicate: edge.label ?? edge.predicate })), graphFocus: { nodeIds: retrieval.relatedEntities.map(entity => entity.id), relationshipIds: retrieval.relationships.map(edge => edge.id) }, suggestedQuestions: centers.length ? [`${centers[0].name}出现在哪些教材里？`, `${centers[0].name}与哪些作品相关？`] : ["什么是节奏？"], missingKnowledge, candidateKnowledge: [], confidence, poweredBy: "graph", intent, auxiliaryExplanation };
 }
