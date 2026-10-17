@@ -220,7 +220,15 @@ export default function Home() {
     setAssistantEntry((current) => ({ question, token: current.token + 1 }));
     navigate({ view: "assistant" });
   };
-  const openLessonPage = (work: Entity) => navigate({ view: "lesson", work: bareWorkName(work.name) });
+  const openLessonPage = (work: Entity, preferredBookKey?: string) => {
+    const workBookKeys = work.bookKeys ?? (work.bookKey ? [work.bookKey] : []);
+    const bookKey = preferredBookKey && workBookKeys.includes(preferredBookKey)
+      ? preferredBookKey
+      : workBookKeys.includes(selectedRecordsKey)
+        ? selectedRecordsKey
+        : workBookKeys.length === 1 ? workBookKeys[0] : undefined;
+    navigate({ view: "lesson", ...(bookKey ? { book: bookKey } : {}), work: bareWorkName(work.name) });
+  };
 
   const index = useGraphIndex();
   const { dataset, canonicalGraph } = index;
@@ -266,16 +274,24 @@ export default function Home() {
   const searchResults = useKnowledgeSearch(canonicalGraph, query);
 
   // Lesson and work pages are addressed by the bare work title (?work=歌唱祖国).
-  const worksByTitle = useMemo(() => {
-    const map = new Map<string, Entity>();
+  const { worksByTitle, worksByTitleAndBook } = useMemo(() => {
+    const byTitle = new Map<string, Entity>();
+    const byTitleAndBook = new Map<string, Entity>();
     for (const entity of canonicalGraph?.entities ?? []) {
       if (!entity.name.startsWith("《")) continue;
       const title = bareWorkName(entity.name);
-      if (!map.has(title) || isWorkType(entity.type)) map.set(title, entity);
+      if (!byTitle.has(title) || isWorkType(entity.type)) byTitle.set(title, entity);
+      for (const bookKey of entity.bookKeys ?? []) {
+        byTitleAndBook.set(`${bookKey}\u0000${title}`, entity);
+      }
     }
-    return map;
+    return { worksByTitle: byTitle, worksByTitleAndBook: byTitleAndBook };
   }, [canonicalGraph]);
-  const routeWork = route.work ? worksByTitle.get(route.work) : undefined;
+  const routeWork = route.work
+    ? route.book
+      ? worksByTitleAndBook.get(`${route.book}\u0000${route.work}`)
+      : worksByTitle.get(route.work)
+    : undefined;
   const entityById = (id: string) => explorer.canonicalEntityById.get(id);
 
   // Keep the inspected graph node in the URL so a refresh or a shared link reopens it.
@@ -480,7 +496,7 @@ export default function Home() {
               onClose={() => back({ view: "records", book: selectedRecordsKey })}
               onLearn={(workId) => {
                 const work = recordsBookData.book?.entities.find((entity) => entity.id === workId);
-                if (work && isWorkType(work.type)) openLessonPage(work);
+                if (work && isWorkType(work.type)) openLessonPage(work, selectedRecordsKey);
               }}
               onKnowledge={openRecordsKnowledge}
               onOpenBook={(key) => openRecordsBook(key)}
@@ -489,18 +505,19 @@ export default function Home() {
           {view === "lesson" && canonicalGraph && routeWork && (
             <LessonPage
             key={routeWork.id}
+            bookKey={route.book}
             workId={routeWork.id}
             entities={canonicalGraph.entities}
             relationships={canonicalGraph.relationships}
             assetUrl={publicAssetUrl}
-            onBack={() => back({ view: "records", book: routeWork.bookKeys?.[0] })}
+            onBack={() => back({ view: "records", book: route.book ?? routeWork.bookKeys?.[0] })}
             onOpenLesson={(id) => {
               const work = entityById(id);
-              if (work) openLessonPage(work);
+              if (work) openLessonPage(work, route.book);
             }}
             onWorkGraph={(id) => {
               const work = entityById(id);
-              if (work) navigate({ view: "work", work: bareWorkName(work.name) });
+              if (work) navigate({ view: "work", ...(route.book ? { book: route.book } : {}), work: bareWorkName(work.name) });
             }}
             />
           )}
@@ -511,10 +528,17 @@ export default function Home() {
             relationships={canonicalGraph.relationships}
             books={books}
             assetUrl={publicAssetUrl}
-            onBack={() => back({ view: "lesson", work: route.work })}
+            onBack={() => back({ view: "lesson", ...(route.book ? { book: route.book } : {}), work: route.work })}
             onOpenWork={(id) => {
               const work = entityById(id);
-              if (work) navigate({ view: "work", work: bareWorkName(work.name) });
+              if (work) {
+                const bookKey = route.book && work.bookKeys?.includes(route.book)
+                  ? route.book
+                  : work.bookKeys?.includes(selectedRecordsKey)
+                    ? selectedRecordsKey
+                    : work.bookKeys?.length === 1 ? work.bookKeys[0] : undefined;
+                navigate({ view: "work", ...(bookKey ? { book: bookKey } : {}), work: bareWorkName(work.name) });
+              }
             }}
             onLocate={explorer.locateCanonical}
             />
@@ -524,9 +548,17 @@ export default function Home() {
             activeView={view}
             onViewChange={nextView => navigate({ view: nextView })}
           >
-            {view === "atlas" && <AtlasPage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+            {view === "atlas" && <AtlasPage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={(work, bookKey) => {
+              const entity = worksByTitleAndBook.get(`${bookKey}\u0000${work}`) ?? worksByTitle.get(work);
+              if (entity) openLessonPage(entity, bookKey);
+              else navigate({ view: "lesson", ...(bookKey ? { book: bookKey } : {}), work });
+            }} />}
             {labLoading && <div className="app-view-status exploration-loading" role="status" aria-live="polite">{index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在准备律盘…"}</div>}
-            {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => navigate({ view: "lesson", work })} />}
+            {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => {
+              const entity = worksByTitle.get(work);
+              if (entity) openLessonPage(entity);
+              else navigate({ view: "lesson", work });
+            }} />}
             {view === "timeline" && <TimelinePage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={destination => navigate(destination)} />}
           </ExplorationPage>}
         </div>

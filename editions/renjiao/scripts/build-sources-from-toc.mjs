@@ -4,7 +4,7 @@
 // - Every 目录 item becomes an entry under its unit with its section (栏目) as the learning mode.
 // - An item whose title has a transcribed melody is a musical work; other items are section activities.
 // - A melody whose title is not a 目录 item is added as a work at the page its transcription cites.
-// These files are a 目录-level skeleton: the per-page facts come later, book by book.
+// Per-page facts are kept in editions/renjiao/data/lesson-facts.mjs.
 // Usage: node editions/renjiao/scripts/build-sources-from-toc.mjs [book …]
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -74,10 +74,12 @@ for (const book of process.argv.slice(2).length ? process.argv.slice(2) : regist
   }
 
   const lines = contents.map((u) => `  [${u.no}, ${JSON.stringify(u.name)}, ${u.page}, [\n${u.items.map((item) => `    ${JSON.stringify(item)},`).join("\n")}\n  ]],`);
-  const source = `// 人教版《艺术·唱游·音乐》/《音乐》${info.fullName}（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
+  const source = `import { factsForItem } from "../../data/lesson-facts.mjs";
+
+// 人教版《艺术·唱游·音乐》/《音乐》${info.fullName}（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
 // 标题有旋律录入（app/lib/lesson/melodies-pep-${book}.ts）的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
-// 逐页的作品资料（作者、体裁、谱例等）待逐册识读后补充。
+// 逐页作品事实集中维护于 editions/renjiao/data/lesson-facts.mjs；未核对的条目不推测。
 
 const textbook = {
   key: "pep-${book}",
@@ -98,7 +100,7 @@ ${lines.join("\n")}
 
 textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, facts: [] }],
-  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: [] })),
+  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-${book}", title) })),
 }));
 
 export default textbook;

@@ -137,7 +137,7 @@ export function AtlasPage({ books, stage, onStageChange, onOpenWork }: {
   books: BookDirectory[];
   stage: BookStage;
   onStageChange: (stage: BookStage) => void;
-  onOpenWork: (title: string) => void;
+  onOpenWork: (title: string, bookKey: string) => void;
 }) {
   const [assets, setAssets] = useState<AtlasAssets | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -339,7 +339,7 @@ export function AtlasPage({ books, stage, onStageChange, onOpenWork }: {
   };
 
   const openWork = (work: AtlasWork) => {
-    onOpenWork(work.name.replace(/[《》]/g, ""));
+    onOpenWork(work.name.replace(/[《》]/g, ""), work.bookKey);
   };
 
   const totalVisibleWorks = modeRegions.reduce(

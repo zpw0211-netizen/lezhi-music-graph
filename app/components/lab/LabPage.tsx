@@ -477,7 +477,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
   books: BookDirectory[];
   stage: BookStage;
   onStageChange: (stage: BookStage) => void;
-  onOpenWork: (work: string) => void;
+  onOpenWork: (work: string, bookKey?: string) => void;
 }) {
   const [tonicPitchClass, setTonicPitchClass] = useState(0);
   const [scale, setScale] = useState<LabScale>("pentatonic");
@@ -879,7 +879,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       {!info.extension && works.length > 0 && <div className="lupan-card-works">
         <p>教材里的五声作品</p>
         <ul>{works.slice(0, 3).map(({ work }) => <li key={work.id}>
-          <button type="button" onClick={() => onOpenWork(bareWorkName(work.name))}>《{bareWorkName(work.name)}》</button>
+          <button type="button" onClick={() => onOpenWork(bareWorkName(work.name), selectedBookKey || work.bookKeys?.[0])}>《{bareWorkName(work.name)}》</button>
         </li>)}</ul>
       </div>}
     </div>;
@@ -1151,7 +1151,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
                 }}
                 aria-label={`听${work.name}旋律`}
               >▷ 听一听</button>}
-              <button type="button" className="lupan-work-open" onClick={() => { setLearningProgress((progress) => ({ ...progress, explored: true })); onOpenWork(bareWorkName(work.name)); }} aria-label={`在按课学习中打开《${bareWorkName(work.name)}》`}>去学习 →</button>
+              <button type="button" className="lupan-work-open" onClick={() => { setLearningProgress((progress) => ({ ...progress, explored: true })); onOpenWork(bareWorkName(work.name), selectedBookKey || work.bookKeys?.[0]); }} aria-label={`在按课学习中打开《${bareWorkName(work.name)}》`}>去学习 →</button>
             </div>
           </article>;
         })}

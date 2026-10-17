@@ -9,18 +9,18 @@ import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "..
 // 增删问题必须同步复跑该脚本。
 export const SAMPLE_QUESTIONS = {
   student: [
-    { q: "《歌唱祖国》是谁写的？", tag: "作品解读 · 词曲作者", hint: "人音版七年级上册 · 词曲作者与创作背景" },
-    { q: "《游击队歌》的音乐特点是什么？", tag: "音乐特点 · 节奏动机", hint: "人音版八年级下册 · 小军鼓动机与前八后十六" },
-    { q: "什么是五声调式？", tag: "乐理常识 · 调式体系", hint: "宫、商、角、徵、羽五阶民族调式" },
-    { q: "《义勇军进行曲》是谁作曲的？", tag: "词曲作者 · 国歌", hint: "人音版七年级上册 · 中华人民共和国国歌" },
-    { q: "琵琶属于哪类乐器？", tag: "乐器常识 · 民族乐器", hint: "民族乐器分类 · 弹拨乐器" },
+    { q: "《歌唱祖国》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}七年级上册 · 词曲作者与创作背景` },
+    { q: "《游击队歌》的音乐特点是什么？", tag: "音乐特点 · 节奏动机", hint: `${EDITION.label}八年级下册 · 小军鼓动机与前八后十六` },
+    { q: "什么是五声调式？", tag: "乐理常识 · 调式体系", hint: EDITION.key === "renjiao" ? "人教版四年级上册 · 宫、商、角、徵、羽与简谱对应" : "宫、商、角、徵、羽五阶民族调式" },
+    { q: "《义勇军进行曲》是谁作曲的？", tag: "词曲作者 · 国歌", hint: `${EDITION.label}七年级上册 · 中华人民共和国国歌` },
+    { q: "琵琶属于哪类乐器？", tag: "乐器常识 · 民族乐器", hint: `${EDITION.label}民族乐器分类 · 弹拨乐器` },
   ],
   teacher: [
-    { q: "序曲赏听单元有哪些作品？", tag: "单元备课 · 单元曲目", hint: "人音版七年级下册 · 单元收录全部曲目" },
+    { q: "序曲赏听单元有哪些作品？", tag: "单元备课 · 单元曲目", hint: `${EDITION.label}七年级下册 · 单元收录全部曲目` },
     { q: "哪些作品用了 2/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 进行曲与舞曲常用节拍" },
-    { q: "哪些作品适合作为合唱曲目？", tag: "按形式选曲 · 合唱", hint: "演唱形式 · 多声部与合唱曲目" },
-    { q: "哪些作品的曲作者是贺绿汀？", tag: "按作者选曲 · 作曲家", hint: "中国近现代作曲家 · 作品名录" },
-    { q: "备课：哪些作品可以用来讲进行曲？", tag: "备课专题 · 进行曲", hint: "音乐体裁 · 教学选曲与曲目推荐" },
+    { q: "哪些作品适合作为合唱曲目？", tag: "按形式选曲 · 合唱", hint: `${EDITION.label}演唱形式 · 多声部与合唱曲目` },
+    { q: "哪些作品的曲作者是贺绿汀？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国近现代作曲家 · 作品名录` },
+    { q: "备课：哪些作品可以用来讲进行曲？", tag: "备课专题 · 进行曲", hint: `${EDITION.label}音乐体裁 · 教学选曲与曲目推荐` },
   ],
 } as const;
 
@@ -191,7 +191,7 @@ export function AssistantPage({
         }
         return `${first.bookTitle}${first.unit ? ` ${first.unit}` : ""}`;
       })()
-    : `${PUBLISHED_BOOK_COUNT_LABEL}教材知识`;
+    : "没有找到可引用的教材出处";
 
   const confidenceText = currentMessage
     ? currentMessage.result.confidence === "supported"
@@ -357,7 +357,7 @@ export function AssistantPage({
                             className="fn-ref"
                             href={`#${fnId}`}
                             data-fn={fnId}
-                            title="查看教材出处原文"
+                            title="查看教材出处与依据"
                             onClick={e => handleFnClick(e, fnId)}
                           >
                             {fnLabel}
@@ -421,13 +421,13 @@ export function AssistantPage({
                   </div>
                 )}
 
-                {/* 页脚注：展开见原文 */}
+                {/* 页脚注：显示实际教材页码及对应依据 */}
                 {currentMessage.result.evidence.length > 0 && (
                   <section className="qa-footnotes-panel" id="qa-footnotes-panel">
                     <div className="footnotes-header">
                       <div className="footnotes-title">
                         <span className="seal-text">出处</span>
-                        <strong>教材出处与原文</strong>
+                        <strong>教材出处与依据</strong>
                         <span id="footnotes-count-badge" style={{ color: "var(--ink-3)", fontSize: "12px" }}>
                           （{currentMessage.result.evidence.length}处）
                         </span>
@@ -438,7 +438,7 @@ export function AssistantPage({
                         type="button"
                         onClick={() => setFootnotesExpanded(!footnotesExpanded)}
                       >
-                        {footnotesExpanded ? "收起原文" : "展开见原文"}
+                        {footnotesExpanded ? "收起出处" : "展开出处"}
                       </button>
                     </div>
 

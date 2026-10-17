@@ -1,5 +1,5 @@
 // The whole site is one statically exported page, so each "page" lives in the
-// URL hash: #/lesson/歌唱祖国, #/records/g7s1, #/graph/CAN_x, #/assistant.
+// URL hash: #/lesson/g7s1/歌唱祖国, #/records/g7s1, #/graph/CAN_x, #/assistant.
 // Links stay shareable, refresh keeps the page, and back/forward work. The
 // hash (not the query string) is used because the framework router treats a
 // query-string change as a new document and may reload on back/forward.
@@ -22,7 +22,8 @@ export type AppRoute = {
   view: AppView;
   /** records: the textbook whose lessons are listed. */
   book?: string;
-  /** records detail / lesson / work: the work title or disambiguated title, without 《》. */
+  /** lesson / work: the textbook volume for this occurrence. */
+  /** records detail / lesson / work: the work title, without 《》. */
   work?: string;
   /** graph: the canonical entity shown in the inspector. */
   node?: string;
@@ -64,12 +65,22 @@ export function parseRoute(hash: string, search = ""): AppRoute {
       const work = workParts.join("/");
       return { view, ...(book ? { book } : {}), ...(work ? { work } : {}) };
     }
+    if (view === "lesson" || view === "work") {
+      const parts = rest.map(decodeURIComponent);
+      const book = parts.length >= 2 && /^(?:pep-)?g\d+s\d$/.test(parts[0]) ? parts.shift() : undefined;
+      const work = parts.join("/");
+      return work ? { view, ...(book ? { book } : {}), work: bare(work) } : { view: "records" };
+    }
     const detail = rest.length ? decodeURIComponent(rest.join("/")) : undefined;
     return buildRoute(view, detail || undefined);
   }
   const params = new URLSearchParams(search);
   const view = params.get("view") as AppView | null;
   if (!view || !VIEWS.has(view)) return HOME_ROUTE;
+  if (view === "lesson" || view === "work") {
+    const detail = params.get("work");
+    return detail ? { view, ...(params.get("book") ? { book: params.get("book")! } : {}), work: bare(detail) } : { view: "records" };
+  }
   const detail = view === "records" ? params.get("book") : view === "graph" ? params.get("node") : params.get("work");
   return buildRoute(view, detail ?? undefined);
 }
@@ -81,6 +92,11 @@ export function formatRoute(route: AppRoute): string {
     const book = route.book ? `/${encodeURIComponent(route.book)}` : "";
     const work = route.work ? `/${encodeURIComponent(route.work)}` : "";
     return `#/records${book}${work}`;
+  }
+  if (route.view === "lesson" || route.view === "work") {
+    const scope = route.book && route.work ? `/${encodeURIComponent(route.book)}` : "";
+    const work = route.work ? `/${encodeURIComponent(route.work)}` : "";
+    return `#/${route.view}${scope}${work}`;
   }
   const detail = route.book ?? route.work ?? route.node;
   return `#/${route.view}${detail ? `/${encodeURIComponent(detail)}` : ""}`;

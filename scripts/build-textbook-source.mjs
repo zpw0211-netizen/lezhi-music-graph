@@ -24,11 +24,11 @@ const CATEGORY = {
 };
 const categoryOf = (type) => (WORK_TYPES.has(type) ? "work" : CATEGORY[type] ?? "theory");
 const LAYERS = {
-  明: { region: "教材明示", section: "教材核心", confidence: 0.99, summary: (p) => `教材第${p}页明确记载` },
-  谱: { region: "乐谱可见", section: "乐谱分析", confidence: 0.97, summary: (p) => `教材第${p}页谱例标注` },
-  归: { region: "教材归纳", section: "教材归纳", confidence: 0.92, summary: (p) => `依据教材第${p}页内容归纳` },
+  明: { region: "教材明示", section: "教材核心", confidence: 0.99 },
+  谱: { region: "乐谱可见", section: "乐谱分析", confidence: 0.97 },
+  归: { region: "教材归纳", section: "教材归纳", confidence: 0.92 },
   // Extension knowledge beyond the textbook; every item is reviewed before publication.
-  补: { region: "拓展知识", section: "拓展知识", confidence: 0.9, summary: () => "教材之外的拓展知识（已审阅）" },
+  补: { region: "拓展知识", section: "拓展知识", confidence: 0.9 },
 };
 // File names must survive entity renumbering when sources grow.
 const stableHash = (value) => {
@@ -124,7 +124,8 @@ for (const key of keys) {
     });
     evidenceByTriple[id] = [{
       tripleId: id, pdfPage: pdfOf(page), textbookPage: textbookPageOf(page),
-      summary: spec.summary(textbookPageOf(page)), region: spec.region, confidence: spec.confidence,
+      summary: `${subject.name} · ${predicate}：${object?.name ?? literal}`,
+      region: spec.region, confidence: spec.confidence,
     }];
   };
   const addFacts = (subject, facts, defaultPage) => {

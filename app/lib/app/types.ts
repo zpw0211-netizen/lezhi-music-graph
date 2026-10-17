@@ -19,6 +19,7 @@ export type Entity = {
   media?: MediaAsset[];
   canonicalKey?: string;
   category?: SchemaCategoryKey;
+  bookKey?: string;
   bookKeys?: string[];
   textbookCount?: number;
   occurrenceCount?: number;
