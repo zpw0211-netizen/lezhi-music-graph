@@ -31,6 +31,7 @@ type UnitWork = {
 
 type UnitTask = { text: string; works: string[]; focus: string[] };
 type UnitKeyword = { name: string; type?: string; count: number };
+type UnitKnowledgePoint = { name: string; type: string; description: string; page?: number | null };
 type TextbookUnit = {
   bookKey: string;
   order: number;
@@ -41,6 +42,7 @@ type TextbookUnit = {
   theme?: string;
   kind?: string;
   goals?: string[];
+  knowledgePoints?: UnitKnowledgePoint[];
   tasks?: UnitTask[];
   works: UnitWork[];
   /** Section-based books (人教版): the unit's non-work items, e.g. a story, game or theory corner. */
@@ -797,6 +799,17 @@ export function WorkLibrary({
         {Boolean(unit.goals?.length) && <section className="records-chapter-goals" aria-label="本单元先读">
           <h3>本单元先读</h3>
           <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
+        </section>}
+
+        {Boolean(unit.knowledgePoints?.length) && <section aria-label="知识要点" className="records-unit-keypoints">
+          <p className="records-notes-label">知识要点</p>
+          <ul className="records-keypoint-list">{unit.knowledgePoints?.map((point) => <li key={`${point.name}-${point.type}`}>
+            <button type="button" onClick={() => onKnowledge(point.name, point.type)}>
+              <span className="records-keypoint-heading"><strong>{point.name}</strong><small>{point.type}</small></span>
+              {point.description && <span className="records-keypoint-description">{point.description}</span>}
+              {Number.isInteger(point.page) && <span className="records-keypoint-source">教材第 {point.page} 页</span>}
+            </button>
+          </li>)}</ul>
         </section>}
 
         {unit.kind !== "project" && activityCounts.length > 0 && <section aria-label="这一单元学什么" className="records-unit-activities">

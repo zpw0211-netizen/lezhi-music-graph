@@ -52,6 +52,7 @@ const KEYWORD_PREDICATE_TYPES = new Map([
   ["节奏型", "节奏型"],
   ["表演形式", "表演形式"],
   ["演唱形式", "表演形式"],
+  ["演唱声部", "声部"],
   ["演奏形式", "表演形式"],
   ["音乐风格", "音乐风格"],
   ["风格特点", "音乐风格"],
@@ -63,7 +64,7 @@ const KEYWORD_PREDICATE_TYPES = new Map([
   ["所属民族", "民族"],
 ]);
 const KEYWORD_ENTITY_TYPES = new Set([
-  "音乐概念", "乐器", "拍号", "调性", "速度术语", "音乐体裁", "主题与情感",
+  "音乐概念", "乐器", "声部", "拍号", "调性", "速度术语", "音乐体裁", "主题与情感",
   "地域", "民族", "节奏型", "表演形式", "音乐风格",
 ]);
 const SUMMARY_PREDICATES = [
@@ -91,6 +92,7 @@ const bookJson = async (bookKey) => JSON.parse(await readFile(path.join(PUBLIC_R
 
 const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByName) => {
   const unitTriples = triplesBySubject.get(unit.id) ?? [];
+  const pdfOffset = BOOK_BY_KEY.get(bookKey)?.pdfOffset ?? 0;
   const orderValue = Number(unitTriples.find((triple) => triple.predicate === "单元顺序")?.literal);
   const order = Number.isInteger(orderValue) && orderValue > 0 ? orderValue : index + 1;
   const unitWorkIds = new Set(unitTriples
@@ -149,7 +151,6 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
 
   // Section-based books (人教版) also list activities that are not musical works — a story, a game,
   // a theory corner — under the textbook section (学习方式) they belong to, in page order. Opt-in per edition.
-  const pdfOffset = BOOK_BY_KEY.get(bookKey)?.pdfOffset ?? 0;
   const activities = [...unitWorkIds]
     .map((id) => entityById.get(id))
     .filter((entity) => EDITION.unitActivities && entity && !isWorkType(entity.type))
@@ -179,6 +180,26 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     .filter((triple) => triple.predicate === "学习目标")
     .map((triple) => valueOf(triple, entityById).trim())
     .filter(Boolean))];
+  const unitKnowledgePredicates = new Set([
+    "知识要点", "涉及概念", "音乐体裁", "演奏乐器", "地域", "所属民族", "音乐风格", "表演形式",
+    "拍号", "调性", "节奏型", "速度", "表现情感", "历史背景", "提及人物", "引用典籍", "文章来源",
+  ]);
+  const knowledgePoints = unitTriples
+    .filter((triple) => unitKnowledgePredicates.has(triple.predicate) && triple.objectId)
+    .map((triple) => {
+      const concept = entityById.get(triple.objectId);
+      if (!concept) return null;
+      const definition = (triplesBySubject.get(concept.id) ?? []).find((item) => item.predicate === "要点释义");
+      const page = Number.isInteger(triple.sourcePage) ? triple.sourcePage - pdfOffset : null;
+      return {
+        name: concept.name,
+        type: concept.type,
+        description: definition ? valueOf(definition, entityById).trim() : "",
+        page: page > 0 ? page : null,
+      };
+    })
+    .filter((point) => point && point.name)
+    .filter((point, index, all) => all.findIndex((item) => item.name === point.name && item.type === point.type) === index);
   const theme = valueOf(unitTriples.find((triple) => triple.predicate === "单元主题") ?? {}, entityById);
   const keywordCounts = new Map();
   for (const work of unitWorks) {
@@ -217,6 +238,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     numeral: financialNumeral(order),
     theme,
     goals,
+    knowledgePoints,
     tasks,
     works,
     ...(activities.length ? { activities } : {}),

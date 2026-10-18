@@ -9,6 +9,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { factsForItem } from "../data/lesson-facts.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const EDITION = path.join(ROOT, "editions", "renjiao");
@@ -61,7 +62,7 @@ for (const book of process.argv.slice(2).length ? process.argv.slice(2) : regist
       if (seen.has(bare(title))) continue;
       seen.add(bare(title));
       const mode = section.startsWith("学习项目") ? "学习项目" : section;
-      const isWork = melodies.has(bare(title)) || SONG_SECTIONS.has(mode) || scoresFor(title).length > 0;
+      const isWork = melodies.has(bare(title)) || SONG_SECTIONS.has(mode) || scoresFor(title).length > 0 || factsForItem(`pep-${book}`, title).length > 0;
       if (melodies.has(bare(title))) used.add(bare(title));
       items.push([mode, title, page, isWork ? (SONG_SECTIONS.has(mode) ? "歌曲" : "音乐作品") : mode]);
     }
@@ -80,6 +81,8 @@ for (const book of process.argv.slice(2).length ? process.argv.slice(2) : regist
 
   const lines = contents.map((u) => `  [${u.no}, ${JSON.stringify(u.name)}, ${u.page}, [\n${u.items.map((item) => `    ${JSON.stringify(item)},`).join("\n")}\n  ]],`);
   const source = `import { factsForItem } from "../../data/lesson-facts.mjs";
+import { knowledgeForUnit } from "../../data/unit-knowledge.mjs";
+import { pageEnrichmentFor } from "../../data/page-enrichment.mjs";
 
 // 人教版《艺术·唱游·音乐》/《音乐》${info.fullName}（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
@@ -105,11 +108,30 @@ ${lines.join("\n")}
 
 const SCORE_PAGES = ${JSON.stringify(outputScores)};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\\s+/g, "")] ?? [];
-
-textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
-  units: [{ no, name, page, facts: [] }],
+const ENRICHMENT = pageEnrichmentFor("pep-${book}");
+const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\\s，,。.!！？?；;：:]/g, "");
+const baseParts = CONTENTS.map(([no, name, page, items]) => ({
+  units: [{ no, name, page, ...knowledgeForUnit("pep-${book}", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-${book}", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
+export const BASE_SOURCE = { ...textbook, parts: baseParts };
+
+textbook.parts = baseParts.map((part) => {
+  const { no } = part.units[0];
+  const baseWorks = part.works.map((work) => {
+    const extra = ENRICHMENT.existingWorkFacts.find((item) => item.unit === no && bare(item.name) === bare(work.name));
+    return { ...work, facts: [...work.facts, ...(extra?.facts ?? [])] };
+  });
+  const extraWorks = ENRICHMENT.newWorks.filter((work) => work.unit === no).map((work) => ({ ...work, mode: undefined }));
+  return {
+    units: part.units,
+    works: [...baseWorks, ...extraWorks],
+    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    people: ENRICHMENT.people.filter((item) => item.unit === no),
+    tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
+    references: ENRICHMENT.references.filter((item) => item.unit === no),
+  };
+});
 
 export default textbook;
 `;

@@ -339,21 +339,8 @@ function FullGraphCanvasScene({
         const y =
           (((graphY - DESIGN_TOKENS.graph.centerY) * zoom + activePan.y) *
             CANVAS_GRAPH_SCALE + DESIGN_TOKENS.graph.centerY) * scaleY;
-        const isTextbook = node.entity.type === "教材";
-        const isShared = (node.entity.textbookCount ?? 1) >= 2;
-        const importance = Math.max(
-          0,
-          Math.min(1, node.entity.visualImportance ?? 0),
-        );
-        const baseRadius =
-          node.entity.id === selectedId
-            ? 14
-            : isTextbook
-              ? 11.5
-              : 3.2 + Math.sqrt(importance) * 8.6 + (isShared ? 0.8 : 0);
-        const overviewCore = isTextbook || (node.entity.visualRank ?? Infinity) <= 70 || (node.entity.textbookCount ?? 1) >= 3;
-        const peripheralOverview = !hasSelectionFocus && !overviewCore;
-        const radius = Math.max(1.5, baseRadius * (peripheralOverview ? .56 : .9) * Math.min(1.45, visualZoom));
+        const baseRadius = 5.2;
+        const radius = Math.max(1.5, baseRadius * Math.min(1.45, visualZoom));
         if (
           x < -radius - 50 ||
           y < -radius - 50 ||
@@ -498,13 +485,6 @@ function FullGraphCanvasScene({
         const overviewCore = isTextbook || (node.entity.visualRank ?? Infinity) <= 70 || (node.entity.textbookCount ?? 1) >= 3;
         context.globalAlpha = selected || hovered ? 1 : dimmed ? 0.05 : focusDepth === 2 ? 0.32
           : hasSelectionFocus || overviewCore ? 1 : 0.2;
-        if (isShared && (selected || focusDepth === 1 || overviewCore)) {
-          context.beginPath();
-          context.arc(node.x, node.y, node.radius + 3.5, 0, Math.PI * 2);
-          context.strokeStyle = "rgba(49,93,135,.32)";
-          context.lineWidth = 1;
-          context.stroke();
-        }
         if (selected) {
           context.beginPath();
           context.arc(node.x, node.y, node.radius + 5, 0, Math.PI * 2);

@@ -6,6 +6,9 @@ import type { EvidencePayload } from "../lib/ai/graph-rag";
 
 export type PropertyFilters = { books: string[]; grades: string[]; semesters: string[]; entityType: string; crossBook: string; minConfidence: string; evidence: string; keyword: string };
 export const DEFAULT_PROPERTIES: PropertyFilters = { books: [], grades: [], semesters: [], entityType: "all", crossBook: "all", minConfidence: "0", evidence: "all", keyword: "" };
+// Keep the overview focused on musical knowledge. These curriculum-container
+// and publication-credit links remain available in the relation filter.
+export const DEFAULT_HIDDEN_RELATIONS = ["包含作品", "包含", "栏目", "主编", "分册主编", "出版机构", "责任校对"];
 export type FilterBook = { key: string; title: string; grade?: number; semester?: string };
 export type FilterEntity = GraphEntity & { confidence?: number };
 
@@ -28,7 +31,7 @@ export function filterGraphEntities(entities: FilterEntity[], relationships: Gra
 
 export function useGraphFilters(entities: FilterEntity[], relationships: GraphRelationship[], books: FilterBook[], assetUrl: (path: string) => string) {
   const [visibleSchemaKeys, setVisibleSchemaKeys] = useState<SchemaCategoryKey[]>([...ALL_SCHEMA_KEYS]);
-  const [hiddenRelations, setHiddenRelations] = useState<string[]>([]);
+  const [hiddenRelations, setHiddenRelations] = useState<string[]>(() => [...DEFAULT_HIDDEN_RELATIONS]);
   const [properties, setProperties] = useState<PropertyFilters>({ ...DEFAULT_PROPERTIES });
   const [focusedEntityIds, setFocusedEntityIds] = useState<string[] | null>(null);
   const [evidenceIds, setEvidenceIds] = useState<Set<string> | null>(null);
@@ -59,13 +62,7 @@ export function useGraphFilters(entities: FilterEntity[], relationships: GraphRe
     return () => { active = false; };
   }, [assetUrl, books, evidenceIds, properties.evidence, relationships]);
   const filteredEntityIds = useMemo(() => filterGraphEntities(entities, relationships, books, properties, evidenceIds, focusedEntityIds), [entities, relationships, books, properties, evidenceIds, focusedEntityIds]);
-  const relationEndpointIds = useMemo(() => {
-    if (!hiddenRelations.length) return null;
-    const hidden = new Set(hiddenRelations), ids = new Set<string>();
-    for (const edge of relationships) if (!hidden.has(edge.label ?? edge.predicate)) { ids.add(edge.subject); if (edge.objectId) ids.add(edge.objectId); }
-    return ids;
-  }, [hiddenRelations, relationships]);
   const reset = useCallback(() => { setVisibleSchemaKeys([...ALL_SCHEMA_KEYS]); setHiddenRelations([]); setProperties({ ...DEFAULT_PROPERTIES }); setFocusedEntityIds(null); }, []);
-  return { visibleSchemaKeys, setVisibleSchemaKeys, hiddenRelations, setHiddenRelations, properties, setProperties, filteredEntityIds, relationEndpointIds, focusedEntityIds, setFocusedEntityIds, evidenceStatus, reset };
+  return { visibleSchemaKeys, setVisibleSchemaKeys, hiddenRelations, setHiddenRelations, properties, setProperties, filteredEntityIds, focusedEntityIds, setFocusedEntityIds, evidenceStatus, reset };
 }
 export type GraphFilters = ReturnType<typeof useGraphFilters>;

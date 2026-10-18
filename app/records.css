@@ -591,6 +591,16 @@
 @media (prefers-reduced-motion: reduce) { .records-unit-flow li { animation: none; } }
 
 .records-unit-notes { margin: 16px 0 0; }
+.records-unit-keypoints { margin: 16px 0 0; }
+.records-keypoint-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.records-keypoint-list button { display: grid; width: 100%; gap: 5px; padding: 10px 12px; border: 1px solid var(--records-line); background: color-mix(in srgb, var(--records-sheet) 85%, var(--records-pine) 5%); color: var(--records-ink); text-align: left; cursor: pointer; transition: border-color .2s, background .2s, transform .2s var(--records-ease); }
+.records-keypoint-list button:hover { border-color: var(--records-pine); background: var(--records-paper-2); transform: translateY(-1px); }
+.records-keypoint-list button:focus-visible { outline: 2px solid var(--records-seal); outline-offset: 2px; }
+.records-keypoint-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; }
+.records-keypoint-heading strong { font: 600 15px/1.45 var(--records-serif); }
+.records-keypoint-heading small { color: var(--records-ink-3); font: 11px/1.4 var(--records-ui); }
+.records-keypoint-description { color: var(--records-ink-2); font: 13px/1.7 var(--records-serif); }
+.records-keypoint-source { color: var(--records-ink-3); font: 11px/1.4 var(--records-ui); }
 .records-keywords { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .records-keywords button { display: inline-flex; align-items: baseline; gap: 6px; padding: 4px 11px; border: 1px solid var(--records-line); border-radius: 999px; background: var(--records-sheet); color: var(--records-ink); font: 13px/1.5 var(--records-serif); cursor: pointer; transition: border-color .2s, background .2s, transform .2s var(--records-ease); }
 .records-keywords button:hover { border-color: var(--records-pine); background: var(--records-paper-2); transform: translateY(-2px); }

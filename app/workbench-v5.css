@@ -129,6 +129,7 @@ body,.theme-light,.theme-light.graph-first { background:var(--app-bg); color:var
 .knowledge-evidence { padding:12px 16px; background:var(--surface-soft); border-left-color:var(--accent); }
 .knowledge-evidence small { font-size:12px; color:var(--accent); }
 .knowledge-evidence>span { font-size:11px; color:var(--text-secondary); }
+.knowledge-evidence .knowledge-source-link { display:inline-block; margin:5px 10px 0 0; color:var(--accent); font-size:12px; text-decoration:underline; text-underline-offset:2px; }
 .knowledge-body .knowledge-evidence p { font-size:13px; }
 .knowledge-body .knowledge-ask { background:var(--accent-soft); color:var(--accent); font-size:13px; border:0; padding:12px; }
 

@@ -8,6 +8,7 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 const HUB_DEGREE = 30;
+const COMMUNITY_RESOLUTION = 3;
 const MIN_ISLAND = 5;
 const SPACING = 36;
 const GAP = 14;
@@ -22,7 +23,7 @@ const seed = (value) => {
 };
 
 /** Louvain local-moving phase on a weighted undirected graph; returns node -> community. */
-function louvainPass(nodeIds, edges) {
+function louvainPass(nodeIds, edges, resolution = 1) {
   const adjacency = new Map(nodeIds.map((id) => [id, new Map()]));
   let total = 0;
   for (const { a, b, w } of edges) {
@@ -49,9 +50,9 @@ function louvainPass(nodeIds, edges) {
       }
       tot.set(own, tot.get(own) - k);
       let best = own;
-      let bestGain = (links.get(own) ?? 0) - (tot.get(own) * k) / m2;
+      let bestGain = (links.get(own) ?? 0) - (resolution * tot.get(own) * k) / m2;
       for (const [c, w] of links) {
-        const gain = w - (tot.get(c) * k) / m2;
+        const gain = w - (resolution * tot.get(c) * k) / m2;
         if (gain > bestGain + 1e-9 || (Math.abs(gain - bestGain) <= 1e-9 && seed(c) < seed(best))) {
           best = c;
           bestGain = gain;
@@ -69,8 +70,8 @@ function louvainPass(nodeIds, edges) {
 }
 
 /** Two Louvain levels: local moves, then the same on the graph of communities. */
-function detectCommunities(nodeIds, edges) {
-  const first = louvainPass(nodeIds, edges);
+function detectCommunities(nodeIds, edges, resolution = 1) {
+  const first = louvainPass(nodeIds, edges, resolution);
   const merged = new Map();
   for (const { a, b, w } of edges) {
     const ca = first.get(a);
@@ -80,7 +81,7 @@ function detectCommunities(nodeIds, edges) {
     merged.set(key, (merged.get(key) ?? 0) + w);
   }
   const ids = [...new Set(first.values())];
-  const second = louvainPass(ids, [...merged].map(([key, w]) => { const [a, b] = key.split("|"); return { a, b, w }; }));
+  const second = louvainPass(ids, [...merged].map(([key, w]) => { const [a, b] = key.split("|"); return { a, b, w }; }), resolution);
   return new Map(nodeIds.map((id) => [id, second.get(first.get(id))]));
 }
 
@@ -155,12 +156,21 @@ function layoutIsland(members, edges, importance) {
 }
 
 /** Greedy spiral packing of circles (most important first) around a central circle. */
-function packIslands(coreRadius, islands) {
-  const placed = [{ x: 0, y: 0, r: coreRadius }];
-  return islands.map((island) => {
+function packIslands(coreRadius, islands, { anchorLargest = false, angleStep = 0.19 } = {}) {
+  const placed = anchorLargest ? [] : [{ x: 0, y: 0, r: coreRadius }];
+  return islands.map((island, index) => {
+    if (anchorLargest && index === 0) {
+      // Anchor the largest knowledge community at the center. A separate
+      // central disc leaves a doughnut-shaped hole when one curriculum has a
+      // few much larger communities than the reference edition.
+      const centre = { x: 0, y: 0, r: Math.max(coreRadius, island.radius) };
+      placed.push(centre);
+      return centre;
+    }
+    const anchorRadius = anchorLargest ? placed[0]?.r ?? coreRadius : coreRadius;
     for (let step = 0; step < 40000; step += 1) {
-      const angle = step * 0.19;
-      const distance = coreRadius + island.radius + GAP + step * 0.9;
+      const angle = step * angleStep;
+      const distance = anchorRadius + island.radius + GAP + step * 0.9;
       const candidate = { x: Math.cos(angle) * distance * 1.45, y: Math.sin(angle) * distance, r: island.radius };
       if (placed.every((other) => Math.hypot(candidate.x - other.x, candidate.y - other.y) >= candidate.r + other.r + GAP)) {
         placed.push(candidate);
@@ -185,14 +195,32 @@ export function buildIslandLayout(entities, relationships, importance) {
     neighbours.get(objectId)?.add(subject);
   }
   const degree = (id) => neighbours.get(id)?.size ?? 0;
-  const hubs = knowledgeEntities.filter((entity) => degree(entity.id) >= HUB_DEGREE);
+  // Curriculum units are high-degree because they point to every work and
+  // concept taught in that unit. Treating them as global hubs puts them all in
+  // the middle of the map and creates a dense ring. Keep them out of Louvain's
+  // community pass, then place each beside the island containing most of its
+  // neighbours.
+  const curriculumAnchors = knowledgeEntities.filter(
+    (entity) => entity.type === "单元" && degree(entity.id) >= HUB_DEGREE,
+  );
+  const curriculumDense = curriculumAnchors.length >= 15;
+  const curriculumIds = new Set(curriculumAnchors.map((entity) => entity.id));
+  const hubs = knowledgeEntities.filter(
+    (entity) => degree(entity.id) >= HUB_DEGREE && !curriculumIds.has(entity.id),
+  );
   const hubIds = new Set(hubs.map((entity) => entity.id));
-  const members = knowledgeEntities.filter((entity) => !hubIds.has(entity.id) && degree(entity.id) > 0);
+  const members = knowledgeEntities.filter(
+    (entity) => !hubIds.has(entity.id) && !curriculumIds.has(entity.id) && degree(entity.id) > 0,
+  );
   const memberIds = new Set(members.map((entity) => entity.id));
   const edges = relationships
     .filter(({ subject, objectId }) => memberIds.has(subject) && memberIds.has(objectId))
     .map(({ subject, objectId, crossBook }) => ({ a: subject, b: objectId, w: crossBook ? 1.3 : 1 }));
-  const communityOf = detectCommunities([...memberIds], edges);
+  const communityOf = detectCommunities(
+    [...memberIds],
+    edges,
+    curriculumDense ? COMMUNITY_RESOLUTION : 1,
+  );
 
   // Fold tiny communities into the neighbour they share most links with.
   for (let round = 0; round < 3; round += 1) {
@@ -235,15 +263,51 @@ export function buildIslandLayout(entities, relationships, importance) {
     community.set(entity.id, "core");
   });
   const textbooks = entities.filter((entity) => entity.type === "教材");
-  const centres = packIslands(hubRadius * 1.3 + 40, islands);
+  const centres = packIslands(hubRadius * 1.3 + 40, islands, {
+    anchorLargest: curriculumDense,
+    angleStep: curriculumDense ? GOLDEN_ANGLE : 0.19,
+  });
   islands.forEach((island, index) => {
     const centre = centres[index];
+    const islandId = `island-${index + 1}`;
     for (const entity of island.group) {
       const point = island.points.get(entity.id);
       positions.set(entity.id, { x: centre.x + point.x, y: centre.y + point.y });
-      community.set(entity.id, `island-${index + 1}`);
+      community.set(entity.id, islandId);
     }
   });
+  const unitPlacements = curriculumAnchors.map((entity) => {
+    const votes = new Map();
+    for (const neighbour of neighbours.get(entity.id) ?? []) {
+      const islandId = community.get(neighbour);
+      if (islandId && islandId !== "core") votes.set(islandId, (votes.get(islandId) ?? 0) + 1);
+    }
+    const [islandId, voteCount] = [...votes].sort((a, b) => b[1] - a[1] || seed(a[0]) - seed(b[0]))[0] ?? [];
+    if (!islandId || voteCount < 2) return { entity, islandId: "core", point: null };
+    const related = [...(neighbours.get(entity.id) ?? [])]
+      .filter((id) => community.get(id) === islandId)
+      .map((id) => positions.get(id))
+      .filter(Boolean);
+    if (!related.length) return { entity, islandId: "core", point: null };
+    return {
+      entity,
+      islandId,
+      point: {
+        x: related.reduce((sum, p) => sum + p.x, 0) / related.length,
+        y: related.reduce((sum, p) => sum + p.y, 0) / related.length,
+      },
+    };
+  });
+  for (const placement of unitPlacements) {
+    let point = placement.point;
+    if (!point) {
+      const angle = (seed(placement.entity.id) % 6283) / 1000;
+      const radius = hubRadius + 34;
+      point = { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+    }
+    positions.set(placement.entity.id, point);
+    community.set(placement.entity.id, placement.islandId);
+  }
   const isolated = knowledgeEntities.filter((entity) => !positions.has(entity.id));
   const extent = Math.max(...[...positions.values()].map((p) => Math.hypot(p.x / 1.45, p.y))) + 24;
   // Textbooks sit on a ring around the whole map, evenly spaced.

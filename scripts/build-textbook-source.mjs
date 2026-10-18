@@ -10,6 +10,12 @@ import { BOOK_BY_KEY, BOOK_REGISTRY, stripEditionPrefix } from "../data/books.mj
 import { TEXTBOOK_MODES } from "./lib/textbook-modes.mjs";
 
 const root = process.cwd();
+let researchFactsFor = () => [];
+try {
+  ({ researchFactsFor } = await import(pathToFileURL(path.join(root, "data", "renjiao-research-facts.mjs")).href));
+} catch (error) {
+  if (error.code !== "ERR_MODULE_NOT_FOUND") throw error;
+}
 const sourceDir = path.join(root, "content", "textbooks");
 const datasetPath = path.join(root, "public", "data", "music-graph.json");
 const manifestPath = path.join(root, "content", "textbooks", "score-manifest.json");
@@ -36,6 +42,7 @@ const stableHash = (value) => {
   for (const char of String(value)) hash = Math.imul(hash ^ char.codePointAt(0), 16777619) >>> 0;
   return hash.toString(36);
 };
+const normalizeWorkName = (value) => String(value ?? "").normalize("NFKC").toLocaleLowerCase("zh-CN").replace(/[《》〈〉【】\[\]（）()“”‘’'"·•—–_\-:：,，.。!?！？;；/\\\s]/gu, "");
 const SENTENCE_TYPES = new Set(["学习活动", "主题与情感", "学习目标"]);
 const ATTRIBUTE_PREDICATES = new Set(["学习方式"]);
 const requested = process.argv.slice(2);
@@ -59,7 +66,7 @@ for (const key of keys) {
   const raw = (await import(pathToFileURL(path.join(sourceDir, `${key}.mjs`)).href + `?t=${Date.now()}`)).default;
   // Sources are authored unit by unit as `parts`; flatten them into one book.
   const parts = raw.parts ?? [raw];
-  const source = { ...raw, ...Object.fromEntries(["units", "works", "concepts", "people", "tasks"].map((field) => [field, parts.flatMap((part) => part[field] ?? [])])) };
+  const source = { ...raw, ...Object.fromEntries(["units", "works", "concepts", "people", "tasks", "references"].map((field) => [field, parts.flatMap((part) => part[field] ?? [])])) };
   const bookInfo = BOOK_BY_KEY.get(key);
   const previousIndex = dataset.books.findIndex((book) => book.key === key);
   const previous = previousIndex >= 0 ? dataset.books[previousIndex] : {
@@ -85,7 +92,7 @@ for (const key of keys) {
   const entity = (name, type, extra = {}) => {
     const display = WORK_TYPES.has(type) && !/^《.*》$/.test(name) ? `《${name}》` : name;
     const lookupKey = `${categoryOf(type)}|${display}`;
-    let found = entityByKey.get(lookupKey) ?? (WORK_TYPES.has(type) ? workByName.get(name.replace(/^《|》$/g, "")) : undefined);
+    let found = entityByKey.get(lookupKey) ?? (WORK_TYPES.has(type) ? workByName.get(normalizeWorkName(name)) : undefined);
     if (!found) {
       found = { id: `${key.toUpperCase()}_E${String(entities.length + 1).padStart(5, "0")}`, name: display, type, aliases: [], description: "", firstPage: null, confidence: 1, bookKey: key, ...extra };
       entities.push(found);
@@ -102,7 +109,7 @@ for (const key of keys) {
   const evidenceByTriple = {};
   const seen = new Set();
   let duplicates = 0;
-  const add = (subject, predicate, value, declaredType, layer = "明", page) => {
+  const add = (subject, predicate, value, declaredType, layer = "明", page, externalSource) => {
     const spec = LAYERS[layer];
     // Descriptive sentences and learning-mode tags stay as attributes: as graph
     // nodes they are one-off leaves (or 200-edge hubs) with no structural meaning.
@@ -126,10 +133,12 @@ for (const key of keys) {
       tripleId: id, pdfPage: pdfOf(page), textbookPage: textbookPageOf(page),
       summary: `${subject.name} · ${predicate}：${object?.name ?? literal}`,
       region: spec.region, confidence: spec.confidence,
+      ...(externalSource ? { externalSource } : {}),
     }];
   };
   const addFacts = (subject, facts, defaultPage) => {
-    for (const [predicate, value, valueType, layer = "明", page = defaultPage] of facts ?? []) add(subject, predicate, value, valueType, layer, page);
+    for (const [predicate, value, valueType, layer = "明", page = defaultPage, externalSource] of facts ?? [])
+      add(subject, predicate, value, valueType, layer, page, externalSource);
   };
 
   const bookName = stripEditionPrefix(source.title);
@@ -142,7 +151,7 @@ for (const key of keys) {
     if (work.mode && !Object.hasOwn(TEXTBOOK_MODES, work.mode)) throw new Error(`${key}: 未登记的学习方式“${work.mode}”（作品《${work.name}》）`);
     const created = entity(work.name, work.type, { aliases: work.aliases ?? [] });
     note(created, work.page);
-    workByName.set(work.name, created);
+    workByName.set(normalizeWorkName(work.name), created);
   }
 
   const unitByNo = new Map();
@@ -153,6 +162,15 @@ for (const key of keys) {
     add(textbook, "包含单元", unit.name, "单元", "明", unit.page);
     add(created, "单元顺序", unit.no, null, "明", unit.page);
     addFacts(created, unit.facts, unit.page);
+    for (const point of unit.knowledgePoints ?? []) {
+      const type = point.type ?? "音乐概念";
+      const layer = point.layer ?? "明";
+      const page = point.page ?? unit.page;
+      const target = entity(point.name, type);
+      note(target, page);
+      add(created, "知识要点", point.name, type, layer, page);
+      if (point.description) add(target, "要点释义", point.description, null, layer, page);
+    }
   }
 
   const media = [];
@@ -166,7 +184,7 @@ for (const key of keys) {
     });
   };
   for (const work of source.works) {
-    const created = workByName.get(work.name);
+    const created = workByName.get(normalizeWorkName(work.name));
     const unit = unitByNo.get(work.unit);
     if (unit) add(unit, "包含作品", work.name, work.type, "明", work.page);
     if (work.mode) add(created, "学习方式", work.mode, TEXTBOOK_MODES[work.mode], "明", work.page);
@@ -177,12 +195,22 @@ for (const key of keys) {
   for (const concept of source.concepts ?? []) {
     const created = entity(concept.name, concept.type);
     note(created, concept.page);
+    const unit = unitByNo.get(concept.unit);
+    if (unit) add(unit, concept.predicate ?? "涉及知识", concept.name, concept.type, concept.layer ?? "明", concept.page);
     addFacts(created, concept.facts, concept.page);
     attachScores(created, concept);
   }
   for (const person of source.people ?? []) {
     const created = entity(person.name, person.type ?? "人物");
     addFacts(created, person.facts, person.page ?? { pdf: 1 });
+    const unit = unitByNo.get(person.unit);
+    if (unit) add(unit, "提及人物", person.name, person.type ?? "人物", "明", person.page ?? unit.firstPage);
+  }
+  for (const reference of source.references ?? []) {
+    const created = entity(reference.name, reference.type);
+    note(created, reference.page);
+    const unit = unitByNo.get(reference.unit);
+    if (unit) add(unit, reference.predicate ?? "引用资料", reference.name, reference.type, "明", reference.page);
   }
   // Classroom tasks (实践与创造) restate the works' own learning activities; as
   // separate nodes they doubled every work link. Keep them as unit attributes.
@@ -192,6 +220,18 @@ for (const key of keys) {
     const focus = (task.facts ?? []).filter(([predicate]) => predicate === "练习重点").map(([, value]) => value);
     const detail = [works.length ? `涉及${works.join("")}` : "", focus.length ? `练习重点：${focus.join("、")}` : ""].filter(Boolean).join("；");
     if (unit) add(unit, "课堂任务", detail ? `${task.name}（${detail}）` : task.name, null, "明", task.page);
+  }
+  for (const fact of researchFactsFor(key)) {
+    const anchorDisplay = WORK_TYPES.has(fact.anchorType) && !/^《.*》$/.test(fact.anchorName)
+      ? "《" + fact.anchorName + "》"
+      : fact.anchorName;
+    const anchor = fact.anchorType === "教材"
+      ? entities.find((item) => item.type === "教材")
+      : entityByKey.get(categoryOf(fact.anchorType) + "|" + anchorDisplay)
+        ?? entities.find((item) => item.type === fact.anchorType && item.name === anchorDisplay)
+        ?? (WORK_TYPES.has(fact.anchorType) ? workByName.get(normalizeWorkName(fact.anchorName)) : undefined);
+    if (!anchor) throw new Error(key + ": 拓展知识锚点未找到“" + fact.anchorName + "”（" + fact.anchorType + "）");
+    add(anchor, fact.predicate, fact.value, fact.valueType, "补", fact.page, fact.source);
   }
   for (const item of entities) if (item.firstPage == null) item.firstPage = textbook.firstPage;
 

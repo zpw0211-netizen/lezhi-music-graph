@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const dataUrl = new URL("../public/data/music-graph.json", import.meta.url);
 const dataset = JSON.parse(await readFile(dataUrl, "utf8"));
 
-const WORK_TYPES = new Set(["音乐作品", "歌曲", "民歌", "器乐曲", "戏曲歌曲", "戏曲选段", "舞蹈音乐", "影视音乐", "交响作品", "合唱作品", "歌剧音乐", "进行曲", "朗诵作品"]);
+const WORK_TYPES = new Set(["音乐作品", "歌曲", "民歌", "器乐曲", "戏曲歌曲", "戏曲选段", "舞蹈音乐", "影视音乐", "交响作品", "合唱作品", "歌剧音乐", "音乐剧", "进行曲", "朗诵作品"]);
 const RESOURCE_TYPES = new Set(["乐谱资源", "音频资源", "视频资源", "图文资源", "多模态资源", "资源类型", "资源状态", "资源提供方", "教学用途"]);
 const VALUE_TYPES = new Set(["文本", "整数", "状态值", "属性值", "教材栏目"]);
 const RESOURCE_RELATIONS = new Set(["预留乐谱资源", "预留音频资源", "预留视频资源", "预留图文资源", "资源类型", "挂载状态", "版权状态", "提供方", "教学用途", "服务于"]);

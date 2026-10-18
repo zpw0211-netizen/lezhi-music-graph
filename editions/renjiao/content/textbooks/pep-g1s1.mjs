@@ -1,4 +1,6 @@
 import { factsForItem } from "../../data/lesson-facts.mjs";
+import { knowledgeForUnit } from "../../data/unit-knowledge.mjs";
+import { pageEnrichmentFor } from "../../data/page-enrichment.mjs";
 
 // 人教版《艺术·唱游·音乐》/《音乐》一年级上册（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
@@ -84,10 +86,29 @@ const CONTENTS = [
 
 const SCORE_PAGES = {"新年好":[[17,0.08,0.54,0.92,0.83]],"祖国祖国我们爱你":[[22,0.07,0.07,0.93,0.55],[23,0.05,0.07,0.95,0.27]],"doremi之歌":[[28,0.07,0.23,0.93,0.75]],"洋娃娃和小熊跳舞":[[32,0.07,0.3,0.93,0.63]],"娃哈哈":[[34,0.07,0.08,0.93,0.55]],"数鸭子":[[41,0.07,0.13,0.93,0.6]],"玩具兵进行曲":[[42,0.07,0.15,0.93,0.68]],"乃哟乃":[[46,0.07,0.16,0.93,0.51]],"快乐的罗梭":[[56,0.07,0.09,0.93,0.44]],"中华人民共和国国歌":[[64,0.07,0.04,0.93,0.74]],"共产儿童团歌":[[66,0.07,0.05,0.93,0.62]],"小夜曲":[[72,0.07,0.04,0.93,0.52]],"我和小提琴":[[73,0.07,0.04,0.93,0.61]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
-
-textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
-  units: [{ no, name, page, facts: [] }],
+const ENRICHMENT = pageEnrichmentFor("pep-g1s1");
+const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const baseParts = CONTENTS.map(([no, name, page, items]) => ({
+  units: [{ no, name, page, ...knowledgeForUnit("pep-g1s1", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g1s1", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
+export const BASE_SOURCE = { ...textbook, parts: baseParts };
+
+textbook.parts = baseParts.map((part) => {
+  const { no } = part.units[0];
+  const baseWorks = part.works.map((work) => {
+    const extra = ENRICHMENT.existingWorkFacts.find((item) => item.unit === no && bare(item.name) === bare(work.name));
+    return { ...work, facts: [...work.facts, ...(extra?.facts ?? [])] };
+  });
+  const extraWorks = ENRICHMENT.newWorks.filter((work) => work.unit === no).map((work) => ({ ...work, mode: undefined }));
+  return {
+    units: part.units,
+    works: [...baseWorks, ...extraWorks],
+    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    people: ENRICHMENT.people.filter((item) => item.unit === no),
+    tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
+    references: ENRICHMENT.references.filter((item) => item.unit === no),
+  };
+});
 
 export default textbook;

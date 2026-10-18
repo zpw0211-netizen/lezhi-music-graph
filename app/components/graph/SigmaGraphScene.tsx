@@ -97,22 +97,6 @@ const withAlpha = (hex: string, alpha: number) => {
   return rgba(r, g, b, alpha);
 };
 
-function nodeSize(entity: GraphEntity) {
-  const category = schemaCategoryMeta(entity.type);
-  const categoryBase =
-    category.key === "textbook"
-      ? 8
-      : category.key === "work"
-        ? 5.6
-        : ["person", "instrument", "genre", "culture"].includes(category.key)
-          ? 4.2
-          : 3.4;
-  const importance = Math.max(0, Math.min(1, entity.visualImportance ?? 0));
-  const degreeBoost = Math.min(3.2, Math.log2((entity.degree ?? 0) + 1) * 0.72);
-  const coverageBoost = Math.min(2.1, ((entity.textbookCount ?? 1) - 1) * 0.42);
-  return Math.min(12.5, categoryBase + importance * 3 + degreeBoost + coverageBoost);
-}
-
 function SigmaController<E extends GraphEntity>({
   dataGraph,
   indexes,
@@ -207,23 +191,44 @@ function SigmaController<E extends GraphEntity>({
   }, [indexes]);
   const labelIds = useMemo(() => {
     const { width, height } = sigma.getDimensions();
-    const candidates = [...shownNodeIds].filter(id => {
-      if (!dataGraph.hasNode(id)) return false;
-      if (id === selectedId || id === hoveredNode) return true;
+    const candidates = [...shownNodeIds].flatMap(id => {
+      if (!dataGraph.hasNode(id)) return [];
       const p = sigma.graphToViewport(dataGraph.getNodeAttributes(id));
-      return p.x > -30 && p.y > -30 && p.x < width + 30 && p.y < height + 30;
+      return id === selectedId || id === hoveredNode ||
+        (p.x > -30 && p.y > -30 && p.x < width + 30 && p.y < height + 30)
+        ? [{ id, point: p }]
+        : [];
     });
     const score = (id: string) => id === selectedId ? 1e9 : id === hoveredNode ? 9e8 :
       (focus.depthByNode.get(id) === 1 ? 1e7 : 0) + (explicitNodes.has(id) ? 1e6 : 0) + (zoomTier <= 1 && islandLeaders.has(id) ? 5e5 : 0) +
       (indexes.entityMap.get(id)?.visualImportance ?? 0) * 1e4 + (indexes.entityMap.get(id)?.textbookCount ?? 1) * 100 - (indexes.entityMap.get(id)?.visualRank ?? 1337);
-    return new Set(candidates.sort((a, b) => score(b) - score(a)).slice(0, showLabels ? LABEL_BUDGETS[zoomTier] : Math.round(LABEL_BUDGETS[zoomTier] * .8)));
+    const budget = showLabels
+      ? LABEL_BUDGETS[zoomTier]
+      : Math.max(8, Math.round(LABEL_BUDGETS[zoomTier] * .3));
+    const cellSize = zoomTier <= 1 ? 116 : 92;
+    const chosen = new Set<string>();
+    const occupiedCells = new Set<string>();
+    candidates
+      .sort((a, b) => score(b.id) - score(a.id))
+      .forEach(({ id, point }) => {
+        if (chosen.size >= budget) return;
+        if (id === selectedId || id === hoveredNode) {
+          chosen.add(id);
+          return;
+        }
+        const cell = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
+        if (occupiedCells.has(cell)) return;
+        occupiedCells.add(cell);
+        chosen.add(id);
+      });
+    return chosen;
     // Camera movement changes the viewport without changing graph coordinates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataGraph, explicitNodes, focus, hoveredNode, indexes, islandLeaders, selectedId, showLabels, shownNodeIds, sigma, viewportTick, zoomTier]);
 
-  // Selecting a knowledge point pulls its direct neighbours into an orbit around
-  // it (and releases them when the focus clears), so relations read at a glance
-  // and the map visibly responds. Hubs with dozens of links keep their layout.
+  // Selecting a knowledge point pulls every visible direct neighbour into an
+  // orbit around it (and releases them when the focus clears), so relations read
+  // at a glance. High-degree hubs use a wider second ring to keep nodes apart.
   const orbitOrigins = useRef<{ graph: unknown; points: Map<string, { x: number; y: number }> }>({ graph: null, points: new Map() });
   const cancelOrbit = useRef<(() => void) | null>(null);
   useEffect(() => {
@@ -234,7 +239,7 @@ function SigmaController<E extends GraphEntity>({
     const neighbours = center
       ? [...new Set((indexes.adjacencyMap.get(center) ?? []).map((item) => item.neighborId))].filter((id) => id !== center && dataGraph.hasNode(id) && visibleNodeIds.has(id))
       : [];
-    const orbit = center != null && neighbours.length >= 2 && neighbours.length <= 36;
+    const orbit = center != null && neighbours.length >= 1;
     const original = (id: string) => previous.get(id) ?? { x: dataGraph.getNodeAttribute(id, "x"), y: dataGraph.getNodeAttribute(id, "y") };
     const targets: Record<string, { x: number; y: number }> = {};
     const next = new Map<string, { x: number; y: number }>();
@@ -297,13 +302,13 @@ function SigmaController<E extends GraphEntity>({
         return {
           ...data,
           hidden: !shownNodeIds.has(node),
-          color: alpha < 1 ? withAlpha(data.color, alpha) : data.color,
-          size: data.size * (selected ? 1.38 : hovered ? 1.12 : !focus.depthByNode.size && !overviewCore ? .62 : .9),
+          color: selected ? "#16834F" : alpha < 1 ? withAlpha(data.color, alpha) : data.color,
+          size: data.size,
           label:
             selected || hovered || (!dimmed && (labelIds.has(node) || (depth === 1 && focus.depthByNode.size <= 40))) ? data.label : "",
           // Only the selection is forced; neighbours go through Sigma's label grid so they never overlap.
           // A small focused neighbourhood (the orbit) always shows its names.
-          forceLabel: selected || hovered || (depth === 1 && !dimmed && focus.depthByNode.size <= 40) || (labelIds.has(node) && explicitNodes.has(node) && explicitNodes.size <= 12),
+          forceLabel: selected || hovered || labelIds.has(node) || (depth === 1 && !dimmed && focus.depthByNode.size <= 40),
           highlighted: selected,
           zIndex: selected ? 20 : depth === 1 ? 12 : depth === 2 ? 7 : 1,
         };
@@ -612,7 +617,9 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
       value.addNode(node.entity.id, {
         x: node.x,
         y: node.y,
-        size: nodeSize(node.entity),
+        // A stable size keeps the overview readable; type and importance are
+        // encoded through color, labels and focus styling instead.
+        size: 5.2,
         color: schemaCategoryMeta(node.entity.type).color,
         label: node.entity.name,
         entity: node.entity,
@@ -665,7 +672,9 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
       edgeLabelColor: { color: "#5e6a64" },
       labelDensity: 0.86,
       labelGridCellSize: 116,
-      labelRenderedSizeThreshold: 7,
+      // The all-node uniform size is intentionally compact; keep labels for
+      // the graph's selected landmark nodes visible at overview scale too.
+      labelRenderedSizeThreshold: 3.5,
       stagePadding: 52,
       zIndex: true,
       defaultDrawNodeHover: drawConstellationHalo,

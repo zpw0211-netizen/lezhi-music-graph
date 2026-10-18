@@ -49,6 +49,11 @@ for (const file of existsSync(unitArtDir) ? await readdir(unitArtDir) : [])
   if (primary.books.some(({ key }) => file.startsWith(`${key}-u`))) await rm(path.join(unitArtDir, file), { force: true });
 await rm(path.join(work, "public", "data", "details"), { recursive: true, force: true });
 await cp(editionRoot, work, { recursive: true, force: true });
+await cp(
+  path.join(editionRoot, "data", "research-facts.mjs"),
+  path.join(work, "data", "renjiao-research-facts.mjs"),
+  { force: true },
+);
 
 // 3. Start from an empty dataset that keeps the shared ontology and policies.
 const datasetPath = path.join(work, "public", "data", "music-graph.json");

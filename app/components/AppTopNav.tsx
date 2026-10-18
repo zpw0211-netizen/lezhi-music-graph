@@ -1,7 +1,6 @@
 "use client";
 import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
-import Image from "next/image";
-import { publicAssetUrl } from "../lib/app/assets";
+import { BrandMark } from "./home/BrandMark";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { AccountDialog } from "./account/AccountDialog";
 import type { AccountView } from "./account/AccountPanel";
@@ -46,7 +45,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
   return <><nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
       <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label="芽谱首页">
-        <Image src={publicAssetUrl("brand/mark.svg")} alt="" aria-hidden="true" width={34} height={34} priority unoptimized /><span>芽谱</span>
+        <BrandMark /><span>芽谱</span>
       </button>
       {centerSlot && <div className="home-nav-center">{centerSlot}</div>}
       <div id="home-nav-panel" className="home-nav-content">

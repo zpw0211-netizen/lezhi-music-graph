@@ -4,7 +4,13 @@ export type DetailEntity = GraphEntity & {
   firstPageByBook?: Record<string, number>;
   media?: Array<{ kind: "audio" | "video" | "score" | "image"; url: string; title?: string; source?: string }>;
 };
-export type DetailEvidence = { pdfPage?: number | null; textbookPage?: string; summary?: string; region?: string };
+export type DetailEvidence = {
+  pdfPage?: number | null;
+  textbookPage?: string;
+  summary?: string;
+  region?: string;
+  externalSource?: { url: string; title: string; publisher: string };
+};
 export type DetailRelationship = GraphRelationship & {
   literal?: string | null; sourcePage?: number | null;
   sources?: Array<{ bookKey: string; bookTitle: string; pdfPage?: number | null; evidence?: DetailEvidence[] }>;

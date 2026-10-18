@@ -46,7 +46,7 @@ const BOOKS: Array<[string, Record<string, Melody[]>]> = [
 // Keys drop the 《》 so they match the work names in the 人教版 textbook sources.
 const pepKeys = (book: Record<string, Melody[]>) => Object.fromEntries(Object.entries(book).map(([name, melodies]) => [name.replace(/^《|》$/g, ""), melodies]));
 /** 人教版 books whose transcriptions have been checked bar by bar against the pages; only these play on the site. */
-export const PEP_REVIEWED_BOOKS = new Set<string>(["pep-g1s1", "pep-g1s2", "pep-g2s1", "pep-g2s2", "pep-g3s1", "pep-g3s2", "pep-g4s1", "pep-g7s1", "pep-g8s1", "pep-g8s2", "pep-g9s1"]);
+export const PEP_REVIEWED_BOOKS = new Set<string>(["pep-g1s1", "pep-g1s2", "pep-g2s1", "pep-g2s2", "pep-g3s1", "pep-g3s2", "pep-g4s1", "pep-g5s1", "pep-g6s1", "pep-g7s1", "pep-g7s2", "pep-g8s1", "pep-g8s2", "pep-g9s1"]);
 const PEP_BOOKS: Array<[string, Record<string, Melody[]>]> = ([["pep-g1s1", PEP_G1S1], ["pep-g1s2", PEP_G1S2], ["pep-g2s1", PEP_G2S1], ["pep-g2s2", PEP_G2S2], ["pep-g3s1", PEP_G3S1], ["pep-g3s2", PEP_G3S2], ["pep-g4s1", PEP_G4S1], ["pep-g5s1", PEP_G5S1], ["pep-g6s1", PEP_G6S1], ["pep-g7s1", PEP_G7S1], ["pep-g7s2", PEP_G7S2], ["pep-g8s1", PEP_G8S1], ["pep-g8s2", PEP_G8S2], ["pep-g9s1", PEP_G9S1]] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
 const GRADE_LABELS: Record<string, string> = { "1": "一年级", "2": "二年级", "3": "三年级", "4": "四年级", "5": "五年级", "6": "六年级", "7": "七年级", "8": "八年级", "9": "九年级" };
 export const PEP_MELODY_BOOKS = PEP_BOOKS.map(([key]) => {

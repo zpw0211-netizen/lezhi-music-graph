@@ -1,4 +1,6 @@
 import { factsForItem } from "../../data/lesson-facts.mjs";
+import { knowledgeForUnit } from "../../data/unit-knowledge.mjs";
+import { pageEnrichmentFor } from "../../data/page-enrichment.mjs";
 
 // 人教版《艺术·唱游·音乐》/《音乐》一年级下册（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
@@ -48,7 +50,7 @@ const CONTENTS = [
     ["音乐万花筒","舞会上的小指挥",30,"音乐万花筒"],
     ["音乐万花筒","溜冰圆舞曲",31,"音乐作品"],
     ["音乐万花筒","蓝色多瑙河圆舞曲",31,"音乐作品"],
-    ["小小舞蹈家","儿童圆舞曲",32,"小小舞蹈家"],
+    ["小小舞蹈家","儿童圆舞曲",32,"音乐作品"],
     ["小小歌唱家","请你唱首歌吧",34,"歌曲"],
     ["小小演奏家","唱唱名，手弹琴",36,"小小演奏家"],
   ]],
@@ -82,10 +84,29 @@ const CONTENTS = [
 
 const SCORE_PAGES = {"爱的奉献":[[3,0.04,0.035,0.96,0.94]],"摇篮曲":[[5,0.04,0.035,0.96,0.94]],"找朋友":[[14,0.04,0.035,0.96,0.94]],"柳树姑娘":[[21,0.04,0.035,0.96,0.94]],"绿色的祖国":[[24,0.04,0.035,0.96,0.94]],"小松树":[[27,0.04,0.035,0.96,0.94]],"溜冰圆舞曲":[[31,0.04,0.035,0.96,0.94]],"蓝色多瑙河圆舞曲":[[31,0.04,0.035,0.96,0.94]],"请你唱首歌吧":[[34,0.04,0.035,0.96,0.94]],"劳动最光荣":[[38,0.04,0.035,0.96,0.94]],"勤快人和懒惰人":[[40,0.04,0.035,0.96,0.94]],"打麦号子":[[41,0.04,0.035,0.96,0.94]],"牧童谣":[[44,0.04,0.035,0.96,0.94]],"老爷爷赶鹅":[[48,0.04,0.035,0.96,0.94]],"观灯":[[50,0.04,0.035,0.96,0.94]],"在钟表店里":[[51,0.04,0.035,0.96,0.94]],"小邋遢":[[60,0.04,0.035,0.96,0.94]],"大风车":[[61,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
-
-textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
-  units: [{ no, name, page, facts: [] }],
+const ENRICHMENT = pageEnrichmentFor("pep-g1s2");
+const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const baseParts = CONTENTS.map(([no, name, page, items]) => ({
+  units: [{ no, name, page, ...knowledgeForUnit("pep-g1s2", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g1s2", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
+export const BASE_SOURCE = { ...textbook, parts: baseParts };
+
+textbook.parts = baseParts.map((part) => {
+  const { no } = part.units[0];
+  const baseWorks = part.works.map((work) => {
+    const extra = ENRICHMENT.existingWorkFacts.find((item) => item.unit === no && bare(item.name) === bare(work.name));
+    return { ...work, facts: [...work.facts, ...(extra?.facts ?? [])] };
+  });
+  const extraWorks = ENRICHMENT.newWorks.filter((work) => work.unit === no).map((work) => ({ ...work, mode: undefined }));
+  return {
+    units: part.units,
+    works: [...baseWorks, ...extraWorks],
+    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    people: ENRICHMENT.people.filter((item) => item.unit === no),
+    tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
+    references: ENRICHMENT.references.filter((item) => item.unit === no),
+  };
+});
 
 export default textbook;

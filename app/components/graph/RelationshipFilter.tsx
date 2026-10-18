@@ -12,6 +12,6 @@ export const RelationshipFilter = memo(function RelationshipFilter({ relations, 
         <span className={`edge-sample edge-${row.kind}`} /><span>{row.name}</span><span className="explorer-count">{row.count}</span>
       </button><button className="explorer-only" aria-label={`只看${row.name}知识联系`} onClick={() => { if (row.kind === "provenance") onSources(); onChange(relations.filter(item => item.name !== row.name).map(item => item.name)); }}>仅此</button>
     </div>)}</div>
-    <p className="explorer-hint">数量来自整理后的知识联系；筛选仅控制显示。</p>
+    <p className="explorer-hint">概览默认收起作品包含、泛化包含和编者出版信息；可在此重新开启。筛选只控制显示，不修改教材数据。</p>
   </details>;
 });

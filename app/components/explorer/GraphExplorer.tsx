@@ -416,7 +416,6 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
       if (
         visibleInMode &&
         graphFilters.filteredEntityIds.has(entity.id) &&
-        (!graphFilters.relationEndpointIds || graphFilters.relationEndpointIds.has(entity.id)) &&
         perspectiveEntityIds.has(entity.id) &&
         visibleSchemaKeys.includes(schemaCategoryFor(entity.type)) &&
         !hiddenNodeKeys.includes(`${canonicalBook.key}-${entity.id}`)
@@ -424,7 +423,7 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
         ids.add(entity.id);
     }
     return ids;
-  }, [canonicalBook, fullGraphLayout, fullGraphView, graphPerspective, perspectiveEntityIds, hiddenNodeKeys, showTextbookSources, visibleSchemaKeys, graphFilters.filteredEntityIds, graphFilters.relationEndpointIds]);
+  }, [canonicalBook, fullGraphLayout, fullGraphView, graphPerspective, perspectiveEntityIds, hiddenNodeKeys, showTextbookSources, visibleSchemaKeys, graphFilters.filteredEntityIds]);
   const fullGraphRelationships = useMemo(() => {
     if (!canonicalBook) return [] as Triple[];
     return canonicalBook.triples.filter((relationship) => {
@@ -469,11 +468,10 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
       return (
         !canonical ||
         (graphFilters.filteredEntityIds.has(canonical.id) &&
-          perspectiveEntityIds.has(canonical.id) &&
-          (!graphFilters.relationEndpointIds || graphFilters.relationEndpointIds.has(canonical.id)))
+          perspectiveEntityIds.has(canonical.id))
       );
     },
-    [canonicalFor, graphFilters.filteredEntityIds, graphFilters.relationEndpointIds, perspectiveEntityIds],
+    [canonicalFor, graphFilters.filteredEntityIds, perspectiveEntityIds],
   );
   const bookSceneVisibleIds = useMemo(() => {
     const ids = new Set<string>();
@@ -714,7 +712,7 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
     const nodeKey = book.key + "-" + node.entity.id;
     const selectedNode = node.entity.id === selectedId;
     const semantic = schemaCategoryMeta(node.entity.type);
-    const radius = selectedNode ? 25 : semantic.nodeSize === "large" ? 19 : semantic.nodeSize === "medium" ? 15 : 12;
+    const radius = 12;
     const label = node.entity.name.length > 14 ? node.entity.name.slice(0, 14) + "…" : node.entity.name;
     const point = nodePoint(node, book);
     return (
@@ -819,8 +817,8 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
           onDoubleClick={() => explorer.openKnowledge(group.center, group.book)}
           onContextMenu={(event) => openContextMenu(event, group.center, group.book)}
         >
-          <circle r={isFocus ? 46 : 54} />
-          <circle className="node-ring" r={isFocus ? 58 : 66} />
+          <circle r={12} />
+          <circle className="node-ring" r={18} />
           <text className="node-glyph" y="-9">
             {isFocus ? "◎" : "▣"}
           </text>
