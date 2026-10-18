@@ -26,6 +26,24 @@ const writeSaved = (workId: string, saved: Saved) => {
 };
 const clock = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 const STAGE_ORDINALS = ["第一阶段", "第二阶段", "第三阶段", "第四阶段", "全流程"];
+// 备课时给老师看的“设计意图”（摘自模板教学过程各阶段），课堂上不显示。
+const DESIGN_NOTES: Record<string, string> = {
+  cover: "以情境激活兴趣；开课前确认本课课型与各阶段时长。",
+  scene: "创设贴合课型的情境，引发审美兴趣与探究欲。",
+  wonder: "汇总预习反思单中的疑问，精准把握学生的认知起点；引导学生“带着问题学习、在学习中反思”。",
+  perceive: "通过针对性任务积累真实体验，为认知冲突提供基础。",
+  elements: "聚焦音乐核心要素，落实审美感知。",
+  conflict: "以对比、追问、质疑制造矛盾点，推动反思从“被动接受”转向“主动探究”。",
+  self: "组织小组内初步交流，梳理解决冲突的思路。",
+  group: "以合作探究为载体，让共同反思成为知识建构的核心过程。巡视指导，记录典型反思案例与共性问题。",
+  practice: "针对难点分解练习，降低思考难度。",
+  chain: "提供反思支架，引导小组围绕“冲突解决—思路碰撞—共识形成”深度交流。",
+  consensus: "记录各组共识，作为下一阶段迁移的依据。",
+  transfer: "分层任务让学生在新情境中运用反思成果，实现能力迁移。",
+  showcase: "邀请不同层次的学生或小组展示，并简短说明反思调整过程。",
+  quiz: "以小测验做即时评价，检验核心知识。",
+  summary: "通过复盘与评价固化反思成果，形成完整学习闭环；布置课后“反思成长档案”。",
+};
 
 export function ReflectivePresent({
   workId, workName, workType, mode, grade, bookName, unitName, scorePage, creators, facts, melody, scores, tasks, questions, artUrl, assetUrl, onClose,
@@ -79,34 +97,28 @@ export function ReflectivePresent({
       {artUrl && <Picture className="reflect-cover-art" src={artUrl} />}
       <div className="reflect-cover-copy">
         <small>{[bookName, unitName].filter(Boolean).join(" · ")}</small>
-        <h1>{work}</h1>
-        <p className="reflect-kind">{LESSON_KINDS[kind]} · 反思型课堂</p>
+        <h1 style={{ "--len": work.length } as CSSProperties}>{work}</h1>
+        <p className="reflect-kind">{LESSON_KINDS[kind]}<i aria-hidden="true" />反思型课堂</p>
         <div className="reflect-meta">
           {creators.map((item) => <span key={item.id}><b>{item.label}</b>{item.value}</span>)}
           {scorePage && <span><b>教材</b>第 {scorePage} 页</span>}
         </div>
-        <ol className="reflect-roadmap">{STAGES.map((stage) => <li key={stage.key} data-stage={stage.key}><b>{stage.name}</b><small>{stage.theme} · {stage.minutes} 分钟</small></li>)}</ol>
       </div>
+      <ol className="reflect-roadmap">{STAGES.map((stage) => <li key={stage.key} data-stage={stage.key}><b>{stage.name}</b><small>{stage.theme} · {stage.minutes} 分钟</small></li>)}</ol>
     </div> },
-    { key: "scene", stage: "motivate", step: "情境导入", title: "听一听，想一想", steps: 1, render: () => <div className="reflect-two">
-      {artUrl && <Picture className="reflect-art" src={artUrl} />}
-      <div>
+    { key: "scene", stage: "motivate", step: "情境导入", title: "听一听，想一想", steps: 1, render: () => <div className={`reflect-scene${artUrl ? "" : " is-plain"}`}>
+      {artUrl && <figure className="reflect-scene-art"><Picture src={artUrl} /></figure>}
+      <div className="reflect-scene-copy">
         <h2>听一听，想一想</h2>
         {text("scene", script.scene, "p")}
         {culture.length > 0 && <dl className="reflect-facts">{culture.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
         {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
       </div>
     </div> },
-    { key: "goals", stage: "motivate", step: "预习反馈 · 学习目标", title: "带着问题来学习", steps: 1, render: () => <div className="reflect-two is-even">
-      <section className="reflect-panel">
-        <h2>我的疑问</h2>
-        <p className="reflect-lead">通过预习或刚才的聆听，你最想探究什么？</p>
-        <ul className="reflect-starters">{script.questionStarters.map((starter, index) => <li key={starter}>{text(`starter-${index}`, starter)}</li>)}</ul>
-      </section>
-      <section className="reflect-panel">
-        <h2>学习目标</h2>
-        <ul className="reflect-goals">{script.goals.map((goal, index) => <li key={goal.area}><b>{goal.area}</b>{text(`goal-${index}`, goal.text)}</li>)}</ul>
-      </section>
+    { key: "wonder", stage: "motivate", step: "预习反馈", title: "带着问题来学习", steps: 1, render: () => <div className="reflect-wonder">
+      <h2>带着问题来学习</h2>
+      <p className="reflect-lead">通过预习或刚才的聆听，你最想探究什么？把问题写在便签上，贴到问题墙。</p>
+      <ul className="reflect-notes">{script.questionStarters.map((starter, index) => <li key={starter} style={{ "--i": index } as CSSProperties}>{text(`starter-${index}`, starter)}</li>)}</ul>
     </div> },
     { key: "perceive", stage: "conflict", step: "核心感知", title: "初听感知表", steps: 1, render: () => <div className="reflect-wide">
       <h2>初听感知表</h2>
@@ -280,21 +292,31 @@ export function ReflectivePresent({
   const isHidden = hidden.has(slide.key);
   const toggleHidden = () => update({ hidden: isHidden ? [...hidden].filter((key) => key !== slide.key) : [...hidden, slide.key] });
 
-  return <div ref={dialogRef} className="present reflect" data-stage={slide.stage} role="dialog" aria-modal="true" aria-label="上课模式 · 反思型课堂" tabIndex={-1}>
+  return <div ref={dialogRef} className="present reflect" data-stage={slide.stage} data-slide={slide.key} role="dialog" aria-modal="true" aria-label="上课模式 · 反思型课堂" tabIndex={-1}
+    style={artUrl ? { "--art": `url("${artUrl}")` } as CSSProperties : undefined}>
     <header className="reflect-band">
       <span className="reflect-band-stage"><em>{STAGE_ORDINALS[stageIndex]}</em>{stage.name} · {stage.theme}</span>
       <span className="reflect-band-step">{slide.step}</span>
+      <ol className="reflect-band-progress" aria-hidden="true">{STAGES.map((item, index) => <li key={item.key} data-stage={item.key} className={index < stageIndex ? "is-past" : index === stageIndex ? "is-now" : ""} style={{ flexGrow: item.minutes }} />)}</ol>
       <StageTimer key={slide.stage} minutes={stage.minutes} />
     </header>
     {preparing && <div className="reflect-prep">
-      <label>课型
-        <select value={kind} onChange={(event) => update({ kind: event.target.value as LessonKind })}>
-          {(Object.keys(LESSON_KINDS) as LessonKind[]).map((key) => <option key={key} value={key}>{LESSON_KINDS[key]}</option>)}
-        </select>
-      </label>
-      <button type="button" aria-pressed={isHidden} onClick={toggleHidden}>{isHidden ? "上课时显示这一页" : "上课时隐藏这一页"}</button>
-      <span>虚线框里的文字可以直接改写，只保存在这台电脑上。</span>
-      {saved.edits && Object.keys(saved.edits).length > 0 && <button type="button" onClick={() => update({ edits: {} })}>恢复默认文字</button>}
+      <div className="reflect-prep-tools">
+        <label>课型
+          <select value={kind} onChange={(event) => update({ kind: event.target.value as LessonKind })}>
+            {(Object.keys(LESSON_KINDS) as LessonKind[]).map((key) => <option key={key} value={key}>{LESSON_KINDS[key]}</option>)}
+          </select>
+        </label>
+        <button type="button" aria-pressed={isHidden} onClick={toggleHidden}>{isHidden ? "上课时显示这一页" : "上课时隐藏这一页"}</button>
+        {saved.edits && Object.keys(saved.edits).length > 0 && <button type="button" onClick={() => update({ edits: {} })}>恢复默认文字</button>}
+        <span>虚线框里的文字可以直接改写，只保存在这台电脑上。</span>
+      </div>
+      <aside className="reflect-teacher" aria-label="教师提示（课堂上不显示）">
+        <p><b>设计意图</b>{DESIGN_NOTES[slide.key]}</p>
+        {(slide.key === "cover" || slide.key === "wonder") && <div className="reflect-teacher-goals"><b>教学目标</b>
+          <ul>{script.goals.map((goal, index) => <li key={goal.area}><em>{goal.area}</em>{text(`goal-${index}`, goal.text)}</li>)}</ul>
+        </div>}
+      </aside>
     </div>}
     <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}`} key={`${slide.key}-${kind}`} ref={stageRef}>
       <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
