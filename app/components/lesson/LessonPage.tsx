@@ -1,14 +1,14 @@
 "use client";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { melodiesFor } from "../../lib/lesson/melodies";
 import { VocalDemo } from "./VocalDemo";
 import { MelodySet } from "./MelodyPlayer";
-import type { Melody } from "../../lib/lesson/melodies";
+import { ReflectivePresent } from "./ReflectivePresent";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { getPrintedPage, getScoreMedia, isStarredWork, parseUnitTask } from "../../lib/app/unit-data";
 import { SCORE_SIZES } from "../../lib/lesson/score-sizes";
 import { BOOK_BY_KEY } from "../../lib/app/books";
+import { unitArtPath } from "../../lib/app/unit-art";
 
 type LessonEntity = {
   id: string;
@@ -118,7 +118,10 @@ export function LessonPage({
       if (relation.extended) { extended.push(relation); continue; }
       groups.find((group) => group.test.test(relation.predicate))!.facts.push(relation);
     }
-    return { own, unit, book, bookKey: lessonBookKey, learningMode, workPage: printedPage(pageOf(work), lessonBookKey), unitWorks, tasks, goals, groups: groups.filter((group) => group.facts.length), extended };
+    // 上课模式封面用本单元插图；没有单元插图的单元用本册封面。
+    const unitOrder = Number(unitRelations.find((relation) => relation.predicate === "单元顺序")?.literal);
+    const artPath = lessonBookKey ? (Number.isInteger(unitOrder) ? unitArtPath(lessonBookKey, unitOrder) : null) ?? `art/${lessonBookKey}.webp` : null;
+    return { own, unit, book, bookKey: lessonBookKey, artPath, learningMode, workPage: printedPage(pageOf(work), lessonBookKey), unitWorks, tasks, goals, groups: groups.filter((group) => group.facts.length), extended };
   }, [entityMap, relationships, requestedBookKey, valueOf, work, work?.name, workId]);
 
   const questions = useMemo<Question[]>(() => {
@@ -267,7 +270,25 @@ export function LessonPage({
       </aside>
     </div>
 
-    {presenting && <PresentMode work={work} melody={melody} groups={lesson.groups} tasks={lesson.tasks} questions={questions} valueOf={valueOf} assetUrl={assetUrl} unitName={lesson.unit?.name ?? ""} creators={creators.map((relation) => ({ id: relation.id, label: relation.label ?? relation.predicate, value: valueOf(relation) }))} scorePage={scorePage} onClose={closePresent} />}
+    {presenting && <ReflectivePresent
+      workId={workId}
+      workName={work.name}
+      workType={work.type}
+      mode={lesson.learningMode ? valueOf(lesson.learningMode) : undefined}
+      grade={Number(lesson.bookKey?.match(/g(\d)s\d/)?.[1]) || undefined}
+      bookName={lesson.book?.name}
+      unitName={lesson.unit?.name ?? ""}
+      scorePage={scorePage}
+      creators={creators.map((relation) => ({ id: relation.id, label: relation.label ?? relation.predicate, value: valueOf(relation) }))}
+      facts={lesson.own.filter((relation) => !relation.extended).map((relation) => ({ label: relation.label ?? relation.predicate, value: valueOf(relation) }))}
+      melody={melody}
+      scores={scoreMedia}
+      tasks={lesson.tasks.map(parseUnitTask)}
+      questions={questions}
+      artUrl={lesson.artPath ? assetUrl(lesson.artPath) : undefined}
+      assetUrl={assetUrl}
+      onClose={closePresent}
+    />}
   </section>;
 }
 
@@ -309,134 +330,5 @@ function Quiz({ questions }: { questions: Question[] }) {
     })}
     <p className="lesson-quiz-score">{answered === questions.length ? `完成！答对 ${correct} / ${questions.length} 题` : `已作答 ${answered} / ${questions.length}`}
       {answered > 0 && <button type="button" onClick={() => setPicked({})}>重新作答</button>}</p>
-  </div>;
-}
-
-type Slide = { key: string; steps: number; render: (step: number) => ReactNode };
-
-function PresentMode({ work, melody, groups, tasks, questions, valueOf, assetUrl, unitName, creators, scorePage, onClose }: {
-  work: LessonEntity; melody?: Melody[]; groups: Array<{ key: string; title: string; facts: LessonRelation[] }>; tasks: string[];
-  questions: Question[]; valueOf: (relation: LessonRelation) => string; assetUrl: (path: string) => string; unitName: string;
-  creators: Array<{ id: string; label: string; value: string }>; scorePage: number | null; onClose: () => void;
-}) {
-  const scoreMedia = getScoreMedia(work.media);
-  const points = groups.filter((group) => group.key !== "practice").flatMap((group) => group.facts.map((relation) => ({ id: relation.id, label: relation.label ?? relation.predicate, value: valueOf(relation) }))).slice(0, 8);
-  const slides: Slide[] = [
-    { key: "cover", steps: 1, render: () => <div className="present-cover"><small>{unitName}</small><h1>{work.name}</h1><p>{work.type}</p>
-      {(creators.length > 0 || scorePage) && <div className="present-meta">
-        {creators.map((item) => <span key={item.id}><b>{item.label}</b>{item.value}</span>)}
-        {scorePage && <span><b>教材</b>第 {scorePage} 页</span>}
-      </div>}
-    </div> },
-    ...(points.length ? [{ key: "points", steps: points.length + 1, render: (step: number) => <div className={`present-points${points.length >= 6 ? " is-two-col" : ""}`}><h2>知识要点</h2><ul>{points.map((point, index) => <li key={point.id} className={index < step ? "is-shown" : ""}><b>{point.label}</b>{point.value}</li>)}</ul></div> }] : []),
-    ...(melody ? [{ key: "melody", steps: 1, render: () => <div className="present-score"><h2>看谱 · 听旋律</h2><MelodySet melodies={melody} large /></div> }] : []),
-    ...(scoreMedia.length ? [{ key: "scores", steps: scoreMedia.length, render: (step: number) => <div className="present-score-figure">
-      <h2>教材谱例原图<small>{step + 1} / {scoreMedia.length}</small></h2>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={assetUrl(scoreMedia[step].url)} alt={scoreMedia[step].title ?? `教材谱例 ${step + 1}`} />
-      {scoreMedia.length > 1 && <div className="present-score-nav">
-        <button type="button" disabled={step === 0} onClick={() => goStep(-1)}>上一张</button>
-        <span>{step + 1} / {scoreMedia.length}</span>
-        <button type="button" disabled={step === scoreMedia.length - 1} onClick={() => goStep(1)}>下一张</button>
-      </div>}
-    </div> }] : []),
-    ...(tasks.length ? [{ key: "tasks", steps: 1, render: () => <div className={`present-points${tasks.length >= 6 ? " is-two-col" : ""}`}><h2>课堂活动</h2><ul>{tasks.map((task) => { const parsed = parseUnitTask(task); return <li key={task} className="is-shown">{parsed.text}{parsed.focus.length > 0 && <small>练习重点：{parsed.focus.join("、")}</small>}</li>; })}</ul></div> }] : []),
-    ...questions.map((question, index): Slide => ({ key: question.id, steps: 2, render: (step) => <div className="present-question"><small>小练习 {index + 1} / {questions.length}</small><h2>{question.prompt}</h2>
-      <div>{question.options.map((option, k) => <span key={option} className={step >= 1 && option === question.answer ? "is-answer" : step >= 1 ? "is-other" : ""}><em>{"ABCD"[k]}</em>{option}</span>)}</div></div> })),
-  ];
-  const [position, setPosition] = useState({ slide: 0, step: 0 });
-  // Navigation only needs each slide's step count; keep it stable across renders.
-  const countsKey = slides.map((item) => item.steps).join(",");
-  const counts = useMemo(() => countsKey.split(",").map(Number), [countsKey]);
-  const forward = useCallback(() => setPosition(({ slide, step }) => step + 1 < counts[slide] ? { slide, step: step + 1 } : slide + 1 < counts.length ? { slide: slide + 1, step: 0 } : { slide, step }), [counts]);
-  const back = useCallback(() => setPosition(({ slide, step }) => step > 0 ? { slide, step: step - 1 } : slide > 0 ? { slide: slide - 1, step: counts[slide - 1] - 1 } : { slide, step }), [counts]);
-  // 谱例翻张：只在当前内容页内部移动（边界即停），与翻页笔的内容页切换互不干扰。
-  const goStep = useCallback((delta: number) => setPosition(({ slide, step }) => {
-    const within = step + delta;
-    return within < 0 || within >= counts[slide] ? { slide, step } : { slide, step: within };
-  }), [counts]);
-  const closeRef = useRef(onClose);
-  useEffect(() => { closeRef.current = onClose; }, [onClose]);
-  // 教师翻页笔 = 方向键/PageUp/PageDown 翻内容页；空格播放/暂停（复用 MelodyPlayer 自带的播放按钮）。
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const togglePlayback = useCallback(() => {
-    stageRef.current?.querySelector<HTMLButtonElement>(".melody-play")?.click();
-  }, []);
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const onWidget = Boolean(target?.closest("button, input, textarea, select, a, summary"));
-      if (event.key === "Escape") { event.preventDefault(); closeRef.current(); }
-      else if (["ArrowRight", "PageDown"].includes(event.key)) { event.preventDefault(); forward(); }
-      else if (["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); back(); }
-      else if (event.key === " " && !onWidget) { event.preventDefault(); togglePlayback(); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [back, forward, togglePlayback]);
-  // 全屏是可选按钮：不支持 Fullscreen API 时按钮不渲染，其余功能不受影响。
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const canFullscreen = typeof document !== "undefined" && document.fullscreenEnabled;
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", onChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", onChange);
-      if (document.fullscreenElement) void document.exitFullscreen?.();
-    };
-  }, []);
-  const toggleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) void document.exitFullscreen?.();
-    else void document.documentElement.requestFullscreen?.().catch(() => {});
-  }, []);
-  // 打开时把焦点移进弹层，Esc 退出后由 closePresent 还给触发按钮。
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => { dialogRef.current?.focus(); }, []);
-  const slide = slides[position.slide];
-  // 内容自适应：某页内容高于舞台时，按可用高度等比缩小（zoom，下限 0.5，
-  // 对应投影可读下限）；缩到下限仍放不下则由舞台从顶部开始滚动
-  // （.present-stage 的 justify-content:safe center 保证溢出时顶部可达、不被裁）。
-  const fitRef = useRef<HTMLDivElement | null>(null);
-  const [fit, setFit] = useState(1);
-  const appliedFit = useRef(1);
-  const slideKey = slide.key;
-  const step = position.step;
-  useLayoutEffect(() => {
-    const stage = stageRef.current, content = fitRef.current;
-    if (!stage || !content) return;
-    let raf = 0;
-    const measure = () => {
-      const style = getComputedStyle(stage);
-      const avail = stage.clientHeight - parseFloat(style.paddingTop || "0") - parseFloat(style.paddingBottom || "0");
-      if (!(avail > 0)) return;
-      const rect = content.getBoundingClientRect();
-      const current = appliedFit.current;
-      const natural = current < 1 ? rect.height / current : rect.height;
-      if (!(natural > 0)) return;
-      // 留 12px 余量：图片解码 / 字体度量会让最终布局比测量值略高，
-      // 不留余量会出现 3~6px 的残余滚动。
-      const target = Math.max(0.5, Math.min(1, (avail - 12) / natural));
-      if (Math.abs(target - current) > 0.01) { appliedFit.current = target; setFit(target); }
-    };
-    measure();
-    const observer = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); });
-    observer.observe(content);
-    observer.observe(stage);
-    return () => { observer.disconnect(); cancelAnimationFrame(raf); };
-  }, [slideKey, step]);
-  return <div ref={dialogRef} className="present" role="dialog" aria-modal="true" aria-label="上课模式" tabIndex={-1}>
-    <div className="present-stage" key={slide.key} ref={stageRef}>
-      <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(position.step)}</div>
-    </div>
-    <footer className="present-bar">
-      <span>{work.name} · 上课模式</span>
-      <div className="present-dots">{slides.map((item, index) => <i key={item.key} className={index === position.slide ? "active" : ""} />)}</div>
-      <div className="present-nav">
-        {canFullscreen && <button type="button" onClick={toggleFullscreen} aria-label={isFullscreen ? "退出全屏" : "进入全屏"}>{isFullscreen ? "取消全屏" : "全屏"}</button>}
-        <button type="button" onClick={back} aria-label="上一段"><WorkbenchIcon name="left" /><span>上一段</span></button>
-        <button type="button" onClick={forward} aria-label="下一段"><WorkbenchIcon name="right" /><span>下一段</span></button>
-        <button type="button" onClick={onClose}>退出</button>
-      </div>
-    </footer>
   </div>;
 }
