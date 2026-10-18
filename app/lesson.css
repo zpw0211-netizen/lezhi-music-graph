@@ -299,6 +299,10 @@
 .melody-play svg { width:20px; height:20px; fill:currentColor; }
 .melody-play:hover { filter:brightness(1.06); }
 .melody-key { font-size:13px; font-weight:650; color:var(--text-secondary); font-variant-numeric:tabular-nums; }
+.melody-instrument { display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--text-secondary); }
+.melody-instrument select { min-width:90px; height:32px; padding:0 24px 0 10px; border:1px solid var(--border); border-radius:999px; background:var(--surface); color:var(--text-primary); font:inherit; cursor:pointer; }
+.melody-instrument select:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.melody-instrument select:disabled { cursor:default; opacity:.7; }
 .melody-tempo { display:inline-flex; align-items:center; gap:8px; margin-left:auto; font-size:12px; color:var(--text-secondary); }
 .melody-tempo input { width:110px; accent-color:var(--accent); }
 .melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }

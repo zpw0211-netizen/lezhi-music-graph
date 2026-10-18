@@ -3,8 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { displayMeter, midiOf, notation } from "../../lib/lesson/melodies";
 import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
-import { getPianoAudioContext, loadPianoSampler, playPianoSample } from "../../lib/lesson/piano-sampler";
-import type { PianoSampler } from "../../lib/lesson/piano-sampler";
+import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
+import { INSTRUMENTS, loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
+import type { InstrumentId, InstrumentSampler } from "../../lib/lesson/instrument-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 
@@ -106,9 +107,8 @@ function getBeamRuns(notes: MelodyNote[], meter: string): BeamRun[] {
   return runs;
 }
 
-// One audio context and one decoded piano bank for the whole session, so
-// switching excerpts or lessons never re-decodes the samples.
-let sharedSampler: PianoSampler | null = null;
+// Keep decoded instrument banks for the session so switching excerpts does not re-decode samples.
+const sharedSamplers: Partial<Record<InstrumentId, InstrumentSampler>> = {};
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
 const TIMBRES = [
   { wave: "triangle" as OscillatorType, overtone: 0.5, level: 1 },
@@ -146,8 +146,9 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   useEffect(() => { soundingCallback.current = onSoundingNotes; }, [onSoundingNotes]);
   const lines = useMemo<Line[]>(() => [{ label: melody.label ?? "旋律", bars: melody.bars }, ...(melody.voices ?? [])], [melody]);
   const [playing, setPlaying] = useState(false);
-  const [loadingPiano, setLoadingPiano] = useState(false);
-  const [audioMode, setAudioMode] = useState<"unknown" | "piano" | "synth">("unknown");
+  const [instrument, setInstrument] = useState<InstrumentId>("piano");
+  const [loadingSampler, setLoadingSampler] = useState(false);
+  const [audioMode, setAudioMode] = useState<"unknown" | "sampled" | "synth">("unknown");
   const [current, setCurrent] = useState<number[]>([]);
   const [announcement, setAnnouncement] = useState("");
   const [tempo, setTempo] = useState(melody.bpm);
@@ -155,7 +156,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
   const mounted = useRef(true);
   const playbackActive = useRef(false);
-  const pianoLoading = useRef(false);
+  const samplerLoading = useRef(false);
   const stopRef = useRef<() => void>(() => {});
   const playRequestRef = useRef(0);
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
@@ -170,12 +171,13 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     });
     return byLevel;
   })), [lines, melody.meter]);
+  const instrumentLabel = INSTRUMENTS.find((item) => item.id === instrument)?.label ?? "钢琴";
 
   const stop = useCallback(() => {
-    const shouldAnnounceStop = playbackActive.current || pianoLoading.current;
+    const shouldAnnounceStop = playbackActive.current || samplerLoading.current;
     playRequestRef.current += 1;
     playbackActive.current = false;
-    pianoLoading.current = false;
+    samplerLoading.current = false;
     stopRef.current();
     stopRef.current = () => {};
     setPlaying(false);
@@ -199,31 +201,32 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor) {
       setAudioMode("synth");
-      setAnnouncement("钢琴音色加载失败，改用电子音色");
+      setAnnouncement(instrumentLabel + "音色加载失败，改用电子音色");
       return;
     }
     const ctx = getPianoAudioContext();
 
-    let sampler = sharedSampler;
-    let pianoLoadFailed = false;
-    if (!rhythmOnly && audioMode !== "synth" && !sampler) {
-      pianoLoading.current = true;
-      setLoadingPiano(true);
-      setAnnouncement("载入钢琴音色…");
+    let sampler = sharedSamplers[instrument] ?? null;
+    let samplerLoadFailed = false;
+    if (!rhythmOnly && !sampler) {
+      samplerLoading.current = true;
+      setLoadingSampler(true);
+      setAnnouncement("载入" + instrumentLabel + "音色…");
       try {
         await ctx.resume();
-        sampler = await loadPianoSampler(ctx);
-        sharedSampler = sampler;
-        if (mounted.current) setAudioMode("piano");
+        sampler = await loadInstrumentSampler(ctx, instrument);
+        sharedSamplers[instrument] = sampler;
+        if (mounted.current) setAudioMode("sampled");
       } catch {
-        pianoLoadFailed = true;
+        samplerLoadFailed = true;
         if (mounted.current) setAudioMode("synth");
       } finally {
-        pianoLoading.current = false;
-        if (mounted.current) setLoadingPiano(false);
+        samplerLoading.current = false;
+        if (mounted.current) setLoadingSampler(false);
       }
     } else {
       await ctx.resume().catch(() => undefined);
+      if (sampler && mounted.current) setAudioMode("sampled");
     }
     // The reader may have left the lesson while the samples were loading.
     if (!mounted.current || request !== playRequestRef.current) return;
@@ -260,7 +263,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
             }
           } else if (sampler) {
             const level = voice === 0 ? 1 : voice === 1 ? 0.7 : 0.58;
-            playPianoSample(ctx, sampler, midiOf(melody, note), t, length, master, level);
+            playInstrumentSample(ctx, instrument, sampler, midiOf(melody, note), t, length, master, level);
           } else {
             const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
             const timbre = TIMBRES[voice] ?? TIMBRES[2];
@@ -313,7 +316,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     };
     playbackActive.current = true;
     setPlaying(true);
-    setAnnouncement(pianoLoadFailed ? "钢琴音色加载失败，改用电子音色。开始播放" : "开始播放");
+    setAnnouncement(samplerLoadFailed ? instrumentLabel + "音色加载失败，改用电子音色。开始播放" : "开始播放");
   };
 
   const renderNoteHead = (note: MelodyNote, key: number | string, active: boolean, beamSegments?: BeamFragment[]) => {
@@ -348,20 +351,25 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className={`melody-play ${playing ? "is-playing" : ""}`} onClick={play} disabled={loadingPiano} aria-label={loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
-        {!loadingPiano && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
-        {loadingPiano ? "载入钢琴音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
+      <button type="button" className={`melody-play ${playing ? "is-playing" : ""}`} onClick={play} disabled={loadingSampler} aria-label={loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+        {!loadingSampler && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
+        {loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>
       <span role="status" aria-live="polite" aria-atomic="true" style={VISUALLY_HIDDEN}>{announcement}</span>
       <span className="melody-key">{melody.key} · {displayMeter(melody.meter)}</span>
+      <label className="melody-instrument">音色
+        <select value={instrument} disabled={playing || loadingSampler} onChange={(event) => { setInstrument(event.target.value as InstrumentId); setAudioMode("unknown"); }}>
+          {INSTRUMENTS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+        </select>
+      </label>
       {lines.length > 1 && <span className="melody-voices" role="group" aria-label="选择声部">
         {lines.map((line, k) => <label key={line.label} className={`voice-${k}`}>
-          <input type="checkbox" checked={enabled[k]} disabled={playing || loadingPiano} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
+          <input type="checkbox" checked={enabled[k]} disabled={playing || loadingSampler} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
           {line.label}
         </label>)}
       </span>}
       <label className="melody-tempo">速度
-        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingPiano} onChange={(event) => setTempo(Number(event.target.value))} />
+        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingSampler} onChange={(event) => setTempo(Number(event.target.value))} />
         <b>♩={tempo}</b>
       </label>
     </div>
@@ -406,6 +414,6 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         })}
       </span>)}
     </div>
-    <p className="melody-source">{melody.source}。{rhythmOnly ? "节奏示范，仅供练习参考。" : audioMode === "synth" ? "电子音色示范，仅供视唱参考。" : <>钢琴音色示范，仅供视唱参考。钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）。</>}</p>
+    <p className="melody-source">{melody.source}。{rhythmOnly ? "节奏示范，仅供练习参考。" : audioMode === "synth" ? "所选音色未能载入，暂用电子音色示范。" : instrument === "piano" ? <>钢琴音色示范，仅供视唱参考。钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）。</> : <>{instrumentLabel}音色示范，仅供视唱参考。采样来自 <a href="https://github.com/mrbumpy409/GeneralUser-GS" target="_blank" rel="noreferrer">GeneralUser GS</a>（S. Christian Collins；<a href="https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/LICENSE.txt" target="_blank" rel="noreferrer">许可说明</a>）。</>}</p>
   </div>;
 }
