@@ -104,10 +104,12 @@
   .ink-app.network-mode .graph-rangebar .zoom-slider{width:46px}
 }
 @media(max-width:768px){
+  /* 页头、学段/册别选择和两行工具栏在手机上合计约 270px；画布若按 200px 预留，
+     底部会超出屏幕，居中的图谱看起来偏下。 */
   .ink-app.theme-light.network-mode .neo-canvas{
-    height:max(55svh,calc(100dvh - 200px));
+    height:max(55svh,calc(100dvh - 280px));
     min-height:55svh;
-    flex:0 0 max(55svh,calc(100dvh - 200px));
+    flex:0 0 max(55svh,calc(100dvh - 280px));
   }
 }
 @media(max-width:800px){.theme-light .explorer-sidebar{width:250px;flex-basis:250px}.explorer-brand small{font-size:10px}}

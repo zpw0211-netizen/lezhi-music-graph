@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { planGraphQuery } from "../../lib/graph/graph-actions";
 import { enrichGraph, graphAnswer, type AnswerResult, type EvidencePayload, type RagGraph } from "../../lib/ai/graph-rag";
+import { fetchWithRetry } from "../../lib/app/fetch-retry";
 const formatPageReferences = (text: string) =>
   text.replace(/(教材|PDF)?\s*第\s*(\d+(?:\s*[-–—]\s*\d+)?)\s*页/g, (_match, label: string | undefined, page: string) => `${label === "PDF" ? "PDF " : label ?? ""}第 ${page.trim()} 页`);
 const EXAMPLES = ["只看音乐人物", "只看作曲知识联系", "显示八年级音乐作品", "只看蒙古族音乐", "查找《牧歌》和蒙古族的知识联系", "查找进行曲相关作品", "显示节奏相关知识"];
@@ -19,7 +20,7 @@ export function SmartGraphQuery({ graph, execute, assetUrl, onGraphFocus, notice
       const scoped = plan.bookKeys.length ? { ...graph, books: graph.books.filter(book => plan.bookKeys.includes(book.key)), entities: graph.entities.filter(entity => entity.bookKeys?.some(key => plan.bookKeys.includes(key))), relationships: graph.relationships.filter(edge => edge.bookKeys?.some(key => plan.bookKeys.includes(key))), occurrences: graph.occurrences?.filter(item => plan.bookKeys.includes(item.textbook)) } : graph;
       const retrieval = await enrichGraph(scoped, q, [], key => {
         let request = cache.current.get(key);
-        if (!request) { request = fetch(assetUrl(`data/evidence/${key}.json`)).then(response => { if (!response.ok) throw Error("教材出处加载失败"); return response.json() as Promise<EvidencePayload>; }); cache.current.set(key, request); request.catch(() => cache.current.delete(key)); }
+        if (!request) { request = fetchWithRetry(assetUrl(`data/evidence/${key}.json`)).then(response => { if (!response.ok) throw Error("教材出处加载失败"); return response.json() as Promise<EvidencePayload>; }); cache.current.set(key, request); request.catch(() => cache.current.delete(key)); }
         return request;
       });
       setAnswer(graphAnswer(retrieval, q));

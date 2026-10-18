@@ -222,9 +222,10 @@ export function AtlasPage({ books, stage, onStageChange, onOpenWork }: {
         .map(([label]) => label),
     ];
   }, [mode, modeRegions]);
+  // 当前学段 / 册别 / 体裁下没有作品的地点不列出（例如只在初中教材出现的国家，在“小学”下不显示“0 首”）。
   const sortedLocations = useMemo(
     () =>
-      [...modeRegions].sort(
+      [...modeRegions].filter((region) => (visibleWorksByRegion.get(region.id)?.length ?? 0) > 0).sort(
         (left, right) =>
           (visibleWorksByRegion.get(right.id)?.length ?? 0) -
             (visibleWorksByRegion.get(left.id)?.length ?? 0) ||

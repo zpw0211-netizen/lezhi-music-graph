@@ -3,6 +3,7 @@ import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent, ty
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
 import { PendingKnowledge } from "./PendingKnowledge";
 import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
+import { fetchWithRetry } from "../../lib/app/fetch-retry";
 
 // 首页示例问题分「学生常问 / 备课常用」两组，全部逐题跑过本地图谱问答
 // （scripts/test-sample-questions.mjs）：答案非空、引用教材证据、口径为 supported。
@@ -87,7 +88,7 @@ export function AssistantPage({
   const [units, setUnits] = useState<UnitCatalog[]>([]);
   useEffect(() => {
     let active = true;
-    fetch(assetUrl("data/units.json"))
+    fetchWithRetry(assetUrl("data/units.json"))
       .then(response => response.json())
       .then(data => { if (active && Array.isArray(data)) setUnits(data as UnitCatalog[]); })
       .catch(() => {});
@@ -104,7 +105,7 @@ export function AssistantPage({
   const loadEvidence = (key: string) => {
     let promise = cache.current.get(key);
     if (!promise) {
-      promise = fetch(assetUrl(`data/evidence/${key}.json`)).then(async response => {
+      promise = fetchWithRetry(assetUrl(`data/evidence/${key}.json`)).then(async response => {
         if (!response.ok) throw new Error("教材出处读取失败");
         return response.json() as Promise<EvidencePayload>;
       });

@@ -12,6 +12,7 @@ import { loadYearSupplement } from "../../lib/timeline/yearSupplement";
 import { melodiesFor, type Melody } from "../../lib/lesson/melodies";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { unitArtPath } from "../../lib/app/unit-art";
+import { fetchWithRetry } from "../../lib/app/fetch-retry";
 import {
   BOOKS,
   BOOK_ORDER,
@@ -52,7 +53,7 @@ const DENSE_TIER_COUNT = 4;
 const COLUMN_WIDTH = 184;
 
 function loadJson<T>(path: string): Promise<T> {
-  if (!cache.has(path)) cache.set(path, fetch(publicAssetUrl(`data/${path}`)).then(response => {
+  if (!cache.has(path)) cache.set(path, fetchWithRetry(publicAssetUrl(`data/${path}`)).then(response => {
     if (!response.ok) throw new Error("年表资料读取失败，请重试。");
     return response.json();
   }).catch(error => { cache.delete(path); throw error; }));
@@ -171,7 +172,8 @@ function StudentTimelineEntry({
       </div>
       <div className="student-feature-quiz">
         <p className="student-quiz-label">听音挑战 <span>约 1 分钟</span></p>
-        <h3>这首作品，大约诞生于哪个时期？</h3>
+        {/* 两个短语各自不拆行，避免最后一行只剩“期？”。 */}
+        <h3><span className="nowrap-phrase">这首作品，</span><span className="nowrap-phrase">大约诞生于哪个时期？</span></h3>
         <p className="student-quiz-hint">听听旋律的情绪和节奏，选一个你觉得接近的年代。</p>
         {choices.length > 0 ? <fieldset className="student-era-choices" aria-label="选择作品年代">
           {choices.map((era) => <label key={era.id} className={answer === era.id ? "is-picked" : ""}>

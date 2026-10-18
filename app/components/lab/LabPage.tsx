@@ -910,7 +910,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
 
     <section className="lupan-stage" aria-label="律盘练习">
       <aside className="lupan-stick-board" aria-label="选择音阶">
-        <p className="lupan-side-lead">以耳朵认识五声，<br />再从不同正声出发听调式。</p>
+        <p className="lupan-side-lead">以耳朵认识五声，<br /><span>再从不同正声出发</span><span>听调式。</span></p>
         <p className="lupan-stage-label">当前音阶</p>
         <div className="lupan-current-scale-card">
           <b>{scaleTitle}</b>

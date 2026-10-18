@@ -23,6 +23,7 @@ import { AppTopNav } from "../AppTopNav";
 import { BrandMark } from "./BrandMark";
 import { BrandWordmark } from "./BrandWordmark";
 import type { MelodyPlayer as MelodyPlayerComponent } from "../lesson/MelodyPlayer";
+import { fetchWithRetry } from "../../lib/app/fetch-retry";
 type PortalEntity = { id: string; name: string; type: string; category?: string; textbookCount?: number; degree?: number; bookKeys?: string[] };
 type PortalRelationship = { subject: string; objectId?: string | null; predicate: string; label?: string };
 type PortalBook = { key: string; title: string; grade: number; semester: string; entityCount: number; tripleCount: number; workCount: number; pages: number };
@@ -142,7 +143,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
   };
   useEffect(() => {
     let active = true;
-    fetch(publicAssetUrl("data/units.json"))
+    fetchWithRetry(publicAssetUrl("data/units.json"))
       .then(response => response.ok ? response.json() as Promise<PortalUnit[]> : [])
       .then(payload => { if (active && Array.isArray(payload)) setUnits(payload); })
       .catch(() => undefined);
@@ -209,7 +210,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
               <p className="home-scroll-overline">卷 {volume} · {EDITION.label}</p>
               <h3>{shortBookTitle(book)}</h3>
               <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
-              <p className="home-scroll-countline">{bookUnits.length} 个单元 · {fmt(workCount)} 首作品</p>
+              {/* 单元目录还在加载时不显示“0 个单元”，但保留这一行的高度，避免内容跳动。 */}
+              <p className="home-scroll-countline" aria-hidden={!bookUnits.length} style={bookUnits.length ? undefined : { visibility: "hidden" }}>{bookUnits.length} 个单元 · {fmt(workCount)} 首作品</p>
               <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>
                 <button type="button" aria-label={`${unit.numeral || unit.order}，${unit.name || unit.title}，进入${book.title}`} onClick={() => openUnit(book, unit)}>
                   <span className="home-unit-number">{unit.numeral || unit.order}</span><span className="home-unit-title">{unit.title || unit.name}</span>

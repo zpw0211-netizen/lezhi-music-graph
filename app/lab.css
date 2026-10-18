@@ -104,6 +104,8 @@
   color: var(--lupan-ink-2);
   font: 14px/1.9 var(--serif, "Songti SC", "STSong", serif);
 }
+/* 窄栏里按词组换行，避免「式。」单独落到下一行。 */
+.lupan-side-lead span { display: inline-block; }
 .lupan-stage-label {
   margin: 0 0 12px;
   color: var(--lupan-ink-3);

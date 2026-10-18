@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { publicAssetUrl } from "../lib/app/assets";
 import type { Book, BookDataPayload, BookDirectory, CanonicalGraph, Dataset, GraphIndexPayload } from "../lib/app/types";
+import { fetchWithRetry } from "../lib/app/fetch-retry";
 
 const bookPayloadCache = new Map<string, BookDataPayload>();
 const bookRequestCache = new Map<string, Promise<BookDataPayload>>();
@@ -12,7 +13,7 @@ function requestBookData(bookKey: string) {
   const pending = bookRequestCache.get(bookKey);
   if (pending) return pending;
 
-  const request = fetch(publicAssetUrl(`data/books/${bookKey}.json`))
+  const request = fetchWithRetry(publicAssetUrl(`data/books/${bookKey}.json`))
     .then(async (response) => {
       if (!response.ok) throw new Error(`Book data unavailable: ${bookKey}`);
       const payload = (await response.json()) as BookDataPayload;
@@ -101,7 +102,7 @@ export function useGraphIndex() {
   useEffect(() => {
     let active = true;
     const load = async () => {
-      const response = await fetch(publicAssetUrl("data/graph-index.json"));
+      const response = await fetchWithRetry(publicAssetUrl("data/graph-index.json"));
       if (!response.ok) throw new Error("graph-index unavailable");
       const index = (await response.json()) as GraphIndexPayload;
       if (!Array.isArray(index.dataset.books) || !index.dataset.books.length) throw new Error("graph-index is empty");

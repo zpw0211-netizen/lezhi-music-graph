@@ -35,6 +35,7 @@ import { WorkbenchIcon } from "../WorkbenchIcon";
 import { GraphContextMenu } from "./GraphContextMenu";
 import { NodeInspector, type InspectorEvidence, type InspectorFact } from "./NodeInspector";
 import type { FullGraphLayoutMode, FullGraphView, GraphExplorerState } from "./useGraphExplorer";
+import { fetchWithRetry } from "../../lib/app/fetch-retry";
 
 const SigmaGraphScene = nextDynamic<SigmaGraphSceneProps<Entity>>(
   () => import("../graph/SigmaGraphScene").then((module) => module.SigmaGraphScene),
@@ -270,7 +271,7 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
       if (evidencePayloads[key]) continue;
       let request = evidenceRequestCache.current.get(key);
       if (!request) {
-        request = fetch(publicAssetUrl(`data/evidence/${key}.json`)).then(async (response) => {
+        request = fetchWithRetry(publicAssetUrl(`data/evidence/${key}.json`)).then(async (response) => {
           if (!response.ok) throw new Error(`evidence ${key} unavailable`);
           return (await response.json()) as EvidencePayload;
         });
@@ -1027,7 +1028,8 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
     } else explorer.selectEntity(selected, currentBook, true);
   };
   const bookTabsContent = hasMultipleStages ? <StageBookPicker
-    allOption={{ key: "__all__", label: `${PUBLISHED_BOOK_COUNT_LABEL}总览` }}
+    // 总览始终是全部册别（不随学段筛选），写明“全部”，免得和学段选项对不上。
+    allOption={{ key: "__all__", label: `全部${PUBLISHED_BOOK_COUNT_LABEL}总览` }}
     ariaLabel="选择图谱教材册别"
     className="stage-book-picker--graph"
     books={books}

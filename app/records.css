@@ -130,7 +130,9 @@
 .stage-book-picker--graph .stage-book-picker__books button.is-active,
 .stage-book-picker--graph .stage-book-picker__books button[aria-current="page"] { border-color: var(--pine, #1F4A3C); background: var(--pine, #1F4A3C); color: var(--sheet, #FBF8F0); }
 .stage-book-picker--page { width: 100%; margin: 0 0 14px; }
-.stage-book-picker--page .stage-book-picker__books { flex-wrap: wrap; }
+/* 学段开关单独一行，册别排成每行五个的整齐网格，不会剩一个册别孤零零地换到下一行。 */
+.stage-book-picker--page .stage-book-picker__desktop { flex-direction: column; align-items: flex-start; gap: 8px; }
+.stage-book-picker--page .stage-book-picker__books { display: grid; grid-template-columns: repeat(5, max-content); justify-items: start; row-gap: 2px; }
 
 @media (max-width: 760px) {
   .stage-book-picker__desktop { display: none; }
@@ -795,7 +797,7 @@
 
 
 .records-score-play { display: block; margin-top: 8px; }
-.records-score-play .melody-controls { display: block; margin: 0; }
+.records-score-play .melody-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0; }
 .records-score-play .melody-key,
 .records-score-play .melody-voices,
 .records-score-play .melody-tempo,

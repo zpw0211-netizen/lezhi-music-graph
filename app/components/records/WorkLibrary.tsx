@@ -15,6 +15,7 @@ import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import { unitArtPath } from "../../lib/app/unit-art";
 import type { BookDataStatus } from "../../hooks/useGraphIndex";
 import { playPageTurn, playStamp, readBookSoundOn, saveBookSoundOn } from "../../lib/records/book-sounds";
+import { fetchWithRetry } from "../../lib/app/fetch-retry";
 
 type UnitWork = {
   id: string;
@@ -352,7 +353,7 @@ export function WorkLibrary({
 
   useEffect(() => {
     let active = true;
-    fetch(publicAssetUrl("data/units.json"))
+    fetchWithRetry(publicAssetUrl("data/units.json"))
       .then(async (response) => {
         if (!response.ok) throw new Error("单元数据读取失败");
         const payload = (await response.json()) as unknown;

@@ -1,6 +1,7 @@
 import { publicAssetUrl } from "../app/assets";
 import { loadPianoSampler, playPianoSample } from "./piano-sampler";
 import type { PianoSampler } from "./piano-sampler";
+import { fetchWithRetry } from "../app/fetch-retry";
 
 export const INSTRUMENTS = [
   { id: "piano", label: "钢琴" },
@@ -32,11 +33,11 @@ export function loadInstrumentSampler(context: AudioContext, instrument: Instrum
     ? loadPianoSampler(context).then((sampler) => sampler)
     : (async () => {
       const root = `media/instruments/${instrument}`;
-      const response = await fetch(publicAssetUrl(`${root}/loops.json`));
+      const response = await fetchWithRetry(publicAssetUrl(`${root}/loops.json`));
       if (!response.ok) throw new Error(`${instrument} loop data request failed (${response.status})`);
       const loops = await response.json() as Record<string, { start: number; end: number }>;
       const samples = await Promise.all(SAMPLE_MIDIS.map(async (midi) => {
-        const sampleResponse = await fetch(publicAssetUrl(`${root}/${sampleFileName(midi)}`));
+        const sampleResponse = await fetchWithRetry(publicAssetUrl(`${root}/${sampleFileName(midi)}`));
         if (!sampleResponse.ok) throw new Error(`${instrument} sample request failed (${sampleResponse.status})`);
         const buffer = await context.decodeAudioData(await sampleResponse.arrayBuffer());
         const loop = loops[String(midi)];

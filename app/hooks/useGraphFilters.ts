@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ALL_SCHEMA_KEYS, schemaCategoryFor, type SchemaCategoryKey } from "../graph-schema";
 import type { GraphEntity, GraphRelationship } from "../lib/graph/types";
 import type { EvidencePayload } from "../lib/ai/graph-rag";
+import { fetchWithRetry } from "../lib/app/fetch-retry";
 
 export type PropertyFilters = { books: string[]; grades: string[]; semesters: string[]; entityType: string; crossBook: string; minConfidence: string; evidence: string; keyword: string };
 export const DEFAULT_PROPERTIES: PropertyFilters = { books: [], grades: [], semesters: [], entityType: "all", crossBook: "all", minConfidence: "0", evidence: "all", keyword: "" };
@@ -45,7 +46,7 @@ export function useGraphFilters(entities: FilterEntity[], relationships: GraphRe
       const payloads = await Promise.all(books.map(book => {
         let promise = cache.current.get(book.key);
         if (!promise) {
-          promise = fetch(assetUrl(`data/evidence/${book.key}.json`)).then(async response => { if (!response.ok) throw Error("Evidence unavailable"); return response.json() as Promise<EvidencePayload>; });
+          promise = fetchWithRetry(assetUrl(`data/evidence/${book.key}.json`)).then(async response => { if (!response.ok) throw Error("Evidence unavailable"); return response.json() as Promise<EvidencePayload>; });
           cache.current.set(book.key, promise); promise.catch(() => cache.current.delete(book.key));
         }
         return promise;
