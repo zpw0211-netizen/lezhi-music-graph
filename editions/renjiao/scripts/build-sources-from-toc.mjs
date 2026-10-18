@@ -2,7 +2,7 @@
 // Input: editions/renjiao/data/toc/<book>.json (read from the PDF text layer by position and checked
 // against the 目录 page images) and app/lib/lesson/melodies-pep-<book>.ts.
 // - Every 目录 item becomes an entry under its unit with its section (栏目) as the learning mode.
-// - An item whose title has a transcribed melody is a musical work; other items are section activities.
+// - Items with a transcribed melody, a score crop, or a song section become musical works.
 // - A melody whose title is not a 目录 item is added as a work at the page its transcription cites.
 // Per-page facts are kept in editions/renjiao/data/lesson-facts.mjs.
 // Usage: node editions/renjiao/scripts/build-sources-from-toc.mjs [book …]
@@ -14,6 +14,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", ".
 const EDITION = path.join(ROOT, "editions", "renjiao");
 const TOC_DIR = path.join(EDITION, "data", "toc");
 const registry = JSON.parse(readFileSync(path.join(EDITION, "data", "books.json"), "utf8"));
+const scorePages = JSON.parse(readFileSync(path.join(EDITION, "data", "lesson-scores.json"), "utf8"));
 const NUMERALS = "一二三四五六七八九十";
 const bare = (name) => String(name).replace(/^《|》$/g, "").replace(/\s+/g, "");
 const SONG_SECTIONS = new Set(["小小歌唱家", "印在心里的歌"]);
@@ -46,6 +47,10 @@ for (const book of process.argv.slice(2).length ? process.argv.slice(2) : regist
   units.forEach((u) => u.items.forEach((item, i) => { if (!item[0]) item[0] = i ? u.items[i - 1][0] : ""; }));
 
   const melodies = melodyPages(book);
+  const scoresFor = (title) => scorePages[`pep-${book}`]?.[bare(title)] ?? [];
+  const outputScores = Object.fromEntries(
+    Object.entries(scorePages[`pep-${book}`] ?? {}).map(([title, pages]) => [bare(title), pages]),
+  );
   const used = new Set();
   const contents = units.map((u, i) => {
     const no = i + 1;
@@ -56,7 +61,7 @@ for (const book of process.argv.slice(2).length ? process.argv.slice(2) : regist
       if (seen.has(bare(title))) continue;
       seen.add(bare(title));
       const mode = section.startsWith("学习项目") ? "学习项目" : section;
-      const isWork = melodies.has(bare(title)) || SONG_SECTIONS.has(mode);
+      const isWork = melodies.has(bare(title)) || SONG_SECTIONS.has(mode) || scoresFor(title).length > 0;
       if (melodies.has(bare(title))) used.add(bare(title));
       items.push([mode, title, page, isWork ? (SONG_SECTIONS.has(mode) ? "歌曲" : "音乐作品") : mode]);
     }
@@ -78,7 +83,7 @@ for (const book of process.argv.slice(2).length ? process.argv.slice(2) : regist
 
 // 人教版《艺术·唱游·音乐》/《音乐》${info.fullName}（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
-// 标题有旋律录入（app/lib/lesson/melodies-pep-${book}.ts）的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
+// 有旋律录入或谱面裁图的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
 // 逐页作品事实集中维护于 editions/renjiao/data/lesson-facts.mjs；未核对的条目不推测。
 
 const textbook = {
@@ -98,9 +103,12 @@ const CONTENTS = [
 ${lines.join("\n")}
 ];
 
+const SCORE_PAGES = ${JSON.stringify(outputScores)};
+const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\\s+/g, "")] ?? [];
+
 textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, facts: [] }],
-  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-${book}", title) })),
+  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-${book}", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
 
 export default textbook;

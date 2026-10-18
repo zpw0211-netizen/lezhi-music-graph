@@ -1,7 +1,9 @@
+import { factsForItem } from "../../data/lesson-facts.mjs";
+
 // 人教版《艺术·唱游·音乐》/《音乐》七年级下册（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
-// 标题有旋律录入（app/lib/lesson/melodies-pep-g7s2.ts）的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
-// 逐页的作品资料（作者、体裁、谱例等）待逐册识读后补充。
+// 有旋律录入或谱面裁图的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
+// 逐页作品事实集中维护于 editions/renjiao/data/lesson-facts.mjs；未核对的条目不推测。
 
 const textbook = {
   key: "pep-g7s2",
@@ -46,9 +48,12 @@ const CONTENTS = [
   ]],
 ];
 
+const SCORE_PAGES = {"游击队歌":[[6,0.04,0.035,0.96,0.94]],"牧歌":[[52,0.04,0.035,0.96,0.94]],"百鸟朝凤":[[63,0.04,0.035,0.96,0.94]],"中国人民解放军军歌":[[84,0.04,0.035,0.96,0.94]],"保卫黄河":[[86,0.04,0.035,0.96,0.94]]};
+const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
+
 textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, facts: [] }],
-  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: [] })),
+  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g7s2", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
 
 export default textbook;

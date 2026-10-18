@@ -1,7 +1,9 @@
+import { factsForItem } from "../../data/lesson-facts.mjs";
+
 // 人教版《艺术·唱游·音乐》/《音乐》一年级下册（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
-// 标题有旋律录入（app/lib/lesson/melodies-pep-g1s2.ts）的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
-// 逐页的作品资料（作者、体裁、谱例等）待逐册识读后补充。
+// 有旋律录入或谱面裁图的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
+// 逐页作品事实集中维护于 editions/renjiao/data/lesson-facts.mjs；未核对的条目不推测。
 
 const textbook = {
   key: "pep-g1s2",
@@ -39,7 +41,7 @@ const CONTENTS = [
     ["小小歌唱家","绿色的祖国",24,"歌曲"],
     ["趣味乐理","升号与降号",25,"趣味乐理"],
     ["游戏乐翻天","眼力大比拼",26,"游戏乐翻天"],
-    ["小小演奏家","小松树",27,"小小演奏家"],
+    ["小小演奏家","小松树",27,"音乐作品"],
     ["音乐万花筒","致春天",28,"音乐万花筒"],
   ]],
   [4, "第四单元 一二三，转转转", 30, [
@@ -78,9 +80,12 @@ const CONTENTS = [
   ]],
 ];
 
+const SCORE_PAGES = {"爱的奉献":[[3,0.04,0.035,0.96,0.94]],"摇篮曲":[[5,0.04,0.035,0.96,0.94]],"找朋友":[[14,0.04,0.035,0.96,0.94]],"柳树姑娘":[[21,0.04,0.035,0.96,0.94]],"绿色的祖国":[[24,0.04,0.035,0.96,0.94]],"小松树":[[27,0.04,0.035,0.96,0.94]],"溜冰圆舞曲":[[31,0.04,0.035,0.96,0.94]],"蓝色多瑙河圆舞曲":[[31,0.04,0.035,0.96,0.94]],"请你唱首歌吧":[[34,0.04,0.035,0.96,0.94]],"劳动最光荣":[[38,0.04,0.035,0.96,0.94]],"勤快人和懒惰人":[[40,0.04,0.035,0.96,0.94]],"打麦号子":[[41,0.04,0.035,0.96,0.94]],"牧童谣":[[44,0.04,0.035,0.96,0.94]],"老爷爷赶鹅":[[48,0.04,0.035,0.96,0.94]],"观灯":[[50,0.04,0.035,0.96,0.94]],"在钟表店里":[[51,0.04,0.035,0.96,0.94]],"小邋遢":[[60,0.04,0.035,0.96,0.94]],"大风车":[[61,0.04,0.035,0.96,0.94]]};
+const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
+
 textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, facts: [] }],
-  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: [] })),
+  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g1s2", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
 
 export default textbook;

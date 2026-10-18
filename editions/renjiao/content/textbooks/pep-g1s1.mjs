@@ -2,7 +2,7 @@ import { factsForItem } from "../../data/lesson-facts.mjs";
 
 // 人教版《艺术·唱游·音乐》/《音乐》一年级上册（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
-// 标题有旋律录入（app/lib/lesson/melodies-pep-g1s1.ts）的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
+// 有旋律录入或谱面裁图的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
 // 逐页作品事实集中维护于 editions/renjiao/data/lesson-facts.mjs；未核对的条目不推测。
 
 const textbook = {
@@ -52,7 +52,7 @@ const CONTENTS = [
     ["游戏乐翻天","我的“身体打击乐”",38,"游戏乐翻天"],
     ["小小演奏家","多样的课堂打击乐器",40,"小小演奏家"],
     ["创乐工坊","数鸭子",41,"音乐作品"],
-    ["情境表演","玩具兵进行曲",42,"情境表演"],
+    ["情境表演","玩具兵进行曲",42,"音乐作品"],
     ["游戏乐翻天","我家门前有条河",44,"游戏乐翻天"],
     ["小小歌唱家","乃哟乃",46,"歌曲"],
   ]],
@@ -82,9 +82,12 @@ const CONTENTS = [
   ]],
 ];
 
+const SCORE_PAGES = {"新年好":[[17,0.08,0.54,0.92,0.83]],"祖国祖国我们爱你":[[22,0.07,0.07,0.93,0.55],[23,0.05,0.07,0.95,0.27]],"doremi之歌":[[28,0.07,0.23,0.93,0.75]],"洋娃娃和小熊跳舞":[[32,0.07,0.3,0.93,0.63]],"娃哈哈":[[34,0.07,0.08,0.93,0.55]],"数鸭子":[[41,0.07,0.13,0.93,0.6]],"玩具兵进行曲":[[42,0.07,0.15,0.93,0.68]],"乃哟乃":[[46,0.07,0.16,0.93,0.51]],"快乐的罗梭":[[56,0.07,0.09,0.93,0.44]],"中华人民共和国国歌":[[64,0.07,0.04,0.93,0.74]],"共产儿童团歌":[[66,0.07,0.05,0.93,0.62]],"小夜曲":[[72,0.07,0.04,0.93,0.52]],"我和小提琴":[[73,0.07,0.04,0.93,0.61]]};
+const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
+
 textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, facts: [] }],
-  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g1s1", title) })),
+  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g1s1", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
 
 export default textbook;

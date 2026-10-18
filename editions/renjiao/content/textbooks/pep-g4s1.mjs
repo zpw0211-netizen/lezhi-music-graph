@@ -2,7 +2,7 @@ import { factsForItem } from "../../data/lesson-facts.mjs";
 
 // 人教版《艺术·唱游·音乐》/《音乐》四年级上册（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
-// 标题有旋律录入（app/lib/lesson/melodies-pep-g4s1.ts）的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
+// 有旋律录入或谱面裁图的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
 // 逐页作品事实集中维护于 editions/renjiao/data/lesson-facts.mjs；未核对的条目不推测。
 
 const textbook = {
@@ -60,16 +60,19 @@ const CONTENTS = [
     ["小小歌唱家","我有一个梦",52,"歌曲"],
     ["创乐工坊","红色的旋律",54,"创乐工坊"],
     ["创乐工坊","游击队歌",54,"音乐作品"],
-    ["小小演奏家","鸽子",56,"小小演奏家"],
+    ["小小演奏家","鸽子",56,"音乐作品"],
   ]],
   [6, "第六单元 闪闪的红星", 58, [
     ["小小音乐剧","闪闪的红星",58,"小小音乐剧"],
   ]],
 ];
 
+const SCORE_PAGES = {"为救李郎离家园":[[2,0.04,0.035,0.96,0.94]],"对花":[[5,0.04,0.035,0.96,0.94]],"凤阳花鼓":[[9,0.04,0.035,0.96,0.94]],"祖国祖国我们爱你":[[15,0.04,0.035,0.96,0.94]],"风筝":[[17,0.04,0.035,0.96,0.94]],"斗牛士之歌":[[22,0.04,0.035,0.96,0.94]],"西湖美":[[28,0.04,0.035,0.96,0.94]],"忆江南":[[29,0.04,0.035,0.96,0.94]],"卡普里岛":[[36,0.04,0.035,0.96,0.94]],"桑塔·露琪亚":[[44,0.04,0.035,0.96,0.94]],"红":[[46,0.04,0.035,0.96,0.94]],"学习雷锋好榜样":[[49,0.04,0.035,0.96,0.94]],"我有一个梦":[[52,0.04,0.035,0.96,0.94]],"游击队歌":[[54,0.04,0.035,0.96,0.94]],"鸽子":[[56,0.04,0.035,0.96,0.94]]};
+const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
+
 textbook.parts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, facts: [] }],
-  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g4s1", title) })),
+  works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g4s1", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
 }));
 
 export default textbook;
