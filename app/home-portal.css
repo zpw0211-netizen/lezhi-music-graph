@@ -679,6 +679,8 @@ body::before {
 .home-portal .home-footer-actions button { padding: 4px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink-2); font-size: 13px; }
 .home-portal .home-footer-actions button:hover { border-color: var(--pine); color: var(--pine); }
 .home-portal .home-footer > small { grid-column: 1 / -1; color: var(--ink-3); font-size: 12px; }
+.home-portal .home-footer-credits { margin-top: -8px; line-height: 1.7; }
+.home-portal .home-footer-credits a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 2px; }
 
 .home-portal [data-reveal] { opacity: 1; transform: none; }
 html.motion-ready .home-portal [data-reveal]:not(.is-revealed) {

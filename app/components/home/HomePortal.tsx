@@ -302,6 +302,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       <div><strong>芽谱</strong><p>把教材里的音乐知识，连成一张可探索的图。</p></div>
       <div className="home-footer-actions"><button type="button" onClick={() => onView("assistant")}>智能问答</button><button type="button" onClick={() => onView("research")}>研究分析</button><button type="button" onClick={onResearchInfo}>研究说明</button></div>
       <small>{EDITION.label}{PUBLISHED_GRADE_RANGE_LABEL}{PUBLISHED_BOOK_COUNT_LABEL}教材 · 内容按册、单元与作品整理</small>
+      <small className="home-footer-credits">音色采样：钢琴 <a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）· 其他乐器 <a href="https://github.com/mrbumpy409/GeneralUser-GS" target="_blank" rel="noreferrer">GeneralUser GS</a>（S. Christian Collins，<a href="https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/LICENSE.txt" target="_blank" rel="noreferrer">许可说明</a>）</small>
     </footer>
   </div>;
 }

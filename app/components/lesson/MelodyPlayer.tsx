@@ -414,6 +414,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         })}
       </span>)}
     </div>
-    <p className="melody-source">{melody.source}。{rhythmOnly ? "节奏示范，仅供练习参考。" : audioMode === "synth" ? "所选音色未能载入，暂用电子音色示范。" : instrument === "piano" ? <>钢琴音色示范，仅供视唱参考。钢琴采样：<a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）。</> : <>{instrumentLabel}音色示范，仅供视唱参考。采样来自 <a href="https://github.com/mrbumpy409/GeneralUser-GS" target="_blank" rel="noreferrer">GeneralUser GS</a>（S. Christian Collins；<a href="https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/LICENSE.txt" target="_blank" rel="noreferrer">许可说明</a>）。</>}</p>
+    {/* Source notes and sample credits live in the home page footer; only a fallback warning shows here. */}
+    {!rhythmOnly && audioMode === "synth" && <p className="melody-source">所选音色未能载入，暂用电子音色示范。</p>}
   </div>;
 }
