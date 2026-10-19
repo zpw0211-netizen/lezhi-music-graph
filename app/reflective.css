@@ -136,7 +136,7 @@
 .reflect-table button[aria-pressed="true"] { border-color: var(--stage); background: var(--stage); color: #fff; transform: scale(1.05); }
 
 /* 只听不看谱的页面（情境导入、初听感知）：只留播放、速度和音色，谱子留给“看谱”和“难点突破”页 */
-.reflect-listen .melody-score, .reflect-listen .melody-voices, .reflect-listen .melody-source, .reflect-listen .melody-tabs { display: none; }
+.reflect-listen .melody-score, .reflect-listen .melody-voices, .reflect-listen .melody-source, .reflect-listen .melody-tabs, .reflect-listen .melody-view, .reflect-listen .melody-line, .reflect-listen .melody-follow-toggle, .reflect-listen .melody-follow { display: none; }
 .present .reflect-listen .melody-player.is-large .melody-play { position: static; height: 60px; padding: 0 30px 0 24px; border-radius: 999px; box-shadow: 0 14px 26px -16px rgba(30, 60, 40, .7); font-size: clamp(18px, 1.5vw, 24px); }
 .reflect-listen { margin-top: 2.4vh; }
 .reflect-wide.is-practice { width: min(1560px, 100%); }

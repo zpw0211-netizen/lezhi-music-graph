@@ -8,6 +8,8 @@ import { INSTRUMENTS, loadInstrumentSampler, playInstrumentSample } from "../../
 import type { InstrumentId, InstrumentSampler } from "../../lib/lesson/instrument-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
+import { MelodyLine } from "./MelodyLine";
+import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
 
 type Line = { label: string; bars: MelodyNote[][] };
 type BeamRun = { start: number; end: number; level: number };
@@ -171,6 +173,16 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     });
     return byLevel;
   })), [lines, melody.meter]);
+  const [view, setView] = useState<"score" | "line">("score");
+  const [followOpen, setFollowOpen] = useState(false);
+  const [follow, setFollow] = useState<null | { phrase: number; kind: "listen" | "sing"; beat: number; beats: number }>(null);
+  const [phraseMode, setPhraseMode] = useState<PhraseMode>("auto");
+  const [listenTimes, setListenTimes] = useState(1);
+  const [singClick, setSingClick] = useState(true);
+  const [cueFirst, setCueFirst] = useState(false);
+  const phrases = useMemo(() => splitPhrases(melody.bars, phraseMode), [melody.bars, phraseMode]);
+  const activePhrase = follow ? phrases[follow.phrase] : null;
+  const canFollow = !rhythmOnly && phrases.length > 1;
   const instrumentLabel = INSTRUMENTS.find((item) => item.id === instrument)?.label ?? "钢琴";
 
   const stop = useCallback(() => {
@@ -181,6 +193,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     stopRef.current();
     stopRef.current = () => {};
     setPlaying(false);
+    setFollow(null);
     setCurrent([]);
     soundingCallback.current?.([], false);
     if (shouldAnnounceStop && mounted.current) setAnnouncement("已停止");
@@ -194,18 +207,16 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     return () => window.removeEventListener(VOCAL_PLAYBACK_STARTED, stop);
   }, [stop]);
 
-  const play = async () => {
-    if (playing) { stop(); return; }
-    const request = ++playRequestRef.current;
+  /** Unlock audio and load the chosen instrument; null when the request was superseded. */
+  const prepareAudio = async (request: number) => {
     window.dispatchEvent(new Event(MELODY_PLAYBACK_STARTED));
     const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor) {
       setAudioMode("synth");
       setAnnouncement(instrumentLabel + "音色加载失败，改用电子音色");
-      return;
+      return null;
     }
     const ctx = getPianoAudioContext();
-
     let sampler = sharedSamplers[instrument] ?? null;
     let samplerLoadFailed = false;
     if (!rhythmOnly && !sampler) {
@@ -229,7 +240,67 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       if (sampler && mounted.current) setAudioMode("sampled");
     }
     // The reader may have left the lesson while the samples were loading.
-    if (!mounted.current || request !== playRequestRef.current) return;
+    if (!mounted.current || request !== playRequestRef.current) return null;
+    return { ctx, sampler, samplerLoadFailed };
+  };
+
+  /** Schedule notes [from, to) of one voice from time t0; returns each note's start time and the end. */
+  const scheduleRange = (ctx: AudioContext, master: AudioNode, sampler: InstrumentSampler | null, voice: number, from: number, to: number, t0: number, beat: number, levelScale = 1) => {
+    const notes = flats[voice];
+    const times: number[] = [];
+    let t = t0;
+    for (let index = from; index < to; index += 1) {
+      const note = notes[index];
+      times.push(t);
+      const duration = note.b * beat;
+      // A tied note extends the previous tone instead of re-attacking.
+      if (note.d && !note.tie) {
+        let length = duration;
+        for (let k = index + 1; k < to && notes[k].tie; k += 1) length += notes[k].b * beat;
+        if (note.d === 9) {
+          const percussion = { wave: "triangle" as OscillatorType, overtone: 0.15, level: 0.8 * levelScale };
+          length = Math.min(length, 0.12);
+          for (const [wave, level, multiple] of [[percussion.wave, percussion.level, 1], ["sine" as OscillatorType, percussion.level * percussion.overtone, 2]] as const) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = wave; osc.frequency.value = 160 * multiple;
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(level, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
+            osc.connect(gain).connect(master);
+            osc.start(t); osc.stop(t + length);
+          }
+        } else if (sampler) {
+          const level = (voice === 0 ? 1 : voice === 1 ? 0.7 : 0.58) * levelScale;
+          playInstrumentSample(ctx, instrument, sampler, midiOf(melody, note), t, length, master, level);
+        } else {
+          const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
+          const timbre = TIMBRES[voice] ?? TIMBRES[2];
+          for (const [wave, level, multiple] of [[timbre.wave, timbre.level * levelScale, 1], ["sine" as OscillatorType, timbre.level * timbre.overtone * levelScale, 2]] as const) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = wave; osc.frequency.value = frequency * multiple;
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(level, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
+            osc.connect(gain).connect(master);
+            osc.start(t); osc.stop(t + length);
+          }
+        }
+      }
+      t += duration;
+    }
+    return { times, end: t };
+  };
+
+  const play = async () => {
+    if (playing || follow) { stop(); return; }
+    const request = ++playRequestRef.current;
+    const audio = await prepareAudio(request);
+    if (!audio) return;
+    const { ctx, sampler, samplerLoadFailed } = audio;
 
     const beat = 60 / tempo;
     const start = ctx.currentTime + 0.12;
@@ -238,52 +309,14 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     master.connect(ctx.destination);
     let end = start;
     const timeline = flats.map((notes, voice) => {
-      const times: number[] = [];
-      let t = start;
-      notes.forEach((note, index) => {
-        times.push(t);
-        const duration = note.b * beat;
-        // A tied note extends the previous tone instead of re-attacking.
-        if (enabled[voice] && note.d && !note.tie) {
-          let length = duration;
-          for (let k = index + 1; k < notes.length && notes[k].tie; k += 1) length += notes[k].b * beat;
-          if (note.d === 9) {
-            const percussion = { wave: "triangle" as OscillatorType, overtone: 0.15, level: 0.8 };
-            length = Math.min(length, 0.12);
-            for (const [wave, level, multiple] of [[percussion.wave, percussion.level, 1], ["sine" as OscillatorType, percussion.level * percussion.overtone, 2]] as const) {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = wave; osc.frequency.value = 160 * multiple;
-              gain.gain.setValueAtTime(0, t);
-              gain.gain.linearRampToValueAtTime(level, t + 0.02);
-              gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
-              gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
-              osc.connect(gain).connect(master);
-              osc.start(t); osc.stop(t + length);
-            }
-          } else if (sampler) {
-            const level = voice === 0 ? 1 : voice === 1 ? 0.7 : 0.58;
-            playInstrumentSample(ctx, instrument, sampler, midiOf(melody, note), t, length, master, level);
-          } else {
-            const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
-            const timbre = TIMBRES[voice] ?? TIMBRES[2];
-            for (const [wave, level, multiple] of [[timbre.wave, timbre.level, 1], ["sine" as OscillatorType, timbre.level * timbre.overtone, 2]] as const) {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = wave; osc.frequency.value = frequency * multiple;
-              gain.gain.setValueAtTime(0, t);
-              gain.gain.linearRampToValueAtTime(level, t + 0.02);
-              gain.gain.exponentialRampToValueAtTime(level * 0.55, t + Math.min(0.25, length * 0.5));
-              gain.gain.exponentialRampToValueAtTime(0.0001, t + length * 0.96);
-              osc.connect(gain).connect(master);
-              osc.start(t); osc.stop(t + length);
-            }
-          }
-        }
-        t += duration;
-      });
-      end = Math.max(end, t);
-      return times;
+      if (!enabled[voice]) {
+        // Muted voices still advance so their notes keep highlighting in step.
+        let t = start;
+        return notes.map((note) => { const at = t; t += note.b * beat; end = Math.max(end, t); return at; });
+      }
+      const scheduled = scheduleRange(ctx, master, sampler, voice, 0, notes.length, start, beat);
+      end = Math.max(end, scheduled.end);
+      return scheduled.times;
     });
     let raf = 0;
     let previousNotes = "";
@@ -319,6 +352,92 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     setAnnouncement(samplerLoadFailed ? instrumentLabel + "音色加载失败，改用电子音色。开始播放" : "开始播放");
   };
 
+  /**
+   * 跟唱: the instrument plays a phrase (once or twice), then the class sings
+   * it back in the same time while the beat lights flash, phrase by phrase.
+   */
+  const startFollow = async (fromPhrase: number) => {
+    stop();
+    const first = Math.max(0, Math.min(phrases.length - 1, fromPhrase));
+    const request = ++playRequestRef.current;
+    const audio = await prepareAudio(request);
+    if (!audio) return;
+    const { ctx, sampler } = audio;
+    const beat = 60 / tempo;
+    const master = ctx.createGain();
+    master.gain.value = 0.34;
+    master.connect(ctx.destination);
+    type Segment = { phrase: number; kind: "listen" | "sing"; t0: number; t1: number; times: number[] };
+    const segments: Segment[] = [];
+    let t = ctx.currentTime + 0.15;
+    for (let p = first; p < phrases.length; p += 1) {
+      const phrase = phrases[p];
+      let lastListen: Segment | null = null;
+      for (let round = 0; round < listenTimes; round += 1) {
+        const scheduled = scheduleRange(ctx, master, sampler, 0, phrase.startNote, phrase.endNote, t, beat);
+        lastListen = { phrase: p, kind: "listen", t0: t, t1: scheduled.end, times: scheduled.times };
+        segments.push(lastListen);
+        t = scheduled.end;
+      }
+      const singStart = t;
+      const singTimes = lastListen!.times.map((at) => at - lastListen!.t0 + singStart);
+      const singEnd = singStart + (phrase.endBeat - phrase.startBeat) * beat;
+      if (cueFirst) {
+        // A quiet reminder of the first sung pitch, as a teacher would hum it.
+        const offset = flats[0].slice(phrase.startNote, phrase.endNote).findIndex((note) => note.d >= 1 && note.d <= 7);
+        if (offset >= 0) {
+          const index = phrase.startNote + offset;
+          const cueLength = Math.min(0.45, beat * 0.6);
+          scheduleRange(ctx, master, sampler, 0, index, index + 1, singStart - cueLength - 0.05, cueLength / flats[0][index].b, 0.32);
+        }
+      }
+      if (singClick) {
+        for (let at = singStart; at < singEnd - 1e-3; at += beat) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine"; osc.frequency.value = 1320;
+          gain.gain.setValueAtTime(0.0001, at);
+          gain.gain.exponentialRampToValueAtTime(0.09, at + 0.004);
+          gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.06);
+          osc.connect(gain).connect(master);
+          osc.start(at); osc.stop(at + 0.08);
+        }
+      }
+      segments.push({ phrase: p, kind: "sing", t0: singStart, t1: singEnd, times: singTimes });
+      t = singEnd;
+    }
+    const end = t;
+    let raf = 0;
+    let previous = "";
+    const tick = () => {
+      const now = ctx.currentTime;
+      if (now >= end) { stop(); setAnnouncement("跟唱完成"); return; }
+      const segment = segments.find((item) => now < item.t1) ?? segments[segments.length - 1];
+      const started = now >= segment.t0;
+      let index = segment.times.length - 1;
+      while (index > 0 && segment.times[index] > now) index -= 1;
+      const phrase = phrases[segment.phrase];
+      const beatInPhrase = started ? Math.floor((now - segment.t0) / beat) : -1;
+      const key = `${segment.phrase}:${segment.kind}:${beatInPhrase}:${started ? index : -1}`;
+      if (key !== previous) {
+        previous = key;
+        setCurrent(started ? [phrase.startNote + index] : [-1]);
+        setFollow({ phrase: segment.phrase, kind: segment.kind, beat: beatInPhrase, beats: Math.round(phrase.endBeat - phrase.startBeat) });
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    stopRef.current = () => {
+      cancelAnimationFrame(raf);
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
+      setTimeout(() => master.disconnect(), 100);
+    };
+    playbackActive.current = true;
+    setFollow({ phrase: first, kind: "listen", beat: -1, beats: Math.round(phrases[first].endBeat - phrases[first].startBeat) });
+    setAnnouncement(`跟唱开始，第 ${first + 1} 句`);
+  };
+
   const renderNoteHead = (note: MelodyNote, key: number | string, active: boolean, beamSegments?: BeamFragment[]) => {
     const { lines: underlines, dotted, dashes } = notation(note);
     const fragments = beamSegments ?? Array.from({ length: underlines }, (_, index) => ({ level: index + 1, edge: "single" as const }));
@@ -351,10 +470,11 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className={`melody-play ${playing ? "is-playing" : ""}`} onClick={play} disabled={loadingSampler} aria-label={loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+      <button type="button" className={`melody-play ${playing ? "is-playing" : ""}`} onClick={() => void play()} disabled={loadingSampler || !!follow} aria-label={loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
         {!loadingSampler && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
         {loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
       </button>
+      {canFollow && <button type="button" className={`melody-follow-toggle${followOpen ? " is-open" : ""}`} aria-expanded={followOpen} onClick={() => { if (follow) stop(); setFollowOpen((open) => !open); }}>跟唱</button>}
       <span role="status" aria-live="polite" aria-atomic="true" style={VISUALLY_HIDDEN}>{announcement}</span>
       <span className="melody-key">{melody.key} · {displayMeter(melody.meter)}</span>
       <label className="melody-instrument">音色
@@ -368,13 +488,49 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
           {line.label}
         </label>)}
       </span>}
+      {!rhythmOnly && <span className="melody-view" role="radiogroup" aria-label="显示方式">
+        {([["score", "谱子"], ["line", "旋律线"]] as const).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={view === value} className={view === value ? "is-active" : ""} onClick={() => setView(value)}>{label}</button>)}
+      </span>}
       <label className="melody-tempo">速度
-        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingSampler} onChange={(event) => setTempo(Number(event.target.value))} />
+        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingSampler || !!follow} onChange={(event) => setTempo(Number(event.target.value))} />
         <b>♩={tempo}</b>
       </label>
     </div>
+    {canFollow && followOpen && <div className={`melody-follow${follow ? ` is-${follow.kind}` : ""}`} role="group" aria-label="跟唱">
+      {follow ? <>
+        <div className="melody-follow-status">
+          <span className="melody-follow-count">第 {follow.phrase + 1} / {phrases.length} 句</span>
+          <strong>{follow.kind === "listen" ? "先听这一句" : "轮到你们唱！"}</strong>
+          <span className="melody-follow-beats" aria-hidden="true">{Array.from({ length: follow.beats }, (_, k) => <i key={k} className={k === follow.beat ? "is-on" : k < follow.beat ? "is-past" : ""} />)}</span>
+        </div>
+        <div className="melody-follow-actions">
+          <button type="button" onClick={() => void startFollow(follow.phrase - 1)} disabled={follow.phrase === 0}>上一句</button>
+          <button type="button" onClick={() => void startFollow(follow.phrase)}>重来这句</button>
+          <button type="button" onClick={() => void startFollow(follow.phrase + 1)} disabled={follow.phrase >= phrases.length - 1}>下一句</button>
+          <button type="button" className="is-end" onClick={stop}>结束跟唱</button>
+        </div>
+      </> : <>
+        <div className="melody-follow-settings">
+          <span className="melody-follow-field">分句
+            {([["auto", "自动"], [2, "2 小节"], [4, "4 小节"]] as const).map(([value, label]) => <button key={label} type="button" aria-pressed={phraseMode === value} className={phraseMode === value ? "is-active" : ""} onClick={() => setPhraseMode(value)}>{label}</button>)}
+          </span>
+          <span className="melody-follow-field">每句听
+            {[1, 2].map((times) => <button key={times} type="button" aria-pressed={listenTimes === times} className={listenTimes === times ? "is-active" : ""} onClick={() => setListenTimes(times)}>{times} 遍</button>)}
+          </span>
+          <label className="melody-follow-check"><input type="checkbox" checked={singClick} onChange={(event) => setSingClick(event.target.checked)} />学生唱时有轻声拍点</label>
+          <label className="melody-follow-check"><input type="checkbox" checked={cueFirst} onChange={(event) => setCueFirst(event.target.checked)} />轻声提示第一个音</label>
+        </div>
+        <div className="melody-follow-start">
+          <button type="button" className="melody-follow-go" onClick={() => void startFollow(0)} disabled={loadingSampler}>▶ 开始跟唱</button>
+          <span>共 {phrases.length} 句，从第
+            {phrases.map((phrase, k) => <button key={k} type="button" className="melody-follow-chip" onClick={() => void startFollow(k)} aria-label={`从第 ${k + 1} 句开始（第 ${phrase.startBar + 1}–${phrase.endBar} 小节）`}>{k + 1}</button>)}
+          句开始</span>
+        </div>
+      </>}
+    </div>}
+    {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} /> :
     <div className="melody-score" role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
-      {melody.bars.map((_, barIndex) => <span key={barIndex} className="melody-bar">
+      {melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
         {lines.map((line, voice) => {
           const notes = line.bars[barIndex] ?? [];
           const runsByLevel = beamRuns[voice]?.[barIndex] ?? new Map<number, Map<number, BeamRun>>();
@@ -413,7 +569,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
           return <span key={voice} className={`melody-voice voice-${voice}`} style={{ "--melody-head-height": `${headHeights[voice]}em` } as CSSProperties}>{rendered}</span>;
         })}
       </span>)}
-    </div>
+    </div>}
     {/* Source notes and sample credits live in the home page footer; only a fallback warning shows here. */}
     {!rhythmOnly && audioMode === "synth" && <p className="melody-source">所选音色未能载入，暂用电子音色示范。</p>}
   </div>;
