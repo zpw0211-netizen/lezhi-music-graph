@@ -74,8 +74,9 @@ for (const [name, segments] of Object.entries(DRAFT_MELODIES))
 export function melodiesFor(bookKey: string | undefined, ...names: string[]): Melody[] {
   if (bookKey?.startsWith("pep-")) {
     if (!PEP_REVIEWED_BOOKS.has(bookKey)) return [];
+    // 人教版的键不带《》；年表、地图等处传进来的是带《》的作品名，两种都要能查到。
     for (const name of names) {
-      const own = BOOK_MELODIES[bookKey]?.[name];
+      const own = BOOK_MELODIES[bookKey]?.[name.replace(/^《|》$/g, "")];
       if (own?.length) return own;
     }
     return [];
