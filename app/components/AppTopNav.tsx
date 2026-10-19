@@ -39,7 +39,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
   const routeToken = locationHash.startsWith("#/") ? locationHash.slice(2).split("/")[0] : "";
   const hashView = locationHash.startsWith("#/")
     ? items.find(item => item.view === routeToken)?.view
-      ?? (["lab", "timeline"].includes(routeToken) ? "atlas" : undefined)
+      ?? (["lab", "timeline", "rhythm"].includes(routeToken) ? "atlas" : undefined)
     : undefined;
   const currentView = hashView ?? active;
   return <><nav className="home-nav" aria-label="主导航">

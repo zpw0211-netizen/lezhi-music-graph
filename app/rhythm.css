@@ -1,0 +1,174 @@
+/* 节奏训练：X 记法节奏谱、出题设置与节奏型卡片。 */
+.rhythm-lab {
+  --rhythm-ink: #17221C;
+  --rhythm-ink-2: #44544B;
+  --rhythm-ink-3: #68766E;
+  --rhythm-pine: #276344;
+  --rhythm-pine-soft: #E6F1EA;
+  --rhythm-seal: #AF4236;
+  --rhythm-amber: #C98A22;
+  --rhythm-line: #DCE5DF;
+  width: min(1450px, 100%);
+  margin-inline: auto;
+  padding: 8px clamp(18px, 2.8vw, 42px) 48px;
+  color: var(--rhythm-ink);
+  font-family: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  line-height: 1.7;
+}
+.rhythm-lab button { font: inherit; color: inherit; cursor: pointer; }
+.rhythm-lab button:disabled { cursor: not-allowed; opacity: .45; }
+.rhythm-lab :is(button, input):focus-visible { outline: 3px solid rgb(39 99 68 / 30%); outline-offset: 3px; }
+
+.rhythm-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 14px 0 12px;
+  border-bottom: 1px solid var(--rhythm-line);
+}
+.rhythm-kicker { margin: 0 0 2px; color: var(--rhythm-seal); font: 12px/1.6 var(--serif, "Songti SC", serif); letter-spacing: .28em; }
+.rhythm-intro h2 { margin: 0; font: 400 28px/1.25 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .12em; white-space: nowrap; }
+
+.rhythm-mode { display: inline-flex; padding: 4px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; }
+.rhythm-mode button { min-height: 38px; padding: 0 20px; border: 0; border-radius: 999px; background: transparent; color: var(--rhythm-ink-2); font-size: 14px; white-space: nowrap; transition: background .2s ease, color .2s ease; }
+.rhythm-mode button.is-active { background: var(--rhythm-pine); color: #fff; }
+
+.rhythm-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 16px 0; }
+.rhythm-field { display: flex; align-items: center; gap: 10px; }
+.rhythm-field-label { color: var(--rhythm-ink-3); font-size: 13px; white-space: nowrap; }
+.rhythm-chips { display: flex; gap: 6px; }
+.rhythm-chips button {
+  min-width: 44px; min-height: 38px; padding: 0 12px;
+  border: 1px solid var(--rhythm-line); border-radius: 10px; background: #fff;
+  color: var(--rhythm-ink-2); font-size: 13px; white-space: nowrap;
+}
+.rhythm-chips button.is-active { border-color: #9CC0A9; background: var(--rhythm-pine-soft); color: var(--rhythm-pine); font-weight: 600; }
+.rhythm-meter-chip { display: inline-grid; line-height: 1; font-size: 12px; font-weight: 600; text-align: center; }
+.rhythm-meter-chip span:first-child { padding-bottom: 2px; border-bottom: 1.5px solid currentColor; }
+.rhythm-meter-chip span:last-child { padding-top: 2px; }
+.rhythm-tempo input { width: 160px; accent-color: var(--rhythm-pine); }
+.rhythm-tempo output { min-width: 64px; color: var(--rhythm-ink); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* 节奏谱舞台：投屏时它就是整页。 */
+.rhythm-stage {
+  position: relative;
+  padding: clamp(18px, 3vw, 36px) clamp(16px, 3vw, 40px) 20px;
+  border: 1px solid var(--rhythm-line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgb(23 34 28 / 4%);
+}
+.rhythm-stage:fullscreen { display: flex; flex-direction: column; justify-content: center; gap: 24px; padding: 6vh 6vw; border-radius: 0; font-size: 1.5em; }
+.rhythm-stage:fullscreen .rhythm-score { font-size: clamp(44px, 5.2vw, 92px); }
+
+.rhythm-score {
+  --rhythm-size: 1em;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: .5em;
+  min-height: 2.6em;
+  font-size: clamp(26px, 2.9vw, 50px);
+}
+.rhythm-meter { display: inline-grid; flex: 0 0 auto; margin-top: .05em; font: 600 .5em/1 var(--ui, sans-serif); text-align: center; }
+.rhythm-meter span:first-child { padding: 0 .15em .1em; border-bottom: .08em solid currentColor; }
+.rhythm-meter span:last-child { padding-top: .1em; }
+
+.rhythm-bars { display: flex; flex: 1 1 auto; flex-wrap: wrap; row-gap: .7em; min-width: 0; }
+.rhythm-bar { display: flex; align-items: flex-start; gap: .32em; padding-right: .5em; }
+.rhythm-barline { align-self: stretch; width: .05em; min-height: 1.3em; margin-left: .1em; background: var(--rhythm-ink); }
+.rhythm-barline.is-final { width: .22em; margin-left: .2em; background: linear-gradient(90deg, var(--rhythm-ink) 0 .05em, transparent .05em .11em, var(--rhythm-ink) .11em); }
+
+/* 一个节奏型：组内记号紧挨着，减时线才能连成一条。 */
+.rhythm-group { position: relative; display: inline-flex; align-items: flex-start; }
+.rhythm-token { display: inline-flex; flex-direction: column; align-items: stretch; }
+.rhythm-glyph { display: block; min-width: .66em; padding: 0 .08em; font: 600 1em/1.15 "Times New Roman", Georgia, serif; text-align: center; white-space: nowrap; transition: color .08s linear; }
+.rhythm-token.is-hold .rhythm-glyph { font-weight: 400; }
+.rhythm-dot { display: inline-block; margin-left: .04em; font-weight: 700; }
+.rhythm-lines { display: grid; gap: .1em; margin-top: .06em; }
+.rhythm-lines i { display: block; height: .06em; min-height: 2px; background: currentColor; }
+.rhythm-token.is-playing { color: var(--rhythm-seal); }
+.rhythm-token.is-playing .rhythm-glyph { transform: translateY(-.04em); }
+.rhythm-group.is-triplet { padding-top: .1em; }
+.rhythm-triplet-mark { position: absolute; top: -.62em; left: 50%; font: italic 600 .42em/1 Georgia, serif; transform: translateX(-50%); }
+
+.rhythm-empty { display: inline-block; width: 1.3em; height: 1.15em; border: .04em dashed #B9C7BE; border-radius: .14em; }
+
+.rhythm-placed { padding: .08em .06em; border: .04em solid transparent; border-radius: .16em; background: transparent; font-size: inherit !important; line-height: inherit; }
+.rhythm-placed:hover { background: #F3F7F4; }
+.rhythm-placed.is-selected { border-color: var(--rhythm-amber); background: #FBF3E3; }
+
+.rhythm-countdown {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  background: rgb(255 255 255 / 82%);
+  color: var(--rhythm-seal);
+  font: 400 .9em/1 var(--kai, "KaiTi", serif);
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+.rhythm-transport { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rhythm-line); font-size: 14px; }
+.rhythm-transport > button { min-height: 42px; padding: 0 18px; border-radius: 12px; white-space: nowrap; }
+.rhythm-play { min-width: 112px; border: 0; background: var(--rhythm-pine); color: #fff !important; font-weight: 600; }
+.rhythm-play.is-playing { background: var(--rhythm-seal); }
+.rhythm-secondary { border: 1px solid #9CC0A9; background: var(--rhythm-pine-soft); color: var(--rhythm-pine) !important; }
+.rhythm-ghost { border: 1px solid var(--rhythm-line); background: #fff; color: var(--rhythm-ink-2) !important; }
+.rhythm-toggles { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: 8px; }
+.rhythm-toggle { display: inline-flex; align-items: center; gap: 5px; color: var(--rhythm-ink-2); font-size: 13px; white-space: nowrap; cursor: pointer; }
+.rhythm-toggle input { width: 16px; height: 16px; accent-color: var(--rhythm-pine); }
+.rhythm-fullscreen { margin-left: auto; }
+.rhythm-status { margin: 12px 0 0; color: var(--rhythm-ink-3); font-size: 13px; }
+
+/* 节奏型卡片 */
+.rhythm-library { margin-top: 26px; }
+.rhythm-library-hint { margin: 0 0 6px; color: var(--rhythm-ink-2); font-size: 14px; }
+.rhythm-level { padding: 14px 0 6px; }
+.rhythm-level > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 10px; }
+.rhythm-level h3 { margin: 0; font: 400 19px/1.4 var(--kai, "KaiTi", serif); letter-spacing: .1em; white-space: nowrap; }
+.rhythm-level > header p { margin: 0; color: var(--rhythm-ink-3); font-size: 12px; }
+.rhythm-level-toggle { margin-left: auto; padding: 2px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--rhythm-pine) !important; font-size: 12px !important; white-space: nowrap; }
+.rhythm-level-toggle:hover { background: var(--rhythm-pine-soft); }
+.rhythm-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.rhythm-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-height: 128px;
+  padding: 22px 10px 12px;
+  border: 1px solid var(--rhythm-line);
+  border-radius: 14px;
+  background: #fff;
+  transition: border-color .2s ease, background .2s ease, transform .2s var(--ease, ease);
+}
+.rhythm-card:not(:disabled):hover { border-color: #B9CDC0; transform: translateY(-2px); }
+.rhythm-card.is-on { border-color: #9CC0A9; background: #F2F8F4; }
+.rhythm-card .rhythm-group { align-self: center; font-size: 28px; }
+.rhythm-card-name { color: var(--rhythm-ink); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.rhythm-card small { color: var(--rhythm-ink-3); font-size: 11px; white-space: nowrap; }
+.rhythm-check {
+  position: absolute; top: 8px; right: 8px;
+  display: grid; width: 20px; height: 20px; place-items: center;
+  border: 1px solid #C4D2C9; border-radius: 6px;
+  color: #fff; font-size: 12px; line-height: 1;
+}
+.rhythm-card.is-on .rhythm-check { border-color: var(--rhythm-pine); background: var(--rhythm-pine); }
+.rhythm-check.is-add { border: 0; color: var(--rhythm-pine); font-size: 15px; }
+
+@media (max-width: 720px) {
+  .rhythm-intro h2 { font-size: 24px; }
+  .rhythm-settings { gap: 12px 18px; }
+  .rhythm-tempo input { width: 120px; }
+  .rhythm-score { font-size: 28px; }
+  .rhythm-toggles { margin-left: 0; }
+  .rhythm-fullscreen { display: none; }
+  .rhythm-cards { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rhythm-lab * { transition-duration: 1ms !important; }
+}
+.rhythm-empty.is-eighth { width: .8em; }

@@ -24,6 +24,7 @@ import "./atlas.css";
 import "./lab.css";
 import "./timeline.css";
 import "./exploration.css";
+import "./rhythm.css";
 import "./graph-compact.css";
 import "./account.css";
 import { AccountProvider } from "./components/account/AccountProvider";

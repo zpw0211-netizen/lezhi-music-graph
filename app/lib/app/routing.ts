@@ -16,7 +16,8 @@ export type AppView =
   | "import"
   | "atlas"
   | "lab"
-  | "timeline";
+  | "timeline"
+  | "rhythm";
 
 export type AppRoute = {
   view: AppView;
@@ -41,6 +42,7 @@ const VIEWS = new Set<AppView>([
   "atlas",
   "lab",
   "timeline",
+  "rhythm",
 ]);
 
 export const HOME_ROUTE: AppRoute = { view: "home" };

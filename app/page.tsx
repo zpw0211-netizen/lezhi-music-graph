@@ -163,6 +163,10 @@ const TimelinePage = nextDynamic(
   () => import("./components/timeline/TimelinePage").then((module) => module.TimelinePage),
   { loading: () => <div className="timeline-loading" role="status">正在载入年表…</div> },
 );
+const RhythmPage = nextDynamic(
+  () => import("./components/rhythm/RhythmPage").then((module) => module.RhythmPage),
+  { loading: viewLoading },
+);
 const ResearchAnalysis = nextDynamic<PropsOf<typeof ResearchAnalysisComponent>>(
   () => import("./components/ResearchAnalysis").then((module) => module.ResearchAnalysis),
   { loading: viewLoading },
@@ -188,6 +192,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   atlas: "声音与音乐探索 · 音乐地图",
   lab: "声音与音乐探索 · 五声律坊",
   timeline: "声音与音乐探索 · 音乐时光机",
+  rhythm: "声音与音乐探索 · 节奏训练",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
@@ -367,7 +372,7 @@ export default function Home() {
     if (entity) navigate({ view: "graph", node: entity.id });
   };
 
-  const needsData = view !== "home" && view !== "import" && view !== "atlas" && view !== "timeline";
+  const needsData = view !== "home" && view !== "import" && view !== "atlas" && view !== "timeline" && view !== "rhythm";
   // The 律坊 waits for data inside the exploration panel, so the shared heading never jumps when the data lands.
   const labLoading = view === "lab" && !canonicalGraph;
   const dataStatus =
@@ -408,7 +413,7 @@ export default function Home() {
                 ? "records"
                 : view === "import"
                   ? null
-                  : view === "atlas" || view === "lab" || view === "timeline"
+                  : view === "atlas" || view === "lab" || view === "timeline" || view === "rhythm"
                     ? "atlas"
                   : view
             }
@@ -439,7 +444,7 @@ export default function Home() {
             }}
           />
         )}
-        <div className={`route-view${view === "atlas" || view === "lab" || view === "timeline" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
+        <div className={`route-view${view === "atlas" || view === "lab" || view === "timeline" || view === "rhythm" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
           {view === "records" && index.status !== "ready" && <RecordsStartup failed={index.status === "error"} />}
@@ -544,7 +549,7 @@ export default function Home() {
             />
           )}
           {view === "import" && <ImportView />}
-          {(view === "atlas" || view === "lab" || view === "timeline") && <ExplorationPage
+          {(view === "atlas" || view === "lab" || view === "timeline" || view === "rhythm") && <ExplorationPage
             activeView={view}
             onViewChange={nextView => navigate({ view: nextView })}
           >
@@ -560,6 +565,7 @@ export default function Home() {
               else navigate({ view: "lesson", work });
             }} />}
             {view === "timeline" && <TimelinePage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={destination => navigate(destination)} />}
+            {view === "rhythm" && <RhythmPage />}
           </ExplorationPage>}
         </div>
       </section>
