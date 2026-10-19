@@ -18,6 +18,7 @@ import { drumThump, playRhythm, prepareRhythmAudio, type RhythmPlayback } from "
 import { judgeTaps, WINDOW, type ScoreResult } from "../../lib/rhythm/scoring";
 import { LEVELS, LEVEL_BARS, PASS_SCORE } from "../../lib/rhythm/levels";
 import { PatternGlyph, RhythmScore } from "./RhythmScore";
+import { publicAssetUrl } from "../../lib/app/assets";
 
 type Mode = "random" | "edit" | "levels";
 
@@ -474,7 +475,11 @@ export function RhythmPage() {
               onPointerDown={onDrum}
               onKeyDown={(event) => { if (event.key === " " || event.key === "Enter") event.preventDefault(); }}
             >
-              <span key={drumHit} className="rhythm-drum-head" />
+              {/* eslint-disable-next-line @next/next/no-img-element -- static export: plain image */}
+              <img className="rhythm-drum-img" src={publicAssetUrl("art/rhythm/drum.webp")} alt="" draggable={false} />
+              {/* Each stroke remounts the struck drum so its flash replays. */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- static export: plain image */}
+              {drumHit > 0 && <img key={drumHit} className="rhythm-drum-img is-hit" src={publicAssetUrl("art/rhythm/drum-hit.webp")} alt="" draggable={false} />}
             </button>
             <small>{playing === "tap" ? "跟着节奏敲鼓！" : "点鼓或按空格键"}</small>
           </div>

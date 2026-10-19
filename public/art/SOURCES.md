@@ -137,3 +137,8 @@ The same sprout-and-staff motif as the hero, centered, with wide empty paper mar
 - 工具：由 Claude 用代码绘制（程序生成的 SVG，经 Microsoft Edge 渲染后导出），未使用任何第三方素材
 - 生成脚本：`E:\Projects\.tmp\claude\sprout\make-svg.mjs`（木刻版画风格：土层剖面、根系、子叶、远山与太阳；配色取站点四个专色）
 - 导出：1800×675 WebP，页面中以 20% 不透明度（淡化 80%）显示
+
+## 节奏训练：鼓（art/rhythm/drum.webp、drum-hit.webp）
+- 生成日期：2026-10-19
+- 工具：Codex 内置 image_gen（任务 T077），提示词与自查记录见 `E:\Projects\.tmp\rhythm-art\SOURCES.md`
+- 规格：800×800 透明 WebP；drum-hit 为敲击瞬间（鼓面提亮、两侧震动线），两张鼓身位置一致

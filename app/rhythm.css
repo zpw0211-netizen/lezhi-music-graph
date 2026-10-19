@@ -209,23 +209,19 @@
 .rhythm-drum-wrap { display: grid; flex: 0 0 auto; justify-items: center; gap: 4px; }
 .rhythm-drum-wrap small { color: var(--rhythm-ink-3); font-size: 12px; white-space: nowrap; }
 .rhythm-drum {
-  position: relative; width: 112px; height: 112px; padding: 0;
-  border: 0; border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, #B8463A 0 62%, #8E2E25 63% 70%, #C99A3C 71% 74%, #8E2E25 75%);
-  box-shadow: 0 8px 18px rgb(142 46 37 / 25%), inset 0 -6px 10px rgb(0 0 0 / 18%);
+  position: relative; width: 140px; height: 140px; padding: 0;
+  border: 0; border-radius: 50%; background: transparent;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  transition: transform .08s ease;
 }
-.rhythm-drum.is-armed { box-shadow: 0 0 0 6px rgb(201 138 34 / 28%), 0 8px 18px rgb(142 46 37 / 25%); }
-.rhythm-drum-head {
-  position: absolute; inset: 14px; border-radius: 50%;
-  background: radial-gradient(circle at 42% 38%, #FBF4E4, #EAD9B4 70%, #D9C292);
-  box-shadow: inset 0 0 0 2px rgb(142 46 37 / 25%);
-  animation: rhythm-drum-hit .16s ease-out;
-}
+.rhythm-drum:active { transform: scale(.96); }
+.rhythm-drum.is-armed { background: radial-gradient(circle, rgb(201 138 34 / 22%) 0 62%, transparent 70%); }
+.rhythm-drum-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+.rhythm-drum-img.is-hit { opacity: 0; animation: rhythm-drum-hit .22s ease-out; }
 @keyframes rhythm-drum-hit {
-  from { transform: scale(.93); filter: brightness(1.08); }
-  to { transform: scale(1); filter: none; }
+  from { opacity: 1; transform: scale(.97); }
+  to { opacity: 0; transform: scale(1); }
 }
 
 /* 打分结果 */
@@ -284,11 +280,11 @@
 @media (max-width: 720px) {
   .rhythm-play-row { flex-direction: column; align-items: stretch; }
   .rhythm-drum-wrap { justify-self: center; }
-  .rhythm-drum { width: 132px; height: 132px; }
+  .rhythm-drum { width: 156px; height: 156px; }
   .rhythm-score.is-cards { font-size: 34px; }
   .rhythm-score.is-cards .rhythm-bars { grid-template-columns: max-content; }
   .rhythm-result-actions { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .rhythm-drum-head { animation: none; }
+  .rhythm-drum-img.is-hit { animation-duration: 1ms; }
 }
