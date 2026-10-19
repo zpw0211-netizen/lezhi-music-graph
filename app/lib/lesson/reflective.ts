@@ -1,13 +1,13 @@
 // 反思型课堂（动机激发 → 认知冲突 → 协同建构 → 应用迁移 → 总结升华）的标准课件脚本。
 // 依据《反思型中小学音乐课堂教学设计模板（通用版）》：每个阶段有固定的环节、建议时长和“共同反思要点”，
-// 提问和任务按课型（歌唱课 / 欣赏课 / 编创课）取模板中的示例，并填入本课作品名与教材事实。
+// 提问和任务按课型（歌唱课 / 演奏课 / 欣赏课 / 编创课）取模板中的示例，并填入本课作品名与教材事实。
 // 这里只生成文字脚本；页面上的谱例、旋律、插图由 ReflectivePresent 按数据有无决定是否出现。
 
-export type LessonKind = "sing" | "listen" | "create";
+export type LessonKind = "sing" | "play" | "listen" | "create";
 export type StageKey = "motivate" | "conflict" | "construct" | "transfer" | "summary";
 export type LessonFact = { label: string; value: string };
 
-export const LESSON_KINDS: Record<LessonKind, string> = { sing: "歌唱课", listen: "欣赏课", create: "编创课" };
+export const LESSON_KINDS: Record<LessonKind, string> = { sing: "歌唱课", play: "演奏课", listen: "欣赏课", create: "编创课" };
 
 export const STAGES: Array<{ key: StageKey; name: string; theme: string; minutes: number }> = [
   { key: "motivate", name: "动机激发", theme: "反思铺垫", minutes: 5 },
@@ -20,10 +20,15 @@ export const STAGES: Array<{ key: StageKey; name: string; theme: string; minutes
 const SING_MODES = /小小歌唱家|唱歌|演唱|视唱|背唱|印在心里的歌/;
 const CREATE_MODES = /创乐工坊|编创|创编/;
 const SONG_TYPES = /歌曲|民歌|号子|童谣|合唱|戏曲歌曲/;
+const PLAY_MODES = /小小演奏家|演奏/;
+const CLASSROOM_INSTRUMENTS = /竖笛|口风琴|葫芦丝|陶笛|口琴/;
+// 国歌、队歌等仪式歌曲：不做“换情绪、加律动”一类改编练习，而是规范、庄严地演唱。
+const SOLEMN_WORKS = /国歌|队歌|国际歌/;
 
-/** 课型：先看教材栏目，再看作品类型；老师可以在课件里改。 */
-export function lessonKindOf(mode: string | undefined, workType: string): LessonKind {
+/** 课型：先看教材栏目，再看作品类型和作品名（竖笛、口风琴等课堂乐器曲是演奏课）；老师可以在课件里改。 */
+export function lessonKindOf(mode: string | undefined, workType: string, workName = ""): LessonKind {
   if (mode && CREATE_MODES.test(mode)) return "create";
+  if ((mode && PLAY_MODES.test(mode)) || CLASSROOM_INSTRUMENTS.test(workName)) return "play";
   if (mode && SING_MODES.test(mode)) return "sing";
   if (mode && /万花筒|聆听|欣赏|故事|考古/.test(mode)) return "listen";
   return SONG_TYPES.test(workType) ? "sing" : "listen";
@@ -86,13 +91,21 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
   const place = pick(facts, /^(地域|所属地域)$/);
   const origin = nation ? `${nation}音乐` : place ? `${place}的音乐` : "这首作品的文化背景";
   const playful = level === "low";
+  const solemn = SOLEMN_WORKS.test(work);
+  const ensemble = /合奏|重奏/.test(work);
 
   const goals = {
     sing: [
       { area: "审美感知", text: `听辨${work}的旋律、节奏和情绪${mood ? `，说出它“${mood}”的感觉从哪里来` : "，说出自己的感受"}。` },
       { area: "艺术表现", text: `用自然、有弹性的声音唱好${work}，做到音准、节奏准确，表达出歌曲的情感。` },
-      { area: "创意实践", text: "尝试用不同的速度、力度或情绪演唱一个乐句，比较效果并说出理由。" },
-      { area: "文化理解", text: `了解${origin}，体会音乐和生活、文化的联系。` },
+      { area: "创意实践", text: solemn ? "比较不同的速度、力度，体会为什么要庄严、有力地演唱。" : "尝试用不同的速度、力度或情绪演唱一个乐句，比较效果并说出理由。" },
+      { area: "文化理解", text: solemn ? `了解${work}的创作背景和演唱礼仪。` : `了解${origin}，体会音乐和生活、文化的联系。` },
+    ],
+    play: [
+      { area: "审美感知", text: `聆听${work}，感受旋律和节奏的特点${mood ? `，体会它“${mood}”的情绪` : ""}。` },
+      { area: "艺术表现", text: `用正确的姿势和演奏方法演奏${work}，做到节奏稳定、音色干净${ensemble ? "，合奏时声部整齐" : ""}。` },
+      { area: "创意实践", text: "尝试用不同的力度或速度演奏一个乐句，比较效果并说出理由。" },
+      { area: "文化理解", text: `了解${origin}，体会乐器演奏和音乐表达的联系。` },
     ],
     listen: [
       { area: "审美感知", text: `聆听${work}，辨识旋律、节奏、音色和情绪的变化。` },
@@ -110,16 +123,24 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
 
   const scene = {
     sing: playful ? `先听一听${work}，跟着音乐轻轻拍手，想一想：歌里唱了什么？` : `聆听${work}的示范演唱，说一说：歌曲给你留下的第一印象是什么？`,
+    play: `先听一听${work}的示范演奏，看看手指和气息怎样配合，想一想：哪一句你最想先学会？`,
     listen: `闭上眼睛完整聆听${work}的片段，想象音乐描绘了怎样的画面。`,
     create: `听一听${work}，找一找里面最有特点的节奏，想一想生活里哪里也有这样的节奏。`,
   }[kind];
 
   const perceive = {
     sing: { task: "跟着旋律轻声模唱，标出唱得不稳的地方。", rows: [
-      { label: "情绪", options: ["欢快", "抒情", "优美", "雄壮", "活泼", "深情"] },
+      { label: "情绪", options: ["欢快", "抒情", "优美", "雄壮", "庄严", "活泼", "深情"] },
       { label: "速度", options: ["慢", "稍慢", "中速", "稍快", "快"] },
-      { label: "旋律", options: ["级进为主", "跳进较多", "起伏平稳", "起伏较大"] },
-      { label: "难点", options: ["音准", "节奏", "换气", "高音", "咬字"] },
+      // 低年级用形象的说法代替“级进、跳进”等术语
+      { label: "旋律", options: playful ? ["像走楼梯", "像跳台阶", "平平稳稳", "高高低低"] : ["级进为主", "跳进较多", "起伏平稳", "起伏较大"] },
+      { label: "难点", options: playful ? ["唱准音", "拍子稳", "换气", "唱清楚"] : ["音准", "节奏", "换气", "高音", "咬字"] },
+    ] },
+    play: { task: "跟着音乐默按指法或轻拍节奏，标出最难的地方。", rows: [
+      { label: "情绪", options: ["欢快", "抒情", "优美", "活泼", "庄重"] },
+      { label: "速度", options: ["慢", "中速", "快"] },
+      { label: "难点", options: ["指法", "气息", "节奏", "音色", ...(ensemble ? ["声部配合"] : [])] },
+      { label: "练法", options: ["先拍节奏", "先唱谱", "慢速练习", "分句练习"] },
     ] },
     listen: { task: "完整聆听，记录旋律、节奏和情绪的变化。", rows: [
       { label: "情绪", options: ["欢快", "抒情", "庄严", "激昂", "幽默", "宁静"] },
@@ -136,14 +157,24 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
   }[kind];
 
   const conflicts = {
-    sing: [
+    sing: solemn ? [
+      `${work}里哪一句最容易唱不准、唱不齐？为什么？`,
+      `为什么${work}要唱得庄严、有力？速度和力度起了什么作用？`,
+      "你唱的和示范比，差别在哪里？是音准、节奏，还是精神面貌？",
+    ] : [
       `${work}里哪一句最容易唱跑调或唱不稳？为什么？`,
-      meter ? `这首歌是 ${meter} 拍，如果换一种拍子来唱，感觉会有什么不同？` : "如果把速度唱得很快或很慢，歌曲的情绪会发生什么变化？",
+      playful ? "如果唱得很快或很慢，歌曲的心情会变吗？为什么？"
+        : meter ? `这首歌是 ${meter} 拍，如果换一种拍子来唱，感觉会有什么不同？` : "如果把速度唱得很快或很慢，歌曲的情绪会发生什么变化？",
       "你唱的和示范比，差别在哪里？是音准、节奏，还是情感？",
     ],
+    play: [
+      `${work}里哪一句最难演奏？难在指法、气息还是节奏？`,
+      "同样的音，为什么有人奏出来好听，有人却不好听？",
+      ensemble ? "合奏时怎样才能和其他声部对齐、听得见彼此？" : "你演奏的和示范比，差别在哪里？",
+    ],
     listen: [
-      "同一个主题在作品前后出现时，情绪为什么不一样？",
-      "如果换一种乐器来演奏这段主题，效果会怎样？",
+      playful ? "音乐里有没有重复出现的旋律？它每次出现时，心情一样吗？" : "作品里有没有重复出现的旋律？它每次出现时，情绪一样吗？为什么？",
+      "如果换一种乐器或换一种声音来表现这段旋律，效果会怎样？",
       `${work}表达的情感，和你第一次听时的想象一样吗？`,
     ],
     create: [
@@ -159,6 +190,12 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
       { role: "节奏员", duty: "拍稳节拍，盯住难唱的节奏" },
       { role: "录音员", duty: "录下小组演唱，回放对比" },
       { role: "发言人", duty: "整理小组的改进办法并汇报" },
+    ],
+    play: [
+      { role: "示范手", duty: "先练会难点，给组员做示范" },
+      { role: "节拍员", duty: "用拍手或节拍器稳住速度" },
+      { role: "录音员", duty: "录下小组演奏，回放对比" },
+      { role: "发言人", duty: "整理小组的练习办法并汇报" },
     ],
     listen: [
       { role: "旋律组", duty: "哼唱主题，画出旋律线" },
@@ -176,21 +213,32 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
 
   const groupTask = {
     sing: "小组针对演唱难点（音准 / 节奏 / 换气）专项练习：录一遍、听一遍、改一遍，找出最有效的办法。",
+    play: "小组针对演奏难点（指法 / 气息 / 节奏）分句练习：录一遍、听一遍、改一遍，找出最有效的练法。",
     listen: "小组分工分析核心片段的音乐要素，结合文化背景讨论“为什么会这样”，填写要素分析与反思表。",
     create: "小组合作完善初步编创，围绕“编创逻辑”和“情绪是否贴合”讨论，调整作品结构。",
   }[kind];
 
   const practiceTip = {
     sing: "放慢速度，一句一句跟唱；唱准后再恢复原速。",
+    play: "先唱谱、再慢速演奏；一句熟练了再连下一句，最后恢复原速。",
     listen: "反复聆听主题片段，边听边哼唱或画旋律线。",
     create: "先拍稳节奏，再加旋律；每改一次都唱一遍、听一遍。",
   }[kind];
 
   const transfer = {
-    sing: [
+    sing: solemn ? [
+      { level: "基础", task: "完整、准确地演唱全曲，注意刚才解决的难点。" },
+      { level: "提高", task: "按照仪式场合的要求（站姿、表情、声音）规范演唱，互相评一评。" },
+      { level: "拓展", task: `了解${work}的创作背景，用一两句话讲给同学听。` },
+    ] : [
       { level: "基础", task: "完整、准确地演唱全曲，注意刚才解决的难点。" },
       { level: "提高", task: "用两种不同的情感（如激昂 / 舒缓）演唱同一乐句，对比效果并说明原因。" },
       { level: "拓展", task: "为歌曲设计演唱形式（领唱、齐唱、轮唱或加入律动），并说明设计理由。" },
+    ],
+    play: [
+      { level: "基础", task: "完整、流畅地演奏全曲，注意刚才解决的难点。" },
+      { level: "提高", task: "用强、弱两种力度演奏同一乐句，说说哪种更贴合乐曲的情绪。" },
+      { level: "拓展", task: ensemble ? "和同学分声部合奏，听着别的声部把速度对齐。" : "和同学一起合奏，或为演奏配上简单的打击乐伴奏。" },
     ],
     listen: [
       { level: "基础", task: "听辨作品的主题片段，说出它的情绪和主要乐器。" },
@@ -218,10 +266,11 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
     chain: ["我们的观点有哪些不同？", "我们是怎样达成共识的？", "这个过程中发现了什么新问题？", "我对音乐有了哪些新理解？"],
     transfer,
     showcase: ["我是怎样把刚才的反思用到新任务里的？", "遇到了什么新问题？和之前的问题有关系吗？", "我的成果达到预期了吗？还可以怎样改进？"],
-    selfCheck: kind === "sing" ? ["音准与节奏", "情感表达", "反思与改进"] : kind === "listen" ? ["听辨要素", "表达理解", "反思与改进"] : ["创意与贴合", "完整呈现", "反思与改进"],
+    selfCheck: kind === "sing" ? ["音准与节奏", "情感表达", "反思与改进"] : kind === "play" ? ["演奏方法", "节奏与音色", "反思与改进"] : kind === "listen" ? ["听辨要素", "表达理解", "反思与改进"] : ["创意与贴合", "完整呈现", "反思与改进"],
     wrapUp: ["这节课我通过反思解决了哪些问题？", "我还有哪些没解决的问题？课后怎样继续探究？", "下次学音乐，我可以怎样运用今天的反思方法？"],
     homework: {
       sing: `完善“反思成长档案”：录一段自己演唱${work}的片段，写下进步和还要改进的地方。`,
+      play: `完善“反思成长档案”：录一段自己演奏${work}的片段，写下进步和还要练习的地方。`,
       listen: `完善“反思成长档案”：再听一遍${work}，写下新的发现。`,
       create: "完善“反思成长档案”：修改小组作品，记录每一次修改的理由。",
     }[kind],

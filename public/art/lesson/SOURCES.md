@@ -303,3 +303,25 @@ Wide 16:9 1600x900 nostalgic Chinese childhood woodblock / linocut picture-book 
 - 尺寸与体积：1600×450，65,146 字节；由 sharp 导出。
 - 组成：2×4 缩略图，包含 stage-motivate、stage-conflict、stage-construct、stage-transfer、stage-summary、group-roles、wonder-wall、homework 八张当前成品，无空白格。
 - 生成方式：使用 sharp 将各 WebP 缩至 400×225 后排入网格，背景为 #FAF7EE；未添加文字或标题。
+
+## T076 重画记录：group-roles.webp
+
+- 原图：E:/Projects/.tmp/lesson-art/renyin/group-roles.webp（保留，未覆盖）
+- 风格参照：E:/Projects/.tmp/lesson-art/renyin/stage-motivate.webp、stage-construct.webp
+- image_gen 源图：E:/codex-state/codex-home/generated_images/01a14ff6-1b6d-7630-96f2-a3a717131aef/exec-e8f391d5-956f-4e74-bdbd-6c3286d5dd9a.png（1672×941）
+- 新图：E:/Projects/.tmp/lesson-art/redraw/renyin-group-roles.webp（1600×900，112,948 字节）
+- 导出：E:/Projects/music-graph-site/node_modules/sharp；从右侧场景裁切、缩放至 640px 版心并排入 1600×900 画布；WebP quality=86、effort=6。
+- image_gen 请求次数：3 次；第 1 次构图横向过宽未采用，第 2 次网络错误，等待 60 秒后第 3 次成功。无 CLI fallback。
+- 自查：PASS — 四个孩子与道具都在右侧 40% 版心；四人组合约占画高 69%；左侧 60% 为干净浅色纸面；四种分工清楚；录音设备无可辨文字；未见文字、伪文字、数字、字母、logo 或水印；尺寸与体积符合要求。
+
+### 最终采用提示词（实际提交）
+
+~~~text
+Recompose the supplied Renyin classroom art as a finished wide 16:9 illustration, matching the two approved stage references in nostalgic Chinese childhood woodblock / linocut picture-book style: warm #FAF7EE paper, visible but subtle printed grain, carved ink edges, muted forest green, brick red, ochre, warm white and teal. Keep the same four friendly Chinese primary-school classmates, their simple everyday clothes and recognizable color roles from the group reference.
+
+Strict layout: all four children, all hands, recorder, and every shadow must be contained in the rightmost 40% of the entire landscape (between x=60% and x=100%). The group's total height should be about 65% of the canvas (from y≈18% to y≈83%). Do NOT arrange the children in one wide horizontal line. Instead make a tight, narrow, two-row cluster: two children slightly behind and two seated or standing close in front, with shoulders overlapping naturally, so the complete cluster is taller than it is wide and fits wholly within that rightmost 40% column. Keep all four faces separate, large, and unobstructed. Leave at least the full left 60% completely blank warm pale paper, with only faint paper grain. Do not let anything enter the left 60%.
+
+In the cluster, show these four roles distinctly: a boy singing with an open singing mouth; a girl clapping a steady rhythm; a boy holding a small plain unbranded audio recorder with a completely blank front; and a girl raising one hand to speak. Keep the recorder blank. Open eyes with visible pupils and natural cheerful expressions, clean age-appropriate hands. No extra children or decorative scene.
+
+No text, pseudo-writing, letters, numbers, labels, watermarks, icons, music notation or symbols, signs, books, or screen graphics anywhere.
+~~~

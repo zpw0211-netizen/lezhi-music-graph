@@ -24644,7 +24644,7 @@ export const PAGE_ENRICHMENT = {
             30
           ],
           [
-            "作曲",
+            "作词",
             "哈默斯坦二世",
             "人物",
             "明",
@@ -24658,7 +24658,7 @@ export const PAGE_ENRICHMENT = {
             30
           ],
           [
-            "作曲",
+            "译配",
             "章珍芳",
             "人物",
             "明",

@@ -199,3 +199,31 @@ Wide 16:9 1600x900 handmade Chinese layered paper-cut illustration: stacked colo
 - 尺寸与体积：1600×450，64,276 字节。
 - 组成：2×4 缩略图，包含八张成品，无空白格。
 - 生成方式：使用仓库 sharp 将各 WebP 缩至 400×225 后排入网格，背景为 #FAF7EE；未添加文字或标题。
+
+## T076 重画记录：group-roles.webp
+
+- 原图：E:/Projects/.tmp/lesson-art/renjiao/group-roles.webp（保留，未覆盖）
+- 风格参照：E:/Projects/.tmp/lesson-art/renjiao/stage-motivate.webp、stage-construct.webp
+- image_gen 源图：E:/codex-state/codex-home/generated_images/01a14ff6-1b6d-7630-96f2-a3a717131aef/exec-919ee839-08f0-4dff-9c95-0d60003e5088.png（1672×941）
+- 新图：E:/Projects/.tmp/lesson-art/redraw/renjiao-group-roles.webp（1600×900，80,644 字节）
+- 导出：E:/Projects/music-graph-site/node_modules/sharp；从右侧场景裁切、缩放至 640px 版心并排入 1600×900 画布；WebP quality=86、effort=6。
+- image_gen 请求次数：2 次；第 1 次眼睛清楚但角色分配不符并多出手鼓，第 2 次成功。无 CLI fallback。
+- 自查：PASS — 四个孩子都能看到睁开的双眼和深色瞳孔；唱歌、拍节奏、拿空白录音设备、举手发言四种分工清楚；人物和装饰仅在右侧 40% 版心；左侧 60% 为干净浅色纸面；未见文字、伪文字、数字、字母、logo 或水印；尺寸与体积符合要求。
+
+### 最终采用提示词（实际提交）
+
+~~~text
+Make a corrected wide 16:9 redraw of the supplied Renjiao paper-cut illustration. Match the approved Renjiao references: dimensional handmade Chinese paper-cut craft, layered colored paper, softly raised cut edges, gentle paper shadows and tactile fibers, bright but refined teal, leaf green, warm cream, mustard, red and blue. Preserve the same four Chinese primary-school classmates and the large, clear, friendly open eyes from the supplied group image.
+
+Composition: a compact group in a narrow two-row arrangement; all children and all props wholly inside the rightmost 40% of the full canvas, x=60%-100%. Left 60% must be clean warm pale cream #FAF7EE paper with only faint texture, no object or shadow. Keep all four children's faces large and unobstructed; each child must show two clearly open eyes with visible dark pupils / irises and small highlights, both eyes visible from a near-frontal or gentle three-quarter view. Group height about 60%-70%.
+
+Exactly four children with these exact separate roles and positions:
+- Front left: a Chinese schoolgirl in simple red clothes clapping both hands together to keep rhythm.
+- Front center: a Chinese schoolboy in simple mustard-yellow clothes singing, mouth open, empty hands; he is NOT holding any object.
+- Back center: a Chinese schoolboy in simple blue clothes holding only one small plain unbranded handheld audio recorder at chest level. The recorder is a simple blank rectangle with absolutely no screen content, writing, buttons or icons.
+- Back right: a Chinese schoolgirl in simple green clothes raising one arm clearly above her shoulder, hand visible and raised to speak.
+
+Do not draw a drum, tambourine, mallet, musical instrument, music stand, book, phone, extra prop or extra child anywhere. Do not let one child perform another child's role. Keep expressions natural and cheerful, clothes plain with no badges or logos.
+
+No text, pseudo-writing, letters, numbers, symbols, icons, labels, watermarks, signs, music notation or screen graphics. Avoid a large decorative frame or busy scene; only a small quiet paper-cut ground shape close around the group.
+~~~

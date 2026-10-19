@@ -63,7 +63,7 @@ export function ReflectivePresent({
     return next;
   }), [workId]);
   const [preparing, setPreparing] = useState(false);
-  const kind = saved.kind ?? lessonKindOf(mode, workType);
+  const kind = saved.kind ?? lessonKindOf(mode, workType, workName);
   const script = useMemo(() => reflectiveScript({ workName, kind, grade, facts }), [facts, grade, kind, workName]);
   const elements = useMemo(() => elementFacts(facts), [facts]);
   const culture = useMemo(() => cultureFacts(facts), [facts]);
@@ -288,6 +288,22 @@ export function ReflectivePresent({
     observer.observe(stageEl);
     return () => { observer.disconnect(); cancelAnimationFrame(raf); };
   }, [slideKey, step, preparing]);
+
+  // 难点突破页的谱面在框内滚动：播放时把正在唱的音保持在可见范围里。
+  useEffect(() => {
+    if (slideKey !== "practice" || !stageRef.current) return;
+    const root = stageRef.current;
+    const follow = () => {
+      const note = root.querySelector<HTMLElement>(".melody-score .is-active");
+      const box = note?.closest<HTMLElement>(".melody-score");
+      if (!note || !box || box.scrollHeight <= box.clientHeight) return;
+      const top = note.getBoundingClientRect().top - box.getBoundingClientRect().top;
+      if (top < 0 || top > box.clientHeight - 60) box.scrollTop += top - box.clientHeight / 3;
+    };
+    const observer = new MutationObserver(follow);
+    observer.observe(root, { subtree: true, attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [slideKey]);
 
   const isHidden = hidden.has(slide.key);
   const toggleHidden = () => update({ hidden: isHidden ? [...hidden].filter((key) => key !== slide.key) : [...hidden, slide.key] });

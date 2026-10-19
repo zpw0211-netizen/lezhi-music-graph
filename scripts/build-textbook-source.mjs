@@ -20,7 +20,8 @@ const sourceDir = path.join(root, "content", "textbooks");
 const datasetPath = path.join(root, "public", "data", "music-graph.json");
 const manifestPath = path.join(root, "content", "textbooks", "score-manifest.json");
 
-const WORK_TYPES = new Set(["音乐作品", "歌曲", "民歌", "器乐曲", "戏曲歌曲", "戏曲选段", "舞蹈音乐", "影视音乐", "交响作品", "合唱作品", "歌剧音乐", "进行曲", "朗诵作品"]);
+// 与 refine-public-ontology / build-canonical-graph 的作品类型保持一致（缺“音乐剧”时，人教版《音乐之声》等课打不开）。
+const WORK_TYPES = new Set(["音乐作品", "歌曲", "民歌", "器乐曲", "戏曲歌曲", "戏曲选段", "舞蹈音乐", "影视音乐", "交响作品", "合唱作品", "歌剧音乐", "音乐剧", "进行曲", "朗诵作品"]);
 const CATEGORY = {
   教材: "textbook", 单元: "textbook", 人物: "person", 创作主体: "person", 创作群体: "person", 署名主体: "person", 机构: "person",
   乐器: "instrument", 表演形式: "instrument", 音乐体裁: "genre", 戏曲行当: "genre", 来源作品: "genre",
