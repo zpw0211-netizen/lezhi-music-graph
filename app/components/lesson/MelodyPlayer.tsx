@@ -161,6 +161,8 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   const samplerLoading = useRef(false);
   const stopRef = useRef<() => void>(() => {});
   const playRequestRef = useRef(0);
+  /** Continuous position of the main line in beats (−1 when silent), for the melody line's orb. */
+  const beatRef = useRef(-1);
   const flats = useMemo(() => lines.map((line) => line.bars.flat()), [lines]);
   const headHeights = useMemo(() => flats.map(noteHeadHeight), [flats]);
   const offsets = useMemo(() => lines.map((line) => line.bars.reduce<number[]>((acc, bar, i) => [...acc, i ? acc[i - 1] + line.bars[i - 1].length : 0], [])), [lines]);
@@ -194,6 +196,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     stopRef.current = () => {};
     setPlaying(false);
     setFollow(null);
+    beatRef.current = -1;
     setCurrent([]);
     soundingCallback.current?.([], false);
     if (shouldAnnounceStop && mounted.current) setAnnouncement("已停止");
@@ -323,6 +326,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     const tick = () => {
       const now = ctx.currentTime;
       if (now >= end) { stop(); return; }
+      beatRef.current = now < start ? -1 : (now - start) / beat;
       const indices = timeline.map((times) => {
         if (now < start) return -1;
         let index = times.length - 1;
@@ -418,6 +422,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       while (index > 0 && segment.times[index] > now) index -= 1;
       const phrase = phrases[segment.phrase];
       const beatInPhrase = started ? Math.floor((now - segment.t0) / beat) : -1;
+      beatRef.current = started ? phrase.startBeat + (now - segment.t0) / beat : -1;
       const key = `${segment.phrase}:${segment.kind}:${beatInPhrase}:${started ? index : -1}`;
       if (key !== previous) {
         previous = key;
@@ -528,7 +533,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         </div>
       </>}
     </div>}
-    {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} /> :
+    {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} beatRef={beatRef} /> :
     <div className="melody-score" role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
       {melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
         {lines.map((line, voice) => {
