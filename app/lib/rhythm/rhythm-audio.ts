@@ -35,6 +35,9 @@ export type RhythmPlayback = {
   stop: () => void;
   /** Position in quarter notes inside the exercise (negative during the count-in), or null when finished. */
   position: () => number | null;
+  /** Seconds from the first beat at which a tap was heard, from an input event's timeStamp. */
+  tapTime: (eventTimeStamp: number) => number;
+  secPerQuarter: number;
 };
 
 /** Unlock audio and load the piano; call from a user gesture. */
@@ -123,5 +126,31 @@ export function playRhythm(
       const passes = Math.min(Math.floor(elapsed / options.totalBeats), scheduledPasses - 1);
       return elapsed - passes * options.totalBeats;
     },
+    tapTime: (eventTimeStamp: number) => {
+      // The event happened a little before now; the pupil hears each note
+      // later than it is scheduled by the output latency.
+      const sinceEvent = Math.max(0, (performance.now() - eventTimeStamp) / 1000);
+      const latency = (context.outputLatency || 0) + (context.baseLatency || 0);
+      return context.currentTime - sinceEvent - latency - origin;
+    },
+    secPerQuarter,
   };
+}
+
+/** The pupil's own drum stroke: a short low thump, so every tap is heard. */
+export function drumThump() {
+  const context = getPianoAudioContext();
+  void context.resume();
+  const at = context.currentTime;
+  const osc = context.createOscillator();
+  const gain = context.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(170, at);
+  osc.frequency.exponentialRampToValueAtTime(70, at + 0.12);
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(0.5, at + 0.004);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.18);
+  osc.connect(gain).connect(context.destination);
+  osc.start(at);
+  osc.stop(at + 0.2);
 }
