@@ -12,6 +12,20 @@
 .reflect .present-stage::before { content: ""; position: absolute; right: 0; bottom: 0; z-index: -1; width: min(58vw, 980px); aspect-ratio: 5 / 2; background: var(--art, none) center / cover no-repeat; opacity: .2; -webkit-mask-image: radial-gradient(120% 120% at 100% 100%, #000 30%, transparent 72%); mask-image: radial-gradient(120% 120% at 100% 100%, #000 30%, transparent 72%); pointer-events: none; }
 .reflect[data-slide="cover"] .present-stage::before, .reflect[data-slide="scene"] .present-stage::before { display: none; }
 
+/* 课件插画页：插画主体在画面右侧 40%，左侧留白放文字。正片叠底让插画的浅色纸底融进页面底色，
+   插画自带的浅色方框也随之消失；文字栏收窄到左侧，不压住人物。 */
+.reflect .present-stage.has-art { isolation: auto; align-items: flex-start; animation: none; }
+.reflect .present-stage.has-art::before { display: none; }
+.reflect-art { position: absolute; right: 0; bottom: 0; z-index: 0; height: 100%; width: auto; max-width: none; mix-blend-mode: multiply; -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 52%); mask-image: linear-gradient(90deg, transparent 30%, #000 52%); pointer-events: none; animation: reflect-art-in .8s ease-out both; }
+.reflect .present-stage.has-art .present-fit { position: relative; z-index: 1; width: min(60vw, 1100px); padding-left: 6vw; animation: reflect-rise .5s cubic-bezier(.2, .7, .2, 1) both; }
+.reflect .has-art .reflect-wide, .reflect .has-art .reflect-wonder { width: 100%; }
+.reflect .has-art .reflect-roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.reflect .has-art .reflect-chain { grid-template-columns: minmax(0, 1fr); }
+.reflect .has-art .reflect-notes { gap: 2vw; }
+/* 便签开头语保持一行（如「我觉得最难的是……」），不让「道……」单独换行 */
+.reflect .has-art .reflect-notes li { min-height: 22vh; padding-inline: 1vw; font-size: clamp(17px, 1.45vw, 28px); white-space: nowrap; }
+.reflect-wide.is-homework > p { font-family: var(--kai); font-size: clamp(26px, 2.5vw, 40px); line-height: 1.75; }
+
 /* 顶部阶段条：阶段 · 环节 · 五段进度 · 计时 */
 .reflect-band { display: flex; align-items: center; gap: 22px; min-height: 54px; padding: 0 28px; border-bottom: 1px solid color-mix(in srgb, var(--stage) 18%, transparent); background: color-mix(in srgb, var(--stage-soft) 70%, #fff); color: var(--brand-ink); font-size: clamp(14px, 1.15vw, 19px); }
 .reflect-band-stage { display: flex; align-items: center; gap: .7em; font-weight: 700; color: var(--stage); white-space: nowrap; }
@@ -179,7 +193,6 @@
 .reflect-quiz span.is-answer em { border-color: #fff; color: #fff; }
 .reflect-quiz span.is-other { opacity: .38; }
 
-.reflect-panel.is-homework p { font-family: var(--kai); font-size: clamp(24px, 2.2vw, 36px); line-height: 1.7; }
 
 /* 小组交流倒计时 */
 .reflect-countdown { display: flex; align-items: center; gap: 22px; margin-top: 3.4vh; }
@@ -199,11 +212,12 @@
 .reflect .present-nav button[aria-pressed="true"] { border-color: var(--stage); color: var(--stage); }
 
 @keyframes reflect-rise { from { opacity: 0; transform: translateY(18px); } }
+@keyframes reflect-art-in { from { opacity: 0; transform: translateX(3vw); } }
 @keyframes reflect-drift { from { transform: scale(1.06); } }
 @keyframes reflect-pin { from { opacity: 0; transform: translateY(-24px) rotate(0deg) scale(.96); } }
 @keyframes reflect-pulse { 50% { transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) {
-  .reflect-roadmap li, .reflect-roles li, .reflect-tiers li, .reflect-notes li, .reflect-cover-art, .reflect-scene-art img, .reflect-cover-copy, .reflect-scene-copy { animation: none; }
+  .reflect-roadmap li, .reflect-roles li, .reflect-tiers li, .reflect-notes li, .reflect-cover-art, .reflect-scene-art img, .reflect-cover-copy, .reflect-scene-copy, .reflect-art, .reflect .present-stage.has-art .present-fit { animation: none; }
   .reflect-questions li, .reflect-chain li { transition: none; }
 }
 
@@ -214,6 +228,10 @@
   .reflect-cover-copy { width: auto; padding-right: 6vw; }
   .reflect-prep { grid-template-columns: minmax(0, 1fr); }
   .reflect-band-progress { display: none; }
+  /* 窄屏放不下左文右图：插画退成右下角的淡影，文字恢复整宽 */
+  .reflect-art { height: 60%; opacity: .35; }
+  .reflect .present-stage.has-art { align-items: center; }
+  .reflect .present-stage.has-art .present-fit { width: auto; padding-left: 5vw; }
 }
 @media (max-width: 640px) {
   .reflect-band { flex-wrap: wrap; gap: 4px 12px; padding: 8px 14px; }

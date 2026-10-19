@@ -1,5 +1,5 @@
 "use client";
-// 上课模式 · 反思型课堂：动机激发 → 认知冲突 → 协同建构 → 应用迁移 → 总结升华，共 14 页（有小测验时 15 页）。
+// 上课模式 · 反思型课堂：动机激发 → 认知冲突 → 协同建构 → 应用迁移 → 总结升华，共 15 页（有小测验时 16 页）。
 // 文字脚本来自 lib/lesson/reflective.ts；谱例、旋律、插图按本课数据有无决定是否出现，缺数据的页面自动跳过。
 // 老师可在“备课”里改课型、隐藏页面、改写提问；这些只存在本机浏览器（localStorage），不影响别人。
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -14,7 +14,8 @@ import {
 
 type ScoreAsset = { url: string; title?: string };
 type Question = { id: string; prompt: string; options: string[]; answer: string };
-type Slide = { key: string; stage: StageKey; step: string; title: string; steps: number; render: (step: number) => ReactNode };
+// art：这一页右侧的课件插画（public/art/lesson/<art>.webp，人教版由 editions/renjiao 覆盖成剪纸风格的同名图）。
+type Slide = { key: string; stage: StageKey; step: string; title: string; steps: number; art?: string; render: (step: number) => ReactNode };
 type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string> };
 
 const STORAGE_PREFIX = "yapu-reflective:";
@@ -42,7 +43,8 @@ const DESIGN_NOTES: Record<string, string> = {
   transfer: "分层任务让学生在新情境中运用反思成果，实现能力迁移。",
   showcase: "邀请不同层次的学生或小组展示，并简短说明反思调整过程。",
   quiz: "以小测验做即时评价，检验核心知识。",
-  summary: "通过复盘与评价固化反思成果，形成完整学习闭环；布置课后“反思成长档案”。",
+  summary: "通过复盘与评价固化反思成果，形成完整学习闭环。",
+  homework: "布置课后“反思成长档案”，把课堂反思延伸到课外。",
 };
 
 export function ReflectivePresent({
@@ -115,12 +117,12 @@ export function ReflectivePresent({
         {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
       </div>
     </div> },
-    { key: "wonder", stage: "motivate", step: "预习反馈", title: "带着问题来学习", steps: 1, render: () => <div className="reflect-wonder">
+    { key: "wonder", stage: "motivate", step: "预习反馈", title: "带着问题来学习", steps: 1, art: "wonder-wall", render: () => <div className="reflect-wonder">
       <h2>带着问题来学习</h2>
       <p className="reflect-lead">通过预习或刚才的聆听，你最想探究什么？把问题写在便签上，贴到问题墙。</p>
       <ul className="reflect-notes">{script.questionStarters.map((starter, index) => <li key={starter} style={{ "--i": index } as CSSProperties}>{text(`starter-${index}`, starter)}</li>)}</ul>
     </div> },
-    { key: "perceive", stage: "conflict", step: "核心感知", title: "初听感知表", steps: 1, render: () => <div className="reflect-wide">
+    { key: "perceive", stage: "conflict", step: "核心感知", title: "初听感知表", steps: 1, art: "stage-motivate", render: () => <div className="reflect-wide">
       <h2>初听感知表</h2>
       {text("perceive", script.perceive.task, "p")}
       <table className="reflect-table"><tbody>{script.perceive.rows.map((row) => <tr key={row.label}>
@@ -141,7 +143,7 @@ export function ReflectivePresent({
           : <p className="reflect-lead">在谱例中找一找：调号、拍号、速度和最有特点的节奏。</p>}
       </div>
     </div> }] : []),
-    { key: "conflict", stage: "conflict", step: "矛盾触发", title: "想一想：为什么？", steps: script.conflicts.length, render: (step) => <div className="reflect-wide">
+    { key: "conflict", stage: "conflict", step: "矛盾触发", title: "想一想：为什么？", steps: script.conflicts.length, art: "stage-conflict", render: (step) => <div className="reflect-wide">
       <h2>想一想：为什么？</h2>
       <ol className="reflect-questions">{script.conflicts.map((question, index) => <li key={index} className={index <= step ? "is-shown" : ""}>{text(`conflict-${index}`, question)}</li>)}</ol>
     </div> },
@@ -150,7 +152,7 @@ export function ReflectivePresent({
       <ol className="reflect-questions is-all">{script.selfReflect.map((question, index) => <li key={index} className="is-shown">{text(`self-${index}`, question)}</li>)}</ol>
       <Countdown seconds={120} label="小组交流" />
     </div> },
-    { key: "group", stage: "construct", step: "合作探究", title: "小组任务", steps: 1, render: () => <div className="reflect-wide">
+    { key: "group", stage: "construct", step: "合作探究", title: "小组任务", steps: 1, art: "group-roles", render: () => <div className="reflect-wide">
       <h2>小组任务</h2>
       {text("group", script.groupTask, "p")}
       <ul className="reflect-roles">{script.roles.map((role, index) => <li key={role.role}><b>{text(`role-${index}`, role.role)}</b><small>{text(`duty-${index}`, role.duty)}</small></li>)}</ul>
@@ -163,7 +165,7 @@ export function ReflectivePresent({
         ? <MelodySet melodies={melody} large />
         : <Picture className="reflect-score-only" src={assetUrl(scores[0].url)} alt={scores[0].title ?? "教材谱例"} />}
     </div> }] : []),
-    { key: "chain", stage: "construct", step: "共同反思问题链", title: "共同反思", steps: script.chain.length, render: (step) => <div className="reflect-wide">
+    { key: "chain", stage: "construct", step: "共同反思问题链", title: "共同反思", steps: script.chain.length, art: "stage-construct", render: (step) => <div className="reflect-wide">
       <h2>共同反思</h2>
       <ol className="reflect-chain">{script.chain.map((question, index) => <li key={index} className={index <= step ? "is-shown" : ""}>{text(`chain-${index}`, question)}</li>)}</ol>
     </div> },
@@ -174,7 +176,7 @@ export function ReflectivePresent({
         <textarea value={value} placeholder="记下小组的结论或改进办法" onChange={(event) => setBoards((current) => current.map((item, k) => (k === index ? event.target.value : item)))} />
       </label>)}</div>
     </div> },
-    { key: "transfer", stage: "transfer", step: "实践运用 · 迁移创新", title: "挑战任务", steps: 1, render: () => <div className="reflect-wide">
+    { key: "transfer", stage: "transfer", step: "实践运用 · 迁移创新", title: "挑战任务", steps: 1, art: "stage-transfer", render: () => <div className="reflect-wide">
       <h2>挑战任务</h2>
       <p className="reflect-lead">选一个适合自己的挑战，把刚才的反思用起来。</p>
       <ol className="reflect-tiers">{script.transfer.map((tier, index) => <li key={tier.level} data-level={index}><b>{tier.level}</b>{text(`transfer-${index}`, tier.task)}</li>)}</ol>
@@ -197,16 +199,14 @@ export function ReflectivePresent({
         <div>{question.options.map((option, k) => <span key={option} className={step >= 1 ? (option === question.answer ? "is-answer" : "is-other") : ""}><em>{"ABCD"[k]}</em>{option}</span>)}</div>
       </li>)}</ol>
     </div> }] : []),
-    { key: "summary", stage: "summary", step: "多元评价 · 复盘梳理", title: "回顾这节课", steps: 1, render: () => <div className="reflect-two is-even">
-      <section className="reflect-panel">
-        <h2>回顾这节课</h2>
-        <ol className="reflect-roadmap is-done">{STAGES.slice(0, 4).map((stage) => <li key={stage.key} data-stage={stage.key}><b>{stage.name}</b><small>{stage.theme}</small></li>)}</ol>
-        <ul className="reflect-starters">{script.wrapUp.map((question, index) => <li key={index}>{text(`wrap-${index}`, question)}</li>)}</ul>
-      </section>
-      <section className="reflect-panel is-homework">
-        <h2>课后任务</h2>
-        {text("homework", script.homework, "p")}
-      </section>
+    { key: "summary", stage: "summary", step: "多元评价 · 复盘梳理", title: "回顾这节课", steps: 1, art: "stage-summary", render: () => <div className="reflect-wide">
+      <h2>回顾这节课</h2>
+      <ol className="reflect-roadmap is-done">{STAGES.slice(0, 4).map((stage) => <li key={stage.key} data-stage={stage.key}><b>{stage.name}</b><small>{stage.theme}</small></li>)}</ol>
+      <ul className="reflect-starters">{script.wrapUp.map((question, index) => <li key={index}>{text(`wrap-${index}`, question)}</li>)}</ul>
+    </div> },
+    { key: "homework", stage: "summary", step: "反思成长档案", title: "课后任务", steps: 1, art: "homework", render: () => <div className="reflect-wide is-homework">
+      <h2>课后任务</h2>
+      {text("homework", script.homework, "p")}
     </div> },
   ];
 
@@ -318,7 +318,8 @@ export function ReflectivePresent({
         </div>}
       </aside>
     </div>}
-    <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}`} key={`${slide.key}-${kind}`} ref={stageRef}>
+    <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}`} ref={stageRef}>
+      {slide.art && <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />}
       <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
     </div>
     <footer className="present-bar">
@@ -338,9 +339,9 @@ export function ReflectivePresent({
 }
 
 // 课件插图与谱例都是静态导出的现成图片，不经过 next/image。
-function Picture({ src, alt = "", className }: { src: string; alt?: string; className?: string }) {
+function Picture({ src, alt = "", className, art }: { src: string; alt?: string; className?: string; art?: string }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img className={className} src={src} alt={alt} />;
+  return <img className={className} src={src} alt={alt} data-art={art} />;
 }
 
 // 本阶段计时：换阶段时组件重建，从 0 开始，对照模板建议时长；超时变色提醒。
