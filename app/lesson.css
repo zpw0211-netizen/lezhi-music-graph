@@ -306,12 +306,15 @@
 .melody-tempo { display:inline-flex; align-items:center; gap:8px; margin-left:auto; font-size:12px; color:var(--text-secondary); }
 .melody-tempo input { width:110px; accent-color:var(--accent); }
 .melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }
-.melody-score { display:flex; flex-wrap:wrap; overflow-x:auto; row-gap:14px; margin-top:16px; padding:18px 12px 12px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
+/* 谱子：小节排成等宽网格（每行 8/4/2/1 小节），小节线上下对齐；小节内按拍分配宽度，各声部同拍对齐。 */
+.melody-score { display:grid; grid-template-columns:repeat(var(--bars,4), minmax(min-content,1fr)); overflow-x:auto; row-gap:18px; margin-top:16px; padding:20px 14px 14px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
   font-family:var(--font-score); }
-.melody-bar { display:inline-flex; flex:0 0 auto; align-items:stretch; flex-direction:column; padding:0 10px; border-right:1.5px solid #9AA7A0; }
+.melody-bar { display:flex; min-width:0; align-items:stretch; flex-direction:column; padding:0 12px; border-right:1.5px solid #9AA7A0; }
 .melody-bar:last-child { border-right:3px double #6B7771; }
-.melody-note { display:inline-flex; flex-direction:column; align-items:center; min-width:1.3em; position:relative; }
-.melody-head-cell, .melody-lyric-cell { display:flex; justify-content:center; align-items:flex-start; min-width:1.3em; position:relative; box-sizing:border-box; }
+.melody-note { display:inline-flex; flex-direction:column; align-items:flex-start; min-width:1.1em; position:relative; }
+.melody-note > .melody-head-cell { align-self:stretch; justify-content:flex-start; padding-left:.2em; }
+.melody-note > .melody-head-cell.has-accidental { padding-left:.4em; }
+.melody-head-cell, .melody-lyric-cell { display:flex; justify-content:center; align-items:flex-start; min-width:1.1em; position:relative; box-sizing:border-box; }
 .melody-head-cell { grid-row:1; height:var(--melody-head-height,1.72em); }
 .melody-lyric-cell { grid-row:2; }
 .melody-digit { position:relative; display:inline-block; flex:0 0 .7em; width:.7em; height:1em; margin-top:.4em; padding:0; font-size:inherit; font-weight:700; font-variant-numeric:tabular-nums; text-align:center; line-height:1; transition:opacity var(--motion-fast) var(--ease-out); }
@@ -328,7 +331,7 @@
 .melody-note.is-active .melody-lyric { color:var(--accent); font-weight:700; }
 .melody-source { margin:10px 2px 0; font-size:12px; color:var(--text-tertiary); }
 .melody-accidental { position:absolute; right:100%; top:0; font-size:.6em; font-weight:600; margin:0; vertical-align:baseline; }
-.melody-head-cell.has-accidental, .melody-lyric-cell.has-accidental { min-width:1.7em; }
+.melody-head-cell.has-accidental, .melody-lyric-cell.has-accidental { min-width:1.5em; }
 
 /* 多声部 / 多片段谱例 */
 .melody-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
@@ -342,14 +345,14 @@
 .melody-voices label.voice-1 { color:#2466B8; background:#EEF4FC; }
 .melody-voices label.voice-2 { color:#7A5AB8; background:#F3EFFB; }
 .melody-voices input { accent-color:currentColor; }
-.melody-voice { display:flex; align-items:flex-start; font-size:var(--melody-note-size,20px); }
+.melody-voice { display:flex; align-items:flex-start; font-size:calc(var(--melody-note-size,20px) * var(--melody-fit,1)); }
 .melody-player.is-choral .melody-voice + .melody-voice { margin-top:6px; padding-top:6px; border-top:1px dashed #D5DED9; }
 .melody-player.is-choral .melody-voice.voice-1 .melody-digit { color:#2466B8; }
 .melody-player.is-choral .melody-voice.voice-1 .melody-lyric:empty, .melody-player.is-choral .melody-voice.voice-1 .melody-lyric { font-size:12px; }
 .melody-note.is-active .melody-digit, .melody-head-cell.is-active .melody-digit { color:var(--brand-amber, #E9A83A) !important; }
 .melody-player.is-choral .melody-voice.voice-1 .melody-note.is-active .melody-digit { background:transparent; }
 /* 连线只占音符行；歌词独立排在第二行，节拍组之间留出断口。 */
-.melody-beam-group { position:relative; display:inline-grid; grid-template-rows:auto auto; flex:0 0 auto; align-items:start; column-gap:0; row-gap:0; margin-right:.22em; vertical-align:top; font-size:inherit; }
+.melody-beam-group { position:relative; display:inline-grid; grid-template-rows:auto auto; justify-content:start; align-items:start; column-gap:0; row-gap:0; margin-right:.22em; vertical-align:top; font-size:inherit; }
 .melody-beam-group .melody-head-cell { align-self:start; }
 .melody-beam-group .melody-lyric-cell { align-self:start; }
 /* 第一层贴近数字，附加层向下；首尾线覆盖整个数字框。 */
@@ -371,7 +374,7 @@
 /* 谱例块视口自适应：高度紧张时音数字号随 vh 收缩，宽度随之收紧让每行容纳更多小节 */
 .melody-player.is-large { --melody-note-size:clamp(40px,5.5vh,80px); }
 .melody-player.is-large .melody-lyric { font-size:clamp(14px,1.9vh,24px); }
-.melody-player.is-large .melody-note, .melody-player.is-large .melody-head-cell, .melody-player.is-large .melody-lyric-cell { min-width:1.3em; }
-.melody-player.is-large .melody-head-cell.has-accidental, .melody-player.is-large .melody-lyric-cell.has-accidental { min-width:1.7em; }
+.melody-player.is-large .melody-note, .melody-player.is-large .melody-head-cell, .melody-player.is-large .melody-lyric-cell { min-width:1.1em; }
+.melody-player.is-large .melody-head-cell.has-accidental, .melody-player.is-large .melody-lyric-cell.has-accidental { min-width:1.5em; }
 .melody-player.is-large .melody-dash { font-size:inherit; }
 .melody-player.is-large .melody-score { row-gap:clamp(8px,1.2vh,22px); padding:clamp(10px,1.5vh,20px) clamp(10px,1.4vw,18px); }

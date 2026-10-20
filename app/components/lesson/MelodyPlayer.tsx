@@ -175,6 +175,16 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     });
     return byLevel;
   })), [lines, melody.meter]);
+  // Widest bar in note-size units, to choose how many bars share a score row.
+  const widestBar = useMemo(() => Math.max(1, ...melody.bars.map((_, barIndex) => Math.max(...lines.map((line, voice) => {
+    const notes = line.bars[barIndex] ?? [];
+    const groups = [...(beamRuns[voice]?.[barIndex]?.get(1)?.values() ?? [])].length;
+    return notes.reduce((sum, note) => sum + (note.a != null ? 1.5 : 1.1) + notation(note).dashes * 1.1, 0) + groups * 0.22;
+  })))), [melody.bars, lines, beamRuns]);
+  const scoreRef = useRef<HTMLDivElement | null>(null);
+  const [barsPerRow, setBarsPerRow] = useState(4);
+  const [noteFit, setNoteFit] = useState(1);
+  const fitRef = useRef(1);
   const [view, setView] = useState<"score" | "line">("score");
   const [followOpen, setFollowOpen] = useState(false);
   const [follow, setFollow] = useState<null | { phrase: number; kind: "listen" | "sing"; beat: number; beats: number }>(null);
@@ -209,6 +219,27 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     window.addEventListener(VOCAL_PLAYBACK_STARTED, stop);
     return () => window.removeEventListener(VOCAL_PLAYBACK_STARTED, stop);
   }, [stop]);
+  // Bars sit on an even grid, 8, 4, 2 or 1 per row so phrases line up; notes may shrink to 80% to keep 4 a row.
+  useEffect(() => {
+    const score = scoreRef.current;
+    if (!score) return;
+    const fit = () => {
+      const voice = score.querySelector<HTMLElement>(".melody-voice");
+      const notePx = (voice ? parseFloat(getComputedStyle(voice).fontSize) || 20 : 20) / fitRef.current;
+      const style = getComputedStyle(score);
+      const room = score.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const barPx = (n: number, scale: number) => n * (widestBar * notePx * scale + 26);
+      const count = Math.min([8, 4, 2].find((n) => barPx(n, 0.8) <= room) ?? 1, melody.bars.length);
+      const scale = barPx(count, 1) <= room ? 1 : Math.max(0.8, room / barPx(count, 1));
+      fitRef.current = scale;
+      setBarsPerRow(count);
+      setNoteFit(scale);
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(score);
+    return () => observer.disconnect();
+  }, [widestBar, melody.bars.length, view]);
 
   /** Unlock audio and load the chosen instrument; null when the request was superseded. */
   const prepareAudio = async (request: number) => {
@@ -448,7 +479,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     const fragments = beamSegments ?? Array.from({ length: underlines }, (_, index) => ({ level: index + 1, edge: "single" as const }));
     const octave = note.o ?? 0;
     const hasAccidental = note.a != null;
-    return <span key={key} aria-hidden="true" className={`melody-head-cell ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""} ${hasAccidental ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}>
+    return <span key={key} aria-hidden="true" className={`melody-head-cell ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""} ${hasAccidental ? "has-accidental" : ""}`}>
       <span className="melody-digit">
         <span className="melody-digit-highlight" />
         {hasAccidental ? <sup className="melody-accidental">{note.a === 0 ? "♮" : note.a! > 0 ? "♯" : "♭"}</sup> : null}
@@ -457,16 +488,17 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         {Array.from({ length: Math.abs(octave) }, (_, index) => <i key={`octave-${index}`} className="melody-octave-dot" style={{ top: `${octave > 0 ? -0.18 - index * 0.2 : lowDotTop(note) - 0.4 + index * 0.2}em` }} />)}
       </span>
       {fragments.map((run, index) => <i key={`beam-${run.level}-${index}`} className={`melody-beam-segment is-${run.edge}`} style={{ top: `${UNDERLINE_TOP + (run.level - 1) * UNDERLINE_GAP}em` }} />)}
-      {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash" style={{ left: `calc(50% + ${0.7 + k * 1.1}em)` }}>–</span>)}
+      {/* Each dash sits where its beat starts, lined up with the digit above the beat. */}
+      {Array.from({ length: dashes }, (_, k) => <span key={k} className="melody-dash" style={{ left: `calc(${((k + 1) / (dashes + 1)) * 100}% + ${hasAccidental ? 0.52 : 0.32}em)` }}>–</span>)}
     </span>;
   };
   const renderNoteLyric = (note: MelodyNote, active: boolean, key: number | string) => {
-    const { dashes } = notation(note);
     const hasAccidental = note.a != null;
-    return <span key={key} aria-hidden="true" className={`melody-lyric-cell ${active ? "is-active" : ""} ${hasAccidental ? "has-accidental" : ""}`} style={dashes ? { marginRight: `${dashes * 1.1}em` } : undefined}><span className="melody-lyric">{note.lyric || " "}</span></span>;
+    return <span key={key} aria-hidden="true" className={`melody-lyric-cell ${active ? "is-active" : ""} ${hasAccidental ? "has-accidental" : ""}`}><span className="melody-lyric">{note.lyric || " "}</span></span>;
   };
+  // Every note or beam group takes room in proportion to its beats, so parallel voices line up.
   const renderNote = (note: MelodyNote, key: number, active: boolean) =>
-    <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`}>
+    <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`} style={{ flex: `${note.b} 1 0%`, minWidth: `${(note.a != null ? 1.5 : 1.1) + notation(note).dashes * 1.1}em` }}>
       {renderNoteHead(note, `head-${key}`, active)}
       {renderNoteLyric(note, active, `lyric-${key}`)}
     </span>;
@@ -534,7 +566,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       </>}
     </div>}
     {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} beatRef={beatRef} /> :
-    <div className="melody-score" role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
+    <div ref={scoreRef} className="melody-score" style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
       {melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
         {lines.map((line, voice) => {
           const notes = line.bars[barIndex] ?? [];
@@ -546,7 +578,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
             const containedRuns = [...runsByLevel.entries()].flatMap(([level, levelRuns]) =>
               [...levelRuns.values()].filter((run) => run.start >= start && run.end <= end).map((run) => ({ ...run, level })),
             );
-            return <span key={`beam-${start}-${end}`} className="melody-beam-group" style={{ gridTemplateColumns: `repeat(${groupNotes.length}, max-content)` }}>
+            return <span key={`beam-${start}-${end}`} className="melody-beam-group" style={{ gridTemplateColumns: `repeat(${groupNotes.length}, max-content)`, flex: `${groupNotes.reduce((sum, note) => sum + note.b, 0)} 1 0%` }}>
               {groupNotes.map((note, offset) => {
                 const index = start + offset;
                 const active = offsets[voice][barIndex] + index === current[voice];

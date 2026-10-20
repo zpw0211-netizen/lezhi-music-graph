@@ -6,18 +6,43 @@ import type { Phrase } from "../../lib/lesson/phrases";
 
 // The melody drawn as one wavy line, in the style of the 芽谱 promo film:
 // a smooth curve through a bead on every note, dotted ahead and a glowing
-// gold ribbon behind, with a red orb riding it. Across is time (each note as
-// far apart as its value), up is pitch in scale steps, so 5 always sits above
-// 3; faint degree guides on the left keep the heights readable.
+// gold ribbon behind, with a red orb riding it. Across is time on a compressed
+// scale (short notes keep room for their digit, long notes and rests stop
+// leaving wide gaps), up is pitch in scale steps, so 5 always sits above 3;
+// faint degree guides on the left keep the heights readable.
 
 const BEAT_W = 48;
-const STEP_H = 24;
 const GUTTER = 36;
-const PAD_TOP = 34;
-const STEM_GAP = 26;
+const PAD_TOP = 30;
+const STEM_GAP = 24;
 const LYRIC_H = 26;
-const ROW_BEATS = 16;
+const ROW_UNITS = 18;
 const BEAD_X = 10;
+
+/** Horizontal room a note takes, in beat widths. */
+function spanOf(note: MelodyNote) {
+  if (note.d === 0) return Math.min(note.b, 1) * 0.6;
+  if (note.tie) return note.b * 0.3;
+  return note.b <= 1 ? Math.max(note.b, 0.5) : 1 + (note.b - 1) * 0.3;
+}
+
+/** Beat → position on the compressed timeline, interpolated inside each note. */
+function timelineOf(notes: MelodyNote[]) {
+  const knots: Array<[number, number]> = [[0, 0]];
+  for (const note of notes) {
+    const [beat, pos] = knots[knots.length - 1];
+    knots.push([beat + note.b, pos + spanOf(note)]);
+  }
+  return (beat: number) => {
+    const last = knots[knots.length - 1];
+    if (beat >= last[0]) return last[1] + (beat - last[0]) * 0.3;
+    if (beat <= 0) return 0;
+    let lo = 0, hi = knots.length - 1;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (knots[mid][0] <= beat) lo = mid; else hi = mid; }
+    const [b0, p0] = knots[lo], [b1, p1] = knots[hi];
+    return p0 + (p1 - p0) * ((beat - b0) / Math.max(1e-6, b1 - b0));
+  };
+}
 
 type Bead = {
   index: number;
@@ -29,7 +54,7 @@ type Bead = {
   lyric: string;
 };
 
-type Row = { start: number; end: number; beads: Bead[]; segments: Bead[][]; samples: Array<[number, number]>[] };
+type Row = { start: number; end: number; from: number; to: number; beads: Bead[]; segments: Bead[][]; samples: Array<[number, number]>[] };
 
 /** One bead per sounding note; ties and rests make none, a rest breaks the line. */
 function beadsOf(notes: MelodyNote[]) {
@@ -92,29 +117,32 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
 }) {
   const uid = useId().replace(/:/g, "");
   const beads = useMemo(() => beadsOf(notes), [notes]);
+  const posAt = useMemo(() => timelineOf(notes), [notes]);
   const barStarts = useMemo(() => bars.reduce<number[]>((acc, bar) => [...acc, acc[acc.length - 1] + bar.reduce((s, n) => s + n.b, 0)], [0]), [bars]);
   const steps = beads.flatMap((bead) => bead && bead.step !== null ? [bead.step] : []);
   const hasRhythm = beads.some((bead) => bead && bead.step === null);
   const low = steps.length ? Math.floor(Math.min(...steps)) : 0;
   const high = steps.length ? Math.ceil(Math.max(...steps)) : 0;
-  const plotH = (high - low) * STEP_H;
-  const rhythmY = PAD_TOP + plotH + (hasRhythm ? STEP_H * 1.2 : 0);
+  // Wide ranges get tighter steps so a row never grows too tall.
+  const stepH = high - low > 9 ? 14 : high - low > 6 ? 17 : 20;
+  const plotH = (high - low) * stepH;
+  const rhythmY = PAD_TOP + plotH + (hasRhythm ? stepH * 1.2 : 0);
   const lyricY = rhythmY + STEM_GAP;
   const height = lyricY + LYRIC_H;
-  const yOf = (step: number) => PAD_TOP + (high - step) * STEP_H;
+  const yOf = (step: number) => PAD_TOP + (high - step) * stepH;
 
   const rows = useMemo<Row[]>(() => {
-    // Rows of whole phrases, up to ROW_BEATS beats each.
+    // Rows of whole phrases, up to ROW_UNITS beat widths each.
     const groups: Phrase[][] = [];
     for (const phrase of phrases) {
       const row = groups[groups.length - 1];
-      const beats = row ? row[row.length - 1].endBeat - row[0].startBeat : 0;
-      if (row && beats + phrase.endBeat - phrase.startBeat <= ROW_BEATS) row.push(phrase);
+      if (row && posAt(phrase.endBeat) - posAt(row[0].startBeat) <= ROW_UNITS) row.push(phrase);
       else groups.push([phrase]);
     }
     return groups.map((group) => {
       const start = group[0].startBeat;
       const end = group[group.length - 1].endBeat;
+      const from = posAt(start);
       const inRow = (bead: Bead | null) => !bead || (bead.beat >= start - 1e-6 && bead.beat < end - 1e-6);
       const rowItems = beads.filter((bead, k) => inRow(bead) && (bead || (k > 0 && beads[k - 1] && inRow(beads[k - 1]))));
       const segments: Bead[][] = [[]];
@@ -122,17 +150,19 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
         if (!bead || bead.step === null) { if (segments[segments.length - 1].length) segments.push([]); continue; }
         segments[segments.length - 1].push(bead);
       }
-      const xOf = (beat: number) => GUTTER + (beat - start) * BEAT_W + BEAD_X;
+      const xOf = (beat: number) => GUTTER + (posAt(beat) - from) * BEAT_W + BEAD_X;
       const live = segments.filter((segment) => segment.length);
       return {
         start,
         end,
+        from,
+        to: posAt(end),
         beads: rowItems.filter((bead): bead is Bead => !!bead),
         segments: live,
-        samples: live.map((segment) => sampleCurve(segment.map((bead) => [xOf(bead.beat), PAD_TOP + (high - (bead.step as number)) * STEP_H]))),
+        samples: live.map((segment) => sampleCurve(segment.map((bead) => [xOf(bead.beat), PAD_TOP + (high - (bead.step as number)) * stepH]))),
       };
     });
-  }, [phrases, beads, high]);
+  }, [phrases, beads, high, stepH, posAt]);
 
   const clipRefs = useRef<Array<SVGRectElement | null>>([]);
   const orbRefs = useRef<Array<SVGGElement | null>>([]);
@@ -145,7 +175,7 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
       rows.forEach((row, k) => {
         const clip = clipRefs.current[k];
         const orb = orbRefs.current[k];
-        const x = GUTTER + (beat - row.start) * BEAT_W + BEAD_X;
+        const x = GUTTER + (posAt(beat) - row.from) * BEAT_W + BEAD_X;
         const lit = beat < 0 ? 0 : beat >= row.end ? 99999 : beat < row.start ? 0 : x;
         clip?.setAttribute("width", String(Math.max(0, lit)));
         if (!orb) return;
@@ -173,18 +203,19 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [rows, beatRef, rhythmY]);
+  }, [rows, beatRef, rhythmY, posAt]);
 
   if (!steps.length) return null;
 
   return <div className={`melody-line${singing ? " is-singing" : ""}`} aria-hidden="true">
     {rows.map((row, rowIndex) => {
-      const width = GUTTER + ROW_BEATS * BEAT_W + 24;
-      const xOf = (beat: number) => GUTTER + (beat - row.start) * BEAT_W + BEAD_X;
+      // All rows share one scale, set by the longest row, so that row fills the width.
+      const width = GUTTER + Math.max(ROW_UNITS - 2, ...rows.map((item) => item.to - item.from)) * BEAT_W + 24;
+      const xOf = (beat: number) => GUTTER + (posAt(beat) - row.from) * BEAT_W + BEAD_X;
       const inActive = (bead: Bead) => activePhrase !== null && bead.index >= phrases[activePhrase].startNote && bead.index < phrases[activePhrase].endNote;
       const clipId = `ml-${uid}-${rowIndex}`;
       const glowId = `mlg-${uid}-${rowIndex}`;
-      return <svg key={rowIndex} viewBox={`0 0 ${width} ${height}`} className="melody-line-row" style={{ minWidth: `${Math.round((GUTTER + (row.end - row.start) * BEAT_W) * 0.62)}px` }}>
+      return <svg key={rowIndex} viewBox={`0 0 ${width} ${height}`} className="melody-line-row" style={{ minWidth: `${Math.round((GUTTER + (row.to - row.from) * BEAT_W) * 0.62)}px` }}>
         <defs>
           <clipPath id={clipId}><rect ref={(el) => { clipRefs.current[rowIndex] = el; }} x={0} y={0} width={0} height={height} /></clipPath>
           <filter id={glowId} x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="4" /></filter>
