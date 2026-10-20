@@ -1,5 +1,3 @@
-@import "./fonts.css";
-
 /* 芽谱「书卷」视觉令牌。 */
 :root {
     --paper: #F7F9F8;
@@ -16,9 +14,12 @@
     --amber-bg: #F6EAD0;
     --line: #DCE5DF;
     --ease: cubic-bezier(.16, 1, .3, 1);
-    --kai: "LXGW WenKai", "STKaiti", "KaiTi", serif;
-    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
-    --ui: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --font-ui: "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei UI", "Microsoft YaHei", "HarmonyOS Sans SC", system-ui, sans-serif;
+    --font-display: "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
+    --font-score: "Arial", "Microsoft YaHei", "PingFang SC", sans-serif;
+    --ui: var(--font-ui);
+    --serif: var(--font-ui);
+    --kai: var(--font-display);
 
     --brand-ink: #1C2B26;
     --brand-paper: #FFFFFF;
@@ -40,7 +41,7 @@
     --space-3: 8px;
     --space-4: 12px;
     --space-5: 16px;
-    --font-academic: Georgia,"Songti SC","SimSun",serif;
+    --font-academic: var(--font-display);
     --app-bg: #F7F9F8;
     --surface: #FFFFFF;
     --surface-soft: #F4F7F5;
@@ -71,7 +72,6 @@
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
-    --font-ui: var(--font-geist-sans),"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",Arial,sans-serif
 }
 /* 图谱工作区与 Sigma 场景令牌。 */
 .graph-first {
@@ -102,9 +102,10 @@
     --amber-bg: #F6EAD0;
     --line: #DCE5DF;
     --ease: cubic-bezier(.16, 1, .3, 1);
-    --kai: "LXGW WenKai", "STKaiti", "KaiTi", serif;
-    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
-    --ui: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    --kai: var(--font-display);
+    --serif: var(--font-ui);
+    --ui: var(--font-ui);
+    --brush: var(--font-display);
     --paper-deep: var(--paper-2);
     --ink-soft: var(--ink-2);
     --pine-hover: var(--pine-deep);
@@ -174,8 +175,8 @@
     --seal: #AF4236;
     --gold: #A8731C;
     --line: #DCE5DF;
-    --serif: "Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
-    --brush: "STKaiti","KaiTi","Kaiti SC","楷体",var(--serif);
+    --serif: var(--font-ui);
+    --brush: var(--font-display);
     --app-bg: var(--paper);
     --bg: var(--paper);
     --surface-soft: #F4F7F5;

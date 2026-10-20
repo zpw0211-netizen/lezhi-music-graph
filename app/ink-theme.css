@@ -30,7 +30,7 @@ body:has(.ink-app),.ink-app,.ink-app .workspace { background:var(--paper); }
 .ink-app .explorer-sidebar { background:var(--surface-soft, #F4F7F5); }
 
 /* Typography of the app pages */
-/* Display headings on content pages use the prototype's WenKai face. Keep this shared rule above legacy page typography overrides. */
+/* Primary content headings use the shared display serif. Keep this rule above legacy page typography overrides. */
 .ink-app :is(.work-library,.lesson,.assistant-page,.research-analysis,.work-graph) :is(h1,h2) { font-family:var(--kai) !important; letter-spacing:.06em; color:var(--ink); }
 .ink-app :is(.work-library,.assistant-page,.research-analysis,.work-graph) { padding-top:28px; padding-bottom:40px; }
 .ink-app .lesson { padding-top:20px; padding-bottom:40px; }

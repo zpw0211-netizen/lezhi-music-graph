@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL, PUBLISHED_GRADE_RANGE_LABEL } from "./lib/app/books";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import { preload } from "react-dom";
 import "./styles/tokens.css";
 import "./globals.css";
@@ -29,11 +29,6 @@ import "./rhythm.css";
 import "./graph-compact.css";
 import "./account.css";
 import { AccountProvider } from "./components/account/AccountProvider";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -78,18 +73,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  preload(`${publicBasePath}/fonts/wenkai-display.woff2`, {
-    as: "font",
-    type: "font/woff2",
-    crossOrigin: "anonymous",
-  });
   // Every page needs the graph index; start downloading it with the scripts
   // instead of after hydration. Matches the fetch() in useGraphIndex.
   preload(`${publicBasePath}/data/graph-index.json`, { as: "fetch", crossOrigin: "anonymous" });
   return (
     <html lang="zh-CN">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistMono.variable} antialiased`}
       >
         <AccountProvider>{children}</AccountProvider>
       </body>

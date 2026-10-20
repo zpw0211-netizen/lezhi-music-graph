@@ -379,7 +379,7 @@ body::before {
   text-shadow: 0 1px 12px rgb(10 24 20 / 55%);
 }
 .home-portal .home-scroll-overline { margin: 0 0 3px; color: #F3D9A4; font-size: 13px; letter-spacing: .28em; }
-.home-portal .home-scroll-copy h3 { margin: 0 0 8px; font: clamp(34px, 3.4vw, 55px)/1.2 var(--kai); white-space: nowrap; }
+.home-portal .home-scroll-copy h3 { margin: 0 0 8px; font: 600 clamp(34px, 3.4vw, 55px)/1.2 var(--font-display); letter-spacing: .035em; white-space: nowrap; }
 .home-portal .home-scroll-intro { margin: 0 0 3px; color: var(--paper); font: 15px/1.618 var(--serif); }
 .home-portal .home-scroll-countline { margin: 0 0 13px; color: rgb(244 238 225 / 86%); font: 13px/1.5 var(--ui); }
 .home-portal .home-scroll-stamp {

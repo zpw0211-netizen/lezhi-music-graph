@@ -167,7 +167,7 @@
 .ink-app.theme-light.network-mode .neo-canvas { background:#F7F2E6; }
 .ink-app.theme-light.network-mode .neo-canvas:before { opacity:.08; }
 .ink-app.theme-light.network-mode .neo-toolbar { min-height:52px; border-color:#CFC4AC; background:#FBF8F0; }
-.ink-app.theme-light.network-mode .neo-toolbar h3 { margin:0; color:#1B2622; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; font-weight:600; letter-spacing:.04em; }
+.ink-app.theme-light.network-mode .neo-toolbar h3 { margin:0; color:#1B2622; font-family:var(--font-display); font-weight:600; letter-spacing:.04em; }
 .ink-app.theme-light.network-mode .neo-actions button { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; transition:border-color .2s,color .2s,background .2s; }
 .ink-app.theme-light.network-mode .neo-actions button:hover,
 .ink-app.theme-light.network-mode .neo-actions button.active { border-color:#1F4A3C; background:#F4EEE1; color:#1F4A3C; }
@@ -197,7 +197,7 @@
 /* —— 左侧栏：纸面工具区 —— */
 .ink-app.theme-light.network-mode > .explorer-sidebar { background:#EAE2D0; border-right:1px solid #CFC4AC; }
 .ink-app.theme-light.network-mode .explorer-brand { border-bottom:1px solid #CFC4AC; }
-.ink-app.theme-light.network-mode .explorer-brand strong { font-family:"LXGW WenKai","STKaiti","KaiTi","楷体",serif; font-size:22px; font-weight:400; letter-spacing:.08em; color:#1B2622; }
+.ink-app.theme-light.network-mode .explorer-brand strong { font-family:var(--font-display); font-size:22px; font-weight:500; letter-spacing:.08em; color:#1B2622; }
 .ink-app.theme-light.network-mode .explorer-brand small { color:#62675B; }
 .ink-app.theme-light.network-mode .explorer-brand-mark { color:#1F4A3C; }
 .ink-app.theme-light.network-mode .explorer-brand > button,
@@ -209,7 +209,7 @@
 .ink-app.theme-light.network-mode .explorer-nav button:hover:not(.active) { color:#1F4A3C; }
 .ink-app.theme-light.network-mode .explorer-perspective h3,
 .ink-app.theme-light.network-mode .explorer-section summary,
-.ink-app.theme-light.network-mode .explorer-dataset-summary h3 { color:#1B2622; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; letter-spacing:.14em; }
+.ink-app.theme-light.network-mode .explorer-dataset-summary h3 { color:#1B2622; font-family:var(--font-display); letter-spacing:.14em; }
 .ink-app.theme-light.network-mode .explorer-section { border-top:1px solid #D8CDB4; }
 .ink-app.theme-light.network-mode .explorer-section summary small { color:#62675B; }
 .ink-app.theme-light.network-mode .explorer-controls button,
@@ -242,7 +242,7 @@
 
 /* —— 范围条 / 筛选条：细线 + 松绿选中 —— */
 .ink-app.theme-light.network-mode .graph-rangebar { border-bottom:1px solid #CFC4AC; background:#F4EEE1; }
-.ink-app.theme-light.network-mode .graph-rangebar .book-tab { border:1px solid transparent; border-radius:0; background:none; color:#62675B; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; }
+.ink-app.theme-light.network-mode .graph-rangebar .book-tab { border:1px solid transparent; border-radius:0; background:none; color:#62675B; font-family:var(--font-ui); }
 .ink-app.theme-light.network-mode .graph-rangebar .book-tab:hover { color:#1F4A3C; }
 .ink-app.theme-light.network-mode .graph-rangebar .book-tab.active { color:#B8392A; }
 .ink-app.theme-light.network-mode .graph-toolbar-tools button { border:1px solid #CFC4AC; border-radius:0; background:#FBF8F0; color:#44504A; }
@@ -251,9 +251,9 @@
 .ink-app.theme-light.network-mode .neo-toolbar .zoom-slider { accent-color:#1F4A3C; }
 .ink-app.theme-light.network-mode .zoom-value { color:#62675B; }
 .ink-app.theme-light.network-mode .neo-card .full-graph-filterbar { border-bottom:1px solid #D8CDB4; }
-.ink-app.theme-light.network-mode .neo-card .graph-filter-group-label { color:#62675B; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; letter-spacing:.1em; }
+.ink-app.theme-light.network-mode .neo-card .graph-filter-group-label { color:#62675B; font-family:var(--font-ui); letter-spacing:.1em; }
 .ink-app.theme-light.network-mode .neo-card .full-graph-layout-tabs button,
-.ink-app.theme-light.network-mode .neo-card .full-graph-view-tabs button { border:1px solid transparent; border-radius:0; background:none; color:#62675B; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; }
+.ink-app.theme-light.network-mode .neo-card .full-graph-view-tabs button { border:1px solid transparent; border-radius:0; background:none; color:#62675B; font-family:var(--font-ui); }
 .ink-app.theme-light.network-mode .neo-card .full-graph-layout-tabs button:hover,
 .ink-app.theme-light.network-mode .neo-card .full-graph-view-tabs button:hover { color:#1F4A3C; }
 .ink-app.theme-light.network-mode .neo-card .full-graph-layout-tabs button.active,
@@ -266,7 +266,7 @@
 .ink-app.theme-light.network-mode .neo-card .full-graph-operations span { color:#62675B; }
 .ink-app.theme-light.network-mode .source-layer-toggle { color:#44504A; }
 .ink-app.theme-light.network-mode .source-layer-toggle input { accent-color:#1F4A3C; }
-.ink-app.theme-light.network-mode .mobile-filter-panel-heading strong { font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; letter-spacing:.14em; color:#1B2622; }
+.ink-app.theme-light.network-mode .mobile-filter-panel-heading strong { font-family:var(--font-display); letter-spacing:.14em; color:#1B2622; }
 
 /* —— 键盘可见焦点（原型 rail 同款：细外框） —— */
 .ink-app.theme-light.network-mode button:focus-visible,
@@ -278,12 +278,12 @@
 
 /* —— 节点检查器（右侧详情面板）同入书卷 —— */
 .ink-app.theme-light.network-mode .inspector { border:1px solid #CFC4AC; border-radius:2px; background:#FBF8F0; box-shadow:0 1px 0 #E1D6BF,0 12px 26px -20px rgba(40,30,10,.55); }
-.ink-app.theme-light.network-mode .inspector-titlebar { border-bottom:1px solid #D8CDB4; color:#1B2622; font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif; }
+.ink-app.theme-light.network-mode .inspector-titlebar { border-bottom:1px solid #D8CDB4; color:#1B2622; font-family:var(--font-ui); }
 .ink-app.theme-light.network-mode .inspector-close { border-color:#CFC4AC; background:#FBF8F0; color:#44504A; }
 .ink-app.theme-light.network-mode .inspector-close:hover { border-color:#B8392A; color:#B8392A; }
 .ink-app.theme-light.network-mode .inspector-card { background:#FBF8F0; border:0; border-bottom:1px solid #D8CDB4; box-shadow:none; }
 .ink-app.theme-light.network-mode .inspector-header h2,
-.ink-app.theme-light.network-mode .inspector-body h2 { color:#1B2622; font-family:"LXGW WenKai","STKaiti","KaiTi","楷体",serif; font-weight:400; }
+.ink-app.theme-light.network-mode .inspector-body h2 { color:#1B2622; font-family:var(--font-display); font-weight:500; }
 .ink-app.theme-light.network-mode .inspector-tabs { border-bottom:1px solid #D8CDB4; }
 .ink-app.theme-light.network-mode .inspector-tabs button { border-radius:0; color:#62675B; }
 .ink-app.theme-light.network-mode .inspector-tabs button.active { background:#F4EEE1; color:#B8392A; }

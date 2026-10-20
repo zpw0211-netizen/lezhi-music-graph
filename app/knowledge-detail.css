@@ -4,14 +4,14 @@
 .theme-light.detail-open .neo-layout>.inspector{display:none}
 .ink-app.theme-light.network-mode .knowledge-detail-drawer{min-width:0;height:100%;min-height:0;background:#FBF8F0;border:1px solid #CFC4AC;border-radius:2px;box-shadow:0 1px 0 #E1D6BF,0 12px 26px -20px rgba(40,30,10,.55);display:flex;flex-direction:column;overflow:hidden;color:#1B2622;font-size:15px;line-height:1.75}
 .ink-app.theme-light.network-mode .knowledge-header{padding:22px 26px 18px;border-bottom:1px solid #CFC4AC;border-top:3px solid var(--detail-accent);flex-shrink:0;background:#FBF8F0}
-.ink-app.theme-light.network-mode .knowledge-navigation{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:12px;letter-spacing:.18em;color:#B8392A}
+.ink-app.theme-light.network-mode .knowledge-navigation{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--font-ui);font-size:12px;letter-spacing:.18em;color:#B8392A}
 .ink-app.theme-light.network-mode .knowledge-navigation nav{display:flex;gap:6px}
 .ink-app.theme-light.network-mode .knowledge-detail-drawer button{cursor:pointer;border:1px solid #CFC4AC;border-radius:0;background:#FBF8F0;color:#44504A;padding:6px 10px;font:inherit;font-size:12px;transition:border-color .2s,color .2s,background .2s}
 .ink-app.theme-light.network-mode .knowledge-detail-drawer button:hover{border-color:#1F4A3C;color:#1F4A3C;background:#F4EEE1}
 .ink-app.theme-light.network-mode .knowledge-detail-drawer button:disabled{opacity:.35;cursor:default}
 .ink-app.theme-light.network-mode .knowledge-detail-drawer button:focus-visible{outline:2px solid #1F4A3C;outline-offset:2px}
-.ink-app.theme-light.network-mode .knowledge-header h2{font-family:"LXGW WenKai","STKaiti","KaiTi","楷体",serif;font-weight:400;font-size:30px;line-height:1.3;margin:18px 0 8px;color:#1B2622;text-shadow:2px 1px 0 rgba(184,57,42,.16);overflow-wrap:anywhere}
-.ink-app.theme-light.network-mode .knowledge-aliases{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:13px;color:#62675B}
+.ink-app.theme-light.network-mode .knowledge-header h2{font-family:var(--font-display);font-weight:500;font-size:30px;line-height:1.3;margin:18px 0 8px;color:#1B2622;overflow-wrap:anywhere}
+.ink-app.theme-light.network-mode .knowledge-aliases{font-family:var(--font-ui);font-size:13px;color:#62675B}
 .ink-app.theme-light.network-mode .knowledge-meta{display:flex;gap:0;flex-wrap:wrap;margin:14px 0 0;border-top:1px solid #D8CDB4;padding-top:12px}
 .ink-app.theme-light.network-mode .knowledge-meta>div{display:flex;align-items:baseline;gap:6px;padding:0 12px;border-right:1px solid #D8CDB4}
 .ink-app.theme-light.network-mode .knowledge-meta>div:first-child{padding-left:0}
@@ -20,7 +20,7 @@
 .ink-app.theme-light.network-mode .knowledge-meta dd{margin:0;font-size:13px;font-weight:600;color:#1B2622;font-variant-numeric:tabular-nums}
 .ink-app.theme-light.network-mode .knowledge-body{overflow:auto;overscroll-behavior:contain;min-height:0;padding:0 26px 26px;scrollbar-gutter:stable}
 .ink-app.theme-light.network-mode .knowledge-body section{padding:20px 0;border-bottom:1px solid #D8CDB4}
-.ink-app.theme-light.network-mode .knowledge-body h3{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:16px;font-weight:600;margin:0 0 14px;color:#1B2622;letter-spacing:.06em}
+.ink-app.theme-light.network-mode .knowledge-body h3{font-family:var(--font-display);font-size:16px;font-weight:600;margin:0 0 14px;color:#1B2622;letter-spacing:.06em}
 .ink-app.theme-light.network-mode .knowledge-body h4{font-size:12px;letter-spacing:.16em;margin:14px 0 6px;color:#62675B}
 .ink-app.theme-light.network-mode .knowledge-body p{font-size:14px;line-height:1.9;margin:8px 0;overflow-wrap:anywhere;color:#44504A}
 .ink-app.theme-light.network-mode .knowledge-summary{white-space:pre-line;color:#44504A}
@@ -32,13 +32,13 @@
 .ink-app.theme-light.network-mode .knowledge-facts li{display:grid;grid-template-columns:minmax(88px,28%) minmax(0,1fr);gap:12px;align-items:start;border-top:1px solid #E6DECB;padding:9px 0;font-size:13px}
 .ink-app.theme-light.network-mode .knowledge-facts li:first-child{border-top:0}
 .ink-app.theme-light.network-mode .knowledge-facts li>span{color:#62675B;line-height:1.6}
-.ink-app.theme-light.network-mode .knowledge-facts button{border:0;background:none;text-align:left;font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-size:13px;line-height:1.6;color:#1F4A3C;overflow-wrap:anywhere;padding:0}
+.ink-app.theme-light.network-mode .knowledge-facts button{border:0;background:none;text-align:left;font-family:var(--font-ui);font-size:13px;line-height:1.6;color:#1F4A3C;overflow-wrap:anywhere;padding:0}
 .ink-app.theme-light.network-mode .knowledge-facts button:hover{background:#F4EEE1;color:#13302A}
 .ink-app.theme-light.network-mode .knowledge-facts button small{float:right;color:#62675B}
-.ink-app.theme-light.network-mode .knowledge-facts strong{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;font-weight:500;line-height:1.6;color:#1B2622}
+.ink-app.theme-light.network-mode .knowledge-facts strong{font-family:var(--font-ui);font-weight:600;line-height:1.6;color:#1B2622}
 .ink-app.theme-light.network-mode .knowledge-locations li{display:grid;gap:4px;padding:9px 0;border-top:1px solid #E6DECB;font-size:13px}
 .ink-app.theme-light.network-mode .knowledge-locations li:first-child{border-top:0}
-.ink-app.theme-light.network-mode .knowledge-locations strong{font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif;color:#1B2622}
+.ink-app.theme-light.network-mode .knowledge-locations strong{font-family:var(--font-ui);color:#1B2622}
 .ink-app.theme-light.network-mode .knowledge-locations span{color:#62675B;font-variant-numeric:tabular-nums}
 .ink-app.theme-light.network-mode .knowledge-evidence{border-left:2px solid #B8392A;padding:6px 14px;margin:12px 0;background:color-mix(in srgb,#EAE2D0 55%,transparent)}
 .ink-app.theme-light.network-mode .knowledge-evidence small,
@@ -50,7 +50,7 @@
 .ink-app.theme-light.network-mode .knowledge-body figure{margin:12px 0}
 .ink-app.theme-light.network-mode .knowledge-body figure img{border:1px solid #CFC4AC;background:#FBF8F0;padding:6px;box-sizing:border-box}
 .ink-app.theme-light.network-mode .knowledge-body figcaption{font-size:11px;color:#62675B}
-.ink-app.theme-light.network-mode .knowledge-ask{width:100%;text-align:left;border:1px solid #1F4A3C;color:#1F4A3C;font-family:"Songti SC","STSong","Noto Serif SC","SimSun",serif}
+.ink-app.theme-light.network-mode .knowledge-ask{width:100%;text-align:left;border:1px solid #1F4A3C;color:#1F4A3C;font-family:var(--font-ui)}
 .ink-app.theme-light.network-mode .knowledge-ask:hover{background:#1F4A3C;color:#FBF8F0}
 .ink-app.theme-light.network-mode .knowledge-open-button{margin:0 14px 12px;padding:9px;border:1px solid #CFC4AC;background:#FBF8F0;color:#44504A;border-radius:0;font-size:12px;cursor:pointer}
 .ink-app.theme-light.network-mode .knowledge-body img{display:block;max-width:100%;max-height:300px;object-fit:contain;mix-blend-mode:multiply;filter:sepia(.2) contrast(1.04)}

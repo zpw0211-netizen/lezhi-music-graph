@@ -1,7 +1,7 @@
 /* 智能问答 · 书卷 v2（照设计稿 assistant-v2/index.html 忠实实现）
    以原型（proto/index.html 与 assistant-v2/index.html）的经折装书页版式组织：
    天头地脚界栏线 → 书眉鱼尾栏（朱砂“问”印）→ 开卷题词 → 签条集群（学生常问 / 备课常用）→
-   问题楷体题写 → 正文分段〔壹〕〔贰〕〔叁〕与朱红页脚注 → 关联知识联系 →
+   问题宋体题写 → 正文分段〔壹〕〔贰〕〔叁〕与朱红页脚注 → 关联知识联系 →
    可展开“教材出处与依据”卡片群 → 底部落笔提问细墨线。
    颜色完全对齐 DESIGN-v2 色板与 tokens.css。 */
 
@@ -21,9 +21,9 @@
   --amber-bg: #F5EEDF;
   --line: #DCE5DF;
   --line-strong: #8F8268;
-  --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
-  --kai: "LXGW WenKai", "STKaiti", "KaiTi", "Kaiti SC", "楷体", serif;
-  --ui: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --serif: var(--font-ui);
+  --kai: var(--font-display);
+  --ui: var(--font-ui);
   --ease: cubic-bezier(.16, 1, .3, 1);
 }
 
@@ -348,14 +348,14 @@
   line-height: 1.4;
 }
 
-/* ② 问答态：上方楷体题词与正文排版 */
+/* ② 问答态：上方宋体题词与正文排版 */
 .assistant-page .state-qa {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-/* 上方楷体题写 */
+/* 上方宋体题写 */
 .assistant-page .qa-inscription {
   position: relative;
   padding-bottom: 14px;
@@ -733,7 +733,7 @@
   color: var(--pine);
 }
 
-/* 底部落笔提问区：细墨线 + 楷体提示 */
+/* 底部落笔提问区：细墨线 + 宋体提示 */
 .assistant-page .composer-bottom {
   margin-top: 22px;
   padding-top: 16px;

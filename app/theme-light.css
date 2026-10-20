@@ -51,7 +51,7 @@ body { background:#fff; color:#18181b; }
 .theme-light .graph-toolbar-menu-content button:hover { background:#f4f4f5; }
 .theme-light .graph-toolbar-menu-content button:disabled { opacity:.45; cursor:not-allowed; }
 .theme-light :is(.sidebar, .neo-toolbar, .inspector, .graph-path-finder) { font-family:var(--font-ui); }
-.theme-light :is(.inspector-body h2) { font-family:var(--font-geist-sans),"PingFang SC","Microsoft YaHei",Arial,sans-serif; }
+.theme-light :is(.inspector-body h2) { font-family:var(--font-display); }
 .theme-light .neo-actions select { padding:6px; border-radius:6px; }
 .theme-light .full-graph-filterbar { padding:8px 12px; min-height:42px; }
 .theme-light .full-graph-layout-tabs button { min-width:75px; }

@@ -7,7 +7,7 @@
    covered by visual regression. */
 * { box-sizing:border-box; }
 html, body { min-height:100%; }
-body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font-geist-sans),"PingFang SC","Microsoft YaHei",Arial,sans-serif; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font-ui); }
 button,input { font:inherit; } button { cursor:pointer; }
 .app-shell { min-height:100vh; display:flex; background:radial-gradient(circle at 72% -10%,#1d2d56 0,transparent 35%),var(--bg); }
 .sidebar { width:248px; flex:0 0 248px; min-height:100vh; padding:26px 16px 20px; border-right:1px solid var(--line); background:#09101fe5; display:flex; flex-direction:column; }.eyebrow { margin:0; color:var(--muted); letter-spacing:.16em; font-size:10px; font-weight:700; }
@@ -505,7 +505,7 @@ body {
     radial-gradient(circle at 86% 8%, #e5eee7 0, transparent 28%),
     var(--bg);
   color: var(--text);
-  font-family: var(--font-geist-sans), "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  font-family: var(--font-ui);
 }
 
 .app-shell {
@@ -528,7 +528,7 @@ body {
   box-shadow: 8px 0 28px rgba(55, 68, 57, .05);
 }
 .import-hero h1 {
-  font-family: Georgia, "Songti SC", "SimSun", serif;
+  font-family: var(--font-display);
   color: #1c2823;
 }
 .eyebrow { color: #788179; }
@@ -560,7 +560,7 @@ body {
 .inspector-tabs button { color: #7b867e; }
 .inspector-tabs button.active { background: #e4eee8; color: #244e3b; }
 .inspector-tabs em { color: #327f72; }
-.inspector-body h2 { color: #24372e; font-family: Georgia, "Songti SC", "SimSun", serif; }
+.inspector-body h2 { color: #24372e; font-family: var(--font-display); }
 .inspector-body p { color: #718078; }
 .inspector-body dl div { border-color: #dfe3dc; background: #fffefa; }
 .inspector-body dt { color: #7c867f; }
@@ -570,7 +570,7 @@ body {
   .sidebar { background: rgba(248,246,239,.96); }
 }
 
-.app-loading { min-height: 100vh; display: grid; place-items: center; color: #4b6658; background: #f5f3ec; font-family: "Avenir Next", "PingFang SC", sans-serif; }
+.app-loading { min-height: 100vh; display: grid; place-items: center; color: #4b6658; background: #f5f3ec; font-family: var(--font-ui); }
 .neo-actions select { min-width: 138px; border: 1px solid #cbd6cd; border-radius: 9px; padding: 8px 10px; background: #f0f5ef; color: #426355; font: inherit; }
 .neo-actions select:focus { outline: 2px solid #8ebca1; outline-offset: 1px; }
 .media-card { margin-top: 15px; border: 1px solid #d8dfd7; border-radius: 16px; padding: 15px; background: #f7faf5; }

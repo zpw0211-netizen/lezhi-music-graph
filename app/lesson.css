@@ -1,13 +1,13 @@
 /* 按课学习页（课程完整学习页）——「书卷」版式（T006）。
-   对照原型 E:\Projects\yapu-collab\proto\index.html：宣纸底、楷体大标题、
+   对照原型 E:\Projects\yapu-collab\proto\index.html：宣纸底、宋体大标题、
    朱砂细节、细分隔线、谱例纸。全部规则限定在 .lesson 子树内。 */
 .lesson {
   --paper:#F7F9F8; --paper-2:#EEF3F0; --paper-3:#E5ECE8; --sheet:#FFFFFF;
   --ink:#17221C; --ink-2:#44544B; --ink-3:#68766E;
   --pine:#276344; --pine-deep:#194D35; --seal:#AF4236; --amber-hi:#F6EAD0;
   --line:#DCE5DF;
-  --kai:"LXGW WenKai","STKaiti","KaiTi","楷体",serif;
-  --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+  --kai:var(--font-display);
+  --serif:var(--font-ui);
   --ease:cubic-bezier(.16,1,.3,1);
   position:relative;
   max-width:1280px;
@@ -28,15 +28,15 @@
 
 .lesson-layout { display:grid; grid-template-columns:minmax(0,7fr) minmax(260px,4fr); gap:64px; margin-top:0; padding-top:34px; align-items:start; }
 
-/* ---- 题头：楷体大标题 + 朱砂影（下边线去掉：与首节 border-top 形成双横线） ---- */
+/* ---- 题头：宋体大标题 + 朱砂影（下边线去掉：与首节 border-top 形成双横线） ---- */
 .lesson-hero { display:block; padding:10px 0 30px; }
-.lesson-hero h1 { margin:0; font-family:var(--kai); font-weight:400; font-size:clamp(40px,4.6vw,64px); line-height:1.18; letter-spacing:.04em; color:var(--ink); text-shadow:2px 1px 0 rgba(184,57,42,.16); overflow-wrap:anywhere; }
+.lesson-hero h1 { margin:0; font-family:var(--font-display); font-weight:500; font-size:clamp(40px,4.6vw,64px); line-height:1.18; letter-spacing:.04em; color:var(--ink); text-shadow:2px 1px 0 rgba(184,57,42,.16); overflow-wrap:anywhere; }
 .lesson-hero h1::after { content:none; }
 .lesson-meta { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 18px; margin:16px 0 0; color:var(--ink-3); font-family:var(--serif); font-size:14px; }
 .lesson-meta > span { display:inline-flex; align-items:baseline; gap:6px; }
 .lesson-meta small { color:var(--ink-3); font-size:12px; letter-spacing:.08em; }
 .lesson-type { color:var(--ink-2); font-weight:600; }
-.lesson-star { display:inline-flex; align-items:center; gap:5px; padding:1px 10px; border:1.5px solid var(--seal); color:var(--seal); font-family:var(--kai); font-size:13px; letter-spacing:.1em; transform:rotate(-2deg); }
+.lesson-star { display:inline-flex; align-items:center; gap:5px; padding:1px 10px; border:1.5px solid var(--seal); color:var(--seal); font-family:var(--ui); font-size:13px; letter-spacing:.1em; transform:rotate(-2deg); }
 .lesson-hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
 .lesson-hero-actions button { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:42px; padding:0 20px; border:1px solid var(--pine); border-radius:999px; background:none; color:var(--pine); font-family:var(--serif); font-size:15px; letter-spacing:.06em; cursor:pointer; transition:background .2s,color .2s,transform .18s var(--ease); }
 .lesson-hero-actions button:hover { background:var(--pine); color:var(--sheet); }
@@ -47,12 +47,12 @@
 
 /* ---- 正文分节：细线小节头，不用卡片 ---- */
 .lesson-block { margin-top:44px; padding:26px 0 0; border-top:1px solid var(--line); background:transparent; box-shadow:none; }
-.lesson-block>h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 20px; font-family:var(--serif); font-size:22px; font-weight:600; color:var(--ink); }
+.lesson-block>h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 20px; font-family:var(--font-display); font-size:22px; font-weight:600; color:var(--ink); }
 .lesson-block>h2 em { display:inline-block; min-width:30px; font-family:var(--kai); font-size:30px; font-style:normal; font-weight:400; color:var(--seal); }
 .lesson-note { margin:0; font-size:14px; color:var(--ink-3); }
 
 /* 谱例与旋律：谱例纸 */
-.lesson .melody-score { background:var(--sheet); border:1px solid var(--line); border-radius:2px; box-shadow:0 1px 0 var(--paper-3),0 8px 18px -14px rgba(40,30,10,.5); font-family:var(--serif); }
+.lesson .melody-score { background:var(--sheet); border:1px solid var(--line); border-radius:2px; box-shadow:0 1px 0 var(--paper-3),0 8px 18px -14px rgba(40,30,10,.5); font-family:var(--font-score); }
 .lesson .melody-bar { border-right-color:var(--ink-2); }
 .lesson .melody-note.is-active .melody-digit { background:var(--amber-hi); color:var(--ink); transform:translateY(-3px); }
 .lesson .melody-head-cell.is-active .melody-digit { background:var(--amber-hi); color:var(--ink); transform:translateY(-3px); }
@@ -174,7 +174,7 @@
 .present-stage { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:safe center; overflow:auto; overscroll-behavior:contain; animation:present-in var(--motion-slow) var(--ease-out); }
 .present-fit { flex:0 0 auto; padding:3vh 5vw; }
 @keyframes present-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-.present h2 { margin:0 0 2.4vh; font-family:var(--serif); font-size:clamp(28px,3.4vw,48px); font-weight:700; color:var(--brand-sprout-deep); }
+.present h2 { margin:0 0 2.4vh; font-family:var(--font-display); font-size:clamp(28px,3.4vw,48px); font-weight:600; color:var(--brand-sprout-deep); }
 .present-cover { text-align:center; }
 .present-cover small { font-size:clamp(16px,1.6vw,24px); color:var(--text-secondary); }
 .present-cover h1 { margin:2vh 0; font-family:var(--kai); font-weight:400; font-size:clamp(56px,8vw,120px); letter-spacing:.04em; }
@@ -307,7 +307,7 @@
 .melody-tempo input { width:110px; accent-color:var(--accent); }
 .melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }
 .melody-score { display:flex; flex-wrap:wrap; overflow-x:auto; row-gap:14px; margin-top:16px; padding:18px 12px 12px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
-  font-family:"Arial","Microsoft YaHei",sans-serif; }
+  font-family:var(--font-score); }
 .melody-bar { display:inline-flex; flex:0 0 auto; align-items:stretch; flex-direction:column; padding:0 10px; border-right:1.5px solid #9AA7A0; }
 .melody-bar:last-child { border-right:3px double #6B7771; }
 .melody-note { display:inline-flex; flex-direction:column; align-items:center; min-width:1.3em; position:relative; }
@@ -321,7 +321,7 @@
 .melody-dash { position:absolute; top:.4em; font-size:inherit; color:#3C4742; line-height:1; }
 .melody-note.is-tie .melody-digit { color:#8A968F; }
 .melody-head-cell.is-tie .melody-digit { color:#8A968F; }
-.melody-lyric { margin-top:4px; font-size:14px; color:var(--text-secondary); white-space:nowrap; font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
+.melody-lyric { margin-top:4px; font-size:14px; color:var(--text-secondary); white-space:nowrap; font-family:var(--font-ui); }
 .melody-lyric-cell.is-active .melody-lyric { color:var(--accent); font-weight:700; }
 .melody-note.is-active .melody-digit, .melody-head-cell.is-active .melody-digit,
 .lesson .melody-note.is-active .melody-digit, .lesson .melody-head-cell.is-active .melody-digit { background:transparent; color:var(--brand-amber, #E9A83A); transform:none; box-shadow:none; }

@@ -11,9 +11,9 @@
   --records-seal: var(--seal, #AF4236);
   --records-amber: var(--amber, #A8731C);
   --records-line: var(--line, #DCE5DF);
-  --records-kai: var(--kai, STKaiti, KaiTi, serif);
-  --records-serif: var(--serif, "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif);
-  --records-ui: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  --records-kai: var(--font-display);
+  --records-serif: var(--font-ui);
+  --records-ui: var(--font-ui);
   --records-ease: var(--ease, cubic-bezier(.16, 1, .3, 1));
   position: relative;
   width: min(100%, 1560px);
@@ -32,7 +32,7 @@
   --records-pine: var(--pine, #1F4A3C);
   --records-seal: var(--seal, #B8392A);
   --records-line: var(--line, #CFC4AC);
-  --records-ui: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  --records-ui: var(--font-ui);
   --records-ease: var(--ease, cubic-bezier(.16, 1, .3, 1));
   display: flex;
   min-width: 0;
@@ -297,7 +297,7 @@
   cursor: pointer;
 }
 
-.records-book-directory > button > span { color: var(--records-seal); font: 19px/1 var(--records-kai); }
+.records-book-directory > button > span { color: var(--records-seal); font: 19px/1 var(--records-ui); }
 .records-book-directory > button > strong { overflow: hidden; font: 14px/1.45 var(--records-serif); text-overflow: ellipsis; white-space: nowrap; }
 .records-book-directory > button > small { color: var(--records-ink-3); font: 12px/1.4 var(--records-ui); text-align: right; }
 .records-book-directory > button:hover > strong { color: var(--records-pine); }
@@ -821,7 +821,7 @@
 
 .records-chapter-tasks ol { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: records-task; }
 .records-chapter-tasks li { position: relative; min-width: 0; padding: 12px 16px 12px 46px; border: 1px solid var(--records-line); background: var(--records-sheet); counter-increment: records-task; }
-.records-chapter-tasks li::before { position: absolute; top: 10px; left: 14px; color: var(--records-seal); content: counter(records-task, cjk-ideographic); font: 18px/1.5 var(--records-kai); }
+.records-chapter-tasks li::before { position: absolute; top: 10px; left: 14px; color: var(--records-seal); content: counter(records-task, cjk-ideographic); font: 18px/1.5 var(--records-ui); }
 .records-chapter-tasks li p { margin: 0; color: var(--records-ink); font: 15px/1.75 var(--records-serif); }
 .records-task-focus { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
 .records-task-focus > span { padding: 2px 8px; border-radius: 999px; background: var(--records-paper-2); color: var(--records-ink-2); font: 11px/1.5 var(--records-ui); }
@@ -837,7 +837,7 @@
 .records-end-lead b { color: var(--records-seal); font-size: 20px; }
 .records-end-units { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 22px; margin: 0 0 24px; padding: 0; border-top: 1px solid var(--records-line); list-style: none; }
 .records-end-units button { display: grid; width: 100%; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 44px; padding: 4px 0; border: 0; border-bottom: 1px solid var(--records-line); background: transparent; color: var(--records-ink); text-align: left; cursor: pointer; }
-.records-end-units button > span { display: grid; width: 26px; height: 26px; place-items: center; border: 1.5px dashed var(--records-line); border-radius: 50%; color: var(--records-ink-3); font: 14px/1 var(--records-kai); }
+.records-end-units button > span { display: grid; width: 26px; height: 26px; place-items: center; border: 1.5px dashed var(--records-line); border-radius: 50%; color: var(--records-ink-3); font: 14px/1 var(--records-ui); }
 .records-end-units button.is-done > span { border: 1.5px solid var(--records-seal); background: var(--records-seal); color: var(--records-sheet); transform: rotate(-8deg); }
 .records-end-units strong { overflow: hidden; font: 14px/1.4 var(--records-serif); text-overflow: ellipsis; white-space: nowrap; }
 .records-end-units small { color: var(--records-ink-3); font: 12px/1.4 var(--records-ui); font-variant-numeric: tabular-nums; }
@@ -1069,7 +1069,7 @@
 .records-detail-lesson:focus-visible { outline: 2px solid var(--seal, #B8392A); outline-offset: 3px; }
 
 .records-detail-unit { margin: 0 0 14px; color: var(--seal, #B8392A); font: 13px/1.5 var(--serif, "Songti SC", "STSong", serif); letter-spacing: .12em; }
-.ink-app.theme-light .records-detail .records-detail-title { margin: 0; color: var(--ink, #1B2622); font: clamp(36px, 4.2vw, 58px)/1.28 var(--kai, STKaiti, KaiTi, serif); }
+.ink-app.theme-light .records-detail .records-detail-title { margin: 0; color: var(--ink, #1B2622); font: 600 clamp(36px, 4.2vw, 58px)/1.28 var(--font-display); letter-spacing: .035em; }
 .records-detail-credits { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 14px 0 0; color: var(--ink-2, #44504A); font: 13px/1.7 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
 .records-detail-page { margin: 8px 0 0; color: var(--ink-3, #7A7F72); font: 12px/1.5 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); font-variant-numeric: lining-nums tabular-nums; }
 
@@ -1099,7 +1099,7 @@
 .records-detail-melody .melody-player.is-large .melody-bar { box-sizing: border-box; padding-right: clamp(3px, .55vw, 8px); padding-left: clamp(3px, .55vw, 8px); }
 .records-detail-melody .melody-player.is-large .melody-voice { min-width: 0; flex-wrap: nowrap; }
 .records-detail-melody .melody-player.is-large .melody-note { min-width: 1.3em; }
-.records-detail-melody .melody-player.is-large .melody-digit { font-family: var(--serif, "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif); font-weight: 600; }
+.records-detail-melody .melody-player.is-large .melody-digit { font-family: var(--font-score); font-weight: 600; }
 .records-detail-melody .melody-player.is-large .melody-lyric { font-size: clamp(11px, .9vw, 14px); }
 .records-detail-melody .melody-player.is-large .melody-dash { font-size: inherit; }
 .records-detail-melody .melody-source { color: var(--ink-3, #7A7F72); }
