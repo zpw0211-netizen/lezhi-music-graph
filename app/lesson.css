@@ -306,6 +306,8 @@
 .melody-tempo { display:inline-flex; align-items:center; gap:8px; margin-left:auto; font-size:12px; color:var(--text-secondary); }
 .melody-tempo input { width:110px; accent-color:var(--accent); }
 .melody-tempo b { min-width:52px; font-variant-numeric:tabular-nums; color:var(--text-primary); }
+.melody-tempo-note { padding:2px 8px; border-radius:999px; background:var(--accent-soft, rgba(46,160,90,.12)); color:var(--accent); font-size:11px; white-space:nowrap; }
+.melody-tempo:has(.melody-tempo-note) input { opacity:.45; }
 /* 谱子：小节排成等宽网格（每行 8/4/2/1 小节），小节线上下对齐；小节内按拍分配宽度，各声部同拍对齐。 */
 .melody-score { display:grid; grid-template-columns:repeat(var(--bars,4), minmax(min-content,1fr)); overflow-x:auto; row-gap:18px; margin-top:16px; padding:20px 14px 14px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
   font-family:var(--font-score); }

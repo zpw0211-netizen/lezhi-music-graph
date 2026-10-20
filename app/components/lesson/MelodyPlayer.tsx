@@ -10,6 +10,8 @@ import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesso
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 import { MelodyLine } from "./MelodyLine";
 import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
+import { findVocal, VOCAL_CREDIT } from "../../lib/lesson/vocal";
+import { publicAssetUrl } from "../../lib/app/assets";
 
 type Line = { label: string; bars: MelodyNote[][] };
 type BeamRun = { start: number; end: number; level: number };
@@ -111,6 +113,11 @@ function getBeamRuns(notes: MelodyNote[], meter: string): BeamRun[] {
 
 // Keep decoded instrument banks for the session so switching excerpts does not re-decode samples.
 const sharedSamplers: Partial<Record<InstrumentId, InstrumentSampler>> = {};
+const sharedVocals: Record<string, Promise<AudioBuffer>> = {};
+type Timbre = InstrumentId | "vocal";
+const VOCAL_LABEL = "人声（童声）";
+/** Seconds of the recording played before a phrase's first beat, so its opening consonant is not clipped. */
+const VOCAL_PREROLL = 0.15;
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
 const TIMBRES = [
   { wave: "triangle" as OscillatorType, overtone: 0.5, level: 1 },
@@ -148,12 +155,19 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   useEffect(() => { soundingCallback.current = onSoundingNotes; }, [onSoundingNotes]);
   const lines = useMemo<Line[]>(() => [{ label: melody.label ?? "旋律", bars: melody.bars }, ...(melody.voices ?? [])], [melody]);
   const [playing, setPlaying] = useState(false);
-  const [instrument, setInstrument] = useState<InstrumentId>("piano");
+  const [instrument, setInstrument] = useState<Timbre>("piano");
+  const vocal = useMemo(() => findVocal(melody), [melody]);
+  const timbres = useMemo(() => [...INSTRUMENTS, ...(vocal ? [{ id: "vocal" as const, label: VOCAL_LABEL }] : [])], [vocal]);
+  /** Sampled instrument for everything the recorded voice does not sing (other parts, cues). */
+  const sampleInstrument: InstrumentId = instrument === "vocal" ? "piano" : instrument;
+  const singing = instrument === "vocal" && !!vocal;
   const [loadingSampler, setLoadingSampler] = useState(false);
   const [audioMode, setAudioMode] = useState<"unknown" | "sampled" | "synth">("unknown");
   const [current, setCurrent] = useState<number[]>([]);
   const [announcement, setAnnouncement] = useState("");
   const [tempo, setTempo] = useState(melody.bpm);
+  // The recording is sung at the textbook tempo.
+  const playTempo = singing ? melody.bpm : tempo;
   const [enabled, setEnabled] = useState<boolean[]>(() => lines.map(() => true));
   const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
   const mounted = useRef(true);
@@ -195,7 +209,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   const phrases = useMemo(() => splitPhrases(melody.bars, phraseMode), [melody.bars, phraseMode]);
   const activePhrase = follow ? phrases[follow.phrase] : null;
   const canFollow = !rhythmOnly && phrases.length > 1;
-  const instrumentLabel = INSTRUMENTS.find((item) => item.id === instrument)?.label ?? "钢琴";
+  const instrumentLabel = timbres.find((item) => item.id === instrument)?.label ?? "钢琴";
 
   const stop = useCallback(() => {
     const shouldAnnounceStop = playbackActive.current || samplerLoading.current;
@@ -251,16 +265,36 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       return null;
     }
     const ctx = getPianoAudioContext();
-    let sampler = sharedSamplers[instrument] ?? null;
+    let sampler = sharedSamplers[sampleInstrument] ?? null;
     let samplerLoadFailed = false;
+    let voice: AudioBuffer | null = null;
+    if (singing && vocal) {
+      samplerLoading.current = true;
+      setLoadingSampler(true);
+      setAnnouncement("载入" + VOCAL_LABEL + "…");
+      try {
+        await ctx.resume();
+        const url = publicAssetUrl(vocal.file);
+        sharedVocals[url] ??= fetch(url).then((response) => {
+          if (!response.ok) throw new Error(String(response.status));
+          return response.arrayBuffer();
+        }).then((data) => ctx.decodeAudioData(data));
+        voice = await sharedVocals[url].catch((error) => { delete sharedVocals[url]; throw error; });
+      } catch {
+        samplerLoadFailed = true;
+      } finally {
+        samplerLoading.current = false;
+        if (mounted.current) setLoadingSampler(false);
+      }
+    }
     if (!rhythmOnly && !sampler) {
       samplerLoading.current = true;
       setLoadingSampler(true);
       setAnnouncement("载入" + instrumentLabel + "音色…");
       try {
         await ctx.resume();
-        sampler = await loadInstrumentSampler(ctx, instrument);
-        sharedSamplers[instrument] = sampler;
+        sampler = await loadInstrumentSampler(ctx, sampleInstrument);
+        sharedSamplers[sampleInstrument] = sampler;
         if (mounted.current) setAudioMode("sampled");
       } catch {
         samplerLoadFailed = true;
@@ -275,11 +309,35 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     }
     // The reader may have left the lesson while the samples were loading.
     if (!mounted.current || request !== playRequestRef.current) return null;
-    return { ctx, sampler, samplerLoadFailed };
+    return { ctx, sampler, samplerLoadFailed, voice };
+  };
+
+  /**
+   * Play the recorded voice for melody beats [from, to) so that beat `from` sounds at `at`;
+   * without `to` the recording runs to its end.
+   */
+  const scheduleVocal = (ctx: AudioContext, out: AudioNode, buffer: AudioBuffer, from: number, at: number, beat: number, to?: number) => {
+    if (!vocal) return;
+    let offset = vocal.offset + (from - vocal.leadBeats) * beat - VOCAL_PREROLL;
+    let when = at - VOCAL_PREROLL;
+    if (offset < 0) { when -= offset; offset = 0; }
+    const stopAt = to == null ? when + buffer.duration - offset : at + (to - from) * beat;
+    if (stopAt <= when + 0.02 || offset >= buffer.duration) return;
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    source.buffer = buffer;
+    gain.gain.setValueAtTime(0, when);
+    gain.gain.linearRampToValueAtTime(2.5, when + 0.03);
+    if (to != null) {
+      gain.gain.setValueAtTime(2.5, Math.max(when + 0.03, stopAt - 0.08));
+      gain.gain.linearRampToValueAtTime(0, stopAt);
+    }
+    source.connect(gain).connect(out);
+    source.start(when, offset, stopAt - when);
   };
 
   /** Schedule notes [from, to) of one voice from time t0; returns each note's start time and the end. */
-  const scheduleRange = (ctx: AudioContext, master: AudioNode, sampler: InstrumentSampler | null, voice: number, from: number, to: number, t0: number, beat: number, levelScale = 1) => {
+  const scheduleRange = (ctx: AudioContext, master: AudioNode, sampler: InstrumentSampler | null, voice: number, from: number, to: number, t0: number, beat: number, levelScale = 1, voiced = false) => {
     const notes = flats[voice];
     const times: number[] = [];
     let t = t0;
@@ -288,7 +346,8 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       times.push(t);
       const duration = note.b * beat;
       // A tied note extends the previous tone instead of re-attacking.
-      if (note.d && !note.tie) {
+      // `voiced`: the recorded voice sings the pitched notes; only clapped X notes still sound.
+      if (note.d && !note.tie && !(voiced && note.d !== 9)) {
         let length = duration;
         for (let k = index + 1; k < to && notes[k].tie; k += 1) length += notes[k].b * beat;
         if (note.d === 9) {
@@ -307,7 +366,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
           }
         } else if (sampler) {
           const level = (voice === 0 ? 1 : voice === 1 ? 0.7 : 0.58) * levelScale;
-          playInstrumentSample(ctx, instrument, sampler, midiOf(melody, note), t, length, master, level);
+          playInstrumentSample(ctx, sampleInstrument, sampler, midiOf(melody, note), t, length, master, level);
         } else {
           const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
           const timbre = TIMBRES[voice] ?? TIMBRES[2];
@@ -334,24 +393,25 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     const request = ++playRequestRef.current;
     const audio = await prepareAudio(request);
     if (!audio) return;
-    const { ctx, sampler, samplerLoadFailed } = audio;
+    const { ctx, sampler, samplerLoadFailed, voice } = audio;
 
-    const beat = 60 / tempo;
-    const start = ctx.currentTime + 0.12;
+    const beat = 60 / playTempo;
+    const start = ctx.currentTime + (voice ? 0.12 + VOCAL_PREROLL : 0.12);
     const master = ctx.createGain();
     master.gain.value = lines.length > 1 ? 0.24 : 0.34;
     master.connect(ctx.destination);
     let end = start;
-    const timeline = flats.map((notes, voice) => {
-      if (!enabled[voice]) {
+    const timeline = flats.map((notes, part) => {
+      if (!enabled[part]) {
         // Muted voices still advance so their notes keep highlighting in step.
         let t = start;
         return notes.map((note) => { const at = t; t += note.b * beat; end = Math.max(end, t); return at; });
       }
-      const scheduled = scheduleRange(ctx, master, sampler, voice, 0, notes.length, start, beat);
+      const scheduled = scheduleRange(ctx, master, sampler, part, 0, notes.length, start, beat, 1, part === 0 && !!voice);
       end = Math.max(end, scheduled.end);
       return scheduled.times;
     });
+    if (voice && enabled[0]) scheduleVocal(ctx, master, voice, 0, start, beat);
     let raf = 0;
     let previousNotes = "";
     const tick = () => {
@@ -384,7 +444,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     };
     playbackActive.current = true;
     setPlaying(true);
-    setAnnouncement(samplerLoadFailed ? instrumentLabel + "音色加载失败，改用电子音色。开始播放" : "开始播放");
+    setAnnouncement(samplerLoadFailed ? instrumentLabel + "音色加载失败，改用" + (singing ? "钢琴" : "电子音色") + "。开始播放" : "开始播放");
   };
 
   /**
@@ -397,19 +457,20 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     const request = ++playRequestRef.current;
     const audio = await prepareAudio(request);
     if (!audio) return;
-    const { ctx, sampler } = audio;
-    const beat = 60 / tempo;
+    const { ctx, sampler, voice } = audio;
+    const beat = 60 / playTempo;
     const master = ctx.createGain();
     master.gain.value = 0.34;
     master.connect(ctx.destination);
     type Segment = { phrase: number; kind: "listen" | "sing"; t0: number; t1: number; times: number[] };
     const segments: Segment[] = [];
-    let t = ctx.currentTime + 0.15;
+    let t = ctx.currentTime + 0.15 + (voice ? VOCAL_PREROLL : 0);
     for (let p = first; p < phrases.length; p += 1) {
       const phrase = phrases[p];
       let lastListen: Segment | null = null;
       for (let round = 0; round < listenTimes; round += 1) {
-        const scheduled = scheduleRange(ctx, master, sampler, 0, phrase.startNote, phrase.endNote, t, beat);
+        const scheduled = scheduleRange(ctx, master, sampler, 0, phrase.startNote, phrase.endNote, t, beat, 1, !!voice);
+        if (voice) scheduleVocal(ctx, master, voice, phrase.startBeat, t, beat, phrase.endBeat);
         lastListen = { phrase: p, kind: "listen", t0: t, t1: scheduled.end, times: scheduled.times };
         segments.push(lastListen);
         t = scheduled.end;
@@ -515,8 +576,8 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       <span role="status" aria-live="polite" aria-atomic="true" style={VISUALLY_HIDDEN}>{announcement}</span>
       <span className="melody-key">{melody.key} · {displayMeter(melody.meter)}</span>
       <label className="melody-instrument">音色
-        <select value={instrument} disabled={playing || loadingSampler} onChange={(event) => { setInstrument(event.target.value as InstrumentId); setAudioMode("unknown"); }}>
-          {INSTRUMENTS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+        <select value={instrument} disabled={playing || loadingSampler} onChange={(event) => { setInstrument(event.target.value as Timbre); setAudioMode("unknown"); }}>
+          {timbres.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
         </select>
       </label>
       {lines.length > 1 && <span className="melody-voices" role="group" aria-label="选择声部">
@@ -529,8 +590,9 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         {([["score", "谱子"], ["line", "旋律线"]] as const).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={view === value} className={view === value ? "is-active" : ""} onClick={() => setView(value)}>{label}</button>)}
       </span>}
       <label className="melody-tempo">速度
-        <input type="range" min={40} max={160} step={4} value={tempo} aria-valuetext={`每分钟 ${tempo} 拍`} disabled={playing || loadingSampler || !!follow} onChange={(event) => setTempo(Number(event.target.value))} />
-        <b>♩={tempo}</b>
+        <input type="range" min={40} max={160} step={4} value={playTempo} aria-valuetext={`每分钟 ${playTempo} 拍`} disabled={singing || playing || loadingSampler || !!follow} onChange={(event) => setTempo(Number(event.target.value))} />
+        <b>♩={playTempo}</b>
+        {singing && <small className="melody-tempo-note">按原速演唱</small>}
       </label>
     </div>
     {canFollow && followOpen && <div className={`melody-follow${follow ? ` is-${follow.kind}` : ""}`} role="group" aria-label="跟唱">
@@ -609,5 +671,6 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     </div>}
     {/* Source notes and sample credits live in the home page footer; only a fallback warning shows here. */}
     {!rhythmOnly && audioMode === "synth" && <p className="melody-source">所选音色未能载入，暂用电子音色示范。</p>}
+    {singing && <p className="melody-source melody-vocal-credit">人声为 {VOCAL_CREDIT}，按谱面歌词自动演唱。</p>}
   </div>;
 }
