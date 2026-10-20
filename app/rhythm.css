@@ -254,6 +254,23 @@
 .rhythm-stop.is-active { border-color: var(--rhythm-pine); box-shadow: inset 0 0 0 1px var(--rhythm-pine); }
 .rhythm-stop.is-active .rhythm-stop-number { background: var(--rhythm-pine); color: #fff; }
 .rhythm-lab .rhythm-stop:disabled { opacity: .5; cursor: not-allowed; }
+/* 宽屏：关卡落在小路的八块石头上（Codex T077 level-path.webp，坐标见 PATH_STOPS） */
+@media (min-width: 881px) {
+  .rhythm-level-path { position: relative; display: block; aspect-ratio: 8 / 3; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #F7F9F8 var(--path-art) center / cover no-repeat; }
+  .rhythm-level-path li { position: absolute; left: var(--x); top: var(--y); width: 0; height: 0; }
+  .rhythm-level-path .rhythm-stop {
+    position: absolute; left: 0; top: 0; translate: -50% -21px; width: 128px; min-height: 0; padding: 0;
+    border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  }
+  .rhythm-level-path .rhythm-stop-number { width: 42px; height: 42px; background: #fff; box-shadow: 0 2px 6px #27634426, inset 0 0 0 1.5px #27634433; }
+  .rhythm-level-path .rhythm-stop-name { margin-top: 4px; padding: 2px 9px; border-radius: 999px; background: #F7F9F8E6; font-size: 13px; }
+  .rhythm-level-path .rhythm-stop-stars { font-size: 14px; }
+  .rhythm-level-path .rhythm-stop.is-active { box-shadow: none; }
+  .rhythm-level-path .rhythm-stop.is-active .rhythm-stop-number { box-shadow: 0 0 0 5px #27634433, 0 4px 10px #27634440; }
+  .rhythm-level-path .rhythm-stop.is-active .rhythm-stop-name { background: var(--rhythm-pine-soft); color: var(--rhythm-pine); font-weight: 650; }
+  .rhythm-level-path .rhythm-stop:not(:disabled):hover .rhythm-stop-number { transform: translateY(-2px); }
+  .rhythm-level-path .rhythm-stop-number { transition: transform .15s ease; }
+}
 .rhythm-level-info { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; margin-top: 14px; }
 .rhythm-level-info p { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0; }
 .rhythm-level-info strong { font: 400 20px/1.4 var(--kai, "KaiTi", serif); letter-spacing: .06em; white-space: nowrap; }

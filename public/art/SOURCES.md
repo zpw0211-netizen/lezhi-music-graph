@@ -142,3 +142,8 @@ The same sprout-and-staff motif as the hero, centered, with wide empty paper mar
 - 生成日期：2026-10-19
 - 工具：Codex 内置 image_gen（任务 T077），提示词与自查记录见 `E:\Projects\.tmp\rhythm-art\SOURCES.md`
 - 规格：800×800 透明 WebP；drum-hit 为敲击瞬间（鼓面提亮、两侧震动线），两张鼓身位置一致
+
+## 节奏训练：闯关小路（art/rhythm/level-path.webp）
+- 生成日期：2026-10-19
+- 工具：Codex 内置 image_gen（任务 T077），提示词与自查记录见 `E:\Projects\.tmp\rhythm-art\SOURCES.md`
+- 规格：1600×600 WebP，浅纸色底；八块空石头的中心坐标写在 RhythmPage.tsx 的 PATH_STOPS 里

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import {
   DEFAULT_PATTERN_IDS,
   METERS,
@@ -45,6 +45,8 @@ function writeJson(key: string, value: unknown) {
 }
 
 const STAR_TEXT = ["", "★", "★★", "★★★"];
+/** Centres of the eight stepping stones in art/rhythm/level-path.webp (1600×600), start to finish. */
+const PATH_STOPS = [[102, 493], [303, 442], [511, 390], [719, 344], [928, 302], [1133, 249], [1333, 195], [1493, 137]];
 
 export function RhythmPage() {
   const [mode, setMode] = useState<Mode>("random");
@@ -347,12 +349,12 @@ export function RhythmPage() {
 
       {mode === "levels" ? (
         <div className="rhythm-levels">
-          <ol className="rhythm-level-path" aria-label="关卡">
+          <ol className="rhythm-level-path" aria-label="关卡" style={{ "--path-art": `url("${publicAssetUrl("art/rhythm/level-path.webp")}")` } as CSSProperties}>
             {LEVELS.map((stage, index) => {
               const open = levelOpen(index);
               const stars = levelStars[index] ?? 0;
               return (
-                <li key={stage.name}>
+                <li key={stage.name} style={{ "--x": `${PATH_STOPS[index][0] / 16}%`, "--y": `${PATH_STOPS[index][1] / 6}%` } as CSSProperties}>
                   <button
                     type="button"
                     className={`rhythm-stop${index === levelIndex ? " is-active" : ""}${stars ? " is-cleared" : ""}`}
