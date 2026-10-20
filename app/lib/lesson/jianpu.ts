@@ -19,7 +19,11 @@ export type Melody = {
   /** Label of the main line when further voices exist, e.g. "高声部". */
   label?: string;
   /** Further simultaneous voices printed in the textbook (choral parts). */
-  voices?: Array<{ label: string; bars: MelodyNote[][] }>;
+  voices?: Array<{ label: string; bars: MelodyNote[][]; lyricWords?: number }>;
+  /** Syllables given for the main line, so a check can catch lyrics that drift off their notes. */
+  lyricWords?: number;
+  /** Last bar that carries lyrics when the rest is an interlude or coda; the check counts syllables only up to it. */
+  lyricsEnd?: number;
 };
 
 
@@ -140,7 +144,9 @@ export function tonicMidiOf(key: string) {
   return TONIC_MIDI[m[2]] + (m[1] === "♭" || m[1] === "b" ? -1 : m[1] ? 1 : 0);
 }
 
-type SegmentOptions = { title?: string; label?: string; voices?: Array<{ label: string; notes: string; lyrics?: string }>; note?: string; octave?: number; quality?: "draft"; edition?: string };
+const wordCount = (lyrics: string) => lyrics.split(/\s+/).filter(Boolean).length;
+
+type SegmentOptions = { title?: string; label?: string; voices?: Array<{ label: string; notes: string; lyrics?: string }>; note?: string; octave?: number; quality?: "draft"; edition?: string; lyricsEnd?: number };
 /**
  * One excerpt of a work: key text, meter, tempo, textbook source, jianpu notes and lyrics.
  * `octave` shifts playback (e.g. -1 for scores written an octave high).
@@ -160,6 +166,8 @@ export function segment(book: string, page: number | string, key: string, meter:
     quality: options.quality,
     bars: jianpu(notes, lyrics),
     label: options.label ?? (options.voices?.length ? "第一声部" : undefined),
-    voices: options.voices?.map((voice) => ({ label: voice.label, bars: jianpu(voice.notes, voice.lyrics ?? "") })),
+    voices: options.voices?.map((voice) => ({ label: voice.label, bars: jianpu(voice.notes, voice.lyrics ?? ""), lyricWords: wordCount(voice.lyrics ?? "") })),
+    lyricWords: wordCount(lyrics),
+    lyricsEnd: options.lyricsEnd,
   };
 }

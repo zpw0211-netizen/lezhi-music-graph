@@ -17,6 +17,16 @@ const file = path.join(dir, "melodies.mjs");
 const { MELODIES, BOOK_MELODIES, PEP_MELODY_BOOKS, checkMelody } = await import(pathToFileURL(file).href);
 
 let failures = 0;
+// Lyrics give one syllable (or "~" for a note without one) per sung note — slurred and tied notes take none —
+// so a missing slur mark, a dropped word or an extra verse shows up as a count mismatch. When the excerpt ends
+// in an interlude or coda, `lyricsEnd` names the last bar with lyrics and only bars up to it are counted.
+const lyricProblems = (melody) => [{ label: melody.label ?? "旋律", bars: melody.bars, words: melody.lyricWords, end: melody.lyricsEnd },
+  ...(melody.voices ?? []).map((voice) => ({ label: voice.label, bars: voice.bars, words: voice.lyricWords }))]
+  .filter((line) => line.words)
+  .flatMap((line) => {
+    const sung = line.bars.slice(0, line.end ?? line.bars.length).flat().filter((note) => note.d && !note.tie && !note.slur).length;
+    return sung === line.words ? [] : [`${line.label} 歌词 ${line.words} 字 ≠ 唱音 ${sung} 个${line.end ? `（到第 ${line.end} 小节）` : ""}`];
+  });
 const only = process.argv.slice(2).find((arg) => !arg.startsWith("--"));
 const requestedBook = only && Object.hasOwn(BOOK_MELODIES, only) ? only : undefined;
 const nameFilter = requestedBook ? undefined : only;
@@ -44,6 +54,11 @@ for (const [name, segments] of checks) {
     const lyrics = sung.filter((note) => note.lyric).length;
     if (bad.length) failures += 1;
     const tag = segments.length > 1 ? `[${melody.title ?? k + 1}]` : "";
+    const lyricIssues = lyricProblems(melody);
+    if (lyricIssues.length) {
+      failures += 1;
+      console.log(`✗ ${name}${tag} LYRICS ${lyricIssues.join("；")}`);
+    }
     const voices = melody.voices?.length ? ` voices=${melody.voices.length + 1}` : "";
     if (bad.length || only) console.log(`${bad.length ? "✗" : "✓"} ${name}${tag} bars=${melody.bars.length} notes=${notes.length} lyrics=${lyrics}/${sung.length}${voices}${bad.length ? ` BAD ${bad.map((item) => `${item.voice}#${item.index + 1}:${item.total}`).join(" ")}` : ""}`);
     if (only && process.argv.includes("--show")) console.log(melody.bars.map((bar) => bar.map((note) => `${note.tie ? "~" : ""}${note.d}${note.o ? (note.o > 0 ? "'" : ",").repeat(Math.abs(note.o)) : ""}${note.lyric ?? ""}`).join(" ")).join(" | "));

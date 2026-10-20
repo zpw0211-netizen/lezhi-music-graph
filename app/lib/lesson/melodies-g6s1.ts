@@ -42,7 +42,7 @@ const JASMINE_CHORUS_LOW_HEAD = [
 const JASMINE_CHORUS_LOW_NOTES = JASMINE_CHORUS_LOW_HEAD +
   " | 2. 2/ | 1 ~6, | ~5, - | ~5, - | ~5, 0";
 const JASMINE_CHORUS_LOW_LYRICS = [
-  ...jianpu(JASMINE_CHORUS_LOW_HEAD).flat().filter((note) => note.d && !note.tie).map(() => "~"),
+  ...jianpu(JASMINE_CHORUS_LOW_HEAD).flat().filter((note) => note.d && !note.tie && !note.slur).map(() => "~"),
   "不", "发", "芽",
 ].join(" ");
 const HALFSCREEN_OPENING = "3/ ~5/ 5 | 5/ 6 ~5/ | 5/ ~3/ 2// ~3// ~2// ~1// | 1 -";
