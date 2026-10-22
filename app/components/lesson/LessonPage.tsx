@@ -7,7 +7,7 @@ import { ReflectivePresent } from "./ReflectivePresent";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { getPrintedPage, getScoreMedia, isStarredWork, parseUnitTask } from "../../lib/app/unit-data";
 import { SCORE_SIZES } from "../../lib/lesson/score-sizes";
-import { BOOK_BY_KEY } from "../../lib/app/books";
+import { BOOK_BY_KEY, EDITION } from "../../lib/app/books";
 import { unitArtPath } from "../../lib/app/unit-art";
 
 type LessonEntity = {
@@ -157,7 +157,8 @@ export function LessonPage({
   useEffect(() => { window.scrollTo?.({ top: 0 }); }, [workId]);
 
   if (!work) return <section className="lesson-empty"><p>没有找到这一课。</p><button type="button" onClick={onBack}>返回</button></section>;
-  const bookMelodies = melodiesFor(lesson.bookKey, work.name);
+  const melodyBookKey = lesson.bookKey && EDITION.notation === "staff" ? `wx-${lesson.bookKey}` : lesson.bookKey;
+  const bookMelodies = melodiesFor(melodyBookKey, work.name);
   const melody = bookMelodies.length ? bookMelodies : undefined;
   const starred = isStarredWork(relationships.filter((relation) => relation.subject === workId));
   const creators = lesson.own.filter((relation) => /^(作词|作曲|词曲作者|编曲|改编|记谱配词)$/.test(relation.predicate));
@@ -198,7 +199,7 @@ export function LessonPage({
 
         <section className="lesson-block" data-reveal>
           <h2><em>1</em>{work.type === "朗诵作品" ? "阅读 · 聆听" : "看谱 · 听旋律"}</h2>
-          {melody ? <MelodySet melodies={melody} /> : <p className="lesson-note">{work.type === "朗诵作品"
+          {melody ? <MelodySet melodies={melody} notationStyle={EDITION.notation ?? "jianpu"} /> : <p className="lesson-note">{work.type === "朗诵作品"
             ? "这是朗诵作品，没有固定的歌曲旋律。请结合教材原文体会语言节奏。"
             : scoreMedia.length === 0
               ? "这页的乐谱还没有整理为在线谱例；可以先对照教材原页视唱。"
@@ -282,6 +283,7 @@ export function LessonPage({
       creators={creators.map((relation) => ({ id: relation.id, label: relation.label ?? relation.predicate, value: valueOf(relation) }))}
       facts={lesson.own.filter((relation) => !relation.extended).map((relation) => ({ label: relation.label ?? relation.predicate, value: valueOf(relation) }))}
       melody={melody}
+      notationStyle={EDITION.notation ?? "jianpu"}
       scores={scoreMedia}
       tasks={lesson.tasks.map(parseUnitTask)}
       questions={questions}

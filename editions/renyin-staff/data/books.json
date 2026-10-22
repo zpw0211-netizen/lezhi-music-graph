@@ -1,0 +1,274 @@
+{
+  "version": 1,
+  "edition": {
+    "key": "renyin-staff",
+    "label": "人音版·五线谱",
+    "press": "人民音乐出版社",
+    "basePath": "/renyin-staff",
+    "notation": "staff",
+    "hotSearches": [
+      "黄河",
+      "京剧",
+      "民歌",
+      "五声调式",
+      "歌唱祖国"
+    ]
+  },
+  "books": [
+    {
+      "key": "g1s1",
+      "stage": "小学",
+      "grade": 1,
+      "semester": "上册",
+      "shortName": "一上",
+      "fullName": "一年级上册",
+      "title": "人音版·五线谱一年级上册",
+      "pages": 76,
+      "pdfOffset": 10,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g1s2",
+      "stage": "小学",
+      "grade": 1,
+      "semester": "下册",
+      "shortName": "一下",
+      "fullName": "一年级下册",
+      "title": "人音版·五线谱一年级下册",
+      "pages": 76,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g2s1",
+      "stage": "小学",
+      "grade": 2,
+      "semester": "上册",
+      "shortName": "二上",
+      "fullName": "二年级上册",
+      "title": "人音版·五线谱二年级上册",
+      "pages": 76,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g2s2",
+      "stage": "小学",
+      "grade": 2,
+      "semester": "下册",
+      "shortName": "二下",
+      "fullName": "二年级下册",
+      "title": "人音版·五线谱二年级下册",
+      "pages": 72,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g3s1",
+      "stage": "小学",
+      "grade": 3,
+      "semester": "上册",
+      "shortName": "三上",
+      "fullName": "三年级上册",
+      "title": "人音版·五线谱三年级上册",
+      "pages": 72,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g3s2",
+      "stage": "小学",
+      "grade": 3,
+      "semester": "下册",
+      "shortName": "三下",
+      "fullName": "三年级下册",
+      "title": "人音版·五线谱三年级下册",
+      "pages": 68,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g4s1",
+      "stage": "小学",
+      "grade": 4,
+      "semester": "上册",
+      "shortName": "四上",
+      "fullName": "四年级上册",
+      "title": "人音版·五线谱四年级上册",
+      "pages": 76,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g5s1",
+      "stage": "小学",
+      "grade": 5,
+      "semester": "上册",
+      "shortName": "五上",
+      "fullName": "五年级上册",
+      "title": "人音版·五线谱五年级上册",
+      "pages": 76,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6
+    },
+    {
+      "key": "g6s1",
+      "stage": "小学",
+      "grade": 6,
+      "semester": "上册",
+      "shortName": "六上",
+      "fullName": "六年级上册",
+      "title": "人音版·五线谱六年级上册",
+      "pages": 82,
+      "pdfOffset": null,
+      "published": false,
+      "unitArt": 6
+    },
+    {
+      "key": "g7s1",
+      "stage": "初中",
+      "grade": 7,
+      "semester": "上册",
+      "shortName": "七上",
+      "fullName": "七年级上册",
+      "title": "人音版·五线谱七年级上册",
+      "pages": 80,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6,
+      "legacySourceDir": "grade7/grade7_sem1",
+      "coverArt": true,
+      "fullGraphPosition": {
+        "x": 460,
+        "y": 450
+      },
+      "explorerPosition": {
+        "x": 360,
+        "y": 260
+      }
+    },
+    {
+      "key": "g7s2",
+      "stage": "初中",
+      "grade": 7,
+      "semester": "下册",
+      "shortName": "七下",
+      "fullName": "七年级下册",
+      "title": "人音版·五线谱七年级下册",
+      "pages": 80,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6,
+      "legacySourceDir": "grade7/grade7_sem2",
+      "coverArt": true,
+      "fullGraphPosition": {
+        "x": 1200,
+        "y": 480
+      },
+      "explorerPosition": {
+        "x": 1200,
+        "y": 170
+      }
+    },
+    {
+      "key": "g8s1",
+      "stage": "初中",
+      "grade": 8,
+      "semester": "上册",
+      "shortName": "八上",
+      "fullName": "八年级上册",
+      "title": "人音版·五线谱八年级上册",
+      "pages": 72,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6,
+      "legacySourceDir": "grade8/grade8_sem1",
+      "coverArt": true,
+      "fullGraphPosition": {
+        "x": 1940,
+        "y": 450
+      },
+      "explorerPosition": {
+        "x": 2040,
+        "y": 260
+      }
+    },
+    {
+      "key": "g8s2",
+      "stage": "初中",
+      "grade": 8,
+      "semester": "下册",
+      "shortName": "八下",
+      "fullName": "八年级下册",
+      "title": "人音版·五线谱八年级下册",
+      "pages": 80,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 6,
+      "legacySourceDir": "grade8/grade8_sem2",
+      "coverArt": true,
+      "fullGraphPosition": {
+        "x": 460,
+        "y": 1050
+      },
+      "explorerPosition": {
+        "x": 360,
+        "y": 1240
+      }
+    },
+    {
+      "key": "g9s1",
+      "stage": "初中",
+      "grade": 9,
+      "semester": "上册",
+      "shortName": "九上",
+      "fullName": "九年级上册",
+      "title": "人音版·五线谱九年级上册",
+      "pages": 71,
+      "pdfOffset": null,
+      "published": false,
+      "unitArt": 6,
+      "legacySourceDir": "grade9/grade9_sem1",
+      "coverArt": true,
+      "fullGraphPosition": {
+        "x": 1200,
+        "y": 1020
+      },
+      "explorerPosition": {
+        "x": 1200,
+        "y": 1330
+      }
+    },
+    {
+      "key": "g9s2",
+      "stage": "初中",
+      "grade": 9,
+      "semester": "下册",
+      "shortName": "九下",
+      "fullName": "九年级下册",
+      "title": "人音版·五线谱九年级下册",
+      "pages": 79,
+      "pdfOffset": null,
+      "published": false,
+      "unitArt": 6,
+      "legacySourceDir": "grade9/grade9_sem2",
+      "coverArt": true,
+      "fullGraphPosition": {
+        "x": 1940,
+        "y": 1050
+      },
+      "explorerPosition": {
+        "x": 2040,
+        "y": 1240
+      }
+    }
+  ]
+}

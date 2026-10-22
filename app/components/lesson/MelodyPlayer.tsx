@@ -9,6 +9,7 @@ import type { InstrumentId, InstrumentSampler } from "../../lib/lesson/instrumen
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 import { MelodyLine } from "./MelodyLine";
+import { StaffNotation, type MelodyLineData } from "./StaffNotation";
 import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
 import { findVocal, VOCAL_CREDIT } from "../../lib/lesson/vocal";
 import { publicAssetUrl } from "../../lib/app/assets";
@@ -137,7 +138,9 @@ const VISUALLY_HIDDEN = {
 };
 
 /** Excerpts of one work: tabs when there are several themes, one player each. */
-export function MelodySet({ melodies, large }: { melodies: Melody[]; large?: boolean }) {
+type ScoreNotation = "jianpu" | "staff";
+
+export function MelodySet({ melodies, large, notationStyle = "jianpu" }: { melodies: Melody[]; large?: boolean; notationStyle?: ScoreNotation }) {
   const [index, setIndex] = useState(0);
   const melody = melodies[Math.min(index, melodies.length - 1)];
   return <div className="melody-set">
@@ -145,12 +148,12 @@ export function MelodySet({ melodies, large }: { melodies: Melody[]; large?: boo
       <SlidingIndicator activeKey={index} />
       {melodies.map((item, k) => <button key={k} type="button" role="tab" aria-selected={k === index} className={k === index ? "active" : ""} onClick={() => setIndex(k)}>{item.title ?? `片段 ${k + 1}`}</button>)}
     </div>}
-    <MelodyPlayer key={index} melody={melody} large={large} />
+    <MelodyPlayer key={index} melody={melody} large={large} notationStyle={notationStyle} />
   </div>;
 }
 
 /** Plays a jianpu melody (and any extra voices) with WebAudio, highlighting each sounding note. */
-export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melody; large?: boolean; onSoundingNotes?: (notes: number[], playing: boolean) => void }) {
+export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundingNotes }: { melody: Melody; large?: boolean; notationStyle?: ScoreNotation; onSoundingNotes?: (notes: number[], playing: boolean) => void }) {
   const soundingCallback = useRef(onSoundingNotes);
   useEffect(() => { soundingCallback.current = onSoundingNotes; }, [onSoundingNotes]);
   const lines = useMemo<Line[]>(() => [{ label: melody.label ?? "旋律", bars: melody.bars }, ...(melody.voices ?? [])], [melody]);
@@ -233,7 +236,13 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     window.addEventListener(VOCAL_PLAYBACK_STARTED, stop);
     return () => window.removeEventListener(VOCAL_PLAYBACK_STARTED, stop);
   }, [stop]);
-  // Bars sit on an even grid, 8, 4, 2 or 1 per row so phrases line up; notes may shrink to 80% to keep 4 a row.
+  const staffBarWidths = useMemo(() => melody.bars.map((_, barIndex) => {
+    const notes = Math.max(0, ...lines.map((line) => line.bars[barIndex]?.length ?? 0));
+    const beats = Math.max(1, ...lines.map((line) => line.bars[barIndex]?.reduce((sum, note) => sum + note.b, 0) ?? 0));
+    return Math.max(88, beats * 34, notes * 16);
+  }), [melody.bars, lines]);
+  // Keep the existing even-grid layout for jianpu. Staff rows fit the same way,
+  // accounting for clef and key-signature space at the start of each system.
   useEffect(() => {
     const score = scoreRef.current;
     if (!score) return;
@@ -242,6 +251,40 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       const notePx = (voice ? parseFloat(getComputedStyle(voice).fontSize) || 20 : 20) / fitRef.current;
       const style = getComputedStyle(score);
       const room = score.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      if (notationStyle === "staff") {
+        const signatureCount = melody.key === "节奏" ? 0 : (() => {
+          const tonic = melody.key.replace(/\s/g, "").match(/^1=([♭♯#b]?)([A-G])/);
+          if (!tonic) return 0;
+          const name = tonic[2] + (tonic[1] === "♭" || tonic[1] === "b" ? "b" : tonic[1] ? "#" : "");
+          const sharpKeys: Record<string, number> = { C: 0, G: 1, D: 2, A: 3, E: 4, B: 5, "F#": 6, "C#": 7 };
+          const flatKeys: Record<string, number> = { F: 1, Bb: 2, Eb: 3, Ab: 4, Db: 5, Gb: 6, Cb: 7 };
+          return tonic[1] === "♭" || tonic[1] === "b" ? flatKeys[name] ?? 0 : tonic[1] ? sharpKeys[name] ?? 0 : flatKeys[name] ?? sharpKeys[name] ?? 0;
+        })();
+        const meterAt = (index: number) => {
+          const entries = melody.meter.split("、").filter(Boolean);
+          return entries.length === melody.bars.length ? entries[index] ?? entries[0] : entries[0] ?? "";
+        };
+        const extraTime = (index: number, first: number) => {
+          const changed = index === first ? first === 0 || meterAt(first) !== meterAt(first - 1) : meterAt(index) !== meterAt(index - 1);
+          return changed && /\d+\s*\/\s*\d+/.test(meterAt(index)) ? 22 : 0;
+        };
+        const count = Math.min([8, 4, 2, 1].find((n) => {
+          let widest = 0;
+          for (let start = 0; start < melody.bars.length; start += n) {
+            const end = Math.min(melody.bars.length, start + n);
+            let width = 52 + 14 + (melody.key === "节奏" ? 0 : 48 + signatureCount * 9) + extraTime(start, start);
+            for (let index = start; index < end; index += 1) {
+              width += staffBarWidths[index] + (index === start ? 0 : extraTime(index, start));
+            }
+            widest = Math.max(widest, width);
+          }
+          return widest <= room;
+        }) ?? 1, melody.bars.length);
+        fitRef.current = 1;
+        setBarsPerRow(count);
+        setNoteFit(1);
+        return;
+      }
       const barPx = (n: number, scale: number) => n * (widestBar * notePx * scale + 26);
       const count = Math.min([8, 4, 2].find((n) => barPx(n, 0.8) <= room) ?? 1, melody.bars.length);
       const scale = barPx(count, 1) <= room ? 1 : Math.max(0.8, room / barPx(count, 1));
@@ -253,7 +296,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
     const observer = new ResizeObserver(fit);
     observer.observe(score);
     return () => observer.disconnect();
-  }, [widestBar, melody.bars.length, view]);
+  }, [notationStyle, melody.key, melody.meter, melody.bars.length, staffBarWidths, widestBar, view]);
 
   /** Unlock audio and load the chosen instrument; null when the request was superseded. */
   const prepareAudio = async (request: number) => {
@@ -536,7 +579,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
   };
 
   const renderNoteHead = (note: MelodyNote, key: number | string, active: boolean, beamSegments?: BeamFragment[]) => {
-    const { lines: underlines, dotted, dashes } = notation(note);
+    const { lines: underlines, dotted, dots, dashes } = notation(note);
     const fragments = beamSegments ?? Array.from({ length: underlines }, (_, index) => ({ level: index + 1, edge: "single" as const }));
     const octave = note.o ?? 0;
     const hasAccidental = note.a != null;
@@ -545,7 +588,7 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
         <span className="melody-digit-highlight" />
         {hasAccidental ? <sup className="melody-accidental">{note.a === 0 ? "♮" : note.a! > 0 ? "♯" : "♭"}</sup> : null}
         {note.d === 9 ? "×" : note.d || "0"}
-        {dotted && <i className="melody-dot">·</i>}
+        {dotted && Array.from({ length: dots }, (_, index) => <i key={`dot-${index}`} className="melody-dot">·</i>)}
         {Array.from({ length: Math.abs(octave) }, (_, index) => <i key={`octave-${index}`} className="melody-octave-dot" style={{ top: `${octave > 0 ? -0.18 - index * 0.2 : lowDotTop(note) - 0.4 + index * 0.2}em` }} />)}
       </span>
       {fragments.map((run, index) => <i key={`beam-${run.level}-${index}`} className={`melody-beam-segment is-${run.edge}`} style={{ top: `${UNDERLINE_TOP + (run.level - 1) * UNDERLINE_GAP}em` }} />)}
@@ -628,8 +671,8 @@ export function MelodyPlayer({ melody, large, onSoundingNotes }: { melody: Melod
       </>}
     </div>}
     {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} beatRef={beatRef} /> :
-    <div ref={scoreRef} className="melody-score" style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`简谱旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
-      {melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
+    <div ref={scoreRef} className={`melody-score${notationStyle === "staff" ? " is-staff" : ""}`} style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`${notationStyle === "staff" ? "五线谱" : "简谱"}旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
+      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} barsPerRow={barsPerRow} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
         {lines.map((line, voice) => {
           const notes = line.bars[barIndex] ?? [];
           const runsByLevel = beamRuns[voice]?.[barIndex] ?? new Map<number, Map<number, BeamRun>>();

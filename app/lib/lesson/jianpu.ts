@@ -3,7 +3,7 @@
 // dot above; beats count quarter notes. `tie` holds the previous note (same pitch);
 // `slur` is a new pitch sung on the previous syllable (a melisma), so it sounds but takes no lyric;
 // `a` is an accidental (1 = ♯, -1 = ♭, 0 = explicit ♮).
-export type MelodyNote = { d: number; /** octave dots above/below; supports three-dot textbook bass notes */ o?: number; b: number; lyric?: string; tie?: boolean; slur?: boolean; a?: -1 | 0 | 1; tri?: boolean; tuplet?: number };
+export type MelodyNote = { d: number; /** octave dots above/below; supports three-dot textbook bass notes */ o?: number; b: number; lyric?: string; tie?: boolean; slur?: boolean; a?: -1 | 0 | 1; tri?: boolean; tuplet?: number; dots?: 1 | 2 };
 export type Melody = {
   /** Heading when a work has several excerpts (主题一, 引子…). */
   title?: string;
@@ -42,13 +42,14 @@ export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
     for (const token of bar.split(/\s+/)) {
       if (token === "-") { notes[notes.length - 1].b += 1; continue; }
       // Dot and slashes may come in either order ("5./" or "5/.").
-      const m = token.match(/^(~?)([#b♯♭♮]?)([0-79])('{0,3}|,{0,3})(\.?)(\/{0,4})(\.?)(t(?:[3-9])?)?$/);
+      const m = token.match(/^(~?)([#b♯♭♮]?)([0-79])('{0,3}|,{0,3})(\.{0,2})(\/{0,4})(\.{0,2})(t(?:[3-9])?)?$/);
       if (!m) throw new Error(`jianpu: cannot read "${token}"`);
       const [, tie, acc, digit, octave, dotBefore, slashes, dotAfter, tupletMark] = m;
-      const dot = dotBefore || dotAfter;
+      const dots = Math.min(2, dotBefore.length + dotAfter.length);
       const tuplet = tupletMark ? Number(tupletMark.slice(1)) || 3 : undefined;
-      const b = 2 ** -slashes.length * (dot ? 1.5 : 1) * (tuplet ? (tuplet - 1) / tuplet : 1);
+      const b = 2 ** -slashes.length * (dots === 2 ? 1.75 : dots === 1 ? 1.5 : 1) * (tuplet ? (tuplet - 1) / tuplet : 1);
       const note: MelodyNote = { d: Number(digit), b, o: octave.startsWith("'") ? octave.length : -octave.length };
+      if (dots) note.dots = dots as 1 | 2;
       if (tuplet) { note.tuplet = tuplet; if (tuplet === 3) note.tri = true; }
       if (acc) note.a = acc === "#" || acc === "♯" ? 1 : acc === "b" || acc === "♭" ? -1 : 0;
       // "~" on the same pitch holds the note; on a new pitch it is a slur that still sounds.
@@ -123,11 +124,14 @@ function checkBars(melody: Melody, bars: MelodyNote[][]) {
 /** How a note is drawn in jianpu: underline count, augmentation dot, extension dashes. */
 export function notation(note: MelodyNote) {
   const base = note.tuplet ? note.b * note.tuplet / (note.tuplet - 1) : note.tri ? note.b * 1.5 : note.b;
-  const dotted = [0.375, 0.75, 1.5, 3].some((value) => Math.abs(base - value) < 1e-6);
-  const plain = dotted ? base / 1.5 : base;
+  const dotMultiplier = note.dots === 2 ? 1.75 : note.dots === 1 ? 1.5 : 1;
+  const inferredDots = note.dots ?? ([0.375, 0.75, 1.5, 3].some((value) => Math.abs(base - value) < 1e-6) ? 1 : 0);
+  const dotted = inferredDots > 0;
+  const plain = base / (inferredDots === 2 ? 1.75 : inferredDots === 1 ? 1.5 : dotMultiplier);
   return {
     lines: plain < 1 ? Math.round(Math.log2(1 / plain)) : 0,
     dotted: dotted && plain < 2,
+    dots: inferredDots,
     dashes: plain >= 2 ? Math.round(base) - 1 : dotted && base >= 3 ? 2 : 0,
   };
 }

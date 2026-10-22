@@ -73,12 +73,12 @@ const DESIGN_NOTES: Record<string, string> = {
 };
 
 export function ReflectivePresent({
-  workId, workName, workType, mode, grade, bookName, unitName, scorePage, creators, facts, melody, scores, tasks, questions, artUrl, assetUrl, onClose,
+  workId, workName, workType, mode, grade, bookName, unitName, scorePage, creators, facts, melody, scores, tasks, questions, artUrl, assetUrl, notationStyle = "jianpu", onClose,
 }: {
   workId: string; workName: string; workType: string; mode?: string; grade?: number; bookName?: string; unitName: string;
   scorePage: number | null; creators: Array<{ id: string; label: string; value: string }>; facts: LessonFact[];
   melody?: Melody[]; scores: ScoreAsset[]; tasks: Array<{ text: string; focus: string[] }>; questions: Question[];
-  artUrl?: string; assetUrl: (path: string) => string; onClose: () => void;
+  artUrl?: string; assetUrl: (path: string) => string; notationStyle?: "jianpu" | "staff"; onClose: () => void;
 }) {
   // 只在点开上课模式后渲染（浏览器端），可以直接读本机保存的备课设置。
   const [saved, setSaved] = useState<Saved>(() => readSaved(workId));
@@ -156,14 +156,14 @@ export function ReflectivePresent({
       <div className="reflect-scene-copy">
         <h2>听一听</h2>
         {text("r-scene", regular.scene, "p")}
-        {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
+        {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large notationStyle={notationStyle} /></div>}
       </div>
     </div> },
     { key: "r-first", stage: "conflict", step: "初听感受", title: "初听感受", steps: 1, render: () => <div className="reflect-wide">
       <h2>初听感受</h2>
       <ul className="reflect-starters">{regular.firstListen.questions.map((question, index) => <li key={index}>{text(`r-first-${index}`, question)}</li>)}</ul>
       {perceiveTable(regular.firstListen.rows)}
-      {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
+      {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large notationStyle={notationStyle} /></div>}
     </div> },
     { key: "r-elements", stage: "conflict", step: "复听分析", title: "复听分析", steps: regular.secondListen.length, art: scores.length || elements.length ? undefined : "stage-conflict", render: (step) => {
       const prompts = <ol className="reflect-questions">{regular.secondListen.map((question, index) => <li key={index} className={index <= step ? "is-shown" : ""}>{text(`r-second-${index}`, question)}</li>)}</ol>;
@@ -185,7 +185,7 @@ export function ReflectivePresent({
       <h2>难点突破</h2>
       {text("r-practice", regular.practiceTip, "p")}
       {melody?.length
-        ? <MelodySet melodies={melody} large />
+        ? <MelodySet melodies={melody} large notationStyle={notationStyle} />
         : <Picture className="reflect-score-only" src={assetUrl(scores[0].url)} alt={scores[0].title ?? "教材谱例"} />}
     </div> }] : []),
     { key: "r-perform", stage: "construct", step: "表现巩固", title: regular.perform.title, steps: 1, art: "group-roles", render: () => <div className="reflect-wide">
@@ -237,7 +237,7 @@ export function ReflectivePresent({
         <h2>听一听，想一想</h2>
         {text("scene", script.scene, "p")}
         {culture.length > 0 && <dl className="reflect-facts">{culture.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
-        {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
+        {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large notationStyle={notationStyle} /></div>}
       </div>
     </div> },
     { key: "wonder", stage: "motivate", step: "预习反馈", title: "带着问题来学习", steps: 1, art: "wonder-wall", render: () => <div className="reflect-wonder">
@@ -252,7 +252,7 @@ export function ReflectivePresent({
         <th>{row.label}</th>
         <td>{row.options.map((option) => <button key={option} type="button" aria-pressed={(picks[row.label] ?? []).includes(option)} onClick={() => togglePick(row.label, option)}>{option}</button>)}</td>
       </tr>)}</tbody></table>
-      {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
+      {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large notationStyle={notationStyle} /></div>}
     </div> },
     ...(scores.length || elements.length ? [{ key: "elements", stage: "conflict" as StageKey, step: "核心感知", title: "看谱 · 找要素", steps: Math.max(1, scores.length), render: (step: number) => <div className="reflect-two is-score">
       {scores.length > 0 && <figure className="reflect-score">
@@ -285,7 +285,7 @@ export function ReflectivePresent({
       <h2>难点突破</h2>
       {text("practice", script.practiceTip, "p")}
       {melody?.length
-        ? <MelodySet melodies={melody} large />
+        ? <MelodySet melodies={melody} large notationStyle={notationStyle} />
         : <Picture className="reflect-score-only" src={assetUrl(scores[0].url)} alt={scores[0].title ?? "教材谱例"} />}
     </div> }] : []),
     { key: "chain", stage: "construct", step: "共同反思问题链", title: "共同反思", steps: script.chain.length, art: "stage-construct", render: (step) => <div className="reflect-wide">
