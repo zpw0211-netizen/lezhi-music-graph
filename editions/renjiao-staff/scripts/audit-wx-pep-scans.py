@@ -136,23 +136,32 @@ def main():
 
             manual = MANUAL_OVERRIDES.get(key, {}).get(work["title"])
             manual_note = None
+            visual_evidence = None
+            crop_excluded = False
             if manual:
                 manual_pages = manual["staffPages"]
-                if not manual_pages or any(page not in matches for page in manual_pages):
+                visual_evidence = manual.get("visualEvidence")
+                if not manual_pages or any(not 1 <= page <= usable_printed_pages for page in manual_pages):
+                    raise RuntimeError(f"Manual page override outside printed book: {key} {work['title']}")
+                if not visual_evidence and any(page not in matches for page in manual_pages):
                     raise RuntimeError(f"Manual page override is not present in extracted PDF text: {key} {work['title']} {manual_pages} / {matches}")
                 staff_pages = manual_pages
                 page_status = "manual"
                 manual_note = manual["note"]
-                manual_crop_pages = manual.get("scoreCropPages", [])
-                if manual_crop_pages:
-                    if not valid_crops:
+                if "scoreCropPages" in manual or "scoreCrops" in manual:
+                    manual_crops = manual.get("scoreCrops", [[page, *FULL_PAGE_CROP] for page in manual.get("scoreCropPages", [])])
+                    if manual_crops and not valid_crops and not visual_evidence:
                         raise RuntimeError(f"Manual crop override has no baseline crop geometry: {key} {work['title']}")
-                    manual_crops = [[page, *FULL_PAGE_CROP] for page in manual_crop_pages]
                     for crop in manual_crops:
-                        if not 1 <= crop[0] <= usable_printed_pages or not contains_title(raw_texts[crop[0] + offset - 1], work["title"], allow_pinyin_fallback):
+                        if not crop_fields(crop) or not 1 <= crop[0] <= usable_printed_pages:
+                            raise RuntimeError(f"Malformed/out-of-range manual crop: {key} {work['title']} {crop}")
+                        if not visual_evidence and not contains_title(raw_texts[crop[0] + offset - 1], work["title"], allow_pinyin_fallback):
                             raise RuntimeError(f"Manual crop page does not contain the work title: {key} {work['title']} {crop[0]}")
                     verified_crops = manual_crops
                     relocated_crops = []
+                    crop_excluded = bool(manual.get("excludeScore"))
+                    if crop_excluded and manual_crops:
+                        raise RuntimeError(f"Excluded work still has crops: {key} {work['title']}")
 
             works.append({
                 "title": work["title"],
@@ -164,8 +173,9 @@ def main():
                 "matchMethods": {str(page): methods[page] for page in matches},
                 "scoreCropCandidates": valid_crops,
                 "verifiedScoreCrops": verified_crops or relocated_crops,
-                "cropStatus": "verified" if (verified_crops or relocated_crops) else ("not-mapped" if not work["scoreCrops"] else "unverified"),
+                "cropStatus": "excluded" if crop_excluded else ("verified" if (verified_crops or relocated_crops) else ("not-mapped" if not work["scoreCrops"] else "unverified")),
                 "manualNote": manual_note,
+                "visualEvidence": visual_evidence,
             })
 
         output["books"].append({
@@ -174,11 +184,11 @@ def main():
             "sourcePdf": pdf_path.name,
             "pdfPath": str(pdf_path),
             "pdfPageCount": len(document),
-            "sourceRegistryPageCount": book["pages"],
+            "sourceRegistryPageCount": indexed["printedPages"],
             "printedPageCount": scanned_printed_pages,
             "usablePrintedPageCount": usable_printed_pages,
             "pdfOffset": offset,
-            "sourceRegistryPdfOffset": book["pdfOffset"],
+            "sourceRegistryPdfOffset": indexed["pdfOffset"],
             "numberedPageCount": len(footer_labels),
             "footerOffsetMismatches": offset_mismatches,
             "coverChecks": cover_checks,

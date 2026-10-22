@@ -7,7 +7,7 @@
       "sourcePdf": "义务教育教科书·音乐（五线谱）一年级上册.pdf",
       "pdfPath": "D:\\人教版新教材1-9年级（五线谱）\\义务教育教科书·音乐（五线谱）一年级上册.pdf",
       "pdfPageCount": 99,
-      "sourceRegistryPageCount": 86,
+      "sourceRegistryPageCount": 84,
       "printedPageCount": 86,
       "usablePrintedPageCount": 86,
       "pdfOffset": 9,
@@ -37,9 +37,9 @@
             85
           ],
           "staffPages": [
-            1
+            30
           ],
-          "pageStatus": "matched",
+          "pageStatus": "manual",
           "matchMethods": {
             "1": "strict",
             "30": "strict",
@@ -54,9 +54,18 @@
               0.75
             ]
           ],
-          "verifiedScoreCrops": [],
-          "cropStatus": "unverified",
-          "manualNote": null
+          "verifiedScoreCrops": [
+            [
+              30,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ],
+          "cropStatus": "verified",
+          "manualNote": "视检第30页为署名歌曲五线谱；第1页只作聆听提示，第28页为别的学习内容。",
+          "visualEvidence": "一年级上册印刷第30页，曲名与五线谱旋律、歌词同时可见。"
         },
         {
           "title": "啊，多么快乐的一天",
@@ -79,7 +88,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "北京的金山上",
@@ -102,7 +112,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "敕勒歌",
@@ -125,7 +136,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春天的芭蕾",
@@ -148,7 +160,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "孤独的牧羊人",
@@ -171,7 +184,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "回声",
@@ -194,7 +208,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "卖荔枝",
@@ -217,7 +232,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "跳蚤之歌",
@@ -240,7 +256,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "野蜂飞舞",
@@ -263,7 +280,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "咏鹅",
@@ -286,7 +304,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "送别",
@@ -309,7 +328,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小毛驴",
@@ -332,7 +352,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小燕子",
@@ -355,7 +376,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "雪花",
@@ -378,7 +400,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "新年好",
@@ -417,7 +440,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "祖国祖国我们爱你",
@@ -434,9 +458,10 @@
             85
           ],
           "staffPages": [
-            22
+            22,
+            23
           ],
-          "pageStatus": "matched",
+          "pageStatus": "manual",
           "matchMethods": {
             "22": "strict",
             "85": "strict"
@@ -464,10 +489,18 @@
               0.035,
               0.96,
               0.94
+            ],
+            [
+              23,
+              0.04,
+              0.035,
+              0.96,
+              0.94
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": "视检第22页为歌曲起始，第23页“你画太阳，我画国旗”承接上页并在本页终止；续页不另印曲名。",
+          "visualEvidence": "一年级上册印刷第22–23页，连续歌词及终止线。"
         },
         {
           "title": "山谷回音真好听",
@@ -490,7 +523,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "洋娃娃和小熊跳舞",
@@ -529,7 +563,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "娃哈哈",
@@ -568,7 +603,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "悯农",
@@ -591,7 +627,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "楚商",
@@ -614,7 +651,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "老虎磨牙",
@@ -637,7 +675,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "龙腾虎跃",
@@ -660,7 +699,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小松树",
@@ -683,7 +723,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "丰收锣鼓",
@@ -706,7 +747,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "鼓手的战争",
@@ -729,7 +771,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "数鸭子",
@@ -768,7 +811,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "玩具兵进行曲",
@@ -807,7 +851,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "乃哟乃",
@@ -846,7 +891,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "阿西里西",
@@ -869,7 +915,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春江花月夜",
@@ -892,7 +939,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大浪淘沙",
@@ -915,7 +963,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "风雨铁马",
@@ -938,7 +987,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "胡同印象",
@@ -961,7 +1011,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "流水",
@@ -988,7 +1039,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": "第50页将《流水》（古曲）列为作品；第52页“高山流水”及第53页“若流水”是故事文字，不是该作品页。"
+          "manualNote": "第50页将《流水》（古曲）列为作品；第52页“高山流水”及第53页“若流水”是故事文字，不是该作品页。",
+          "visualEvidence": null
         },
         {
           "title": "渔舟唱晚",
@@ -1011,7 +1063,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "月琴赞",
@@ -1034,7 +1087,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "爱的罗曼斯",
@@ -1057,7 +1111,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "快乐的罗梭",
@@ -1096,7 +1151,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "江南",
@@ -1119,7 +1175,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中华人民共和国国歌",
@@ -1163,7 +1220,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": "第66页是歌曲谱面页，第85页是复习点唱页；裁图只取第66页。"
+          "manualNote": "第66页是歌曲谱面页，第85页是复习点唱页；裁图只取第66页。",
+          "visualEvidence": null
         },
         {
           "title": "共产儿童团歌",
@@ -1207,7 +1265,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": "第68页是歌曲谱面页，第85页是复习点唱页；裁图只取第68页。"
+          "manualNote": "第68页是歌曲谱面页，第85页是复习点唱页；裁图只取第68页。",
+          "visualEvidence": null
         },
         {
           "title": "红孩子",
@@ -1230,7 +1289,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "请你唱首歌吧",
@@ -1253,7 +1313,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "秦腔牌子曲",
@@ -1276,7 +1337,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "赞歌",
@@ -1299,7 +1361,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "梦幻曲",
@@ -1322,7 +1385,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小夜曲",
@@ -1361,7 +1425,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我和小提琴",
@@ -1400,7 +1465,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -1410,7 +1476,7 @@
       "sourcePdf": "义务教育教科书·音乐（五线谱）一年级下册.pdf",
       "pdfPath": "D:\\人教版新教材1-9年级（五线谱）\\义务教育教科书·音乐（五线谱）一年级下册.pdf",
       "pdfPageCount": 87,
-      "sourceRegistryPageCount": 75,
+      "sourceRegistryPageCount": 73,
       "printedPageCount": 75,
       "usablePrintedPageCount": 75,
       "pdfOffset": 7,
@@ -1443,7 +1509,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "爱的奉献",
@@ -1482,7 +1549,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "摇篮曲",
@@ -1527,7 +1595,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "赠汪伦",
@@ -1550,7 +1619,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "找朋友",
@@ -1589,7 +1659,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "柳树姑娘",
@@ -1605,7 +1676,7 @@
           "staffPages": [
             23
           ],
-          "pageStatus": "moved",
+          "pageStatus": "manual",
           "matchMethods": {
             "23": "strict"
           },
@@ -1618,17 +1689,10 @@
               0.94
             ]
           ],
-          "verifiedScoreCrops": [
-            [
-              23,
-              0.04,
-              0.035,
-              0.96,
-              0.94
-            ]
-          ],
-          "cropStatus": "verified",
-          "manualNote": null
+          "verifiedScoreCrops": [],
+          "cropStatus": "excluded",
+          "manualNote": "第23页只在聆听提示中列《柳树姑娘》；“哈哈”呼吸练声没有标为这首歌，排除误配。",
+          "visualEvidence": "一年级下册印刷第23页全页视检。"
         },
         {
           "title": "山谷回音真好听",
@@ -1651,7 +1715,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "绿色的祖国",
@@ -1690,7 +1755,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小松树",
@@ -1729,7 +1795,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春江花月夜",
@@ -1752,7 +1819,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春天来了",
@@ -1775,7 +1843,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "四季——春",
@@ -1798,7 +1867,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "致春天",
@@ -1821,7 +1891,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "马兰花开",
@@ -1844,7 +1915,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "森林与小鸟",
@@ -1873,7 +1945,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": "第24页为作品介绍与主题旋律活动；第31、32、75页为活动或复习中的提及。"
+          "manualNote": "第24页为作品介绍与主题旋律活动；第31、32、75页为活动或复习中的提及。",
+          "visualEvidence": null
         },
         {
           "title": "蓝色多瑙河圆舞曲",
@@ -1914,7 +1987,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": "第33页呈现主题与节拍/速度信息，是乐曲呈现页；第32页是舞会曲目单。"
+          "manualNote": "第33页呈现主题与节拍/速度信息，是乐曲呈现页；第32页是舞会曲目单。",
+          "visualEvidence": null
         },
         {
           "title": "溜冰圆舞曲",
@@ -1955,7 +2029,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": "第33页呈现乐曲主题与速度信息；第72页仅在音乐测评中提及。"
+          "manualNote": "第33页呈现乐曲主题与速度信息；第72页仅在音乐测评中提及。",
+          "visualEvidence": null
         },
         {
           "title": "儿童圆舞曲",
@@ -1980,7 +2055,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": "第34页为歌曲与演唱活动页；第9页是前置的圆舞曲聆听活动。"
+          "manualNote": "第34页为歌曲与演唱活动页；第9页是前置的圆舞曲聆听活动。",
+          "visualEvidence": null
         },
         {
           "title": "请你唱首歌吧",
@@ -2019,7 +2095,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "池上",
@@ -2042,7 +2119,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "劳动最光荣",
@@ -2085,7 +2163,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": "第40页是歌曲作品页；第39、44页是活动和舞蹈环节的提及。"
+          "manualNote": "第40页是歌曲作品页；第39、44页是活动和舞蹈环节的提及。",
+          "visualEvidence": null
         },
         {
           "title": "纺车",
@@ -2108,7 +2187,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "铁匠波尔卡",
@@ -2131,7 +2211,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "勤快人和懒惰人",
@@ -2170,7 +2251,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "打麦号子",
@@ -2209,7 +2291,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "劳动节",
@@ -2232,7 +2315,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧童谣",
@@ -2271,7 +2355,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "请来看看我们的村庄",
@@ -2294,7 +2379,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "茶禅一味",
@@ -2317,7 +2403,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "平湖秋月",
@@ -2340,7 +2427,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小夜曲",
@@ -2363,7 +2451,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "银竹",
@@ -2386,7 +2475,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "月光",
@@ -2409,7 +2499,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "喜洋洋",
@@ -2432,7 +2523,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "老爷爷赶鹅",
@@ -2471,7 +2563,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "观灯",
@@ -2510,7 +2603,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "在钟表店里",
@@ -2549,7 +2643,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "相思",
@@ -2572,7 +2667,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小邋遢",
@@ -2611,7 +2707,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大风车",
@@ -2650,7 +2747,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中华人民共和国国歌",
@@ -2673,7 +2771,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -2716,7 +2815,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "北京颂歌",
@@ -2741,7 +2841,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "报灯名",
@@ -2764,7 +2865,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "龙里格龙",
@@ -2803,7 +2905,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "冰糖葫芦",
@@ -2826,7 +2929,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "武松打虎",
@@ -2858,7 +2962,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "刘巧儿",
@@ -2881,7 +2986,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "北风吹",
@@ -2904,7 +3010,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小放牛",
@@ -2943,7 +3050,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大逛灯",
@@ -2982,7 +3090,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小放驴",
@@ -3023,7 +3132,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "静夜思",
@@ -3046,7 +3156,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小小的船",
@@ -3085,7 +3196,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "啊!摇篮",
@@ -3108,7 +3220,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "爷爷为我打月饼",
@@ -3152,7 +3265,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "汉宫秋月",
@@ -3175,7 +3289,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "花好月圆",
@@ -3198,7 +3313,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "平湖秋月",
@@ -3221,7 +3337,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "夜曲",
@@ -3244,7 +3361,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "月光",
@@ -3267,7 +3385,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "彩云追月",
@@ -3308,7 +3427,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "有本县一阵阵笑开怀",
@@ -3331,7 +3451,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "谁说女子不如男",
@@ -3372,7 +3493,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "王大娘钉缸",
@@ -3397,7 +3519,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "编花篮",
@@ -3438,7 +3561,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "十枝花",
@@ -3477,7 +3601,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "谁不说俺家乡好",
@@ -3502,7 +3627,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "花蛤蟆",
@@ -3541,7 +3667,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "梁山伯下山",
@@ -3564,7 +3691,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "夏日泛舟海上",
@@ -3587,7 +3715,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "乘着歌声的翅膀",
@@ -3626,7 +3755,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "愉快的梦",
@@ -3670,7 +3800,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春游",
@@ -3709,7 +3840,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "船歌",
@@ -3748,7 +3880,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "江雪",
@@ -3771,7 +3904,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "嘀哩嘀哩",
@@ -3815,7 +3949,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春天的芭蕾",
@@ -3838,7 +3973,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "姑苏行",
@@ -3861,7 +3997,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "冬天的故事",
@@ -3884,7 +4021,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "秋夜",
@@ -3907,7 +4045,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "思乡曲",
@@ -3930,7 +4069,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "四季——雪橇",
@@ -3953,7 +4093,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "西风的话",
@@ -3976,7 +4117,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "梅花",
@@ -4015,7 +4157,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "新年",
@@ -4038,7 +4181,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "蜗牛的歌",
@@ -4063,7 +4207,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "蜗牛与黄鹂鸟",
@@ -4092,7 +4237,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "水牛儿",
@@ -4133,7 +4279,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -4143,7 +4290,7 @@
       "sourcePdf": "义务教育教科书音乐（五线谱）二年级下册.pdf",
       "pdfPath": "D:\\人教版新教材1-9年级（五线谱）\\义务教育教科书音乐（五线谱）二年级下册.pdf",
       "pdfPageCount": 87,
-      "sourceRegistryPageCount": 78,
+      "sourceRegistryPageCount": 77,
       "printedPageCount": 78,
       "usablePrintedPageCount": 78,
       "pdfOffset": 7,
@@ -4169,7 +4316,7 @@
           "staffPages": [
             1
           ],
-          "pageStatus": "matched",
+          "pageStatus": "manual",
           "matchMethods": {
             "1": "strict"
           },
@@ -4182,17 +4329,10 @@
               0.94
             ]
           ],
-          "verifiedScoreCrops": [
-            [
-              1,
-              0.04,
-              0.035,
-              0.96,
-              0.94
-            ]
-          ],
-          "cropStatus": "verified",
-          "manualNote": null
+          "verifiedScoreCrops": [],
+          "cropStatus": "excluded",
+          "manualNote": "第1页为聆听提示，后附无标题4/4音程练习；不是《美丽的黄昏》谱，排除误配。",
+          "visualEvidence": "二年级下册印刷第1页全页视检。"
         },
         {
           "title": "欢乐颂",
@@ -4215,7 +4355,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "回声",
@@ -4238,7 +4379,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "生生不息",
@@ -4261,7 +4403,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "眺望你的路途",
@@ -4284,7 +4427,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "保卫黄河",
@@ -4325,7 +4469,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "黄河大合唱",
@@ -4348,7 +4493,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春游",
@@ -4371,7 +4517,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "送别",
@@ -4417,7 +4564,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "勇敢的鄂伦春",
@@ -4461,7 +4609,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "北方民族生活素描",
@@ -4484,7 +4633,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "乌苏里船歌",
@@ -4507,7 +4657,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "美丽的家乡",
@@ -4546,7 +4697,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "月亮，月亮",
@@ -4592,7 +4744,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "望庐山瀑布",
@@ -4615,7 +4768,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "伏尔塔瓦河",
@@ -4642,7 +4796,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "舍赫拉查德",
@@ -4665,7 +4820,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "水草舞",
@@ -4690,7 +4846,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "水之嬉戏",
@@ -4713,7 +4870,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "水族馆",
@@ -4738,7 +4896,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "泉水叮咚响",
@@ -4777,7 +4936,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小水滴",
@@ -4800,7 +4960,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "找朋友",
@@ -4823,7 +4984,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "伏尔塔瓦河（片段）",
@@ -4862,7 +5024,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "阿里郎",
@@ -4885,7 +5048,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "新东北风",
@@ -4924,7 +5088,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "桔梗谣",
@@ -4963,7 +5128,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "四物乐",
@@ -5004,7 +5170,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小拜年",
@@ -5027,7 +5194,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "正对花",
@@ -5068,7 +5236,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "对花",
@@ -5114,7 +5283,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春江花月夜",
@@ -5153,7 +5323,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "杨靖宇大摆口袋阵（前奏）",
@@ -5194,7 +5365,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "复仇的火焰在我心中燃烧",
@@ -5217,7 +5389,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "精灵之舞",
@@ -5240,7 +5413,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "十面埋伏—九里山大战",
@@ -5263,7 +5437,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "夜莺",
@@ -5286,7 +5461,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "战台风",
@@ -5309,7 +5485,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "粉刷匠",
@@ -5348,7 +5525,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "吃到葡萄的狐狸",
@@ -5387,7 +5565,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "毛毛虫进行曲",
@@ -5426,7 +5605,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我和你",
@@ -5469,7 +5649,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "雪花",
@@ -5514,7 +5695,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中华人民共和国国歌",
@@ -5537,7 +5719,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "歌唱祖国",
@@ -5576,7 +5759,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "马背上的摇篮",
@@ -5599,7 +5783,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "南泥湾",
@@ -5626,7 +5811,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "爷爷为我打月饼",
@@ -5655,7 +5841,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中国少年先锋队队歌",
@@ -5698,7 +5885,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -5757,7 +5945,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "每当我走过老师窗前",
@@ -5796,7 +5985,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "甜甜的秘密",
@@ -5835,7 +6025,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "钢琴变奏曲",
@@ -5858,7 +6049,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小夜曲",
@@ -5885,7 +6077,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "音乐瞬间",
@@ -5910,7 +6103,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "G 大调弦乐小夜曲",
@@ -5933,7 +6127,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "乘着歌声的翅膀",
@@ -5972,7 +6167,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "献给爱丽丝（片段）",
@@ -6011,7 +6207,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "看秧歌",
@@ -6034,7 +6231,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "人说山西好风光",
@@ -6059,7 +6257,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "绣荷包",
@@ -6084,7 +6283,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "杨柳青",
@@ -6107,7 +6307,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "交城山",
@@ -6151,7 +6352,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "米黄仁",
@@ -6174,7 +6376,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "桃花红 杏花白",
@@ -6215,7 +6418,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "滚核桃",
@@ -6259,7 +6463,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "阳关三叠",
@@ -6298,7 +6503,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "到敌人后方去",
@@ -6321,7 +6527,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "地道战",
@@ -6344,7 +6551,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "东北抗日联军第一路军军歌",
@@ -6367,7 +6575,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "抗敌歌",
@@ -6390,7 +6599,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "松花江上",
@@ -6413,7 +6623,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "团结就是力量",
@@ -6436,7 +6647,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "游击队歌",
@@ -6459,7 +6671,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "在太行山上",
@@ -6482,7 +6695,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "长城谣",
@@ -6505,7 +6719,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "军民大生产",
@@ -6549,7 +6764,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "延安的故事",
@@ -6590,7 +6806,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "江南",
@@ -6613,7 +6830,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "花儿与少年",
@@ -6657,7 +6875,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "尕马儿令",
@@ -6680,7 +6899,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "可可西里",
@@ -6723,7 +6943,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大漠行",
@@ -6746,7 +6967,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "沙石疆",
@@ -6769,7 +6991,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "天曲",
@@ -6792,7 +7015,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "飞天",
@@ -6815,7 +7039,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "东郭先生",
@@ -6854,7 +7079,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "藏起老狼",
@@ -6877,7 +7103,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "放出老狼",
@@ -6900,7 +7127,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "狼起杀心",
@@ -6923,7 +7151,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "仓皇逃命",
@@ -6948,7 +7177,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "农夫评理",
@@ -6971,7 +7201,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "老狼钻进口袋里",
@@ -6994,7 +7225,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "禽兽、兄弟要分清",
@@ -7017,7 +7249,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -7064,7 +7297,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "美丽的草原我的家",
@@ -7105,7 +7339,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春天来了",
@@ -7144,7 +7379,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "黑缎子坎肩",
@@ -7167,7 +7403,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "赞歌",
@@ -7190,7 +7427,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧歌",
@@ -7229,7 +7467,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "万马奔腾",
@@ -7270,7 +7509,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "酒歌",
@@ -7309,7 +7549,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "赤诚花",
@@ -7348,7 +7589,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "四季歌",
@@ -7387,7 +7629,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "阿里郎",
@@ -7410,7 +7653,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "鸟打令",
@@ -7433,7 +7677,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "散调",
@@ -7456,7 +7701,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "北国之春",
@@ -7479,7 +7725,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春之海",
@@ -7502,7 +7749,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "拉网小调",
@@ -7525,7 +7773,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "卖花姑娘",
@@ -7566,7 +7815,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "樱花",
@@ -7607,7 +7857,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧羊人的歌",
@@ -7648,7 +7899,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "塔吉克的节日",
@@ -7671,7 +7923,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我的热瓦普",
@@ -7694,7 +7947,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "新疆之春",
@@ -7717,7 +7971,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "美丽的夏牧场",
@@ -7761,7 +8016,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "幸福花儿开心上",
@@ -7800,7 +8056,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "送你一束沙枣花",
@@ -7823,7 +8080,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "北京的金山上",
@@ -7869,7 +8127,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "次仁拉索",
@@ -7912,7 +8171,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我的家在日喀则",
@@ -7951,7 +8211,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "天路",
@@ -7974,7 +8235,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "格桑拉",
@@ -8013,7 +8275,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "吉米，来吧",
@@ -8029,14 +8292,15 @@
           "staffPages": [
             43
           ],
-          "pageStatus": "matched",
+          "pageStatus": "manual",
           "matchMethods": {
             "43": "strict"
           },
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
-          "cropStatus": "not-mapped",
-          "manualNote": null
+          "cropStatus": "excluded",
+          "manualNote": "第43页在《吉米，来吧》聆听提示后要求唱音程、和弦；下方是该练习而非歌曲谱，排除误配。",
+          "visualEvidence": "三年级下册印刷第43页全页视检。"
         },
         {
           "title": "月亮叔叔住得远",
@@ -8075,7 +8339,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "一千零一夜",
@@ -8098,7 +8363,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -8157,7 +8423,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "对花",
@@ -8203,7 +8470,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "凤阳花鼓",
@@ -8246,7 +8514,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "引子与回旋随想曲",
@@ -8271,7 +8540,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "祖国祖国我们爱你",
@@ -8310,7 +8580,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "放牛班的春天",
@@ -8335,7 +8606,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "风筝",
@@ -8374,7 +8646,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "斗牛士之歌",
@@ -8413,7 +8686,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "欢乐歌",
@@ -8436,7 +8710,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "梁山伯与祝英台",
@@ -8459,7 +8734,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中国五声调式",
@@ -8482,7 +8758,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "西湖美",
@@ -8521,7 +8798,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "忆江南",
@@ -8560,7 +8838,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "东边升起月亮",
@@ -8583,7 +8862,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "码头工人歌",
@@ -8606,7 +8886,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "抗敌歌",
@@ -8629,7 +8910,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧童短笛",
@@ -8652,7 +8934,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "游击队歌",
@@ -8696,7 +8979,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "长恨歌",
@@ -8719,7 +9003,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "担鲜藕",
@@ -8742,7 +9027,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "卡普里岛",
@@ -8781,7 +9067,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "安达卢西亚小夜曲",
@@ -8804,7 +9091,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "桑塔·露琪亚",
@@ -8843,7 +9131,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "红",
@@ -8906,7 +9195,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "建国大业",
@@ -8929,7 +9219,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "过雪山草地",
@@ -8952,7 +9243,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "红梅赞",
@@ -8975,7 +9267,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "英雄赞歌",
@@ -9000,7 +9293,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "在太行山上",
@@ -9023,7 +9317,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "祖国不会忘记",
@@ -9046,7 +9341,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "学习雷锋好榜样",
@@ -9090,7 +9386,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "英雄儿女",
@@ -9113,7 +9410,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我有一个梦",
@@ -9152,7 +9450,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "鸽子",
@@ -9191,7 +9490,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "八月桂花遍地开",
@@ -9214,7 +9514,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "红星歌",
@@ -9241,7 +9542,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "红星照我去战斗",
@@ -9264,7 +9566,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "映山红",
@@ -9289,7 +9592,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "闪闪的红星",
@@ -9318,7 +9622,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -9328,7 +9633,7 @@
       "sourcePdf": "义务教育教科书·音乐（五线谱）五年级上册.pdf",
       "pdfPath": "D:\\人教版新教材1-9年级（五线谱）\\义务教育教科书·音乐（五线谱）五年级上册.pdf",
       "pdfPageCount": 67,
-      "sourceRegistryPageCount": 58,
+      "sourceRegistryPageCount": 56,
       "printedPageCount": 58,
       "usablePrintedPageCount": 58,
       "pdfOffset": 7,
@@ -9368,7 +9673,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "红楼梦",
@@ -9391,7 +9697,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "月光光",
@@ -9432,7 +9739,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "赛龙夺锦",
@@ -9471,7 +9779,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "落水天",
@@ -9510,7 +9819,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "巴加女孩",
@@ -9549,7 +9859,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "蓝色狂想曲",
@@ -9572,7 +9883,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "夏日时光",
@@ -9611,7 +9923,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "海上渔歌",
@@ -9634,7 +9947,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "紫玉钗",
@@ -9657,7 +9971,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "鱼歌",
@@ -9696,7 +10011,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "采茶灯",
@@ -9739,7 +10055,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "茗·心",
@@ -9762,7 +10079,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "东方之珠",
@@ -9801,7 +10119,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "澳门岁月",
@@ -9824,7 +10143,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "七子之歌——澳门",
@@ -9863,7 +10183,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "香蕉船",
@@ -9902,7 +10223,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "撑船调",
@@ -9929,7 +10251,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": "第44页为歌曲呈现页；第45、57页分别为聆听说明和复习目录中的提及。"
+          "manualNote": "第44页为歌曲呈现页；第45、57页分别为聆听说明和复习目录中的提及。",
+          "visualEvidence": null
         },
         {
           "title": "丢丢铜",
@@ -9968,7 +10291,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "童年",
@@ -10009,7 +10333,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": "第46页为歌曲及识谱活动页；第55页“童年时期”是音乐剧剧情文字。"
+          "manualNote": "第46页为歌曲及识谱活动页；第55页“童年时期”是音乐剧剧情文字。",
+          "visualEvidence": null
         },
         {
           "title": "月亮月光光",
@@ -10048,7 +10373,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "一只鸟仔",
@@ -10087,7 +10413,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春天的故事",
@@ -10110,7 +10437,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -10169,7 +10497,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "故乡的小路",
@@ -10208,7 +10537,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "柔板",
@@ -10231,7 +10561,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "四小天鹅舞曲",
@@ -10270,7 +10601,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大红枣儿甜又香",
@@ -10314,7 +10646,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "雪绒花",
@@ -10353,7 +10686,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "姹紫嫣红",
@@ -10392,7 +10726,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "都有一颗红亮的心",
@@ -10433,7 +10768,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "打瓜园",
@@ -10456,7 +10792,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -10522,7 +10859,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "祖国颂歌",
@@ -10545,7 +10883,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "步步高",
@@ -10568,7 +10907,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "浪漫曲",
@@ -10591,7 +10931,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "忆故人",
@@ -10614,7 +10955,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "b小调夜曲",
@@ -10637,7 +10979,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "丑末寅初",
@@ -10678,7 +11021,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "蝶恋花·答李淑一",
@@ -10717,7 +11061,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧歌",
@@ -10756,7 +11101,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "上去高山望平川",
@@ -10795,7 +11141,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "歌唱美丽的家乡",
@@ -10834,7 +11181,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "楚商",
@@ -10857,7 +11205,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "阳关三叠",
@@ -10898,7 +11247,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "赤潮曲",
@@ -10921,7 +11271,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大江东去",
@@ -10944,7 +11295,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "风·雅·颂",
@@ -10967,7 +11319,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "故乡的云",
@@ -10990,7 +11343,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "红旗颂",
@@ -11013,7 +11367,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "教我如何不想她",
@@ -11036,7 +11391,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "男儿第一志气高",
@@ -11059,7 +11415,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "让世界充满爱",
@@ -11082,7 +11439,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我的中国心",
@@ -11105,7 +11463,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "乡恋",
@@ -11128,7 +11487,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "阳光照耀着塔什库尔干",
@@ -11151,7 +11511,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "在希望的田野上",
@@ -11174,7 +11535,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "长城随想",
@@ -11197,7 +11559,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "祝酒歌",
@@ -11220,7 +11583,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "东方红",
@@ -11247,7 +11611,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "黄河大合唱",
@@ -11270,7 +11635,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我的祖国",
@@ -11293,7 +11659,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "游击队歌",
@@ -11316,7 +11683,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "老六板",
@@ -11339,7 +11707,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "领航",
@@ -11364,7 +11733,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "长征",
@@ -11391,7 +11761,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "征途",
@@ -11416,7 +11787,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春天的故事",
@@ -11439,7 +11811,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "和合之美",
@@ -11462,7 +11835,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "看山看水看中国",
@@ -11485,7 +11859,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "命运与共",
@@ -11508,7 +11883,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "南湖的船，党的摇篮",
@@ -11531,7 +11907,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "人民是天",
@@ -11554,7 +11931,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我们的中国梦",
@@ -11577,7 +11955,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "追寻",
@@ -11600,7 +11979,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "走进新时代",
@@ -11623,7 +12003,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "祖国不会忘记",
@@ -11646,7 +12027,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "塞基洛斯歌",
@@ -11669,7 +12051,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我看到云雀高飞",
@@ -11692,7 +12075,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中华人民共和国国歌",
@@ -11733,7 +12117,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "国际歌",
@@ -11774,7 +12159,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -11822,7 +12208,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "鹧鸪飞",
@@ -11847,7 +12234,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "游击队歌",
@@ -11888,7 +12276,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大浪淘沙",
@@ -11911,7 +12300,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "二泉映月",
@@ -11934,7 +12324,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "战争安魂曲",
@@ -11957,7 +12348,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧神午后前奏曲",
@@ -11980,7 +12372,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "富春山居图",
@@ -12003,7 +12396,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春郊试马",
@@ -12026,7 +12420,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "关山月",
@@ -12049,7 +12444,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "满江红",
@@ -12072,7 +12468,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "平沙落雁",
@@ -12095,7 +12492,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "赛马",
@@ -12118,7 +12516,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "潇湘水云",
@@ -12141,7 +12540,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "杏花天影",
@@ -12166,7 +12566,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "蓝色狂想曲",
@@ -12189,7 +12590,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大漠之夜",
@@ -12212,7 +12614,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "胡马嘶风曲",
@@ -12235,7 +12638,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧歌",
@@ -12276,7 +12680,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "听妈妈讲那过去的事情",
@@ -12299,7 +12704,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "前奏曲",
@@ -12330,7 +12736,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "音画练习曲",
@@ -12353,7 +12760,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "百鸟朝凤",
@@ -12392,7 +12800,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "复仇的火焰在我心中燃烧",
@@ -12415,7 +12824,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "林冲夜奔",
@@ -12438,7 +12848,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "跳蚤之歌",
@@ -12461,7 +12872,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "妆台秋思",
@@ -12484,7 +12896,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我亲爱的爸爸",
@@ -12507,7 +12920,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中国人民解放军军歌",
@@ -12548,7 +12962,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "保卫黄河",
@@ -12589,7 +13004,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -12650,7 +13066,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "松花江上",
@@ -12673,7 +13090,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "桑塔·露琪亚",
@@ -12712,7 +13130,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "小小的船",
@@ -12751,7 +13170,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "春江花月夜",
@@ -12790,7 +13210,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "国际歌",
@@ -12829,7 +13250,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "前奏曲",
@@ -12854,7 +13276,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "那就是我",
@@ -12893,7 +13316,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "西风的话",
@@ -12932,7 +13356,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "保卫黄河",
@@ -12971,7 +13396,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "牧童短笛",
@@ -13010,7 +13436,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "二部创意曲",
@@ -13033,7 +13460,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "跳蚤之歌",
@@ -13056,7 +13484,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "思乡曲",
@@ -13097,7 +13526,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "第一回旋曲",
@@ -13120,7 +13550,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "没有共产党就没有新中国",
@@ -13161,7 +13592,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我的祖国",
@@ -13202,7 +13634,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -13261,7 +13694,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "第一回旋曲",
@@ -13284,7 +13718,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "六月——船歌",
@@ -13307,7 +13742,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "长江之歌",
@@ -13330,7 +13766,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大海啊，故乡",
@@ -13371,7 +13808,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "大海在呼唤",
@@ -13394,7 +13832,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "保卫黄河",
@@ -13433,7 +13872,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "战争安魂曲",
@@ -13458,7 +13898,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "长恨歌",
@@ -13485,7 +13926,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "惊破霓裳羽衣曲",
@@ -13508,7 +13950,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "史记·高祖本纪",
@@ -13531,7 +13974,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "霸王卸甲",
@@ -13554,7 +13998,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "芬兰颂",
@@ -13577,7 +14022,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "第五（命运）交响曲",
@@ -13618,7 +14064,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "第一小提琴协奏曲",
@@ -13657,7 +14104,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "南泥湾",
@@ -13680,7 +14128,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "洪湖赤卫队",
@@ -13703,7 +14152,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "江姐",
@@ -13726,7 +14176,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "木兰诗篇",
@@ -13749,7 +14200,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "山海情",
@@ -13772,7 +14224,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "伤逝",
@@ -13795,7 +14248,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "沂蒙山",
@@ -13818,7 +14272,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "原野",
@@ -13841,7 +14296,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "运河谣",
@@ -13864,7 +14320,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "长征",
@@ -13887,7 +14344,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "天边有颗闪亮的星",
@@ -13926,7 +14384,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "变脸",
@@ -13949,7 +14408,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "空城计",
@@ -13972,7 +14432,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "中国共产主义青年团团歌",
@@ -14013,7 +14474,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "唱支山歌给党听",
@@ -14054,7 +14516,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     },
@@ -14085,8 +14548,10 @@
             5
           ],
           "matchedPages": [],
-          "staffPages": [],
-          "pageStatus": "missing",
+          "staffPages": [
+            5
+          ],
+          "pageStatus": "manual",
           "matchMethods": {},
           "scoreCropCandidates": [
             [
@@ -14097,9 +14562,18 @@
               0.94
             ]
           ],
-          "verifiedScoreCrops": [],
-          "cropStatus": "unverified",
-          "manualNote": null
+          "verifiedScoreCrops": [
+            [
+              5,
+              0.13,
+              0.52,
+              0.86,
+              0.735
+            ]
+          ],
+          "cropStatus": "verified",
+          "manualNote": "第5页制谱软件示例嵌图中可见《红旗颂》标题和两行五线谱；嵌图未进入PDF文本层，改由视检核定。只裁题名与谱面区域。",
+          "visualEvidence": "九年级上册印刷第5页制谱软件示例图。"
         },
         {
           "title": "回声",
@@ -14140,7 +14614,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "天路",
@@ -14163,7 +14638,8 @@
           "scoreCropCandidates": [],
           "verifiedScoreCrops": [],
           "cropStatus": "not-mapped",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "我爱你，中国",
@@ -14204,7 +14680,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         },
         {
           "title": "妈妈教我一支歌",
@@ -14245,7 +14722,8 @@
             ]
           ],
           "cropStatus": "verified",
-          "manualNote": null
+          "manualNote": null,
+          "visualEvidence": null
         }
       ]
     }

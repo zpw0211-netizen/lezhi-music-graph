@@ -1,4 +1,6 @@
-"""Render only PDF text-verified five-line score crops into a separate, non-runtime folder."""
+"""Render five-line PDF crops approved by title matching or explicit visual corrections."""
+import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -40,21 +42,31 @@ def read_manifest(path):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--books", nargs="+", help="Regenerate only these pep-* book keys; retain other audited assets")
+    selected = set(parser.parse_args().books or [])
     maps = sorted((EDITION / "scripts").glob("wx-pep-*.mjs"))
     if len(maps) != 14:
         raise RuntimeError(f"Expected 14 wx-pep maps, found {len(maps)}")
     total_images = total_bytes = total_crops = skipped = 0
-    output_root = (EDITION / "public" / "media" / "staff-score-crops").resolve()
+    output_root = (EDITION / "public" / "media" / "scores").resolve()
     expected_files = set()
-    asset_manifest = []
+    existing_path = EDITION / "data" / "wx-pep-crop-assets.json"
+    asset_manifest = [a for a in json.loads(existing_path.read_text(encoding="utf-8")) if a["bookKey"] not in selected] if selected else []
+    expected_files.update((EDITION / a["file"]).resolve() for a in asset_manifest)
+    known_keys = {read_manifest(p)["bookKey"] for p in maps}
+    if selected - known_keys:
+        raise ValueError(f"Unknown book keys: {selected - known_keys}")
 
     for map_path in maps:
         manifest = read_manifest(map_path)
+        if selected and manifest["bookKey"] not in selected:
+            continue
         pdf_path = PDF_DIR / manifest["sourcePdf"]
         if not pdf_path.exists():
             raise FileNotFoundError(pdf_path)
         document = fitz.open(pdf_path)
-        output_dir = EDITION / "public" / "media" / "staff-score-crops" / manifest["bookKey"]
+        output_dir = EDITION / "public" / "media" / "scores" / manifest["bookKey"]
         book_images = book_bytes = book_crops = 0
 
         for work in manifest["works"]:
@@ -90,6 +102,7 @@ def main():
                     "printedPage": printed_page,
                     "file": output.relative_to(EDITION).as_posix(),
                     "bytes": size,
+                    "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
                 })
                 book_bytes += size
                 book_images += 1
@@ -109,6 +122,8 @@ def main():
             if resolved not in expected_files:
                 stale.unlink()
                 removed_stale += 1
+
+    asset_manifest.sort(key=lambda a: (a["bookKey"], a["printedPage"], a["file"]))
 
     manifest_path = EDITION / "data" / "wx-pep-crop-assets.json"
     manifest_path.write_text(json.dumps(asset_manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

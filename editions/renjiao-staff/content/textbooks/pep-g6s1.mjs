@@ -2,7 +2,7 @@ import { factsForItem } from "../../data/lesson-facts.mjs";
 import { knowledgeForUnit } from "../../data/unit-knowledge.mjs";
 import { pageEnrichmentFor } from "../../data/page-enrichment.mjs";
 
-// 人教版《艺术·唱游·音乐》/《音乐》六年级上册（简谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
+// 人教版《艺术·唱游·音乐》/《音乐》六年级上册（五线谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
 // 有旋律录入或谱面裁图的条目记为音乐作品；目录外、旋律文件按页码引用的作品附在所在单元。
 // 逐页作品事实集中维护于 editions/renjiao/data/lesson-facts.mjs；未核对的条目不推测。
@@ -14,7 +14,7 @@ const textbook = {
   book: [
     ["出版机构", "人民教育出版社", "机构", "明", { pdf: 3 }],
     ["编著", "课程教材研究所", "机构", "明", { pdf: 3 }],
-    ["记谱方式", "简谱", "音乐概念", "明", { pdf: 3 }],
+    ["记谱方式", "五线谱", "音乐概念", "明", { pdf: 3 }],
   ],
   parts: [],
 };

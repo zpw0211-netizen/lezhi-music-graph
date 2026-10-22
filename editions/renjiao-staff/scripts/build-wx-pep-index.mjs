@@ -4,13 +4,14 @@ import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const edition = path.join(root, "editions", "renjiao-staff");
-const books = JSON.parse(await readFile(path.join(edition, "data", "books.json"), "utf8"));
-const scorePages = JSON.parse(await readFile(path.join(edition, "data", "lesson-scores.json"), "utf8"));
+const baseline = path.join(root, "editions", "renjiao");
+const books = JSON.parse(await readFile(path.join(baseline, "data", "books.json"), "utf8"));
+const scorePages = JSON.parse(await readFile(path.join(baseline, "data", "lesson-scores.json"), "utf8"));
 const normalize = (value) => String(value).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:、（）()【】《》“”‘’]/g, "");
 const index = { sourceEdition: "renjiao", targetEdition: "renjiao-staff", books: [] };
 
 for (const book of books.books) {
-  const modulePath = path.join(edition, "content", "textbooks", `${book.key}.mjs`);
+  const modulePath = path.join(baseline, "content", "textbooks", `${book.key}.mjs`);
   const { default: textbook } = await import(pathToFileURL(modulePath).href);
   const groups = new Map();
   for (const part of textbook.parts ?? []) {
