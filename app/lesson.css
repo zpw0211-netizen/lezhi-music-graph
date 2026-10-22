@@ -396,3 +396,7 @@
 .staff-note.is-active { color:var(--amber, #D9892B); }
 .staff-lyric.is-active { fill:var(--amber, #D9892B); }
 .staff-measure.is-dim { opacity:.28; transition:opacity .18s ease; }
+.notation-switch { display:inline-flex; margin-left:auto; padding:2px; border:1px solid var(--line); border-radius:999px; font:500 13px/1 var(--font-ui, sans-serif); align-self:center; }
+.notation-switch > * { padding:6px 12px; border-radius:999px; color:var(--ink-3); text-decoration:none; transition:background .15s ease, color .15s ease; }
+.notation-switch > [aria-current] { background:var(--ink); color:var(--sheet, #fffdf7); }
+.notation-switch > a:hover { color:var(--ink); background:color-mix(in srgb, var(--ink), transparent 92%); }

@@ -202,6 +202,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
   const [barsPerRow, setBarsPerRow] = useState(4);
   const [noteFit, setNoteFit] = useState(1);
   const [staffRoom, setStaffRoom] = useState(640);
+  const [staffHeight, setStaffHeight] = useState(0);
   const fitRef = useRef(1);
   const [view, setView] = useState<"score" | "line">("score");
   const [followOpen, setFollowOpen] = useState(false);
@@ -246,7 +247,13 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       const notePx = (voice ? parseFloat(getComputedStyle(voice).fontSize) || 20 : 20) / fitRef.current;
       const style = getComputedStyle(score);
       const room = score.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      if (notationStyle === "staff") { setStaffRoom(room); return; }
+      if (notationStyle === "staff") {
+        setStaffRoom(room);
+        // 上课模式 caps the score box; the staff sizes itself to fit it instead of scrolling.
+        const cap = parseFloat(style.maxHeight);
+        setStaffHeight(Number.isFinite(cap) ? cap - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom) : 0);
+        return;
+      }
       const barPx = (n: number, scale: number) => n * (widestBar * notePx * scale + 26);
       const count = Math.min([8, 4, 2].find((n) => barPx(n, 0.8) <= room) ?? 1, melody.bars.length);
       const scale = barPx(count, 1) <= room ? 1 : Math.max(0.8, room / barPx(count, 1));
@@ -634,7 +641,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     </div>}
     {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} beatRef={beatRef} /> :
     <div ref={scoreRef} className={`melody-score${notationStyle === "staff" ? " is-staff" : ""}`} style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`${notationStyle === "staff" ? "五线谱" : "简谱"}旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
-      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
+      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} height={staffHeight} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
         {lines.map((line, voice) => {
           const notes = line.bars[barIndex] ?? [];
           const runsByLevel = beamRuns[voice]?.[barIndex] ?? new Map<number, Map<number, BeamRun>>();

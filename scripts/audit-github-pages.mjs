@@ -127,9 +127,10 @@ assert(
 );
 
 if (basePath && process.env.PAGES_ENTRY !== "0") {
-  // Entry page at the domain root: links to the 人音版 module, forwards old #/ links, has its own icons.
+  // Entry page at the domain root: links to the four modules (人音/人教 × 简谱/五线谱), forwards old #/ links, has its own icons.
   const portal = await readFile(path.join(artifactRoot, "index.html"), "utf8");
-  assert(portal.includes("人音版教科书") && portal.includes("人教版教科书"), "入口页缺少教材板块");
+  for (const module of ["人音版 · 简谱", "人音版 · 五线谱", "人教版 · 简谱", "人教版 · 五线谱"])
+    assert(portal.includes(module), `入口页缺少教材板块：${module}`);
   assert(portal.includes(`href="${basePath}/"`), `入口页没有链接到 ${basePath}/`);
   assert(portal.includes(`location.replace("${basePath}/"`), "入口页没有把旧链接转到人音版");
   for (const file of [".nojekyll", "404.html", "favicon.ico", "favicon.svg", "apple-touch-icon.png", "portal-kai.woff2"])

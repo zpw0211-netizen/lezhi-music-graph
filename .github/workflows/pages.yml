@@ -43,6 +43,7 @@ jobs:
           npm run quality:ai
           npm run quality:ai-candidate
           node scripts/check-melodies.mjs
+          node scripts/check-staff.mjs
       - name: Build static export
         run: npm run build
         env:
@@ -62,6 +63,26 @@ jobs:
       - name: Build 人教版 edition
         if: ${{ vars.PUBLISH_RENJIAO != 'false' }}
         run: node scripts/build-edition.mjs renjiao
+        env:
+          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
+          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
+      # The 五线谱 editions reuse each publisher's lessons and melodies and draw them on a staff;
+      # PUBLISH_STAFF set to "false" takes both off the site.
+      - name: Build 人音版五线谱 edition
+        if: ${{ vars.PUBLISH_STAFF != 'false' }}
+        run: node scripts/build-edition.mjs renyin-staff
+        env:
+          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
+          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
+      - name: Build 人教版五线谱 edition
+        if: ${{ vars.PUBLISH_STAFF != 'false' && vars.PUBLISH_RENJIAO != 'false' }}
+        run: node scripts/build-edition.mjs renjiao-staff
         env:
           NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}

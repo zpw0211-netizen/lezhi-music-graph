@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactElement } from "react";
+import { Fragment, type CSSProperties, type ReactElement } from "react";
 import { midiOf, type Melody, type MelodyNote } from "../../lib/lesson/melodies";
 
 // Engraved five-line staff for the 五线谱 editions, drawn from the same Melody data as jianpu.
@@ -574,18 +574,37 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, stretch, c
   </svg>;
 }
 
-export function StaffNotation({ melody, lines, current, offsets, width, activePhrase, large }: {
+const SYSTEM_GAP = 10;
+
+/** Systems at one size: bars per row from the width, each system laid out as an SVG. */
+function layoutAt(props: Omit<SystemProps, "plan" | "start" | "end" | "width" | "scale" | "stretch">, plan: StaffPlan, width: number, scale: number) {
+  const { melody, lines } = props;
+  const room = Math.max(160, width / scale);
+  const perRow = staffBarsPerRow(melody, plan, room, labelWidth(lines));
+  const systems: ReactElement[] = [];
+  let height = 0;
+  for (let start = 0; start < melody.bars.length; start += perRow) {
+    const end = Math.min(melody.bars.length, start + perRow);
+    const svg = StaffSystem({ ...props, plan, start, end, width: room, scale, stretch: end - start === perRow || perRow >= melody.bars.length });
+    height += Number(String(svg.props.viewBox).split(" ")[3]) * scale + (systems.length ? SYSTEM_GAP : 0);
+    systems.push(<Fragment key={start}>{svg}</Fragment>);
+  }
+  return { systems, height };
+}
+
+export function StaffNotation({ melody, lines, current, offsets, width, height, activePhrase, large }: {
   melody: Melody; lines: MelodyLineData[]; current: number[]; offsets: number[][]; width: number;
+  /** Height the score box allows (上课模式); the score shrinks until it fits without scrolling. */
+  height?: number;
   activePhrase: { startBar: number; endBar: number } | null; large?: boolean;
 }) {
   const plan = planStaff(melody, lines);
-  const scale = large ? 1.3 : width < 520 ? 0.85 : 1;
-  const room = Math.max(160, width / scale);
-  const perRow = staffBarsPerRow(melody, plan, room, labelWidth(lines));
-  const systems: Array<{ start: number; end: number }> = [];
-  for (let start = 0; start < melody.bars.length; start += perRow) systems.push({ start, end: Math.min(melody.bars.length, start + perRow) });
-  return <div className="staff-score">
-    {systems.map(({ start, end }) => <StaffSystem key={start} melody={melody} lines={lines} plan={plan} start={start} end={end} width={room} scale={scale}
-      stretch={end - start === perRow || systems.length === 1} current={current} offsets={offsets} activePhrase={activePhrase} />)}
-  </div>;
+  const props = { melody, lines, current, offsets, activePhrase };
+  let layout = layoutAt(props, plan, width, large ? 1.3 : width < 520 ? 0.85 : 1);
+  if (large && height && height > 0)
+    for (const scale of [1.2, 1.1, 1, 0.9, 0.8]) {
+      if (layout.height <= height) break;
+      layout = layoutAt(props, plan, width, scale);
+    }
+  return <div className="staff-score">{layout.systems}</div>;
 }

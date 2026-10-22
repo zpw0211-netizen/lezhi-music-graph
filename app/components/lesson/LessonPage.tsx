@@ -72,6 +72,16 @@ const hash = (value: string) => {
 
 type Question = { id: string; prompt: string; options: string[]; answer: string; page: number | null };
 
+/** 简谱 / 五线谱: opens this same lesson in the publisher's other notation edition, when that edition has the book. */
+function NotationSwitch({ bookKey }: { bookKey?: string }) {
+  const sibling = EDITION.notationSibling;
+  if (!sibling || !bookKey || !sibling.books.includes(bookKey)) return null;
+  const staff = EDITION.notation === "staff";
+  const other = <a href={`${sibling.basePath}/`} onClick={(event) => { event.preventDefault(); window.location.href = `${sibling.basePath}/${window.location.hash}`; }}>{staff ? "简谱" : "五线谱"}</a>;
+  const here = <span aria-current="true">{staff ? "五线谱" : "简谱"}</span>;
+  return <span className="notation-switch" role="group" aria-label="谱式">{staff ? <>{other}{here}</> : <>{here}{other}</>}</span>;
+}
+
 export function LessonPage({
   workId, bookKey: requestedBookKey, entities, relationships, assetUrl, onBack, onOpenLesson, onWorkGraph,
 }: {
@@ -198,7 +208,7 @@ export function LessonPage({
         </header>
 
         <section className="lesson-block" data-reveal>
-          <h2><em>1</em>{work.type === "朗诵作品" ? "阅读 · 聆听" : "看谱 · 听旋律"}</h2>
+          <h2><em>1</em>{work.type === "朗诵作品" ? "阅读 · 聆听" : "看谱 · 听旋律"}{melody && <NotationSwitch bookKey={lesson.bookKey} />}</h2>
           {melody ? <MelodySet melodies={melody} notationStyle={EDITION.notation ?? "jianpu"} /> : <p className="lesson-note">{work.type === "朗诵作品"
             ? "这是朗诵作品，没有固定的歌曲旋律。请结合教材原文体会语言节奏。"
             : scoreMedia.length === 0
