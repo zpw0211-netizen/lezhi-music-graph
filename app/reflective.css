@@ -254,3 +254,12 @@
   .reflect-notes li { min-height: 0; }
   .reflect-cover { height: auto; min-height: 70vh; }
 }
+
+/* 常规课：课堂小结的素养自评、封面环节卡，以及底栏的课堂模式切换。 */
+.reflect-stars.is-literacy li { padding: 1.8vh 1.6vw; border-radius: 16px; background: rgba(255, 255, 255, .92); box-shadow: var(--card-shadow); }
+.reflect-stars.is-literacy li > span:first-child { display: flex; gap: 14px; align-items: baseline; min-width: 0; flex: 1 1 22em; }
+.reflect-stars.is-literacy em { flex: none; font-style: normal; font-weight: 700; color: var(--stage); }
+.present-model { display: inline-flex; flex: none; padding: 3px; border-radius: 999px; background: var(--brand-paper-deep); }
+.present-model button { padding: 6px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 13px; cursor: pointer; }
+.present-model button.is-active { background: #fff; color: var(--brand-ink); font-weight: 650; box-shadow: 0 2px 6px -3px rgba(48, 40, 24, .4); }
+.reflect-roadmap.is-regular small { white-space: nowrap; }

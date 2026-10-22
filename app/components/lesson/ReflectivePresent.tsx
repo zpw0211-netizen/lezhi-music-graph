@@ -1,6 +1,8 @@
 "use client";
-// 上课模式 · 反思型课堂：动机激发 → 认知冲突 → 协同建构 → 应用迁移 → 总结升华，共 15 页（有小测验时 16 页）。
-// 文字脚本来自 lib/lesson/reflective.ts；谱例、旋律、插图按本课数据有无决定是否出现，缺数据的页面自动跳过。
+// 上课模式，两种课堂模式可切换：
+// · 反思型课堂：动机激发 → 认知冲突 → 协同建构 → 应用迁移 → 总结升华，共 15 页（有小测验时 16 页）；
+// · 常规课：情境导入 → 感知体验 → 学习表现 → 拓展创编 → 总结评价，围绕四项核心素养展开。
+// 文字脚本来自 lib/lesson/reflective.ts 与 lib/lesson/regular.ts；谱例、旋律、插图按本课数据有无决定是否出现，缺数据的页面自动跳过。
 // 老师可在“备课”里改课型、隐藏页面、改写提问；这些只存在本机浏览器（localStorage），不影响别人。
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
@@ -11,6 +13,7 @@ import {
   LESSON_KINDS, STAGES, cultureFacts, elementFacts, lessonKindOf, reflectiveScript,
   type LessonFact, type LessonKind, type StageKey,
 } from "../../lib/lesson/reflective";
+import { REGULAR_STAGES, regularScript } from "../../lib/lesson/regular";
 
 type ScoreAsset = { url: string; title?: string };
 type Question = { id: string; prompt: string; options: string[]; answer: string };
@@ -19,6 +22,13 @@ type Slide = { key: string; stage: StageKey; step: string; title: string; steps:
 type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string> };
 
 const STORAGE_PREFIX = "yapu-reflective:";
+type Model = "reflective" | "regular";
+const MODELS: Record<Model, string> = { reflective: "反思型课堂", regular: "常规课" };
+// 课堂模式是老师的习惯，所有课共用一个设置。
+const MODEL_KEY = "yapu-lesson-model";
+const readModel = (): Model => {
+  try { return window.localStorage.getItem(MODEL_KEY) === "regular" ? "regular" : "reflective"; } catch { return "reflective"; }
+};
 const readSaved = (workId: string): Saved => {
   try { return JSON.parse(window.localStorage.getItem(STORAGE_PREFIX + workId) ?? "{}") as Saved; } catch { return {}; }
 };
@@ -27,6 +37,7 @@ const writeSaved = (workId: string, saved: Saved) => {
 };
 const clock = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 const STAGE_ORDINALS = ["第一阶段", "第二阶段", "第三阶段", "第四阶段", "全流程"];
+const REGULAR_ORDINALS = ["第一环节", "第二环节", "第三环节", "第四环节", "第五环节"];
 // 备课时给老师看的“设计意图”（摘自模板教学过程各阶段），课堂上不显示。
 const DESIGN_NOTES: Record<string, string> = {
   cover: "以情境激活兴趣；开课前确认本课课型与各阶段时长。",
@@ -45,6 +56,20 @@ const DESIGN_NOTES: Record<string, string> = {
   quiz: "以小测验做即时评价，检验核心知识。",
   summary: "通过复盘与评价固化反思成果，形成完整学习闭环。",
   homework: "布置课后“反思成长档案”，把课堂反思延伸到课外。",
+  // 常规课
+  "r-cover": "开课前确认本课课型；五个环节按 40 分钟安排，每个环节落在一项主要核心素养上。下面的素养目标和重难点只在备课时显示。",
+  "r-warmup": "通过律动、发声或节奏模仿组织教学，让学生进入音乐学习状态。",
+  "r-scene": "创设情境，完整初听，激发学习兴趣。",
+  "r-first": "审美感知：带着问题初听，说出整体的情绪与速度。",
+  "r-elements": "审美感知：复听分析乐句、节拍、旋律等音乐要素，理解要素怎样表现情绪。",
+  "r-learn": "艺术表现：按课型分步学唱、学奏或赏析，循序渐进。",
+  "r-practice": "艺术表现：针对难点乐句放慢速度、分句练习，可用人声范唱带唱。",
+  "r-perform": "艺术表现：用多种形式表现作品，巩固所学。",
+  "r-create": "创意实践：分层任务，学生按能力选择，在创编中运用所学。",
+  "r-culture": "文化理解：联系作品背景与生活，理解音乐的文化内涵。",
+  "r-quiz": "以小测验做即时评价，检验核心知识。",
+  "r-review": "按四项核心素养回顾本课，学生自评，教师小结。",
+  "r-homework": "布置课后巩固与延伸任务。",
 };
 
 export function ReflectivePresent({
@@ -63,8 +88,11 @@ export function ReflectivePresent({
     return next;
   }), [workId]);
   const [preparing, setPreparing] = useState(false);
+  const [model, setModelState] = useState<Model>(readModel);
   const kind = saved.kind ?? lessonKindOf(mode, workType, workName);
   const script = useMemo(() => reflectiveScript({ workName, kind, grade, facts }), [facts, grade, kind, workName]);
+  const regular = useMemo(() => regularScript({ workName, kind, grade, facts, melody: melody?.[0] }), [facts, grade, kind, melody, workName]);
+  const stages = model === "regular" ? REGULAR_STAGES : STAGES;
   const elements = useMemo(() => elementFacts(facts), [facts]);
   const culture = useMemo(() => cultureFacts(facts), [facts]);
 
@@ -94,7 +122,102 @@ export function ReflectivePresent({
   const work = workName.startsWith("《") ? workName : `《${workName}》`;
   const primaryMelody = melody?.length ? [melody[0]] : undefined;
 
-  const allSlides: Slide[] = [
+  const quizSlide = (key: string): Slide[] => questions.length ? [{ key, stage: "summary", step: model === "regular" ? "课堂评价" : "多元评价", title: "小测验", steps: 2, render: (step: number) => <div className="reflect-wide">
+    <h2>小测验</h2>
+    <ol className="reflect-quiz">{questions.map((question) => <li key={question.id}><p>{question.prompt}</p>
+      <div>{question.options.map((option, k) => <span key={option} className={step >= 1 ? (option === question.answer ? "is-answer" : "is-other") : ""}><em>{"ABCD"[k]}</em>{option}</span>)}</div>
+    </li>)}</ol>
+  </div> }] : [];
+  const perceiveTable = (rows: Array<{ label: string; options: string[] }>) => <table className="reflect-table"><tbody>{rows.map((row) => <tr key={row.label}>
+    <th>{row.label}</th>
+    <td>{row.options.map((option) => <button key={option} type="button" aria-pressed={(picks[row.label] ?? []).includes(option)} onClick={() => togglePick(row.label, option)}>{option}</button>)}</td>
+  </tr>)}</tbody></table>;
+
+  const regularSlides: Slide[] = [
+    { key: "r-cover", stage: "motivate", step: "封面", title: work, steps: 1, render: () => <div className="reflect-cover">
+      {artUrl && <Picture className="reflect-cover-art" src={artUrl} />}
+      <div className="reflect-cover-copy">
+        <small>{[bookName, unitName].filter(Boolean).join(" · ")}</small>
+        <h1 style={{ "--len": work.length } as CSSProperties}>{work}</h1>
+        <p className="reflect-kind">{LESSON_KINDS[kind]}<i aria-hidden="true" />常规课</p>
+        <div className="reflect-meta">
+          {creators.map((item) => <span key={item.id}><b>{item.label}</b>{item.value}</span>)}
+          {scorePage && <span><b>教材</b>第 {scorePage} 页</span>}
+        </div>
+      </div>
+      <ol className="reflect-roadmap is-regular">{REGULAR_STAGES.map((stage) => <li key={stage.key} data-stage={stage.key}><b>{stage.name}</b><small>{stage.theme}</small><small>{stage.minutes} 分钟</small></li>)}</ol>
+    </div> },
+    { key: "r-warmup", stage: "motivate", step: "组织教学", title: regular.warmup.title, steps: 1, art: "stage-motivate", render: () => <div className="reflect-wide">
+      <h2>{regular.warmup.title}</h2>
+      <ol className="reflect-questions is-all">{regular.warmup.steps.map((item, index) => <li key={index} className="is-shown">{text(`r-warmup-${index}`, item)}</li>)}</ol>
+    </div> },
+    { key: "r-scene", stage: "motivate", step: "情境导入", title: "听一听", steps: 1, render: () => <div className={`reflect-scene${artUrl ? "" : " is-plain"}`}>
+      {artUrl && <figure className="reflect-scene-art"><Picture src={artUrl} /></figure>}
+      <div className="reflect-scene-copy">
+        <h2>听一听</h2>
+        {text("r-scene", regular.scene, "p")}
+        {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
+      </div>
+    </div> },
+    { key: "r-first", stage: "conflict", step: "初听感受", title: "初听感受", steps: 1, render: () => <div className="reflect-wide">
+      <h2>初听感受</h2>
+      <ul className="reflect-starters">{regular.firstListen.questions.map((question, index) => <li key={index}>{text(`r-first-${index}`, question)}</li>)}</ul>
+      {perceiveTable(regular.firstListen.rows)}
+      {primaryMelody && <div className="reflect-listen"><MelodySet melodies={primaryMelody} large /></div>}
+    </div> },
+    { key: "r-elements", stage: "conflict", step: "复听分析", title: "复听分析", steps: regular.secondListen.length, art: scores.length || elements.length ? undefined : "stage-conflict", render: (step) => {
+      const prompts = <ol className="reflect-questions">{regular.secondListen.map((question, index) => <li key={index} className={index <= step ? "is-shown" : ""}>{text(`r-second-${index}`, question)}</li>)}</ol>;
+      if (!scores.length && !elements.length) return <div className="reflect-wide"><h2>复听分析</h2>{prompts}</div>;
+      return <div className="reflect-two is-score">
+        {scores.length > 0 && <figure className="reflect-score"><Picture src={assetUrl(scores[0].url)} alt={scores[0].title ?? "教材谱例"} /></figure>}
+        <div>
+          <h2>复听分析</h2>
+          {elements.length > 0 && <dl className="reflect-facts is-elements">{elements.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
+          {prompts}
+        </div>
+      </div>;
+    } },
+    { key: "r-learn", stage: "construct", step: regular.learn.title, title: regular.learn.title, steps: regular.learn.steps.length, art: "stage-construct", render: (step) => <div className="reflect-wide">
+      <h2>{regular.learn.title}</h2>
+      <ol className="reflect-chain">{regular.learn.steps.map((item, index) => <li key={index} className={index <= step ? "is-shown" : ""}>{text(`r-learn-${index}`, item)}</li>)}</ol>
+    </div> },
+    ...(melody?.length || scores.length ? [{ key: "r-practice", stage: "construct" as StageKey, step: "难点突破", title: "难点突破", steps: 1, render: () => <div className="reflect-wide is-practice">
+      <h2>难点突破</h2>
+      {text("r-practice", regular.practiceTip, "p")}
+      {melody?.length
+        ? <MelodySet melodies={melody} large />
+        : <Picture className="reflect-score-only" src={assetUrl(scores[0].url)} alt={scores[0].title ?? "教材谱例"} />}
+    </div> }] : []),
+    { key: "r-perform", stage: "construct", step: "表现巩固", title: regular.perform.title, steps: 1, art: "group-roles", render: () => <div className="reflect-wide">
+      <h2>{regular.perform.title}</h2>
+      <ul className="reflect-roles">{regular.perform.forms.map((form, index) => <li key={index}><b>{text(`r-perform-${index}`, form)}</b></li>)}</ul>
+      {tasks.length > 0 && <div className="reflect-textbook"><b>教材里的活动</b><ul>{tasks.map((task) => <li key={task.text}>{task.text}{task.focus.length > 0 && <small>练习重点：{task.focus.join("、")}</small>}</li>)}</ul></div>}
+    </div> },
+    { key: "r-create", stage: "transfer", step: "创意实践", title: regular.create.title, steps: 1, art: "stage-transfer", render: () => <div className="reflect-wide">
+      <h2>{regular.create.title}</h2>
+      <p className="reflect-lead">选一个适合自己的任务试一试。</p>
+      <ol className="reflect-tiers">{regular.create.tasks.map((tier, index) => <li key={tier.level} data-level={index}><b>{tier.level}</b>{text(`r-create-${index}`, tier.task)}</li>)}</ol>
+    </div> },
+    { key: "r-culture", stage: "transfer", step: "文化理解", title: "走近作品", steps: 1, art: culture.length ? undefined : "wonder-wall", render: () => <div className="reflect-wide">
+      <h2>走近作品</h2>
+      {text("r-culture", regular.culture, "p")}
+      {culture.length > 0 && <dl className="reflect-facts">{culture.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>}
+    </div> },
+    ...quizSlide("r-quiz"),
+    { key: "r-review", stage: "summary", step: "课堂小结", title: "这节课我学会了", steps: 1, art: "stage-summary", render: () => <div className="reflect-wide">
+      <h2>这节课我学会了</h2>
+      <ul className="reflect-stars is-literacy">{regular.review.map((item, index) => <li key={item.area}>
+        <span><em>{item.area}</em>{text(`r-review-${index}`, item.text)}</span>
+        <span role="radiogroup" aria-label={item.area}>{[1, 2, 3].map((value) => <button key={value} type="button" role="radio" aria-checked={stars[item.area] === value} aria-label={`${value} 颗星`} className={(stars[item.area] ?? 0) >= value ? "is-on" : ""} onClick={() => setStars((current) => ({ ...current, [item.area]: value }))}>★</button>)}</span>
+      </li>)}</ul>
+    </div> },
+    { key: "r-homework", stage: "summary", step: "课后作业", title: "课后作业", steps: 1, art: "homework", render: () => <div className="reflect-wide is-homework">
+      <h2>课后作业</h2>
+      {text("r-homework", regular.homework, "p")}
+    </div> },
+  ];
+
+  const reflectiveSlides: Slide[] = [
     { key: "cover", stage: "motivate", step: "封面", title: work, steps: 1, render: () => <div className="reflect-cover">
       {artUrl && <Picture className="reflect-cover-art" src={artUrl} />}
       <div className="reflect-cover-copy">
@@ -193,12 +316,7 @@ export function ReflectivePresent({
         </li>)}</ul>
       </section>
     </div> },
-    ...(questions.length ? [{ key: "quiz", stage: "summary" as StageKey, step: "多元评价", title: "小测验", steps: 2, render: (step: number) => <div className="reflect-wide">
-      <h2>小测验</h2>
-      <ol className="reflect-quiz">{questions.map((question) => <li key={question.id}><p>{question.prompt}</p>
-        <div>{question.options.map((option, k) => <span key={option} className={step >= 1 ? (option === question.answer ? "is-answer" : "is-other") : ""}><em>{"ABCD"[k]}</em>{option}</span>)}</div>
-      </li>)}</ol>
-    </div> }] : []),
+    ...quizSlide("quiz"),
     { key: "summary", stage: "summary", step: "多元评价 · 复盘梳理", title: "回顾这节课", steps: 1, art: "stage-summary", render: () => <div className="reflect-wide">
       <h2>回顾这节课</h2>
       <ol className="reflect-roadmap is-done">{STAGES.slice(0, 4).map((stage) => <li key={stage.key} data-stage={stage.key}><b>{stage.name}</b><small>{stage.theme}</small></li>)}</ol>
@@ -210,6 +328,7 @@ export function ReflectivePresent({
     </div> },
   ];
 
+  const allSlides = model === "regular" ? regularSlides : reflectiveSlides;
   const hidden = useMemo(() => new Set(saved.hidden ?? []), [saved.hidden]);
   const slides = preparing ? allSlides : allSlides.filter((slide) => !hidden.has(slide.key));
   const [position, setPosition] = useState({ slide: 0, step: 0 });
@@ -218,6 +337,11 @@ export function ReflectivePresent({
   const forward = useCallback(() => setPosition(({ slide, step }) => step + 1 < counts[slide] ? { slide, step: step + 1 } : slide + 1 < counts.length ? { slide: slide + 1, step: 0 } : { slide, step }), [counts]);
   const back = useCallback(() => setPosition(({ slide, step }) => step > 0 ? { slide, step: step - 1 } : slide > 0 ? { slide: slide - 1, step: counts[slide - 1] - 1 } : { slide, step }), [counts]);
   const goTo = useCallback((index: number) => setPosition({ slide: index, step: 0 }), []);
+  const setModel = (next: Model) => {
+    try { window.localStorage.setItem(MODEL_KEY, next); } catch { /* 不保存也能上课 */ }
+    setModelState(next);
+    setPosition({ slide: 0, step: 0 });
+  };
 
   const closeRef = useRef(onClose);
   useEffect(() => { closeRef.current = onClose; }, [onClose]);
@@ -257,8 +381,8 @@ export function ReflectivePresent({
   // 备课里隐藏页面后页数会变少，当前位置按新页数收拢。
   const current = Math.min(position.slide, slides.length - 1);
   const slide = slides[current];
-  const stageIndex = STAGES.findIndex((stage) => stage.key === slide.stage);
-  const stage = STAGES[stageIndex];
+  const stageIndex = stages.findIndex((stage) => stage.key === slide.stage);
+  const stage = stages[stageIndex];
 
 
   // 内容自适应：高于舞台时等比缩小（下限 0.5），仍放不下则由舞台滚动。
@@ -291,7 +415,7 @@ export function ReflectivePresent({
 
   // 难点突破页的谱面在框内滚动：播放时把正在唱的音保持在可见范围里。
   useEffect(() => {
-    if (slideKey !== "practice" || !stageRef.current) return;
+    if (!slideKey.endsWith("practice") || !stageRef.current) return;
     const root = stageRef.current;
     const follow = () => {
       const note = root.querySelector<HTMLElement>(".melody-score .is-active");
@@ -308,13 +432,13 @@ export function ReflectivePresent({
   const isHidden = hidden.has(slide.key);
   const toggleHidden = () => update({ hidden: isHidden ? [...hidden].filter((key) => key !== slide.key) : [...hidden, slide.key] });
 
-  return <div ref={dialogRef} className="present reflect" data-stage={slide.stage} data-slide={slide.key} role="dialog" aria-modal="true" aria-label="上课模式 · 反思型课堂" tabIndex={-1}
+  return <div ref={dialogRef} className="present reflect" data-stage={slide.stage} data-slide={slide.key} role="dialog" aria-modal="true" aria-label={`上课模式 · ${MODELS[model]}`} tabIndex={-1}
     style={artUrl ? { "--art": `url("${artUrl}")` } as CSSProperties : undefined}>
     <header className="reflect-band">
-      <span className="reflect-band-stage"><em>{STAGE_ORDINALS[stageIndex]}</em>{stage.name} · {stage.theme}</span>
+      <span className="reflect-band-stage"><em>{(model === "regular" ? REGULAR_ORDINALS : STAGE_ORDINALS)[stageIndex]}</em>{stage.name} · {stage.theme}</span>
       <span className="reflect-band-step">{slide.step}</span>
-      <ol className="reflect-band-progress" aria-hidden="true">{STAGES.map((item, index) => <li key={item.key} data-stage={item.key} className={index < stageIndex ? "is-past" : index === stageIndex ? "is-now" : ""} style={{ flexGrow: item.minutes }} />)}</ol>
-      <StageTimer key={slide.stage} minutes={stage.minutes} />
+      <ol className="reflect-band-progress" aria-hidden="true">{stages.map((item, index) => <li key={item.key} data-stage={item.key} className={index < stageIndex ? "is-past" : index === stageIndex ? "is-now" : ""} style={{ flexGrow: item.minutes }} />)}</ol>
+      <StageTimer key={`${model}-${slide.stage}`} minutes={stage.minutes} />
     </header>
     {preparing && <div className="reflect-prep">
       <div className="reflect-prep-tools">
@@ -332,14 +456,21 @@ export function ReflectivePresent({
         {(slide.key === "cover" || slide.key === "wonder") && <div className="reflect-teacher-goals"><b>教学目标</b>
           <ul>{script.goals.map((goal, index) => <li key={goal.area}><em>{goal.area}</em>{text(`goal-${index}`, goal.text)}</li>)}</ul>
         </div>}
+        {slide.key === "r-cover" && <div className="reflect-teacher-goals"><b>核心素养目标</b>
+          <ul>{regular.goals.map((goal, index) => <li key={goal.area}><em>{goal.area}</em>{text(`r-goal-${index}`, goal.text)}</li>)}</ul>
+        </div>}
+        {slide.key === "r-cover" && <div className="reflect-teacher-goals"><b>教学重难点</b>
+          <ul><li><em>重点</em>{text("r-focus-key", regular.focus.key)}</li><li><em>难点</em>{text("r-focus-hard", regular.focus.hard)}</li></ul>
+        </div>}
       </aside>
     </div>}
-    <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}`} ref={stageRef}>
+    <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}-${model}`} ref={stageRef}>
       {slide.art && <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />}
       <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
     </div>
     <footer className="present-bar">
       <span>{work} · {LESSON_KINDS[kind]}</span>
+      <div className="present-model" role="radiogroup" aria-label="课堂模式">{(Object.keys(MODELS) as Model[]).map((key) => <button key={key} type="button" role="radio" aria-checked={model === key} className={model === key ? "is-active" : ""} onClick={() => setModel(key)}>{key === "regular" ? "常规课" : "反思型"}</button>)}</div>
       <nav className="reflect-dots" aria-label="页面">{slides.map((item, index) => <button key={item.key} type="button" data-stage={item.stage}
         className={`${index === current ? "active" : ""}${hidden.has(item.key) ? " is-hidden" : ""}`} aria-label={`第 ${index + 1} 页 ${item.title}`} aria-current={index === current ? "step" : undefined}
         style={{ "--i": index } as CSSProperties} onClick={() => goTo(index)} />)}</nav>
