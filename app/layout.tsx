@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL, PUBLISHED_GRADE_RANGE_LABEL } from "./lib/app/books";
+import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_GRADE_RANGE_LABEL } from "./lib/app/books";
+import { SITE_NAME } from "./lib/app/brand";
 import { Geist_Mono } from "next/font/google";
 import { preload } from "react-dom";
 import "./styles/tokens.css";
@@ -43,7 +44,7 @@ const publicOrigin = isGitHubPages
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicOrigin),
-  title: `芽谱 · ${EDITION.label}${PUBLISHED_EDITION_LABEL}音乐教材`,
+  title: SITE_NAME,
   description:
     `${EDITION.label}${PUBLISHED_GRADE_RANGE_LABEL}${PUBLISHED_BOOK_COUNT_LABEL}音乐教材的知识图谱：作品、人物、音乐要素与教材出处，一册一册看清楚。`,
   // favicon.ico + PNG for browsers without SVG favicon support (they showed a default icon), SVG for the rest.
@@ -56,13 +57,13 @@ export const metadata: Metadata = {
     apple: { url: `${publicBasePath}/apple-touch-icon.png`, sizes: "180x180" },
   },
   openGraph: {
-    title: `芽谱 · ${EDITION.label}${PUBLISHED_EDITION_LABEL}音乐教材`,
+    title: SITE_NAME,
     description: `${PUBLISHED_BOOK_COUNT_LABEL}教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。`,
     images: [`${publicBasePath}/og.jpg`],
   },
   twitter: {
     card: "summary_large_image",
-    title: `芽谱 · ${EDITION.label}${PUBLISHED_EDITION_LABEL}音乐教材`,
+    title: SITE_NAME,
     description: `${PUBLISHED_BOOK_COUNT_LABEL}教材共同构成的音乐知识网络，作品、人物与音乐要素一册一册看清楚。`,
     images: [`${publicBasePath}/og.jpg`],
   },

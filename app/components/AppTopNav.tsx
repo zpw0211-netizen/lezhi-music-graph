@@ -1,6 +1,7 @@
 "use client";
 import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { BrandMark } from "./home/BrandMark";
+import { BRAND_NAME } from "../lib/app/brand";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { AccountDialog } from "./account/AccountDialog";
 import type { AccountView } from "./account/AccountPanel";
@@ -44,8 +45,8 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
   const currentView = hashView ?? active;
   return <><nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
-      <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label="芽谱首页">
-        <BrandMark /><span>芽谱</span>
+      <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label={`${BRAND_NAME}首页`}>
+        <BrandMark /><span>{BRAND_NAME}</span>
       </button>
       {centerSlot && <div className="home-nav-center">{centerSlot}</div>}
       <div id="home-nav-panel" className="home-nav-content">

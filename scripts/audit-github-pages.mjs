@@ -1,6 +1,6 @@
 import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { EDITION, PUBLISHED_BOOK_KEYS, PUBLISHED_EDITION_LABEL } from "../data/books.mjs";
+import { PUBLISHED_BOOK_KEYS } from "../data/books.mjs";
 
 // The 人音版 app lives under NEXT_PUBLIC_BASE_PATH (/renyin on yapu.studio); the entry page is at the root.
 const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/+$/, "");
@@ -74,8 +74,8 @@ assert(
 
 const indexHtml = await readFile(path.join(root, "index.html"), "utf8");
 assert(
-  indexHtml.includes(`芽谱 · ${EDITION.label}${PUBLISHED_EDITION_LABEL}音乐教材`),
-  "页面标题没有同步为芽谱",
+  indexHtml.includes("芽谱AI — 音乐数字教材平台"),
+  "页面标题没有同步为芽谱AI — 音乐数字教材平台",
 );
 assert(
   indexHtml.includes(`${basePath}/_next/`),

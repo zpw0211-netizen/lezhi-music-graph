@@ -20,8 +20,8 @@ import {
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { AppTopNav } from "../AppTopNav";
-import { BrandMark } from "./BrandMark";
-import { BrandWordmark } from "./BrandWordmark";
+import { BrandLogo } from "./BrandMark";
+import { SITE_NAME } from "../../lib/app/brand";
 import type { MelodyPlayer as MelodyPlayerComponent } from "../lesson/MelodyPlayer";
 import { fetchWithRetry } from "../../lib/app/fetch-retry";
 type PortalEntity = { id: string; name: string; type: string; category?: string; textbookCount?: number; degree?: number; bookKeys?: string[] };
@@ -176,7 +176,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           <div className="home-hero-primary">
             <div className="home-title-plate">
               <p className="home-hero-kicker">{EDITION.label} · {PUBLISHED_GRADE_RANGE_LABEL}</p>
-              <div className="home-wordmark"><BrandMark /><BrandWordmark /><h1 id="home-title" className="home-title-accessible">芽谱</h1></div>
+              <div className="home-wordmark"><BrandLogo /><h1 id="home-title" className="home-title-accessible">{SITE_NAME}</h1></div>
             </div>
             <p className="home-hero-lead">翻开一册，<br />从这一课开始。</p>
           </div>
@@ -299,7 +299,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       </section>
     </main>
     <footer className="home-footer">
-      <div><strong>芽谱</strong><p>把教材里的音乐知识，连成一张可探索的图。</p></div>
+      <div><strong>{SITE_NAME}</strong><p>把教材里的音乐知识，连成一张可探索的图。</p></div>
       <div className="home-footer-actions"><button type="button" onClick={() => onView("assistant")}>智能问答</button><button type="button" onClick={() => onView("research")}>研究分析</button><button type="button" onClick={onResearchInfo}>研究说明</button></div>
       <small>{EDITION.label}{PUBLISHED_GRADE_RANGE_LABEL}{PUBLISHED_BOOK_COUNT_LABEL}教材 · 内容按册、单元与作品整理</small>
       <small className="home-footer-credits">音色采样：钢琴 <a href="https://archive.org/details/SalamanderGrandPianoV3" target="_blank" rel="noreferrer">Salamander Grand Piano</a>（Alexander Holm，<a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>）· 其他乐器 <a href="https://github.com/mrbumpy409/GeneralUser-GS" target="_blank" rel="noreferrer">GeneralUser GS</a>（S. Christian Collins，<a href="https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/LICENSE.txt" target="_blank" rel="noreferrer">许可说明</a>）· 人声演唱 AI 合成：声库 <a href="https://github.com/yqzhishen/qixuan-diffsinger" target="_blank" rel="noreferrer">绮萱</a>、<a href="https://github.com/openvpi/DiffSinger" target="_blank" rel="noreferrer">DiffSinger</a>，声码器 <a href="https://github.com/openvpi/vocoders" target="_blank" rel="noreferrer">OpenVPI NSF-HiFiGAN</a>（<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noreferrer">CC BY-NC-SA 4.0</a>，非商业使用）</small>

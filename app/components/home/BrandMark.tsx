@@ -1,9 +1,11 @@
-// The sprout-and-note mark from public/brand/mark.svg, inline so the hero can grow it: stem first, then the leaves open.
+import { publicAssetUrl } from "../../lib/app/assets";
+
+// The 芽谱AI sprout-and-note mark (public/brand/yapu-ai-mark.webp), used beside the name in the top bar.
 export function BrandMark() {
-  return <svg className="brand-mark-svg" viewBox="12 8 70 74" aria-hidden="true">
-    <path className="brand-mark-head" d="M24 67 C27 58 38 55 47 60 C48 67 43 74 35 77 C29 76 25 72 24 67Z" fill="var(--ink)" />
-    <path className="brand-mark-stem" d="M45 66 V28" fill="none" stroke="var(--ink)" strokeWidth="7" strokeLinecap="round" />
-    <path className="brand-mark-leaf brand-mark-leaf--left" d="M45 32 C35 16 23 14 17 17 C19 29 30 36 45 34Z" fill="#3E9B4F" />
-    <path className="brand-mark-leaf brand-mark-leaf--right" d="M45 31 C49 16 63 9 77 12 C74 25 63 33 45 34Z" fill="#3E9B4F" />
-  </svg>;
+  return <img className="brand-mark-img" src={publicAssetUrl("brand/yapu-ai-mark.webp")} alt="" aria-hidden="true" width={139} height={160} />;
+}
+
+// The full 芽谱AI · 音乐数字教材平台 lockup (public/brand/yapu-ai-logo.webp) for the home hero and about panels.
+export function BrandLogo({ className = "brand-logo-img" }: { className?: string }) {
+  return <img className={className} src={publicAssetUrl("brand/yapu-ai-logo.webp")} alt="芽谱AI 音乐数字教材平台" width={1200} height={428} />;
 }

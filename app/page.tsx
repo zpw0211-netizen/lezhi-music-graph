@@ -29,15 +29,14 @@ import { useBookData, useGraphIndex } from "./hooks/useGraphIndex";
 import { useKnowledgeSearch, type SearchResult } from "./hooks/useKnowledgeSearch";
 import { useScrollReveal } from "./hooks/useScrollReveal";
 import { publicAssetUrl } from "./lib/app/assets";
+import { BRAND_NAME, SITE_NAME } from "./lib/app/brand";
 import {
   BOOK_STAGE_STORAGE_KEY,
   PUBLISHED_BOOK_COUNT_LABEL,
   PUBLISHED_BOOKS,
-  PUBLISHED_EDITION_LABEL,
   PUBLISHED_BOOK_KEYS,
   PUBLISHED_BOOK_SHORT_NAMES,
   availableBookStages,
-  EDITION,
   bookStageForKey,
   booksForStage,
   defaultBookStage,
@@ -186,7 +185,7 @@ const prefetchPages = () => {
 };
 
 const EMPTY_BOOKS: BookDirectory[] = [];
-const SITE_TITLE = `芽谱 · ${EDITION.label}${PUBLISHED_EDITION_LABEL}音乐教材`;
+const SITE_TITLE = SITE_NAME;
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
   atlas: "声音与音乐探索 · 音乐地图",
@@ -313,7 +312,7 @@ export default function Home() {
   }, [index.status]);
   useEffect(() => {
     const page = view === "lesson" || view === "work" ? (route.work ? `《${route.work}》 · ${VIEW_TITLES[view]}` : "") : VIEW_TITLES[view];
-    document.title = page ? `${page} · 芽谱` : SITE_TITLE;
+    document.title = page ? `${page} · ${BRAND_NAME}` : SITE_TITLE;
   }, [route.work, view]);
   useLayoutEffect(() => {
     const previous = previousRouteTransitionKey.current;

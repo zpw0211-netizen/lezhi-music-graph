@@ -8,7 +8,7 @@ body:has(.ink-app),.ink-app,.ink-app .workspace { background:var(--paper); }
 .ink-app.network-mode .home-nav-links button { padding:8px 10px; }
 .home-nav { border-color: var(--border, #E2E9E4); background: rgb(255 255 255 / 94%); }
 .home-nav .home-brand { padding:0; border:0; background:transparent; cursor:pointer; }
-.home-nav .home-brand > .brand-mark-svg { flex:0 0 auto; width:34px; height:34px; }
+.home-nav .home-brand > .brand-mark-img { flex:0 0 auto; width:auto; height:34px; }
 .app-nav-search { position:relative; display:flex; align-items:center; gap:8px; width:260px; height:38px; padding:0 14px; border:1px solid var(--line); border-radius:999px; background:#fff; }
 .app-nav-search:focus-within { border-color:var(--pine); box-shadow:0 0 0 3px #1F5C471A; }
 .app-nav-search svg { width:17px; height:17px; color:var(--ink-soft); }
