@@ -1,0 +1,8169 @@
+[
+  {
+    "id": "PEP-G1S1_E00013",
+    "name": "《do re mi之歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00014",
+    "name": "《春天的芭蕾》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00015",
+    "name": "《啊，多么快乐的一天》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00016",
+    "name": "《孤独的牧羊人》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00017",
+    "name": "《回声》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00018",
+    "name": "《卖荔枝》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00019",
+    "name": "《跳蚤之歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1879年",
+    "yearRange": [
+      1879,
+      1879
+    ],
+    "subject": "穆索尔斯基歌曲创作",
+    "sources": [
+      {
+        "title": "《跳蚤之歌》",
+        "url": "https://www.chandos.net/chanimages/Booklets/CH20184.pdf",
+        "publisher": "Chandos Records"
+      }
+    ],
+    "confidence": "medium",
+    "note": "唱片公司节目册将该作品列为1879年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00020",
+    "name": "《野蜂飞舞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00021",
+    "name": "《敕勒歌》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "北朝民歌",
+    "sources": [
+      {
+        "title": "《敕勒歌》",
+        "url": "https://mw.hebei.gov.cn/system/2024/03/26/030282076.shtml",
+        "publisher": "河北省民族事务委员会"
+      }
+    ],
+    "confidence": "medium",
+    "note": "不将文本所属时代冒充具体创作年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00022",
+    "name": "《北京的金山上》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00023",
+    "name": "《咏鹅》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00030",
+    "name": "《祖国祖国我们爱你》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00032",
+    "name": "《青年友谊圆舞曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1955年",
+    "yearRange": [
+      1955,
+      1955
+    ],
+    "subject": "陈天戈作曲、江山填词的歌曲版本",
+    "sources": [
+      {
+        "title": "《青年友谊圆舞曲》",
+        "url": "https://www.tsinghua.org.cn/upload/file/1528630096176.pdf",
+        "publisher": "清华校友总会"
+      }
+    ],
+    "confidence": "medium",
+    "note": "曲调与后来填词版本形成时间有差异；按校友资料所述1955年歌曲版本记录。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00033",
+    "name": "《送别》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "资料对李叔同填词年份说法不一，未找到足以支持单一年份或范围的可靠资料。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00034",
+    "name": "《雪花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "同名儿童歌曲与冬奥歌曲并存，未能可靠消歧教材版本。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00035",
+    "name": "《茉莉花》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "中国传统民歌；标题未限定单一地区版本",
+    "sources": [
+      {
+        "title": "《茉莉花》",
+        "url": "https://www.njlh.gov.cn/lhqrmzf/202505/t20250527_5570997.html",
+        "publisher": "南京市六合区人民政府"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1942年为采集记录，不是创作年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00036",
+    "name": "《小毛驴》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00037",
+    "name": "《小燕子》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00038",
+    "name": "《山谷回音真好听》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00042",
+    "name": "《洋娃娃和小熊跳舞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00043",
+    "name": "《娃哈哈》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00044",
+    "name": "《悯农》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00051",
+    "name": "《乃哟乃》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00057",
+    "name": "《绒毛的舞蹈》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00058",
+    "name": "《卡门组曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "同题名有多个管弦乐组曲编配，未能对应教材所指版本。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00060",
+    "name": "《波莱罗舞曲》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1928年",
+    "yearRange": [
+      1928,
+      1928
+    ],
+    "subject": "拉威尔芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "Boléro — LA Phil",
+        "url": "https://www.laphil.com/works/bolero",
+        "publisher": "洛杉矶爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "洛杉矶爱乐记载作品作于1928年，并称其于同年11月在巴黎歌剧院首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00061",
+    "name": "《阿西里西》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "彝族传统歌舞",
+    "sources": [
+      {
+        "title": "《阿西里西》",
+        "url": "https://gz.people.com.cn/n2/2025/0422/c406990-41204632.html",
+        "publisher": "人民网贵州频道"
+      }
+    ],
+    "confidence": "medium",
+    "note": "来源确认传统歌舞属性，未给起源年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00066",
+    "name": "《快乐的罗梭》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00074",
+    "name": "《c 小调竖琴奏鸣曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00075",
+    "name": "《桑塔·露琪亚》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00076",
+    "name": "《蝴蝶》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00078",
+    "name": "《江南》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00082",
+    "name": "《中华人民共和国国歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1935年",
+    "yearRange": [
+      1935,
+      1935
+    ],
+    "subject": "国歌原作创作",
+    "sources": [
+      {
+        "title": "义勇军进行曲",
+        "url": "https://www.chnmuseum.cn/zp/zpml/gmww/202008/t20200824_247207.shtml",
+        "publisher": "中国国家博物馆"
+      },
+      {
+        "title": "义勇军进行曲创作资料",
+        "url": "https://www.publishingmuseum.net/collection/56.html",
+        "publisher": "上海出版印刷高等专科学校出版博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "按原作创作年份记录，不是正式定为国歌的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00083",
+    "name": "《共产儿童团歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00084",
+    "name": "《月光下的舞步》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00085",
+    "name": "《运动员进行曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00086",
+    "name": "《D 大调第一圆号协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00087",
+    "name": "《单簧管波尔卡》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00088",
+    "name": "《西西里舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00089",
+    "name": "《天鹅湖——四小天鹅舞曲》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1877年",
+    "yearRange": [
+      1877,
+      1877
+    ],
+    "subject": "舞段所属芭蕾舞剧《天鹅湖》的首演年份",
+    "sources": [
+      {
+        "title": "The history of Swan Lake in Finland",
+        "url": "https://oopperabaletti.fi/en/stage24/article/the-history-of-swan-lake-in-finland/",
+        "publisher": "芬兰国家歌剧院与芭蕾舞团"
+      }
+    ],
+    "confidence": "medium",
+    "note": "取该舞段所属《天鹅湖》于1877年首演的年份；舞段不是独立首演作品。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00090",
+    "name": "《红孩子》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00091",
+    "name": "《请你唱首歌吧》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00095",
+    "name": "《我和小提琴》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00097",
+    "name": "《赛马》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1959—1960年",
+    "yearRange": [
+      1959,
+      1960
+    ],
+    "subject": "《赛马》创作",
+    "sources": [
+      {
+        "title": "《赛马》",
+        "url": "https://www.gzwxb.gov.cn/context/contextId/200600",
+        "publisher": "广州市委网信办（转载星海音乐厅资料）"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载1959年创作、1960年定稿，故用范围。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00100",
+    "name": "《爱的致意》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00101",
+    "name": "《a 小调奏鸣曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00103",
+    "name": "《春节序曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1955—1956年",
+    "yearRange": [
+      1955,
+      1956
+    ],
+    "subject": "《春节序曲》创作期",
+    "sources": [
+      {
+        "title": "《春节序曲》作品说明",
+        "url": "https://ca.china-embassy.gov.cn/zt/wlzgypt/202201/P020220128192477302626.pdf",
+        "publisher": "中华人民共和国驻加拿大大使馆"
+      }
+    ],
+    "confidence": "medium",
+    "note": "使馆节目单明确记载序曲创作于1955—1956年；未将组曲始作年份混作序曲年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S1_E00289",
+    "name": "《阳关三叠》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "古琴传统曲目",
+    "sources": [
+      {
+        "title": "《阳关三叠》",
+        "url": "https://hub.hku.hk/bitstream/10722/197406/1/Content.pdf",
+        "publisher": "香港大学学术库"
+      }
+    ],
+    "confidence": "medium",
+    "note": "资料讨论历史流变，但不能确定唯一创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00008",
+    "name": "《摇篮曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00012",
+    "name": "《我爱我的家》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00013",
+    "name": "《儿童圆舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00014",
+    "name": "《赠汪伦》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00015",
+    "name": "《找朋友》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00020",
+    "name": "《山谷回音真好听》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00023",
+    "name": "《绿色的祖国》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00029",
+    "name": "《春节序曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1955—1956年",
+    "yearRange": [
+      1955,
+      1956
+    ],
+    "subject": "《春节序曲》创作期",
+    "sources": [
+      {
+        "title": "《春节序曲》作品说明",
+        "url": "https://ca.china-embassy.gov.cn/zt/wlzgypt/202201/P020220128192477302626.pdf",
+        "publisher": "中华人民共和国驻加拿大大使馆"
+      }
+    ],
+    "confidence": "medium",
+    "note": "使馆节目单明确记载序曲创作于1955—1956年；未将组曲始作年份混作序曲年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00035",
+    "name": "《请你唱首歌吧》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00038",
+    "name": "《婚礼圆舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00039",
+    "name": "《池上》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00041",
+    "name": "《勤快人和懒惰人》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00042",
+    "name": "《打麦号子》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00046",
+    "name": "《扬鞭催马运粮忙》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00047",
+    "name": "《川江船夫号子》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00048",
+    "name": "《走绛州》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00049",
+    "name": "《刈者之歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00053",
+    "name": "《请来看看我们的村庄》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00055",
+    "name": "《老爷爷赶鹅》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00056",
+    "name": "《观灯》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00065",
+    "name": "《D大调小提琴协奏曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1806年",
+    "yearRange": [
+      1806,
+      1806
+    ],
+    "subject": "贝多芬小提琴协奏曲作品61",
+    "sources": [
+      {
+        "title": "《D大调小提琴协奏曲》",
+        "url": "https://www.beethoven.de/de/work/view/6051325007626240/Konzert%2Bf%C3%BCr%2BVioline%2Bund%2BOrchester%2B%26",
+        "publisher": "贝多芬故居"
+      }
+    ],
+    "confidence": "high",
+    "note": "贝多芬故居资料记载作品于1806年创作。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00066",
+    "name": "《紫竹调》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00067",
+    "name": "《巴黎四重奏》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00069",
+    "name": "《b小调第二号管弦乐组曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00070",
+    "name": "《火箭军进行曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00071",
+    "name": "《第一芭蕾组曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00072",
+    "name": "《相思》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00075",
+    "name": "《小邋遢》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00076",
+    "name": "《大风车》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00078",
+    "name": "《白毛女》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1945年",
+    "yearRange": [
+      1945,
+      1945
+    ],
+    "subject": "歌剧首演",
+    "sources": [
+      {
+        "title": "《白毛女》",
+        "url": "https://www.mct.gov.cn/whzx/bnsj/yss/201111/t20111128_752555.html",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "high",
+    "note": "文化主管部门资料记载1945年4月在延安首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00080",
+    "name": "《玩具兵进行曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G1S2_E00081",
+    "name": "《中华人民共和国国歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1935年",
+    "yearRange": [
+      1935,
+      1935
+    ],
+    "subject": "国歌原作创作",
+    "sources": [
+      {
+        "title": "义勇军进行曲",
+        "url": "https://www.chnmuseum.cn/zp/zpml/gmww/202008/t20200824_247207.shtml",
+        "publisher": "中国国家博物馆"
+      },
+      {
+        "title": "义勇军进行曲创作资料",
+        "url": "https://www.publishingmuseum.net/collection/56.html",
+        "publisher": "上海出版印刷高等专科学校出版博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "按原作创作年份记录，不是正式定为国歌的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00006",
+    "name": "《报灯名》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00007",
+    "name": "《龙里格龙》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00011",
+    "name": "《唱脸谱》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00013",
+    "name": "《夜深沉》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00014",
+    "name": "《贵妃醉酒》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00015",
+    "name": "《挑滑车》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00016",
+    "name": "《冰糖葫芦》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00017",
+    "name": "《茉莉花》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "中国传统民歌；标题未限定单一地区版本",
+    "sources": [
+      {
+        "title": "《茉莉花》",
+        "url": "https://www.njlh.gov.cn/lhqrmzf/202505/t20250527_5570997.html",
+        "publisher": "南京市六合区人民政府"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1942年为采集记录，不是创作年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00020",
+    "name": "《小放牛》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00021",
+    "name": "《大逛灯》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00023",
+    "name": "《武松打虎》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00025",
+    "name": "《北风吹》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1945年",
+    "yearRange": [
+      1945,
+      1945
+    ],
+    "subject": "选曲随《白毛女》首演",
+    "sources": [
+      {
+        "title": "歌剧《白毛女》",
+        "url": "https://www.mct.gov.cn/whzx/bnsj/yss/201111/t20111128_752555.html",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "medium",
+    "note": "所记为剧目首演年份，不是单独歌曲首演年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00026",
+    "name": "《静夜思》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00030",
+    "name": "《爷爷为我打月饼》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00039",
+    "name": "《谁说女子不如男》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1951年",
+    "yearRange": [
+      1951,
+      1951
+    ],
+    "subject": "常香玉版豫剧唱段所属剧目上演",
+    "sources": [
+      {
+        "title": "豫剧《花木兰》",
+        "url": "https://www.mct.gov.cn/whzx/qgwhxxlb/hn/201606/t20160602_788519.htm",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "medium",
+    "note": "唱段隶属常香玉版豫剧《花木兰》，取该剧上演年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00041",
+    "name": "《编花篮》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "河南民歌",
+    "sources": [
+      {
+        "title": "《编花篮》",
+        "url": "https://v.sjs.com.cn/ebooks/F0F7F6FA.pdf",
+        "publisher": "山东教育出版社"
+      }
+    ],
+    "confidence": "medium",
+    "note": "传统曲目，未找到可靠创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00045",
+    "name": "《花木兰》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1951年",
+    "yearRange": [
+      1951,
+      1951
+    ],
+    "subject": "PEP中州戏曲语境下的常香玉版豫剧",
+    "sources": [
+      {
+        "title": "豫剧《花木兰》",
+        "url": "https://www.mct.gov.cn/whzx/qgwhxxlb/hn/201606/t20160602_788519.htm",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "medium",
+    "note": "按单元语境指常香玉版豫剧，不指同名京剧或动画电影。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00046",
+    "name": "《王大娘钉缸》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00047",
+    "name": "《原始狩猎图》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00048",
+    "name": "《谁不说俺家乡好》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00050",
+    "name": "《花蛤蟆》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00054",
+    "name": "《大蒜谣》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00056",
+    "name": "《王小赶脚》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00057",
+    "name": "《山东小开门》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00058",
+    "name": "《沂河欢歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00059",
+    "name": "《放风筝》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00060",
+    "name": "《夏日泛舟海上》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00064",
+    "name": "《愉快的梦》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00065",
+    "name": "《春游》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00068",
+    "name": "《江雪》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00069",
+    "name": "《嘀哩嘀哩》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00071",
+    "name": "《梅花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00075",
+    "name": "《夏夜》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00076",
+    "name": "《F大调第六(田园)交响曲—— 暴风雨》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1808年",
+    "yearRange": [
+      1808,
+      1808
+    ],
+    "subject": "贝多芬第六交响曲第四乐章暴风雨",
+    "sources": [
+      {
+        "title": "《F大调第六(田园)交响曲—— 暴风雨》",
+        "url": "https://www.beethoven.de/en/work/view/5758288851369984",
+        "publisher": "贝多芬故居"
+      }
+    ],
+    "confidence": "high",
+    "note": "贝多芬故居资料记载作品创作于1808年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00078",
+    "name": "《鹧鸪飞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00079",
+    "name": "《四季——春》",
+    "status": "found",
+    "event": "出版",
+    "yearText": "1725年",
+    "yearRange": [
+      1725,
+      1725
+    ],
+    "subject": "维瓦尔第《四季》作品8出版",
+    "sources": [
+      {
+        "title": "《四季——春》",
+        "url": "https://www.laphil.com/works/the-four-seasons",
+        "publisher": "洛杉矶爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "洛杉矶爱乐说明作品集于1725年出版，四季此前曾以手稿流传。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00085",
+    "name": "《新年》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00089",
+    "name": "《蜗牛的歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00234",
+    "name": "《空城计》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00238",
+    "name": "《穆桂英挂帅》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "同名豫剧、京剧版本年代不同，现有资料不足以确认教材所指版本。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00282",
+    "name": "《百鸟朝凤》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "传统唢呐曲目",
+    "sources": [
+      {
+        "title": "《百鸟朝凤》",
+        "url": "https://www.huain.com/article/suona/2023/0427/1881.html",
+        "publisher": "华音网"
+      }
+    ],
+    "confidence": "medium",
+    "note": "传统曲目，未找到可靠创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S1_E00283",
+    "name": "《一枝花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00009",
+    "name": "《送别》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "资料对李叔同填词年份说法不一，未找到足以支持单一年份或范围的可靠资料。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00010",
+    "name": "《牧歌》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "蒙古族民歌",
+    "sources": [
+      {
+        "title": "《牧歌》",
+        "url": "https://www.chncpa.org/subsite/NCPAO2023-24/pdf/index/17-18.pdf",
+        "publisher": "国家大剧院"
+      }
+    ],
+    "confidence": "medium",
+    "note": "该资料中的1956年指瞿希贤合唱改编版，不是民歌创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00011",
+    "name": "《打虎上山》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00012",
+    "name": "《智取威虎山》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00013",
+    "name": "《猜调》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00014",
+    "name": "《山童》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00018",
+    "name": "《眺望你的路途》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00019",
+    "name": "《黄河大合唱》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "作品延安首演",
+    "sources": [
+      {
+        "title": "从延安唱响的时代之声——《黄河大合唱》的首演与创作",
+        "url": "https://www.bjsupervision.gov.cn/ywyl/202104/t20210409_73461.html",
+        "publisher": "北京市纪委监委（转载《中国纪检监察报》）"
+      }
+    ],
+    "confidence": "high",
+    "note": "《中国纪检监察报》记载该作品于1939年4月13日在延安首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00020",
+    "name": "《春游》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00021",
+    "name": "《勇敢的鄂伦春》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00023",
+    "name": "《美丽的家乡》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00024",
+    "name": "《月亮，月亮》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00028",
+    "name": "《哈腰挂》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00029",
+    "name": "《傲蕾·一兰》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00030",
+    "name": "《望庐山瀑布》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00032",
+    "name": "《泉水叮咚响》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00039",
+    "name": "《第二钢琴协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "同名作品众多，标题不足以确定作曲家与作品。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00041",
+    "name": "《小水滴》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00042",
+    "name": "《找朋友》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00043",
+    "name": "《阿里郎》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "韩国传统民歌",
+    "sources": [
+      {
+        "title": "《阿里郎》",
+        "url": "https://ich.unesco.org/en/RL/arirang-lyrical-folk-song-in-the-republic-of-korea-00445?RL=00445",
+        "publisher": "UNESCO"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非遗列名时间不是创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00046",
+    "name": "《新东北风》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00047",
+    "name": "《桔梗谣》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "朝鲜族民歌",
+    "sources": [
+      {
+        "title": "《桔梗谣》",
+        "url": "https://lywgyxx.szftedu.cn/xkjc/yinyue/202209/P020220910586257743679.pdf",
+        "publisher": "深圳市福田区教育局"
+      }
+    ],
+    "confidence": "medium",
+    "note": "传统曲目，未找到可靠创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00049",
+    "name": "《柳树》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00050",
+    "name": "《太平歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00051",
+    "name": "《燕子打令》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00052",
+    "name": "《小拜年》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00055",
+    "name": "《正对花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00060",
+    "name": "《江河水》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00061",
+    "name": "《月牙五更》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00062",
+    "name": "《长海号子·喊海》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00063",
+    "name": "《拉空齐》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00064",
+    "name": "《春天来到田野上》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00065",
+    "name": "《小放牛》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00072",
+    "name": "《野蜂飞舞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00078",
+    "name": "《儿童进行曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00079",
+    "name": "《我和你》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00080",
+    "name": "《雪花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "同名儿童歌曲与冬奥歌曲并存，未能可靠消歧教材版本。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00088",
+    "name": "《马背上的摇篮》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G2S2_E00089",
+    "name": "《南泥湾》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1943年",
+    "yearRange": [
+      1943,
+      1943
+    ],
+    "subject": "《南泥湾》创作",
+    "sources": [
+      {
+        "title": "《南泥湾》的诞生",
+        "url": "https://m.news.cntv.cn/2015/05/01/ARTI1430450330596907.shtml",
+        "publisher": "央视网"
+      },
+      {
+        "title": "《南泥湾》",
+        "url": "https://www.sycm.edu.cn/display_son.aspx?DWid=87&Nid=18224&Vid=-1",
+        "publisher": "沈阳音乐学院"
+      }
+    ],
+    "confidence": "high",
+    "note": "央视及音乐院校资料记载歌曲诞生于1943年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00005",
+    "name": "《我爱米兰》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00013",
+    "name": "《小步舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00016",
+    "name": "《乘着歌声的翅膀》",
+    "status": "found",
+    "event": "出版",
+    "yearText": "1836年",
+    "yearRange": [
+      1836,
+      1836
+    ],
+    "subject": "门德尔松歌曲集Op.34第2首出版",
+    "sources": [
+      {
+        "title": "《乘着歌声的翅膀》",
+        "url": "https://imslp.org/wiki/6_Ges%C3%A4nge,_Op.34_(Mendelssohn,_Felix)",
+        "publisher": "IMSLP"
+      }
+    ],
+    "confidence": "medium",
+    "note": "该曲通常记为1834年作曲、1836年随Op.34出版；此处记录出版年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00018",
+    "name": "《b小调第二乐队组曲之谐谑曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00019",
+    "name": "《E大调小号协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00020",
+    "name": "《月光奏鸣曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1801年",
+    "yearRange": [
+      1801,
+      1801
+    ],
+    "subject": "贝多芬升c小调第14钢琴奏鸣曲创作",
+    "sources": [
+      {
+        "title": "《月光奏鸣曲》",
+        "url": "https://internet.beethoven.de/pdf-sonderausstellung/Beethovens-Mondschein-Sonate-Brief-Guide.pdf",
+        "publisher": "贝多芬故居"
+      }
+    ],
+    "confidence": "high",
+    "note": "贝多芬故居资料记载写于1801年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00021",
+    "name": "《C大调长笛与竖琴协奏曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1778年",
+    "yearRange": [
+      1778,
+      1778
+    ],
+    "subject": "莫扎特长笛与竖琴协奏曲K.299创作",
+    "sources": [
+      {
+        "title": "《C大调长笛与竖琴协奏曲》",
+        "url": "https://kv.mozarteum.at/de/work/konzert-in-c-3959",
+        "publisher": "莫扎特数字作品目录"
+      }
+    ],
+    "confidence": "high",
+    "note": "作品目录记载作品创作于巴黎，1778年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00022",
+    "name": "《D大调小提琴协奏曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1806年",
+    "yearRange": [
+      1806,
+      1806
+    ],
+    "subject": "贝多芬小提琴协奏曲作品61",
+    "sources": [
+      {
+        "title": "《D大调小提琴协奏曲》",
+        "url": "https://www.beethoven.de/de/work/view/6051325007626240/Konzert%2Bf%C3%BCr%2BVioline%2Bund%2BOrchester%2B%26",
+        "publisher": "贝多芬故居"
+      }
+    ],
+    "confidence": "high",
+    "note": "贝多芬故居资料记载作品于1806年创作。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00023",
+    "name": "《婚礼进行曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "门德尔松《仲夏夜之梦》配乐中的婚礼进行曲首演",
+    "sources": [
+      {
+        "title": "Wedding March from A Midsummer Night’s Dream",
+        "url": "https://www.eyso.org/wp-content/uploads/2018/05/EYSOBardology_FantasticalProgram.pdf",
+        "publisher": "Eastman Youth Symphony Orchestra"
+      }
+    ],
+    "confidence": "high",
+    "note": "版本无法确认：门德尔松与瓦格纳均有《婚礼进行曲》，教材该页未注明作曲者。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00026",
+    "name": "《D大调第一交响曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00027",
+    "name": "《小提琴协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00028",
+    "name": "《仲夏夜之梦序曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1826年",
+    "yearRange": [
+      1826,
+      1826
+    ],
+    "subject": "门德尔松序曲创作",
+    "sources": [
+      {
+        "title": "《仲夏夜之梦序曲》",
+        "url": "https://www.laphil.com/works/a-midsummer-nights-dream-overture-and-incidental-music",
+        "publisher": "洛杉矶爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "洛杉矶爱乐资料记载序曲于1826年创作。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00029",
+    "name": "《第九十四交响曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1791年",
+    "yearRange": [
+      1791,
+      1791
+    ],
+    "subject": "海顿G大调第94交响曲《惊愕》创作",
+    "sources": [
+      {
+        "title": "《第九十四交响曲》",
+        "url": "https://www.laphil.com/works/symphony-no-94-surprise",
+        "publisher": "洛杉矶爱乐"
+      }
+    ],
+    "confidence": "medium",
+    "note": "洛杉矶爱乐资料记载创作于1791年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00031",
+    "name": "《A 大调奏鸣曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00033",
+    "name": "《西西里舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00035",
+    "name": "《交城山》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00044",
+    "name": "《杨柳青》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00051",
+    "name": "《延安的故事》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00053",
+    "name": "《蓝花花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00054",
+    "name": "《黄河船夫曲》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "《黄河大合唱》第一乐章随全曲首演",
+    "sources": [
+      {
+        "title": "从延安唱响的时代之声——《黄河大合唱》的首演与创作",
+        "url": "https://www.bjsupervision.gov.cn/ywyl/202104/t20210409_73461.html",
+        "publisher": "北京市纪委监委（转载《中国纪检监察报》）"
+      }
+    ],
+    "confidence": "high",
+    "note": "首演报道明确将《黄河船夫曲》列为全曲第一乐章；只记录其随套曲首演，不推断船夫号子的起源年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00055",
+    "name": "《五哥放羊》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00056",
+    "name": "《包相爷与民伸屈冤》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00057",
+    "name": "《秦王破阵乐》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00058",
+    "name": "《将令一声震山川》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00059",
+    "name": "《东方红》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "李有源创编的早期歌曲版本",
+    "sources": [
+      {
+        "title": "《东方红》",
+        "url": "https://cflas.com.cn/resource//uploads/docs/20220712/62746cdd9090441a86a1ab10f4012259.pdf",
+        "publisher": "中国民间文艺家协会"
+      }
+    ],
+    "confidence": "high",
+    "note": "版本不同：该册为器乐曲，1942年是歌曲早期版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00060",
+    "name": "《义勇军进行曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1935年",
+    "yearRange": [
+      1935,
+      1935
+    ],
+    "subject": "电影《风云儿女》主题歌创作",
+    "sources": [
+      {
+        "title": "义勇军进行曲",
+        "url": "https://www.chnmuseum.cn/zp/zpml/gmww/202008/t20200824_247207.shtml",
+        "publisher": "中国国家博物馆"
+      },
+      {
+        "title": "义勇军进行曲创作资料",
+        "url": "https://www.publishingmuseum.net/collection/56.html",
+        "publisher": "上海出版印刷高等专科学校出版博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "国家博物馆记载1935年春创作。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00061",
+    "name": "《抗敌歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00062",
+    "name": "《松花江上》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1936年",
+    "yearRange": [
+      1936,
+      1936
+    ],
+    "subject": "《松花江上》创作",
+    "sources": [
+      {
+        "title": "《松花江上》",
+        "url": "https://www.ccphistory.org.cn/shds/shhm/content/f413e2f7-1ef1-434c-887c-1265e980ebc6.html",
+        "publisher": "上海党史网"
+      }
+    ],
+    "confidence": "high",
+    "note": "党史资料记载作品创作于1936年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00063",
+    "name": "《长城谣》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1937年",
+    "yearRange": [
+      1937,
+      1937
+    ],
+    "subject": "《长城谣》创作",
+    "sources": [
+      {
+        "title": "《长城谣》",
+        "url": "https://www.ctnews.com.cn/paper/att/202109/17/a649e4b1-d4aa-466c-aea8-cd6185db8c37.pdf",
+        "publisher": "中国交通报"
+      }
+    ],
+    "confidence": "medium",
+    "note": "资料记载1937年歌曲形成及刊载背景。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00064",
+    "name": "《游击队歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1937年",
+    "yearRange": [
+      1937,
+      1937
+    ],
+    "subject": "《游击队歌》创作",
+    "sources": [
+      {
+        "title": "《游击队歌》",
+        "url": "https://music.hgnu.edu.cn/_upload/article/files/09/d4/faf43ffb4e08b61cf64ee0adaf16/5fddadc6-b43a-4120-8b41-a08cd94ee22e.pdf",
+        "publisher": "河南师范大学"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载创作于1937年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00065",
+    "name": "《东北抗日联军第一路军军歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00066",
+    "name": "《到敌人后方去》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1938年",
+    "yearRange": [
+      1938,
+      1938
+    ],
+    "subject": "冼星海歌曲创作",
+    "sources": [
+      {
+        "title": "《到敌人后方去》",
+        "url": "https://www.sycm.edu.cn/display_son.aspx?DWid=87&Nid=19416&Vid=-1",
+        "publisher": "沈阳音乐学院"
+      }
+    ],
+    "confidence": "high",
+    "note": "音乐学院资料记载创作于1938年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00067",
+    "name": "《在太行山上》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1938年",
+    "yearRange": [
+      1938,
+      1938
+    ],
+    "subject": "《在太行山上》创作",
+    "sources": [
+      {
+        "title": "《在太行山上》",
+        "url": "https://www.jcgov.gov.cn/dtxx/ztzl/2016nzt/sxsgmyztl/lcx/201310/t20131028_129618.shtml",
+        "publisher": "晋城市人民政府"
+      }
+    ],
+    "confidence": "high",
+    "note": "政府资料记载创作于1938年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00068",
+    "name": "《团结就是力量》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1943年",
+    "yearRange": [
+      1943,
+      1943
+    ],
+    "subject": "《团结就是力量》创作",
+    "sources": [
+      {
+        "title": "《团结就是力量》",
+        "url": "https://sxy.nfu.edu.cn/info/1941/11111.htm",
+        "publisher": "南方医科大学南方学院"
+      }
+    ],
+    "confidence": "high",
+    "note": "高校资料记载创作于1943年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00069",
+    "name": "《地道战》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1965年",
+    "yearRange": [
+      1965,
+      1965
+    ],
+    "subject": "电影歌曲创作",
+    "sources": [
+      {
+        "title": "傅庚辰：音乐为人民——歌曲背后的故事",
+        "url": "https://www.cflac.org.cn/wywzt/2018/ytdj_WAP/yy/fgc/ythd/201808/t20180815_416800.html",
+        "publisher": "中国文艺网（中国文联）"
+      }
+    ],
+    "confidence": "medium",
+    "note": "中国文联资料记载傅庚辰于1965年创作电影《地道战》主题歌。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00070",
+    "name": "《江南》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00071",
+    "name": "《花儿与少年》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00073",
+    "name": "《可可西里》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00078",
+    "name": "《尕马儿令》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00079",
+    "name": "《上去高山望平川》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "青海花儿",
+    "sources": [
+      {
+        "title": "《上去高山望平川》",
+        "url": "https://paper.people.com.cn/rmrbhwb/page/2016-12/08/06/rmrbhwb2016120806.pdf",
+        "publisher": "人民日报海外版"
+      }
+    ],
+    "confidence": "medium",
+    "note": "演唱、记谱或采集年份不代表民歌起源。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00080",
+    "name": "《仓啷啷令》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00081",
+    "name": "《绿韭菜》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00082",
+    "name": "《下四川》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00083",
+    "name": "《大漠行》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00084",
+    "name": "《沙石疆》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00088",
+    "name": "《东郭先生》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00089",
+    "name": "《藏起老狼》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00090",
+    "name": "《放出老狼》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00091",
+    "name": "《狼起杀心》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00092",
+    "name": "《仓皇逃命》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00093",
+    "name": "《农夫评理》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00094",
+    "name": "《老狼钻进口袋里》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00095",
+    "name": "《禽兽、兄弟要分清》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00253",
+    "name": "《土地还家》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00268",
+    "name": "《牛斗虎》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00269",
+    "name": "《凤凰单展翅》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00278",
+    "name": "《兰花花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00279",
+    "name": "《三十里铺》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "陕北民歌",
+    "sources": [
+      {
+        "title": "《三十里铺》",
+        "url": "https://paper.people.com.cn/rmrbhwb/html/2016-11/03/content_1723718.htm",
+        "publisher": "人民日报海外版"
+      }
+    ],
+    "confidence": "medium",
+    "note": "采集整理时间不是民歌创作时间。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S1_E00280",
+    "name": "《赶牲灵》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "陕北民歌",
+    "sources": [
+      {
+        "title": "《赶牲灵》",
+        "url": "https://www.youtube.com/watch?v=BtzDs-2cPwQ",
+        "publisher": "央视网"
+      }
+    ],
+    "confidence": "medium",
+    "note": "央视节目标注为陕北民歌，未载创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00005",
+    "name": "《美丽的草原我的家》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00006",
+    "name": "《春天来了》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00013",
+    "name": "《黑缎子坎肩》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00015",
+    "name": "《草原连着北京》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00016",
+    "name": "《赛马》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1959—1960年",
+    "yearRange": [
+      1959,
+      1960
+    ],
+    "subject": "《赛马》创作",
+    "sources": [
+      {
+        "title": "《赛马》",
+        "url": "https://www.gzwxb.gov.cn/context/contextId/200600",
+        "publisher": "广州市委网信办（转载星海音乐厅资料）"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载1959年创作、1960年定稿，故用范围。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00017",
+    "name": "《赤诚花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00018",
+    "name": "《四季歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00024",
+    "name": "《阿里郎》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "韩国传统民歌",
+    "sources": [
+      {
+        "title": "《阿里郎》",
+        "url": "https://ich.unesco.org/en/RL/arirang-lyrical-folk-song-in-the-republic-of-korea-00445?RL=00445",
+        "publisher": "UNESCO"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非遗列名时间不是创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00025",
+    "name": "《鸟打令》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00026",
+    "name": "《散调》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00027",
+    "name": "《拉网小调》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00028",
+    "name": "《北国之春》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00029",
+    "name": "《春之海》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00031",
+    "name": "《美丽的夏牧场》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00037",
+    "name": "《萨尔阿尔哈》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00038",
+    "name": "《花儿为什么这样红》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00039",
+    "name": "《古丽碧塔》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00040",
+    "name": "《送你一束沙枣花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00041",
+    "name": "《北京的金山上》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00042",
+    "name": "《次仁拉索》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00048",
+    "name": "《天路》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "2001年",
+    "yearRange": [
+      2001,
+      2001
+    ],
+    "subject": "《天路》创作",
+    "sources": [
+      {
+        "title": "《天路》",
+        "url": "https://www.cflac.org.cn/zt/2009-09/28/content_17837772.htm",
+        "publisher": "中国文联"
+      }
+    ],
+    "confidence": "medium",
+    "note": "中国文联资料记载创作于2001年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00049",
+    "name": "《吉米，来吧》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00050",
+    "name": "《月亮叔叔住得远》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00054",
+    "name": "《西游记》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G3S2_E00197",
+    "name": "《辽阔的草原》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "蒙古族长调民歌",
+    "sources": [
+      {
+        "title": "《辽阔的草原》",
+        "url": "https://cctv.cntv.cn/lm/yueyoutianxia/20110819/109287.shtml",
+        "publisher": "央视网"
+      }
+    ],
+    "confidence": "medium",
+    "note": "央视资料确认长调民歌属性，未载创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00005",
+    "name": "《为救李郎离家园》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00010",
+    "name": "《凤阳花鼓》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "凤阳民歌及花鼓歌舞传统",
+    "sources": [
+      {
+        "title": "《凤阳花鼓》",
+        "url": "https://www.ihchina.cn/project_details/12776/",
+        "publisher": "中国非物质文化遗产网"
+      }
+    ],
+    "confidence": "medium",
+    "note": "非遗列名时间不作为作品年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00011",
+    "name": "《打麦歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00012",
+    "name": "《溜溜山歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00017",
+    "name": "《风筝》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00019",
+    "name": "《拉科奇进行曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00021",
+    "name": "《西西里舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00022",
+    "name": "《波莱罗舞曲》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1928年",
+    "yearRange": [
+      1928,
+      1928
+    ],
+    "subject": "拉威尔芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "Boléro — LA Phil",
+        "url": "https://www.laphil.com/works/bolero",
+        "publisher": "洛杉矶爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "洛杉矶爱乐记载作品作于1928年，并称其于同年11月在巴黎歌剧院首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00023",
+    "name": "《放牛班的春天》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00024",
+    "name": "《卡门》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1875年",
+    "yearRange": [
+      1875,
+      1875
+    ],
+    "subject": "比才歌剧首演",
+    "sources": [
+      {
+        "title": "《卡门》",
+        "url": "https://www.opera-comique.com/fr/spectacles/carmen-1",
+        "publisher": "巴黎喜歌剧院"
+      }
+    ],
+    "confidence": "high",
+    "note": "巴黎喜歌剧院记载1875年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00027",
+    "name": "《西湖美》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00028",
+    "name": "《忆江南》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00032",
+    "name": "《鹧鸪飞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00034",
+    "name": "《无锡景》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "江苏民间小调",
+    "sources": [
+      {
+        "title": "《无锡景》",
+        "url": "https://www.gqb.gov.cn/news/2021/0513/51290.shtml",
+        "publisher": "国务院侨务办公室"
+      }
+    ],
+    "confidence": "medium",
+    "note": "不采用早期刊印年份作为创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00035",
+    "name": "《天上掉下个林妹妹》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1958年",
+    "yearRange": [
+      1958,
+      1958
+    ],
+    "subject": "唱段随越剧《红楼梦》首演",
+    "sources": [
+      {
+        "title": "越剧《红楼梦》",
+        "url": "https://www.xinhuanet.com/politics/2018-05/08/c_1122800376.htm",
+        "publisher": "新华网"
+      }
+    ],
+    "confidence": "medium",
+    "note": "取剧目首演年份，不单独推断唱段创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00036",
+    "name": "《新木兰辞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00038",
+    "name": "《茉莉花》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "中国传统民歌；标题未限定单一地区版本",
+    "sources": [
+      {
+        "title": "《茉莉花》",
+        "url": "https://www.njlh.gov.cn/lhqrmzf/202505/t20250527_5570997.html",
+        "publisher": "南京市六合区人民政府"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1942年为采集记录，不是创作年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00039",
+    "name": "《图兰朵》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1926年",
+    "yearRange": [
+      1926,
+      1926
+    ],
+    "subject": "普契尼歌剧首演",
+    "sources": [
+      {
+        "title": "《图兰朵》",
+        "url": "https://www.puccinimuseum.org/en/giacomo-puccini/le-opere/turandot/",
+        "publisher": "普契尼博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "普契尼博物馆资料记载1926年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00040",
+    "name": "《东边升起月亮》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00041",
+    "name": "《扬子江暴风雨》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00043",
+    "name": "《牧童短笛》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00044",
+    "name": "《游击队歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1937年",
+    "yearRange": [
+      1937,
+      1937
+    ],
+    "subject": "《游击队歌》创作",
+    "sources": [
+      {
+        "title": "《游击队歌》",
+        "url": "https://music.hgnu.edu.cn/_upload/article/files/09/d4/faf43ffb4e08b61cf64ee0adaf16/5fddadc6-b43a-4120-8b41-a08cd94ee22e.pdf",
+        "publisher": "河南师范大学"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载创作于1937年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00045",
+    "name": "《嘉陵江上》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "《嘉陵江上》创作",
+    "sources": [
+      {
+        "title": "《嘉陵江上》",
+        "url": "https://jda.cq.gov.cn/web/article/1484205010134847488/web/content_1484205010134847488.html",
+        "publisher": "重庆市档案局"
+      }
+    ],
+    "confidence": "high",
+    "note": "档案资料记载作品创作于1939年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00046",
+    "name": "《森吉德马》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00047",
+    "name": "《抗敌歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00049",
+    "name": "《卡普里岛》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00055",
+    "name": "《快给大忙人让路》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00056",
+    "name": "《塞维利亚理发师》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1816年",
+    "yearRange": [
+      1816,
+      1816
+    ],
+    "subject": "罗西尼歌剧首演",
+    "sources": [
+      {
+        "title": "《塞维利亚理发师》",
+        "url": "https://www.operasj.org/wp-content/uploads/2016/11/OSJ-Barber-of-Seville-Press-Kit.pdf",
+        "publisher": "Opera San José"
+      }
+    ],
+    "confidence": "medium",
+    "note": "按教材常见的罗西尼歌剧版本记载。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00057",
+    "name": "《凯旋进行曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00058",
+    "name": "《阿依达》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1871年",
+    "yearRange": [
+      1871,
+      1871
+    ],
+    "subject": "威尔第歌剧首演",
+    "sources": [
+      {
+        "title": "《阿依达》",
+        "url": "https://prim.mariinsky.ru/cn/playbill/repertoire/opera/aida/",
+        "publisher": "马林斯基剧院"
+      }
+    ],
+    "confidence": "high",
+    "note": "剧院资料记载1871年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00059",
+    "name": "《今夜无人入睡》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00060",
+    "name": "《g小调大协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00061",
+    "name": "《第一小提琴协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "标题未包含作曲家、调性或作品号，无法可靠消歧。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00063",
+    "name": "《西班牙舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "题名对应多个独立作品或舞段，无法仅凭标题确认教材版本。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00064",
+    "name": "《阿兰胡埃斯协奏曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "协奏曲创作",
+    "sources": [
+      {
+        "title": "《阿兰胡埃斯协奏曲》",
+        "url": "https://webantigua.joaquin-rodrigo.com/index.php/es/instrumentos-solistas-con-orquesta/guitarra-y-orquesta/item/638-concierto-de-aranjuez",
+        "publisher": "华金·罗德里戈基金会"
+      }
+    ],
+    "confidence": "high",
+    "note": "作曲家基金会资料记载创作于1939年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00065",
+    "name": "《红》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00067",
+    "name": "《学习雷锋好榜样》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1963年",
+    "yearRange": [
+      1963,
+      1963
+    ],
+    "subject": "歌曲创作并首唱",
+    "sources": [
+      {
+        "title": "《学习雷锋好榜样》创作与传唱报道",
+        "url": "https://epaper.lnd.com.cn/lnrbepaper/pc/att/202302/28/3ac54252-bef3-41d0-bfa3-c2b9a19db37d.pdf",
+        "publisher": "辽宁日报"
+      }
+    ],
+    "confidence": "medium",
+    "note": "辽宁日报回顾创作者所述的歌曲创作与传唱，将其置于1963年学雷锋活动中；来源未给具体日，按年记录。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00069",
+    "name": "《我有一个梦》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00072",
+    "name": "《建国大业》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00076",
+    "name": "《英雄赞歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00078",
+    "name": "《突出重围》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00080",
+    "name": "《八月桂花遍地开》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00081",
+    "name": "《红星歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1973年",
+    "yearRange": [
+      1973,
+      1973
+    ],
+    "subject": "《红星歌》创作",
+    "sources": [
+      {
+        "title": "《红星歌》",
+        "url": "https://epaper.lnd.com.cn/lnrbepaper/pad/con/201908/14/content_39886.html",
+        "publisher": "辽宁日报"
+      }
+    ],
+    "confidence": "medium",
+    "note": "2019年报道以46年前表述创作时间，换算为1973年；建议核对影片档案。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00082",
+    "name": "《映山红》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1973年",
+    "yearRange": [
+      1973,
+      1973
+    ],
+    "subject": "电影插曲创作",
+    "sources": [
+      {
+        "title": "《映山红》",
+        "url": "https://www.tjjw.gov.cn/xfrw/2021/01/06/detail_2021010640395.html",
+        "publisher": "天津市纪委监委"
+      }
+    ],
+    "confidence": "medium",
+    "note": "来源记载歌曲于1973年创作；电影于1974年上映。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00083",
+    "name": "《红星照我去战斗》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到可靠来源直接证明歌曲创作年；电影上映年不等于歌曲创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00224",
+    "name": "《中花六板》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00225",
+    "name": "《行街》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G4S1_E00233",
+    "name": "《天仙配》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "发现1953年黄梅戏舞台改编与1955年电影版等不同版本，未能准确对应教材条目。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00008",
+    "name": "《月光光》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00010",
+    "name": "《落水天》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00012",
+    "name": "《平湖秋月》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00015",
+    "name": "《巴加女孩》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00020",
+    "name": "《坎迪德序曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00022",
+    "name": "《鱼歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00023",
+    "name": "《采茶灯》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00027",
+    "name": "《采茶歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00028",
+    "name": "《紫玉钗》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00031",
+    "name": "《东方之珠》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00032",
+    "name": "《七子之歌——澳门》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00035",
+    "name": "《澳门岁月》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00038",
+    "name": "《童年》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00039",
+    "name": "《月亮月光光》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00043",
+    "name": "《撑船调》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00044",
+    "name": "《宜兰童谣》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00046",
+    "name": "《春天的故事》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1994年",
+    "yearRange": [
+      1994,
+      1994
+    ],
+    "subject": "《春天的故事》创作",
+    "sources": [
+      {
+        "title": "《春天的故事》",
+        "url": "https://www.szdag.gov.cn/dawh/tqssn/content/post_98488.html",
+        "publisher": "深圳市档案局"
+      }
+    ],
+    "confidence": "high",
+    "note": "档案资料记载歌曲于1994年5月完成。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00047",
+    "name": "《步步高》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00048",
+    "name": "《安安寻母》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00049",
+    "name": "《寒鸦戏水》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00050",
+    "name": "《一点金》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00051",
+    "name": "《我的中国心》",
+    "status": "found",
+    "event": "出版",
+    "yearText": "1982年",
+    "yearRange": [
+      1982,
+      1982
+    ],
+    "subject": "歌曲及同名专辑公开出版",
+    "sources": [
+      {
+        "title": "《我的中国心》",
+        "url": "https://m.12371.gov.cn/content/2021-08/04/content_399841.html",
+        "publisher": "七一客户端"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载歌曲于1982年创作、同年11月公开出版发行。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00148",
+    "name": "《雨打芭蕉》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "广东音乐传统曲目",
+    "sources": [
+      {
+        "title": "《雨打芭蕉》",
+        "url": "https://www.gzwxb.gov.cn/context/contextId/209246",
+        "publisher": "广州市委网信办"
+      }
+    ],
+    "confidence": "medium",
+    "note": "不把早期刊谱时间作为创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G5S1_E00174",
+    "name": "《出水莲》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "客家筝传统曲目",
+    "sources": [
+      {
+        "title": "《出水莲》",
+        "url": "https://hkupress.hku.hk/image/catalog/pdf-preview/9789888528110.pdf",
+        "publisher": "香港大学出版社"
+      }
+    ],
+    "confidence": "medium",
+    "note": "传统曲目，未找到可靠创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00011",
+    "name": "《故乡的小路》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00018",
+    "name": "《大红枣儿甜又香》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00023",
+    "name": "《孔子》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00024",
+    "name": "《天鹅湖》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1877年",
+    "yearRange": [
+      1877,
+      1877
+    ],
+    "subject": "柴可夫斯基芭蕾舞剧莫斯科首演",
+    "sources": [
+      {
+        "title": "The history of Swan Lake in Finland",
+        "url": "https://oopperabaletti.fi/en/stage24/article/the-history-of-swan-lake-in-finland/",
+        "publisher": "芬兰国家歌剧院与芭蕾舞团"
+      }
+    ],
+    "confidence": "high",
+    "note": "芬兰国家歌剧院与芭蕾舞团的历史介绍记载该剧于1877年在莫斯科首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00025",
+    "name": "《白毛女》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1945年",
+    "yearRange": [
+      1945,
+      1945
+    ],
+    "subject": "歌剧首演",
+    "sources": [
+      {
+        "title": "《白毛女》",
+        "url": "https://www.mct.gov.cn/whzx/bnsj/yss/201111/t20111128_752555.html",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "high",
+    "note": "文化主管部门资料记载1945年4月在延安首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00028",
+    "name": "《雪绒花》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00032",
+    "name": "《红珊瑚》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00033",
+    "name": "《魔笛》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1791年",
+    "yearRange": [
+      1791,
+      1791
+    ],
+    "subject": "莫扎特歌剧首演",
+    "sources": [
+      {
+        "title": "《魔笛》",
+        "url": "https://mozarteum.at/en/wolfgang-amade-mozart",
+        "publisher": "萨尔茨堡莫扎特基金会"
+      }
+    ],
+    "confidence": "high",
+    "note": "莫扎特基金会资料记载1791年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00034",
+    "name": "《运河谣》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00035",
+    "name": "《灰姑娘》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00038",
+    "name": "《党的女儿》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1991年",
+    "yearRange": [
+      1991,
+      1991
+    ],
+    "subject": "歌剧首演",
+    "sources": [
+      {
+        "title": "《党的女儿》",
+        "url": "https://www.chncpa.org/subsite/ddne2023/wap/index.html",
+        "publisher": "国家大剧院"
+      }
+    ],
+    "confidence": "high",
+    "note": "国家大剧院资料记载1991年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00039",
+    "name": "《沂蒙山》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "2018年",
+    "yearRange": [
+      2018,
+      2018
+    ],
+    "subject": "文化和旅游部列入2018年新创剧目的年份",
+    "sources": [
+      {
+        "title": "2018年中国民族歌剧传承发展工程重点扶持剧目名单",
+        "url": "https://zwgk.mct.gov.cn/zfxxgkml/wysy/202012/t20201205_916437.html",
+        "publisher": "中华人民共和国文化和旅游部"
+      }
+    ],
+    "confidence": "high",
+    "note": "文化和旅游部将《沂蒙山》列入从2018年新创剧目中遴选的扶持名单；据此记录创作年份，不将名单年份说成首演年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00040",
+    "name": "《再看一眼亲人》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00041",
+    "name": "《山海情》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00042",
+    "name": "《海风吹向贺兰山》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00043",
+    "name": "《江姐》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1964年",
+    "yearRange": [
+      1964,
+      1964
+    ],
+    "subject": "歌剧首演",
+    "sources": [
+      {
+        "title": "《江姐》",
+        "url": "https://www.hall.tsinghua.edu.cn/info/xwkx/1938",
+        "publisher": "清华大学"
+      }
+    ],
+    "confidence": "high",
+    "note": "此年指歌剧首演；剧中唱段不单独定年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00044",
+    "name": "《乡村骑士》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00049",
+    "name": "《都有一颗红亮的心》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00153",
+    "name": "《天仙配》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "发现1953年黄梅戏舞台改编与1955年电影版等不同版本，未能准确对应教材条目。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G6S1_E00154",
+    "name": "《女驸马》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00011",
+    "name": "《D大调钢琴协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00012",
+    "name": "《瑶族舞曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "20世纪50年代",
+    "yearRange": [
+      1950,
+      1959
+    ],
+    "subject": "管弦乐曲创作年代",
+    "sources": [
+      {
+        "title": "《瑶族舞曲》",
+        "url": "https://ca.china-embassy.gov.cn/zt/wlzgypt/202201/P020220128192477302626.pdf",
+        "publisher": "中国驻加拿大大使馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源直接记为20世纪50年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00013",
+    "name": "《西西里舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00024",
+    "name": "《北京的金山上》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00025",
+    "name": "《王大娘钉缸》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00026",
+    "name": "《铡美案》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00027",
+    "name": "《哈腰挂》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00028",
+    "name": "《桔梗谣》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "朝鲜族民歌",
+    "sources": [
+      {
+        "title": "《桔梗谣》",
+        "url": "https://lywgyxx.szftedu.cn/xkjc/yinyue/202209/P020220910586257743679.pdf",
+        "publisher": "深圳市福田区教育局"
+      }
+    ],
+    "confidence": "medium",
+    "note": "传统曲目，未找到可靠创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00029",
+    "name": "《打支山歌过横排》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "江西兴国山歌",
+    "sources": [
+      {
+        "title": "《打支山歌过横排》",
+        "url": "https://paper.people.com.cn/rmzk/html/2018-07/01/content_1867554.htm",
+        "publisher": "人民周刊"
+      }
+    ],
+    "confidence": "medium",
+    "note": "传统曲目，未找到可靠创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00030",
+    "name": "《八骏马》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "福建南音传统套曲",
+    "sources": [
+      {
+        "title": "《八骏马》",
+        "url": "https://en.chinaculture.org/gb/2006-11/20/content_357329_2.htm",
+        "publisher": "中国文化网"
+      }
+    ],
+    "confidence": "medium",
+    "note": "传统曲目，未找到可靠创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00031",
+    "name": "《唱山歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00032",
+    "name": "《茉莉花》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "中国传统民歌；标题未限定单一地区版本",
+    "sources": [
+      {
+        "title": "《茉莉花》",
+        "url": "https://www.njlh.gov.cn/lhqrmzf/202505/t20250527_5570997.html",
+        "publisher": "南京市六合区人民政府"
+      }
+    ],
+    "confidence": "medium",
+    "note": "1942年为采集记录，不是创作年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00038",
+    "name": "《碣石调·幽兰》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00049",
+    "name": "《赤潮曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00050",
+    "name": "《义勇军进行曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1935年",
+    "yearRange": [
+      1935,
+      1935
+    ],
+    "subject": "电影《风云儿女》主题歌创作",
+    "sources": [
+      {
+        "title": "义勇军进行曲",
+        "url": "https://www.chnmuseum.cn/zp/zpml/gmww/202008/t20200824_247207.shtml",
+        "publisher": "中国国家博物馆"
+      },
+      {
+        "title": "义勇军进行曲创作资料",
+        "url": "https://www.publishingmuseum.net/collection/56.html",
+        "publisher": "上海出版印刷高等专科学校出版博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "国家博物馆记载1935年春创作。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00054",
+    "name": "《我为祖国献石油》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1964年",
+    "yearRange": [
+      1964,
+      1964
+    ],
+    "subject": "《我为祖国献石油》创作",
+    "sources": [
+      {
+        "title": "《我为祖国献石油》",
+        "url": "https://epaper.lnd.com.cn/lnrbepaper/pc/att/202104/30/2f4bbf27-ef87-42ca-8394-33214a32d9cd.pdf",
+        "publisher": "辽宁日报"
+      }
+    ],
+    "confidence": "high",
+    "note": "报刊资料记载歌曲创作于1964年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00055",
+    "name": "《梁山伯与祝英台》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1959年",
+    "yearRange": [
+      1959,
+      1959
+    ],
+    "subject": "何占豪、陈钢小提琴协奏曲首演",
+    "sources": [
+      {
+        "title": "《梁山伯与祝英台》",
+        "url": "https://www.shcmusic.edu.cn/_t112/2018/0313/c2827a36809/page.htm",
+        "publisher": "上海音乐学院"
+      }
+    ],
+    "confidence": "high",
+    "note": "按小提琴协奏曲理解，不指同名越剧或故事年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00056",
+    "name": "《智取威虎山》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00057",
+    "name": "《唱支山歌给党听》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1963年",
+    "yearRange": [
+      1963,
+      1963
+    ],
+    "subject": "朱践耳为姚筱舟诗作谱曲",
+    "sources": [
+      {
+        "title": "歌曲流传资料",
+        "url": "https://m.ccdi.gov.cn/content/c4/d3/79231.html",
+        "publisher": "中央纪委国家监委网站"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载1963年谱曲并发表。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00058",
+    "name": "《红色娘子军》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1964年",
+    "yearRange": [
+      1964,
+      1964
+    ],
+    "subject": "芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "《红色娘子军》",
+        "url": "https://www.nbc.cn/content-3253-22172.html",
+        "publisher": "中央芭蕾舞团"
+      }
+    ],
+    "confidence": "high",
+    "note": "中央芭蕾舞团记载1964年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00060",
+    "name": "《东方红》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1942年",
+    "yearRange": [
+      1942,
+      1942
+    ],
+    "subject": "李有源创编的早期歌曲版本",
+    "sources": [
+      {
+        "title": "《东方红》",
+        "url": "https://cflas.com.cn/resource//uploads/docs/20220712/62746cdd9090441a86a1ab10f4012259.pdf",
+        "publisher": "中国民间文艺家协会"
+      }
+    ],
+    "confidence": "medium",
+    "note": "早期曲调、歌词与后续改编有版本差异；此处指李有源创编版本。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00061",
+    "name": "《游击队歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1937年",
+    "yearRange": [
+      1937,
+      1937
+    ],
+    "subject": "《游击队歌》创作",
+    "sources": [
+      {
+        "title": "《游击队歌》",
+        "url": "https://music.hgnu.edu.cn/_upload/article/files/09/d4/faf43ffb4e08b61cf64ee0adaf16/5fddadc6-b43a-4120-8b41-a08cd94ee22e.pdf",
+        "publisher": "河南师范大学"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载创作于1937年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00062",
+    "name": "《黄河大合唱》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "作品延安首演",
+    "sources": [
+      {
+        "title": "从延安唱响的时代之声——《黄河大合唱》的首演与创作",
+        "url": "https://www.bjsupervision.gov.cn/ywyl/202104/t20210409_73461.html",
+        "publisher": "北京市纪委监委（转载《中国纪检监察报》）"
+      }
+    ],
+    "confidence": "high",
+    "note": "《中国纪检监察报》记载该作品于1939年4月13日在延安首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00063",
+    "name": "《没有共产党就没有新中国》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00064",
+    "name": "《白毛女》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1945年",
+    "yearRange": [
+      1945,
+      1945
+    ],
+    "subject": "歌剧首演",
+    "sources": [
+      {
+        "title": "《白毛女》",
+        "url": "https://www.mct.gov.cn/whzx/bnsj/yss/201111/t20111128_752555.html",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "high",
+    "note": "文化主管部门资料记载1945年4月在延安首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00065",
+    "name": "《老六板》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00066",
+    "name": "《领航》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "2021年",
+    "yearRange": [
+      2021,
+      2021
+    ],
+    "subject": "建党百年文艺演出主题歌曲首唱",
+    "sources": [
+      {
+        "title": "《领航》MV",
+        "url": "https://news.cctv.com/2021/12/31/ARTIonBf0YJ4nfODQQOOnJY1211231.shtml",
+        "publisher": "中央广播电视总台央视网"
+      }
+    ],
+    "confidence": "high",
+    "note": "央视网记载该曲首唱于2021年《伟大征程》文艺演出，MV于2021年12月31日发布。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00082",
+    "name": "《塞基洛斯歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00083",
+    "name": "《我看到云雀高飞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00084",
+    "name": "《帕格尼尼主题练习曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00085",
+    "name": "《中华人民共和国国歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1935年",
+    "yearRange": [
+      1935,
+      1935
+    ],
+    "subject": "国歌原作创作",
+    "sources": [
+      {
+        "title": "义勇军进行曲",
+        "url": "https://www.chnmuseum.cn/zp/zpml/gmww/202008/t20200824_247207.shtml",
+        "publisher": "中国国家博物馆"
+      },
+      {
+        "title": "义勇军进行曲创作资料",
+        "url": "https://www.publishingmuseum.net/collection/56.html",
+        "publisher": "上海出版印刷高等专科学校出版博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "按原作创作年份记录，不是正式定为国歌的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00086",
+    "name": "《国际歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00301",
+    "name": "《五首管弦乐曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00302",
+    "name": "《净化之夜》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00305",
+    "name": "《火鸟》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1910年",
+    "yearRange": [
+      1910,
+      1910
+    ],
+    "subject": "斯特拉文斯基芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "《火鸟》",
+        "url": "https://www.berliner-philharmoniker.de/en/programme-notes/igor-stravinsky-loiseau-de-feu-the-firebird-ballet-music",
+        "publisher": "柏林爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "柏林爱乐资料记载1910年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00306",
+    "name": "《彼得鲁什卡》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1911年",
+    "yearRange": [
+      1911,
+      1911
+    ],
+    "subject": "斯特拉文斯基芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "《彼得鲁什卡》",
+        "url": "https://prim.mariinsky.ru/en/playbill/repertoire/ballet/petrushka/",
+        "publisher": "马林斯基剧院"
+      }
+    ],
+    "confidence": "high",
+    "note": "马林斯基剧院资料记载1911年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00307",
+    "name": "《春之祭》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1913年",
+    "yearRange": [
+      1913,
+      1913
+    ],
+    "subject": "斯特拉文斯基芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "《春之祭》",
+        "url": "https://cambridgephilharmonic.com/wp-content/uploads/2024/11/Nov-2024Programme-1.pdf",
+        "publisher": "Cambridge Philharmonic"
+      }
+    ],
+    "confidence": "medium",
+    "note": "演出节目册记载作品于1913年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00308",
+    "name": "《C大调交响曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00310",
+    "name": "《第二圆舞曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1956年",
+    "yearRange": [
+      1956,
+      1956
+    ],
+    "subject": "肖斯塔科维奇圆舞曲创作",
+    "sources": [
+      {
+        "title": "《第二圆舞曲》",
+        "url": "https://www.bso.org/works/waltz-no-2-from-suite-no-1-for-variety-orchestra",
+        "publisher": "波士顿交响乐团"
+      }
+    ],
+    "confidence": "medium",
+    "note": "按乐团所述版本及年份记载；组曲编号与流传版本有差异。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00313",
+    "name": "《时值与力度的模式》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00315",
+    "name": "《百鸟苏醒》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00337",
+    "name": "《如愿》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00358",
+    "name": "《江苏《茉莉花》》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00359",
+    "name": "《东北《茉莉花》》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00360",
+    "name": "《东边升起月亮》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S1_E00361",
+    "name": "《图兰朵》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1926年",
+    "yearRange": [
+      1926,
+      1926
+    ],
+    "subject": "普契尼歌剧首演",
+    "sources": [
+      {
+        "title": "《图兰朵》",
+        "url": "https://www.puccinimuseum.org/en/giacomo-puccini/le-opere/turandot/",
+        "publisher": "普契尼博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "普契尼博物馆资料记载1926年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00009",
+    "name": "《第九交响曲“合唱”》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1824年",
+    "yearRange": [
+      1824,
+      1824
+    ],
+    "subject": "贝多芬第九交响曲首演",
+    "sources": [
+      {
+        "title": "《第九交响曲“合唱”》",
+        "url": "https://www.beethoven.de/en/work/view/5556714292117504/",
+        "publisher": "贝多芬故居"
+      }
+    ],
+    "confidence": "high",
+    "note": "贝多芬故居记载1824年5月7日维也纳首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00010",
+    "name": "《悲歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00011",
+    "name": "《红旗颂》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00012",
+    "name": "《节日序曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00013",
+    "name": "《第一小提琴协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "标题未包含作曲家、调性或作品号，无法可靠消歧。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00021",
+    "name": "《四合如意》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00022",
+    "name": "《彼得·格里姆斯》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00023",
+    "name": "《战争安魂曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00025",
+    "name": "《红色娘子军》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1964年",
+    "yearRange": [
+      1964,
+      1964
+    ],
+    "subject": "芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "《红色娘子军》",
+        "url": "https://www.nbc.cn/content-3253-22172.html",
+        "publisher": "中央芭蕾舞团"
+      }
+    ],
+    "confidence": "high",
+    "note": "中央芭蕾舞团记载1964年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00026",
+    "name": "《鱼美人》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1959年",
+    "yearRange": [
+      1959,
+      1959
+    ],
+    "subject": "芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "《鱼美人》",
+        "url": "https://www.nbc.cn/img_content-3403-9983.html",
+        "publisher": "中央芭蕾舞团"
+      }
+    ],
+    "confidence": "high",
+    "note": "中央芭蕾舞团资料记载1959年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00027",
+    "name": "《春江花月夜》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "民族管弦乐合奏改编版形成",
+    "sources": [
+      {
+        "title": "《春江花月夜》",
+        "url": "https://bowuguan.shcmusic.edu.cn/2020/0427/c549a9397/page.htm",
+        "publisher": "上海音乐学院博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "版本不同：该册标注杜鸣心，1925年是民族管弦乐合奏改编版的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00028",
+    "name": "《小白菜》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "河北民歌",
+    "sources": [
+      {
+        "title": "《小白菜》",
+        "url": "https://paper.people.com.cn/rmrbhwb/html/2016-09/08/content_1710799.htm",
+        "publisher": "人民日报海外版"
+      }
+    ],
+    "confidence": "medium",
+    "note": "来源确认地方民歌属性，未载创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00029",
+    "name": "《梁山伯与祝英台》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1959年",
+    "yearRange": [
+      1959,
+      1959
+    ],
+    "subject": "何占豪、陈钢小提琴协奏曲首演",
+    "sources": [
+      {
+        "title": "《梁山伯与祝英台》",
+        "url": "https://www.shcmusic.edu.cn/_t112/2018/0313/c2827a36809/page.htm",
+        "publisher": "上海音乐学院"
+      }
+    ],
+    "confidence": "high",
+    "note": "按小提琴协奏曲理解，不指同名越剧或故事年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00032",
+    "name": "《杏花天影》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00033",
+    "name": "《赛马》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1959—1960年",
+    "yearRange": [
+      1959,
+      1960
+    ],
+    "subject": "《赛马》创作",
+    "sources": [
+      {
+        "title": "《赛马》",
+        "url": "https://www.gzwxb.gov.cn/context/contextId/200600",
+        "publisher": "广州市委网信办（转载星海音乐厅资料）"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载1959年创作、1960年定稿，故用范围。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00039",
+    "name": "《大漠之夜》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00046",
+    "name": "《汉宫秋月》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00047",
+    "name": "《胡笳十八拍》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00048",
+    "name": "《听妈妈讲那过去的事情》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00049",
+    "name": "《e小调第五交响曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1888年",
+    "yearRange": [
+      1888,
+      1888
+    ],
+    "subject": "柴可夫斯基第五交响曲创作",
+    "sources": [
+      {
+        "title": "《e小调第五交响曲》",
+        "url": "https://www.berliner-philharmoniker.de/en/programme-notes/piotr-tchaikovsky-symphony-no-5-in-e-minor-op-64/",
+        "publisher": "柏林爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "柏林爱乐资料明确为E小调第五交响曲，创作于1888年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00050",
+    "name": "《第六交响曲“悲怆”》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1893年",
+    "yearRange": [
+      1893,
+      1893
+    ],
+    "subject": "柴可夫斯基交响曲首演",
+    "sources": [
+      {
+        "title": "《第六交响曲“悲怆”》",
+        "url": "https://www.rsno.org.uk/wp-content/uploads/2023/04/Tchaikovskys-Pathetique-2122-Apr-2023.pdf",
+        "publisher": "苏格兰皇家国家交响乐团"
+      }
+    ],
+    "confidence": "high",
+    "note": "乐团资料记载作品创作并于1893年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00051",
+    "name": "《黑桃皇后》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00052",
+    "name": "《天鹅湖》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1877年",
+    "yearRange": [
+      1877,
+      1877
+    ],
+    "subject": "柴可夫斯基芭蕾舞剧莫斯科首演",
+    "sources": [
+      {
+        "title": "The history of Swan Lake in Finland",
+        "url": "https://oopperabaletti.fi/en/stage24/article/the-history-of-swan-lake-in-finland/",
+        "publisher": "芬兰国家歌剧院与芭蕾舞团"
+      }
+    ],
+    "confidence": "high",
+    "note": "芬兰国家歌剧院与芭蕾舞团的历史介绍记载该剧于1877年在莫斯科首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00053",
+    "name": "《1812 序曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1880年",
+    "yearRange": [
+      1880,
+      1880
+    ],
+    "subject": "《1812 序曲》创作",
+    "sources": [
+      {
+        "title": "《1812 序曲》",
+        "url": "https://www.tchaikov.ru/1812.html",
+        "publisher": "柴可夫斯基研究资料"
+      }
+    ],
+    "confidence": "high",
+    "note": "资料记载作品创作于1880年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00054",
+    "name": "《第九交响曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "标题未注明作曲家，不能仅凭裸标题认定为贝多芬合唱交响曲。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00055",
+    "name": "《第二钢琴协奏曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "同名作品众多，标题不足以确定作曲家与作品。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00058",
+    "name": "《黄河》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00059",
+    "name": "《月儿高》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00063",
+    "name": "《庆丰收》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00064",
+    "name": "《战台风》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00065",
+    "name": "《林冲夜奔》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00066",
+    "name": "《复仇的火焰在我心中燃烧》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00067",
+    "name": "《病中吟》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00068",
+    "name": "《江河水》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00069",
+    "name": "《妆台秋思》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00070",
+    "name": "《跳蚤之歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1879年",
+    "yearRange": [
+      1879,
+      1879
+    ],
+    "subject": "穆索尔斯基歌曲创作",
+    "sources": [
+      {
+        "title": "《跳蚤之歌》",
+        "url": "https://www.chandos.net/chanimages/Booklets/CH20184.pdf",
+        "publisher": "Chandos Records"
+      }
+    ],
+    "confidence": "medium",
+    "note": "唱片公司节目册将该作品列为1879年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00071",
+    "name": "《良宵》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00072",
+    "name": "《哥德堡变奏曲》",
+    "status": "found",
+    "event": "出版",
+    "yearText": "1741年",
+    "yearRange": [
+      1741,
+      1741
+    ],
+    "subject": "巴赫作品出版",
+    "sources": [
+      {
+        "title": "《哥德堡变奏曲》",
+        "url": "https://www.bachvereniging.nl/en/bwv/bwv-988",
+        "publisher": "荷兰巴赫协会"
+      }
+    ],
+    "confidence": "high",
+    "note": "资料记载1741年出版。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00073",
+    "name": "《二部创意曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00074",
+    "name": "《贾尼·斯基基》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00075",
+    "name": "《我亲爱的爸爸》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00076",
+    "name": "《中国人民解放军军歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "原曲《八路军进行曲》创作",
+    "sources": [
+      {
+        "title": "中国人民解放军军歌创作资料",
+        "url": "https://image.chinawriter.com.cn/61/2015/0213/U3875P843T61D1364F789DT20150213065302.pdf",
+        "publisher": "中国作家网"
+      }
+    ],
+    "confidence": "high",
+    "note": "中国作家网刊载资料记载该曲自1939年问世。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00077",
+    "name": "《保卫黄河》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "《黄河大合唱》第七乐章随全曲首演",
+    "sources": [
+      {
+        "title": "从延安唱响的时代之声——《黄河大合唱》的首演与创作",
+        "url": "https://www.bjsupervision.gov.cn/ywyl/202104/t20210409_73461.html",
+        "publisher": "北京市纪委监委（转载《中国纪检监察报》）"
+      }
+    ],
+    "confidence": "high",
+    "note": "首演报道明确将《保卫黄河》列为全曲第七乐章；只记录其随套曲首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00228",
+    "name": "《回声》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00233",
+    "name": "《流水》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G7S2_E00234",
+    "name": "《忆故人》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00013",
+    "name": "《小白菜》",
+    "status": "traditional",
+    "event": null,
+    "yearText": "传统曲目，形成年代不详",
+    "yearRange": null,
+    "subject": "河北民歌",
+    "sources": [
+      {
+        "title": "《小白菜》",
+        "url": "https://paper.people.com.cn/rmrbhwb/html/2016-09/08/content_1710799.htm",
+        "publisher": "人民日报海外版"
+      }
+    ],
+    "confidence": "medium",
+    "note": "来源确认地方民歌属性，未载创作年代。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00014",
+    "name": "《松花江上》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1936年",
+    "yearRange": [
+      1936,
+      1936
+    ],
+    "subject": "《松花江上》创作",
+    "sources": [
+      {
+        "title": "《松花江上》",
+        "url": "https://www.ccphistory.org.cn/shds/shhm/content/f413e2f7-1ef1-434c-887c-1265e980ebc6.html",
+        "publisher": "上海党史网"
+      }
+    ],
+    "confidence": "high",
+    "note": "党史资料记载作品创作于1936年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00015",
+    "name": "《脚夫调》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00016",
+    "name": "《满怀深情望北京》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00029",
+    "name": "《音乐的奉献》",
+    "status": "found",
+    "event": "出版",
+    "yearText": "1747年",
+    "yearRange": [
+      1747,
+      1747
+    ],
+    "subject": "巴赫作品出版",
+    "sources": [
+      {
+        "title": "《音乐的奉献》",
+        "url": "https://imslp.org/wiki/Musikalisches_Opfer%2C_BWV_1079_%28Bach%2C_Johann_Sebastian%29",
+        "publisher": "IMSLP"
+      }
+    ],
+    "confidence": "medium",
+    "note": "早期印本资料记为1747年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00035",
+    "name": "《图画展览会》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1874年",
+    "yearRange": [
+      1874,
+      1874
+    ],
+    "subject": "穆索尔斯基钢琴组曲创作",
+    "sources": [
+      {
+        "title": "《图画展览会》",
+        "url": "https://www.laphil.com/works/pictures-at-an-exhibition",
+        "publisher": "洛杉矶爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "按原始钢琴组曲创作年记载；管弦乐配器版本另有时间。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00036",
+    "name": "《荒山之夜》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "现有资料主要依赖百科类来源，未找到足够可靠且能对应教材版本的来源。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00038",
+    "name": "《帕凡舞曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00040",
+    "name": "《内蒙组曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00041",
+    "name": "《彼得与狼》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1936年",
+    "yearRange": [
+      1936,
+      1936
+    ],
+    "subject": "普罗科菲耶夫交响童话创作",
+    "sources": [
+      {
+        "title": "《彼得与狼》",
+        "url": "https://www.laphil.com/works/peter-and-the-wolf",
+        "publisher": "洛杉矶爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "洛杉矶爱乐资料记载创作于1936年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00042",
+    "name": "《罗密欧与朱丽叶》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "柴可夫斯基幻想序曲初稿创作",
+    "sources": [
+      {
+        "title": "《罗密欧与朱丽叶》",
+        "url": "https://www.philharmonia.spb.ru/compositions/about/28602/",
+        "publisher": "圣彼得堡爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "版本无法确认：教材列为舞蹈音乐（更可能是普罗科菲耶夫芭蕾舞剧），原结果取的是柴可夫斯基幻想序曲年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00043",
+    "name": "《没有共产党就没有新中国》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00044",
+    "name": "《我的祖国》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1956年",
+    "yearRange": [
+      1956,
+      1956
+    ],
+    "subject": "乔羽作词、刘炽作曲的电影《上甘岭》歌曲",
+    "sources": [
+      {
+        "title": "歌声·心声（歌声中的70年）",
+        "url": "https://culture.people.com.cn/n1/2019/1009/c1013-31388189.html",
+        "publisher": "人民网"
+      },
+      {
+        "title": "歌曲年份资料",
+        "url": "https://wyb.chinawriter.com.cn/attachment/202206/06/3fb60419-f301-48c8-8e26-8614e9e3fc5c.pdf",
+        "publisher": "中国作家网"
+      }
+    ],
+    "confidence": "high",
+    "note": "PEP单元印在心里的歌指电影歌曲版本；记录歌曲随电影推出年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00197",
+    "name": "《流水》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S1_E00198",
+    "name": "《潇湘水云》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00009",
+    "name": "《春花之舞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00010",
+    "name": "《长江之歌》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1982年",
+    "yearRange": [
+      1982,
+      1982
+    ],
+    "subject": "电视纪录片《话说长江》主题歌旋律创作",
+    "sources": [
+      {
+        "title": "长江之歌创作回忆",
+        "url": "https://doss.xhby.net/zpaper/yzwb/pc/att/202304/29/afa5d0b7-df9c-4a45-b128-62c6726017a6.pdf",
+        "publisher": "扬子晚报"
+      }
+    ],
+    "confidence": "medium",
+    "note": "报道记载旋律于1982年创作；纪录片1983年播出，非创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00013",
+    "name": "《大海在呼唤》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00014",
+    "name": "《夕阳箫鼓》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00018",
+    "name": "《黄河大合唱》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1939年",
+    "yearRange": [
+      1939,
+      1939
+    ],
+    "subject": "作品延安首演",
+    "sources": [
+      {
+        "title": "从延安唱响的时代之声——《黄河大合唱》的首演与创作",
+        "url": "https://www.bjsupervision.gov.cn/ywyl/202104/t20210409_73461.html",
+        "publisher": "北京市纪委监委（转载《中国纪检监察报》）"
+      }
+    ],
+    "confidence": "high",
+    "note": "《中国纪检监察报》记载该作品于1939年4月13日在延安首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00019",
+    "name": "《战争安魂曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00028",
+    "name": "《第一叙事曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00032",
+    "name": "《c小调第五(命运)交响曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1808年",
+    "yearRange": [
+      1808,
+      1808
+    ],
+    "subject": "贝多芬第五交响曲创作",
+    "sources": [
+      {
+        "title": "《c小调第五(命运)交响曲》",
+        "url": "https://www.beethoven.de/en/work/view/ag9iZWV0aG92ZW4tdml1cjNyEQsSBHdvcmsYgICA7NW5jwsM/Symphony%2Bno.%2B5%2B%26%2340%3BC%2Bminor%26%2341%3B%2Bop.%2B67",
+        "publisher": "贝多芬故居"
+      }
+    ],
+    "confidence": "high",
+    "note": "贝多芬故居资料记载1808年完成及首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00033",
+    "name": "《第一〇一交响曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1793—1794年",
+    "yearRange": [
+      1793,
+      1794
+    ],
+    "subject": "海顿D大调第101交响曲《时钟》创作期",
+    "sources": [
+      {
+        "title": "《第一〇一交响曲》",
+        "url": "https://sofiaphilharmonic.com/en/works/joseph-haydn-symphony-no-101-the-clock-in-d-major",
+        "publisher": "索菲亚爱乐"
+      }
+    ],
+    "confidence": "high",
+    "note": "乐团资料记为1793—1794年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00034",
+    "name": "《第六交响曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00035",
+    "name": "《第四交响曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00036",
+    "name": "《第五交响曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00041",
+    "name": "《水仙女》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00042",
+    "name": "《图兰朵》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1926年",
+    "yearRange": [
+      1926,
+      1926
+    ],
+    "subject": "普契尼歌剧首演",
+    "sources": [
+      {
+        "title": "《图兰朵》",
+        "url": "https://www.puccinimuseum.org/en/giacomo-puccini/le-opere/turandot/",
+        "publisher": "普契尼博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "普契尼博物馆资料记载1926年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00043",
+    "name": "《拉克美》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00044",
+    "name": "《纳布科》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1842年",
+    "yearRange": [
+      1842,
+      1842
+    ],
+    "subject": "威尔第歌剧首演",
+    "sources": [
+      {
+        "title": "《纳布科》",
+        "url": "https://www.mariinsky.ru/en/playbill/repertoire/opera/nabukko_1/",
+        "publisher": "马林斯基剧院"
+      }
+    ],
+    "confidence": "high",
+    "note": "剧院资料记载1842年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00045",
+    "name": "《蝴蝶夫人》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1904年",
+    "yearRange": [
+      1904,
+      1904
+    ],
+    "subject": "普契尼歌剧首演",
+    "sources": [
+      {
+        "title": "《蝴蝶夫人》",
+        "url": "https://www.puccinimuseum.org/en/giacomo-puccini/le-opere/madama-butterfly/",
+        "publisher": "普契尼博物馆"
+      }
+    ],
+    "confidence": "high",
+    "note": "普契尼博物馆资料记载1904年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00046",
+    "name": "《茶花女》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1853年",
+    "yearRange": [
+      1853,
+      1853
+    ],
+    "subject": "威尔第歌剧首演",
+    "sources": [
+      {
+        "title": "《茶花女》",
+        "url": "https://www.mct.gov.cn/gtb/index.jsp?url=https%3A%2F%2Fwww.mct.gov.cn%2Fwhzx%2Fzsdw%2Fzygjy%2F202409%2Ft20240906_955110.html",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "high",
+    "note": "文化和旅游部资料记载作品首演年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00047",
+    "name": "《塞维利亚的理发师》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1816年",
+    "yearRange": [
+      1816,
+      1816
+    ],
+    "subject": "罗西尼歌剧首演",
+    "sources": [
+      {
+        "title": "《塞维利亚的理发师》",
+        "url": "https://www.operasj.org/wp-content/uploads/2016/11/OSJ-Barber-of-Seville-Press-Kit.pdf",
+        "publisher": "Opera San José"
+      }
+    ],
+    "confidence": "medium",
+    "note": "与《塞维利亚理发师》为同一歌剧异名。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00048",
+    "name": "《威廉·退尔》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00049",
+    "name": "《女武神》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00050",
+    "name": "《罗恩格林》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1850年",
+    "yearRange": [
+      1850,
+      1850
+    ],
+    "subject": "瓦格纳歌剧首演",
+    "sources": [
+      {
+        "title": "《罗恩格林》",
+        "url": "https://www.bayreuther-festspiele.de/programm/auffuehrungen/lohengrin/",
+        "publisher": "拜罗伊特音乐节"
+      }
+    ],
+    "confidence": "high",
+    "note": "拜罗伊特音乐节资料记载1850年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00051",
+    "name": "《泰依斯》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00052",
+    "name": "《兄妹开荒》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00053",
+    "name": "《小二黑结婚》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00054",
+    "name": "《南泥湾》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1943年",
+    "yearRange": [
+      1943,
+      1943
+    ],
+    "subject": "《南泥湾》创作",
+    "sources": [
+      {
+        "title": "《南泥湾》的诞生",
+        "url": "https://m.news.cntv.cn/2015/05/01/ARTI1430450330596907.shtml",
+        "publisher": "央视网"
+      },
+      {
+        "title": "《南泥湾》",
+        "url": "https://www.sycm.edu.cn/display_son.aspx?DWid=87&Nid=18224&Vid=-1",
+        "publisher": "沈阳音乐学院"
+      }
+    ],
+    "confidence": "high",
+    "note": "央视及音乐院校资料记载歌曲诞生于1943年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00055",
+    "name": "《咱们工人有力量》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00056",
+    "name": "《陕北组曲》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00057",
+    "name": "《白毛女》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1945年",
+    "yearRange": [
+      1945,
+      1945
+    ],
+    "subject": "歌剧首演",
+    "sources": [
+      {
+        "title": "《白毛女》",
+        "url": "https://www.mct.gov.cn/whzx/bnsj/yss/201111/t20111128_752555.html",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "high",
+    "note": "文化主管部门资料记载1945年4月在延安首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00067",
+    "name": "《党的女儿》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1991年",
+    "yearRange": [
+      1991,
+      1991
+    ],
+    "subject": "歌剧首演",
+    "sources": [
+      {
+        "title": "《党的女儿》",
+        "url": "https://www.chncpa.org/subsite/ddne2023/wap/index.html",
+        "publisher": "国家大剧院"
+      }
+    ],
+    "confidence": "high",
+    "note": "国家大剧院资料记载1991年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00068",
+    "name": "《沂蒙颂》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1973年",
+    "yearRange": [
+      1973,
+      1973
+    ],
+    "subject": "舞剧首演",
+    "sources": [
+      {
+        "title": "《沂蒙颂》",
+        "url": "https://m.thepaper.cn/newsDetail_forward_8510284",
+        "publisher": "澎湃新闻"
+      }
+    ],
+    "confidence": "medium",
+    "note": "资料记载舞剧于1973年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00069",
+    "name": "《孔子》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00070",
+    "name": "《红色娘子军》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1964年",
+    "yearRange": [
+      1964,
+      1964
+    ],
+    "subject": "芭蕾舞剧首演",
+    "sources": [
+      {
+        "title": "《红色娘子军》",
+        "url": "https://www.nbc.cn/content-3253-22172.html",
+        "publisher": "中央芭蕾舞团"
+      }
+    ],
+    "confidence": "high",
+    "note": "中央芭蕾舞团记载1964年首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00071",
+    "name": "《天鹅湖》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1877年",
+    "yearRange": [
+      1877,
+      1877
+    ],
+    "subject": "柴可夫斯基芭蕾舞剧莫斯科首演",
+    "sources": [
+      {
+        "title": "The history of Swan Lake in Finland",
+        "url": "https://oopperabaletti.fi/en/stage24/article/the-history-of-swan-lake-in-finland/",
+        "publisher": "芬兰国家歌剧院与芭蕾舞团"
+      }
+    ],
+    "confidence": "high",
+    "note": "芬兰国家歌剧院与芭蕾舞团的历史介绍记载该剧于1877年在莫斯科首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00072",
+    "name": "《只此青绿》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00073",
+    "name": "《永不消逝的电波》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00074",
+    "name": "《昭君出塞》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00076",
+    "name": "《智取威虎山》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00077",
+    "name": "《空城计》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00078",
+    "name": "《中国共产主义青年团团歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00079",
+    "name": "《唱支山歌给党听》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1963年",
+    "yearRange": [
+      1963,
+      1963
+    ],
+    "subject": "朱践耳为姚筱舟诗作谱曲",
+    "sources": [
+      {
+        "title": "歌曲流传资料",
+        "url": "https://m.ccdi.gov.cn/content/c4/d3/79231.html",
+        "publisher": "中央纪委国家监委网站"
+      }
+    ],
+    "confidence": "high",
+    "note": "来源记载1963年谱曲并发表。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00238",
+    "name": "《牡丹亭》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1598年",
+    "yearRange": [
+      1598,
+      1598
+    ],
+    "subject": "汤显祖传奇《牡丹亭》创作年份",
+    "sources": [
+      {
+        "title": "《文化百科》：牡丹亭",
+        "url": "https://tv.cctv.com/2012/07/03/VIDE1355156065201860.shtml",
+        "publisher": "中央广播电视总台央视网"
+      }
+    ],
+    "confidence": "high",
+    "note": "央视节目页明确记载《牡丹亭》创作于1598年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00239",
+    "name": "《长生殿》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00240",
+    "name": "《桃花扇》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00254",
+    "name": "《花木兰》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1951年",
+    "yearRange": [
+      1951,
+      1951
+    ],
+    "subject": "PEP中州戏曲语境下的常香玉版豫剧",
+    "sources": [
+      {
+        "title": "豫剧《花木兰》",
+        "url": "https://www.mct.gov.cn/whzx/qgwhxxlb/hn/201606/t20160602_788519.htm",
+        "publisher": "文化和旅游部"
+      }
+    ],
+    "confidence": "medium",
+    "note": "按单元语境指常香玉版豫剧，不指同名京剧或动画电影。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G8S2_E00255",
+    "name": "《穆桂英挂帅》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "同名豫剧、京剧版本年代不同，现有资料不足以确认教材所指版本。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G9S1_E00011",
+    "name": "《d小调第九(合唱)交响曲》",
+    "status": "found",
+    "event": "首演",
+    "yearText": "1824年",
+    "yearRange": [
+      1824,
+      1824
+    ],
+    "subject": "贝多芬第九交响曲首演",
+    "sources": [
+      {
+        "title": "《d小调第九(合唱)交响曲》",
+        "url": "https://www.beethoven.de/en/work/view/5556714292117504/",
+        "publisher": "贝多芬故居"
+      }
+    ],
+    "confidence": "high",
+    "note": "贝多芬故居记载1824年5月7日维也纳首演。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G9S1_E00014",
+    "name": "《天路》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "2001年",
+    "yearRange": [
+      2001,
+      2001
+    ],
+    "subject": "《天路》创作",
+    "sources": [
+      {
+        "title": "《天路》",
+        "url": "https://www.cflac.org.cn/zt/2009-09/28/content_17837772.htm",
+        "publisher": "中国文联"
+      }
+    ],
+    "confidence": "medium",
+    "note": "中国文联资料记载创作于2001年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G9S1_E00015",
+    "name": "《A大调第二十三钢琴协奏曲》",
+    "status": "found",
+    "event": "创作",
+    "yearText": "1786年",
+    "yearRange": [
+      1786,
+      1786
+    ],
+    "subject": "莫扎特第二十三钢琴协奏曲K.488创作",
+    "sources": [
+      {
+        "title": "《A大调第二十三钢琴协奏曲》",
+        "url": "https://kv.mozarteum.at/de/work/konzert-in-a-5654",
+        "publisher": "莫扎特数字作品目录"
+      }
+    ],
+    "confidence": "high",
+    "note": "作品目录记载1786年3月完成。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G9S1_E00019",
+    "name": "《我爱你，中国》",
+    "status": "found",
+    "event": null,
+    "yearText": "1979年",
+    "yearRange": [
+      1979,
+      1979
+    ],
+    "subject": "歌曲随电影《海外赤子》公开传播年份",
+    "sources": [
+      {
+        "title": "《我爱你，中国》唱出海外赤子心声",
+        "url": "https://static.hbtv.com.cn/selection-system/20200427/181335%E3%80%8A%E6%88%91%E7%88%B1%E4%BD%A0%EF%BC%8C%E4%B8%AD%E5%9B%BD%E3%80%8B%E5%94%B1%E5%87%BA%E6%B5%B7%E5%A4%96%E8%B5%A4%E5%AD%90%E5%BF%83%E5%A3%B0.pdf",
+        "publisher": "湖北广播电视台"
+      }
+    ],
+    "confidence": "medium",
+    "note": "湖北广播电视台资料说明该歌作为电影插曲，电影于1979年问世；此处记录随影片公开传播年份，不作歌曲创作年。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  },
+  {
+    "id": "PEP-G9S1_E00020",
+    "name": "《妈妈教我一支歌》",
+    "status": "not_found",
+    "event": null,
+    "yearText": null,
+    "yearRange": null,
+    "subject": "教材所指版本的可核实年份",
+    "sources": [],
+    "confidence": "low",
+    "note": "当前未找到满足来源标准、且能对应教材所指版本的年份。",
+    "kind": "supplement",
+    "label": "补充资料（非教材）"
+  }
+]

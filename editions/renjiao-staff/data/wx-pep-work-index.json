@@ -1,0 +1,7699 @@
+{
+  "sourceEdition": "renjiao",
+  "targetEdition": "renjiao-staff",
+  "books": [
+    {
+      "key": "pep-g1s1",
+      "title": "一年级上册",
+      "grade": 1,
+      "semester": "上册",
+      "printedPages": 86,
+      "pdfOffset": 9,
+      "works": [
+        {
+          "title": "do re mi之歌",
+          "units": [
+            1,
+            3,
+            8
+          ],
+          "pages": [
+            1,
+            28,
+            83
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              28,
+              0.07,
+              0.23,
+              0.93,
+              0.75
+            ]
+          ]
+        },
+        {
+          "title": "啊，多么快乐的一天",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "北京的金山上",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "敕勒歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "春天的芭蕾",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "孤独的牧羊人",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "回声",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "卖荔枝",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "跳蚤之歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "野蜂飞舞",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "咏鹅",
+          "units": [
+            1
+          ],
+          "pages": [
+            13
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "送别",
+          "units": [
+            2
+          ],
+          "pages": [
+            15
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小毛驴",
+          "units": [
+            2
+          ],
+          "pages": [
+            15
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小燕子",
+          "units": [
+            2
+          ],
+          "pages": [
+            15
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "雪花",
+          "units": [
+            2
+          ],
+          "pages": [
+            15
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "新年好",
+          "units": [
+            2
+          ],
+          "pages": [
+            17
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              17,
+              0.08,
+              0.54,
+              0.92,
+              0.83
+            ]
+          ]
+        },
+        {
+          "title": "祖国祖国我们爱你",
+          "units": [
+            2,
+            8
+          ],
+          "pages": [
+            22,
+            83
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              22,
+              0.07,
+              0.07,
+              0.93,
+              0.55
+            ],
+            [
+              23,
+              0.05,
+              0.07,
+              0.95,
+              0.27
+            ]
+          ]
+        },
+        {
+          "title": "山谷回音真好听",
+          "units": [
+            2
+          ],
+          "pages": [
+            25
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "洋娃娃和小熊跳舞",
+          "units": [
+            3
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              32,
+              0.07,
+              0.3,
+              0.93,
+              0.63
+            ]
+          ]
+        },
+        {
+          "title": "娃哈哈",
+          "units": [
+            3
+          ],
+          "pages": [
+            34
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              34,
+              0.07,
+              0.08,
+              0.93,
+              0.55
+            ]
+          ]
+        },
+        {
+          "title": "悯农",
+          "units": [
+            3
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "楚商",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "老虎磨牙",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "龙腾虎跃",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小松树",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "丰收锣鼓",
+          "units": [
+            4
+          ],
+          "pages": [
+            37
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "鼓手的战争",
+          "units": [
+            4
+          ],
+          "pages": [
+            37
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "数鸭子",
+          "units": [
+            4
+          ],
+          "pages": [
+            41
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              41,
+              0.07,
+              0.13,
+              0.93,
+              0.6
+            ]
+          ]
+        },
+        {
+          "title": "玩具兵进行曲",
+          "units": [
+            4
+          ],
+          "pages": [
+            42
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              42,
+              0.07,
+              0.15,
+              0.93,
+              0.68
+            ]
+          ]
+        },
+        {
+          "title": "乃哟乃",
+          "units": [
+            4
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              46,
+              0.07,
+              0.16,
+              0.93,
+              0.51
+            ]
+          ]
+        },
+        {
+          "title": "阿西里西",
+          "units": [
+            4
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "春江花月夜",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "大浪淘沙",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "风雨铁马",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "胡同印象",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "流水",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "渔舟唱晚",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "月琴赞",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "爱的罗曼斯",
+          "units": [
+            5
+          ],
+          "pages": [
+            49
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "快乐的罗梭",
+          "units": [
+            5
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              56,
+              0.07,
+              0.09,
+              0.93,
+              0.44
+            ]
+          ]
+        },
+        {
+          "title": "江南",
+          "units": [
+            5
+          ],
+          "pages": [
+            57
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "中华人民共和国国歌",
+          "units": [
+            6,
+            8
+          ],
+          "pages": [
+            64,
+            83
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              64,
+              0.07,
+              0.04,
+              0.93,
+              0.74
+            ]
+          ]
+        },
+        {
+          "title": "共产儿童团歌",
+          "units": [
+            6,
+            8
+          ],
+          "pages": [
+            66,
+            83
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              66,
+              0.07,
+              0.05,
+              0.93,
+              0.62
+            ]
+          ]
+        },
+        {
+          "title": "红孩子",
+          "units": [
+            6
+          ],
+          "pages": [
+            66
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "请你唱首歌吧",
+          "units": [
+            6
+          ],
+          "pages": [
+            67
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "秦腔牌子曲",
+          "units": [
+            7
+          ],
+          "pages": [
+            68
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "赞歌",
+          "units": [
+            7
+          ],
+          "pages": [
+            68
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "梦幻曲",
+          "units": [
+            7
+          ],
+          "pages": [
+            69
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小夜曲",
+          "units": [
+            7
+          ],
+          "pages": [
+            72
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              72,
+              0.07,
+              0.04,
+              0.93,
+              0.52
+            ]
+          ]
+        },
+        {
+          "title": "我和小提琴",
+          "units": [
+            7
+          ],
+          "pages": [
+            73
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              73,
+              0.07,
+              0.04,
+              0.93,
+              0.61
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pep-g1s2",
+      "title": "一年级下册",
+      "grade": 1,
+      "semester": "下册",
+      "printedPages": 75,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "我爱我的家",
+          "units": [
+            1
+          ],
+          "pages": [
+            1
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "爱的奉献",
+          "units": [
+            1
+          ],
+          "pages": [
+            3
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              3,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "摇篮曲",
+          "units": [
+            1
+          ],
+          "pages": [
+            5
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              5,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "赠汪伦",
+          "units": [
+            1
+          ],
+          "pages": [
+            13
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "找朋友",
+          "units": [
+            2
+          ],
+          "pages": [
+            14
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              14,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "柳树姑娘",
+          "units": [
+            2
+          ],
+          "pages": [
+            21
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              21,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "山谷回音真好听",
+          "units": [
+            2
+          ],
+          "pages": [
+            21
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "绿色的祖国",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              24,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "小松树",
+          "units": [
+            3
+          ],
+          "pages": [
+            27
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              27,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "春江花月夜",
+          "units": [
+            3
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "春天来了",
+          "units": [
+            3
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "四季——春",
+          "units": [
+            3
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "致春天",
+          "units": [
+            3
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "马兰花开",
+          "units": [
+            4
+          ],
+          "pages": [
+            30
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "森林与小鸟",
+          "units": [
+            4
+          ],
+          "pages": [
+            30
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "蓝色多瑙河圆舞曲",
+          "units": [
+            4
+          ],
+          "pages": [
+            31
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              31,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "溜冰圆舞曲",
+          "units": [
+            4
+          ],
+          "pages": [
+            31
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              31,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "儿童圆舞曲",
+          "units": [
+            4
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "请你唱首歌吧",
+          "units": [
+            4
+          ],
+          "pages": [
+            34
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              34,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "池上",
+          "units": [
+            4
+          ],
+          "pages": [
+            37
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "劳动最光荣",
+          "units": [
+            5
+          ],
+          "pages": [
+            38
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              38,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "纺车",
+          "units": [
+            5
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "铁匠波尔卡",
+          "units": [
+            5
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "勤快人和懒惰人",
+          "units": [
+            5
+          ],
+          "pages": [
+            40
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              40,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "打麦号子",
+          "units": [
+            5
+          ],
+          "pages": [
+            41
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              41,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "劳动节",
+          "units": [
+            5
+          ],
+          "pages": [
+            42
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "牧童谣",
+          "units": [
+            5
+          ],
+          "pages": [
+            44
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              44,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "请来看看我们的村庄",
+          "units": [
+            5
+          ],
+          "pages": [
+            45
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "茶禅一味",
+          "units": [
+            6
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "平湖秋月",
+          "units": [
+            6
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小夜曲",
+          "units": [
+            6
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "银竹",
+          "units": [
+            6
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "月光",
+          "units": [
+            6
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "喜洋洋",
+          "units": [
+            6
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "老爷爷赶鹅",
+          "units": [
+            6
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              48,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "观灯",
+          "units": [
+            6
+          ],
+          "pages": [
+            50
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              50,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "在钟表店里",
+          "units": [
+            6
+          ],
+          "pages": [
+            51
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              51,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "相思",
+          "units": [
+            6
+          ],
+          "pages": [
+            55
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小邋遢",
+          "units": [
+            7
+          ],
+          "pages": [
+            60
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              60,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "大风车",
+          "units": [
+            7
+          ],
+          "pages": [
+            61
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              61,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "中华人民共和国国歌",
+          "units": [
+            8
+          ],
+          "pages": [
+            73
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        }
+      ]
+    },
+    {
+      "key": "pep-g2s1",
+      "title": "二年级上册",
+      "grade": 2,
+      "semester": "上册",
+      "printedPages": 77,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "唱脸谱",
+          "units": [
+            1
+          ],
+          "pages": [
+            1
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "北京颂歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            3
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "报灯名",
+          "units": [
+            1
+          ],
+          "pages": [
+            6
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "龙里格龙",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              7,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "冰糖葫芦",
+          "units": [
+            1
+          ],
+          "pages": [
+            10
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "武松打虎",
+          "units": [
+            2,
+            5
+          ],
+          "pages": [
+            14,
+            43
+          ],
+          "types": [
+            "歌曲",
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "刘巧儿",
+          "units": [
+            2
+          ],
+          "pages": [
+            18
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "北风吹",
+          "units": [
+            2
+          ],
+          "pages": [
+            19
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小放牛",
+          "units": [
+            2
+          ],
+          "pages": [
+            20
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              20,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "大逛灯",
+          "units": [
+            2
+          ],
+          "pages": [
+            21
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              21,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "小放驴",
+          "units": [
+            2
+          ],
+          "pages": [
+            22
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              22,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "静夜思",
+          "units": [
+            2
+          ],
+          "pages": [
+            23
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小小的船",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              24,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "啊!摇篮",
+          "units": [
+            3
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "爷爷为我打月饼",
+          "units": [
+            3,
+            8
+          ],
+          "pages": [
+            28,
+            75
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              28,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "汉宫秋月",
+          "units": [
+            3
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "花好月圆",
+          "units": [
+            3
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "平湖秋月",
+          "units": [
+            3
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "夜曲",
+          "units": [
+            3
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "月光",
+          "units": [
+            3
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "彩云追月",
+          "units": [
+            3
+          ],
+          "pages": [
+            30
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              30,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "有本县一阵阵笑开怀",
+          "units": [
+            4
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "谁说女子不如男",
+          "units": [
+            4
+          ],
+          "pages": [
+            33
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              33,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "王大娘钉缸",
+          "units": [
+            4
+          ],
+          "pages": [
+            33
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "编花篮",
+          "units": [
+            4
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              35,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "十枝花",
+          "units": [
+            4
+          ],
+          "pages": [
+            38
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              38,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "谁不说俺家乡好",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "花蛤蟆",
+          "units": [
+            5
+          ],
+          "pages": [
+            41
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              41,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "梁山伯下山",
+          "units": [
+            5
+          ],
+          "pages": [
+            44
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "夏日泛舟海上",
+          "units": [
+            5
+          ],
+          "pages": [
+            49
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "乘着歌声的翅膀",
+          "units": [
+            6
+          ],
+          "pages": [
+            51
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              51,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "愉快的梦",
+          "units": [
+            6,
+            8
+          ],
+          "pages": [
+            54,
+            75
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              54,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "春游",
+          "units": [
+            6
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              56,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "船歌",
+          "units": [
+            6
+          ],
+          "pages": [
+            58
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              58,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "江雪",
+          "units": [
+            6
+          ],
+          "pages": [
+            59
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "嘀哩嘀哩",
+          "units": [
+            7,
+            8
+          ],
+          "pages": [
+            60,
+            75
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              60,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "春天的芭蕾",
+          "units": [
+            7
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "姑苏行",
+          "units": [
+            7
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "冬天的故事",
+          "units": [
+            7
+          ],
+          "pages": [
+            63
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "秋夜",
+          "units": [
+            7
+          ],
+          "pages": [
+            63
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "思乡曲",
+          "units": [
+            7
+          ],
+          "pages": [
+            63
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "四季——雪橇",
+          "units": [
+            7
+          ],
+          "pages": [
+            63
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "西风的话",
+          "units": [
+            7
+          ],
+          "pages": [
+            63
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "梅花",
+          "units": [
+            7
+          ],
+          "pages": [
+            64
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              64,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "新年",
+          "units": [
+            7
+          ],
+          "pages": [
+            66
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "蜗牛的歌",
+          "units": [
+            8
+          ],
+          "pages": [
+            70
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "蜗牛与黄鹂鸟",
+          "units": [
+            8
+          ],
+          "pages": [
+            72
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "水牛儿",
+          "units": [
+            8
+          ],
+          "pages": [
+            75
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              75,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pep-g2s2",
+      "title": "二年级下册",
+      "grade": 2,
+      "semester": "下册",
+      "printedPages": 78,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "美丽的黄昏",
+          "units": [
+            1
+          ],
+          "pages": [
+            1
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              1,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "欢乐颂",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "回声",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "生生不息",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "眺望你的路途",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "保卫黄河",
+          "units": [
+            1
+          ],
+          "pages": [
+            3
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              3,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "黄河大合唱",
+          "units": [
+            1
+          ],
+          "pages": [
+            3
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "春游",
+          "units": [
+            1
+          ],
+          "pages": [
+            4
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "送别",
+          "units": [
+            1,
+            8
+          ],
+          "pages": [
+            7,
+            76
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              7,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "勇敢的鄂伦春",
+          "units": [
+            1,
+            2
+          ],
+          "pages": [
+            9,
+            16
+          ],
+          "types": [
+            "歌曲",
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              16,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "北方民族生活素描",
+          "units": [
+            2
+          ],
+          "pages": [
+            11
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "乌苏里船歌",
+          "units": [
+            2
+          ],
+          "pages": [
+            11
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "美丽的家乡",
+          "units": [
+            2
+          ],
+          "pages": [
+            12
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              12,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "月亮，月亮",
+          "units": [
+            2,
+            8
+          ],
+          "pages": [
+            13,
+            77
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              13,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "望庐山瀑布",
+          "units": [
+            2
+          ],
+          "pages": [
+            17
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "伏尔塔瓦河",
+          "units": [
+            3
+          ],
+          "pages": [
+            18
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "舍赫拉查德",
+          "units": [
+            3
+          ],
+          "pages": [
+            18
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "水草舞",
+          "units": [
+            3
+          ],
+          "pages": [
+            18
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "水之嬉戏",
+          "units": [
+            3
+          ],
+          "pages": [
+            18
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "水族馆",
+          "units": [
+            3
+          ],
+          "pages": [
+            18
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "泉水叮咚响",
+          "units": [
+            3
+          ],
+          "pages": [
+            20
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              20,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "小水滴",
+          "units": [
+            3
+          ],
+          "pages": [
+            22
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "找朋友",
+          "units": [
+            3
+          ],
+          "pages": [
+            23
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "伏尔塔瓦河（片段）",
+          "units": [
+            3
+          ],
+          "pages": [
+            26
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              26,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "阿里郎",
+          "units": [
+            3
+          ],
+          "pages": [
+            27
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "新东北风",
+          "units": [
+            4
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              32,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "桔梗谣",
+          "units": [
+            4
+          ],
+          "pages": [
+            33
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              33,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "四物乐",
+          "units": [
+            4
+          ],
+          "pages": [
+            34
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              34,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "小拜年",
+          "units": [
+            4
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "正对花",
+          "units": [
+            5
+          ],
+          "pages": [
+            40
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              40,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "对花",
+          "units": [
+            5,
+            8
+          ],
+          "pages": [
+            41,
+            75
+          ],
+          "types": [
+            "歌曲",
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              41,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "春江花月夜",
+          "units": [
+            5
+          ],
+          "pages": [
+            43
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              43,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "杨靖宇大摆口袋阵（前奏）",
+          "units": [
+            5
+          ],
+          "pages": [
+            44
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              44,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "复仇的火焰在我心中燃烧",
+          "units": [
+            6
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "精灵之舞",
+          "units": [
+            6
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "十面埋伏—九里山大战",
+          "units": [
+            6
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "夜莺",
+          "units": [
+            6
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "战台风",
+          "units": [
+            6
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "粉刷匠",
+          "units": [
+            6
+          ],
+          "pages": [
+            50
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              50,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "吃到葡萄的狐狸",
+          "units": [
+            6
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              52,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "毛毛虫进行曲",
+          "units": [
+            6
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              52,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "我和你",
+          "units": [
+            7,
+            8
+          ],
+          "pages": [
+            55,
+            75
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              55,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "雪花",
+          "units": [
+            7,
+            8
+          ],
+          "pages": [
+            56,
+            75
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              56,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "中华人民共和国国歌",
+          "units": [
+            7
+          ],
+          "pages": [
+            61
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "歌唱祖国",
+          "units": [
+            7
+          ],
+          "pages": [
+            64
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              64,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "马背上的摇篮",
+          "units": [
+            8
+          ],
+          "pages": [
+            67
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "南泥湾",
+          "units": [
+            8
+          ],
+          "pages": [
+            69
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "爷爷为我打月饼",
+          "units": [
+            8
+          ],
+          "pages": [
+            72
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "中国少年先锋队队歌",
+          "units": [
+            8
+          ],
+          "pages": [
+            73
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              73,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pep-g3s1",
+      "title": "三年级上册",
+      "grade": 3,
+      "semester": "上册",
+      "printedPages": 74,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "我爱米兰",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              2,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "每当我走过老师窗前",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              7,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "甜甜的秘密",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              8,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "钢琴变奏曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            14
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "小夜曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            14
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "音乐瞬间",
+          "units": [
+            2
+          ],
+          "pages": [
+            16
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "G 大调弦乐小夜曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            16
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "乘着歌声的翅膀",
+          "units": [
+            2
+          ],
+          "pages": [
+            20
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              20,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "献给爱丽丝（片段）",
+          "units": [
+            2
+          ],
+          "pages": [
+            22
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              22,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "看秧歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "人说山西好风光",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "绣荷包",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "杨柳青",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "交城山",
+          "units": [
+            3,
+            4
+          ],
+          "pages": [
+            26,
+            34
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              26,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "米黄仁",
+          "units": [
+            3
+          ],
+          "pages": [
+            27
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "桃花红 杏花白",
+          "units": [
+            3
+          ],
+          "pages": [
+            27
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              27,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "滚核桃",
+          "units": [
+            3,
+            6
+          ],
+          "pages": [
+            28,
+            73
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              28,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "阳关三叠",
+          "units": [
+            3
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              32,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "到敌人后方去",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "地道战",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "东北抗日联军第一路军军歌",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "抗敌歌",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "松花江上",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "团结就是力量",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "游击队歌",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "在太行山上",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "长城谣",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "军民大生产",
+          "units": [
+            4,
+            6
+          ],
+          "pages": [
+            41,
+            74
+          ],
+          "types": [
+            "歌曲",
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              41,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "延安的故事",
+          "units": [
+            4
+          ],
+          "pages": [
+            42
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              42,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "江南",
+          "units": [
+            4
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "花儿与少年",
+          "units": [
+            4,
+            5
+          ],
+          "pages": [
+            49,
+            50
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              50,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "尕马儿令",
+          "units": [
+            5
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "可可西里",
+          "units": [
+            5
+          ],
+          "pages": [
+            54
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              54,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "大漠行",
+          "units": [
+            5
+          ],
+          "pages": [
+            59
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "沙石疆",
+          "units": [
+            5
+          ],
+          "pages": [
+            61
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "天曲",
+          "units": [
+            5
+          ],
+          "pages": [
+            61
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "飞天",
+          "units": [
+            5
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "东郭先生",
+          "units": [
+            6
+          ],
+          "pages": [
+            64
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "藏起老狼",
+          "units": [
+            6
+          ],
+          "pages": [
+            66
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "放出老狼",
+          "units": [
+            6
+          ],
+          "pages": [
+            67
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "狼起杀心",
+          "units": [
+            6
+          ],
+          "pages": [
+            68
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "仓皇逃命",
+          "units": [
+            6
+          ],
+          "pages": [
+            69
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "农夫评理",
+          "units": [
+            6
+          ],
+          "pages": [
+            70
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "老狼钻进口袋里",
+          "units": [
+            6
+          ],
+          "pages": [
+            71
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "禽兽、兄弟要分清",
+          "units": [
+            6
+          ],
+          "pages": [
+            72
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        }
+      ]
+    },
+    {
+      "key": "pep-g3s2",
+      "title": "三年级下册",
+      "grade": 3,
+      "semester": "下册",
+      "printedPages": 59,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "嘎达梅林",
+          "units": [
+            1
+          ],
+          "pages": [
+            1
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "美丽的草原我的家",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              2,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "春天来了",
+          "units": [
+            1
+          ],
+          "pages": [
+            4
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              4,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "黑缎子坎肩",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "赞歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "牧歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            9
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              9,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "万马奔腾",
+          "units": [
+            1
+          ],
+          "pages": [
+            10
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              10,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "酒歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            12
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              12,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "赤诚花",
+          "units": [
+            2
+          ],
+          "pages": [
+            14
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              14,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "四季歌",
+          "units": [
+            2
+          ],
+          "pages": [
+            15
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              15,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "阿里郎",
+          "units": [
+            2
+          ],
+          "pages": [
+            16
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "鸟打令",
+          "units": [
+            2
+          ],
+          "pages": [
+            16
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "散调",
+          "units": [
+            2
+          ],
+          "pages": [
+            16
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "北国之春",
+          "units": [
+            2
+          ],
+          "pages": [
+            17
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "春之海",
+          "units": [
+            2
+          ],
+          "pages": [
+            17
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "拉网小调",
+          "units": [
+            2
+          ],
+          "pages": [
+            17
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "卖花姑娘",
+          "units": [
+            2
+          ],
+          "pages": [
+            19
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              19,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "樱花",
+          "units": [
+            2
+          ],
+          "pages": [
+            19
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              19,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "牧羊人的歌",
+          "units": [
+            2
+          ],
+          "pages": [
+            20
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              20,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "塔吉克的节日",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我的热瓦普",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "新疆之春",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "美丽的夏牧场",
+          "units": [
+            3,
+            6
+          ],
+          "pages": [
+            26,
+            59
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              26,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "幸福花儿开心上",
+          "units": [
+            3
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              28,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "送你一束沙枣花",
+          "units": [
+            3
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "北京的金山上",
+          "units": [
+            4,
+            6
+          ],
+          "pages": [
+            34,
+            59
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              34,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "次仁拉索",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              36,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "我的家在日喀则",
+          "units": [
+            4
+          ],
+          "pages": [
+            37
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              37,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "天路",
+          "units": [
+            4
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "格桑拉",
+          "units": [
+            4
+          ],
+          "pages": [
+            42
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              42,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "吉米，来吧",
+          "units": [
+            4
+          ],
+          "pages": [
+            43
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "月亮叔叔住得远",
+          "units": [
+            5
+          ],
+          "pages": [
+            44
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              44,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "一千零一夜",
+          "units": [
+            5
+          ],
+          "pages": [
+            50
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        }
+      ]
+    },
+    {
+      "key": "pep-g4s1",
+      "title": "四年级上册",
+      "grade": 4,
+      "semester": "上册",
+      "printedPages": 68,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "为救李郎离家园",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              2,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "对花",
+          "units": [
+            1,
+            6
+          ],
+          "pages": [
+            5,
+            67
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              5,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "凤阳花鼓",
+          "units": [
+            1
+          ],
+          "pages": [
+            9
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              9,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "引子与回旋随想曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            13
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "祖国祖国我们爱你",
+          "units": [
+            2
+          ],
+          "pages": [
+            15
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              15,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "放牛班的春天",
+          "units": [
+            2
+          ],
+          "pages": [
+            17
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "风筝",
+          "units": [
+            2
+          ],
+          "pages": [
+            17
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              17,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "斗牛士之歌",
+          "units": [
+            2
+          ],
+          "pages": [
+            22
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              22,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "欢乐歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "梁山伯与祝英台",
+          "units": [
+            3
+          ],
+          "pages": [
+            25
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "中国五声调式",
+          "units": [
+            3
+          ],
+          "pages": [
+            26
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "西湖美",
+          "units": [
+            3
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              28,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "忆江南",
+          "units": [
+            3
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              29,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "东边升起月亮",
+          "units": [
+            3
+          ],
+          "pages": [
+            31
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "码头工人歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "抗敌歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            33
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "牧童短笛",
+          "units": [
+            3
+          ],
+          "pages": [
+            33
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "游击队歌",
+          "units": [
+            3,
+            5
+          ],
+          "pages": [
+            33,
+            54
+          ],
+          "types": [
+            "歌曲",
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              54,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "长恨歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            33
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "担鲜藕",
+          "units": [
+            3
+          ],
+          "pages": [
+            34
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "卡普里岛",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              36,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "安达卢西亚小夜曲",
+          "units": [
+            4
+          ],
+          "pages": [
+            42
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "桑塔·露琪亚",
+          "units": [
+            4
+          ],
+          "pages": [
+            44
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              44,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "红",
+          "units": [
+            5
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              46,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "建国大业",
+          "units": [
+            5
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "过雪山草地",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "红梅赞",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "英雄赞歌",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "在太行山上",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "祖国不会忘记",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "学习雷锋好榜样",
+          "units": [
+            5,
+            6
+          ],
+          "pages": [
+            49,
+            68
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              49,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "英雄儿女",
+          "units": [
+            5
+          ],
+          "pages": [
+            50
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我有一个梦",
+          "units": [
+            5
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              52,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "鸽子",
+          "units": [
+            5
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              56,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "八月桂花遍地开",
+          "units": [
+            6
+          ],
+          "pages": [
+            58
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "红星歌",
+          "units": [
+            6
+          ],
+          "pages": [
+            59
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "红星照我去战斗",
+          "units": [
+            6
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "映山红",
+          "units": [
+            6
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "闪闪的红星",
+          "units": [
+            6
+          ],
+          "pages": [
+            64
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        }
+      ]
+    },
+    {
+      "key": "pep-g5s1",
+      "title": "五年级上册",
+      "grade": 5,
+      "semester": "上册",
+      "printedPages": 58,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "碧涧流泉",
+          "units": [
+            1
+          ],
+          "pages": [
+            3
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "红楼梦",
+          "units": [
+            1
+          ],
+          "pages": [
+            6
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "月光光",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              7,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "赛龙夺锦",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              8,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "落水天",
+          "units": [
+            1
+          ],
+          "pages": [
+            10
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              10,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "巴加女孩",
+          "units": [
+            2
+          ],
+          "pages": [
+            16
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              16,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "蓝色狂想曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            18
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "夏日时光",
+          "units": [
+            2
+          ],
+          "pages": [
+            19
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              19,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "海上渔歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            23
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "紫玉钗",
+          "units": [
+            3
+          ],
+          "pages": [
+            23
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "鱼歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              24,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "采茶灯",
+          "units": [
+            3,
+            6
+          ],
+          "pages": [
+            28,
+            55
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              28,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "茗·心",
+          "units": [
+            3
+          ],
+          "pages": [
+            30
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "东方之珠",
+          "units": [
+            4
+          ],
+          "pages": [
+            34
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              34,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "澳门岁月",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "七子之歌——澳门",
+          "units": [
+            4
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              36,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "香蕉船",
+          "units": [
+            4
+          ],
+          "pages": [
+            40
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              40,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "撑船调",
+          "units": [
+            5
+          ],
+          "pages": [
+            43
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "丢丢铜",
+          "units": [
+            5
+          ],
+          "pages": [
+            43
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              43,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "童年",
+          "units": [
+            5
+          ],
+          "pages": [
+            44
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              44,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "月亮月光光",
+          "units": [
+            5
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              46,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "一只鸟仔",
+          "units": [
+            5
+          ],
+          "pages": [
+            47
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              47,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "春天的故事",
+          "units": [
+            6
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        }
+      ]
+    },
+    {
+      "key": "pep-g6s1",
+      "title": "六年级上册",
+      "grade": 6,
+      "semester": "上册",
+      "printedPages": 57,
+      "pdfOffset": 7,
+      "works": [
+        {
+          "title": "前门情思大碗茶",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              8,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "故乡的小路",
+          "units": [
+            1
+          ],
+          "pages": [
+            11
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              11,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "柔板",
+          "units": [
+            2
+          ],
+          "pages": [
+            16
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "四小天鹅舞曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            21
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              21,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "大红枣儿甜又香",
+          "units": [
+            2,
+            4
+          ],
+          "pages": [
+            22,
+            57
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              22,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "雪绒花",
+          "units": [
+            3
+          ],
+          "pages": [
+            30
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              30,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "姹紫嫣红",
+          "units": [
+            4
+          ],
+          "pages": [
+            42
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              42,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "都有一颗红亮的心",
+          "units": [
+            4
+          ],
+          "pages": [
+            45
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              45,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "打瓜园",
+          "units": [
+            4
+          ],
+          "pages": [
+            51
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        }
+      ]
+    },
+    {
+      "key": "pep-g7s1",
+      "title": "七年级上册",
+      "grade": 7,
+      "semester": "上册",
+      "printedPages": 84,
+      "pdfOffset": 5,
+      "works": [
+        {
+          "title": "歌唱祖国",
+          "units": [
+            1,
+            3
+          ],
+          "pages": [
+            4,
+            53
+          ],
+          "types": [
+            "歌曲",
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              4,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "祖国颂歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            5
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "步步高",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "浪漫曲",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "忆故人",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "b小调夜曲",
+          "units": [
+            1
+          ],
+          "pages": [
+            7
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "丑末寅初",
+          "units": [
+            2
+          ],
+          "pages": [
+            24
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              24,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "蝶恋花·答李淑一",
+          "units": [
+            2
+          ],
+          "pages": [
+            25
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              25,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "牧歌",
+          "units": [
+            2
+          ],
+          "pages": [
+            28
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              28,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "上去高山望平川",
+          "units": [
+            2
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              29,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "歌唱美丽的家乡",
+          "units": [
+            2
+          ],
+          "pages": [
+            30
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              30,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "楚商",
+          "units": [
+            3
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "阳关三叠",
+          "units": [
+            3
+          ],
+          "pages": [
+            50
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              50,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "赤潮曲",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "大江东去",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "风·雅·颂",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "故乡的云",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "红旗颂",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "教我如何不想她",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "男儿第一志气高",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "让世界充满爱",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我的中国心",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "乡恋",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "阳光照耀着塔什库尔干",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "在希望的田野上",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "长城随想",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "祝酒歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "东方红",
+          "units": [
+            3
+          ],
+          "pages": [
+            53
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "黄河大合唱",
+          "units": [
+            3
+          ],
+          "pages": [
+            53
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我的祖国",
+          "units": [
+            3
+          ],
+          "pages": [
+            53
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "游击队歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            53
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "老六板",
+          "units": [
+            3
+          ],
+          "pages": [
+            55
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "领航",
+          "units": [
+            3
+          ],
+          "pages": [
+            59
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "长征",
+          "units": [
+            3
+          ],
+          "pages": [
+            60
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "征途",
+          "units": [
+            3
+          ],
+          "pages": [
+            61
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "春天的故事",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "和合之美",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "看山看水看中国",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "命运与共",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "南湖的船，党的摇篮",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "人民是天",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我们的中国梦",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "追寻",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "走进新时代",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "祖国不会忘记",
+          "units": [
+            3
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "塞基洛斯歌",
+          "units": [
+            4
+          ],
+          "pages": [
+            64
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我看到云雀高飞",
+          "units": [
+            4
+          ],
+          "pages": [
+            64
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "中华人民共和国国歌",
+          "units": [
+            5
+          ],
+          "pages": [
+            80
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              80,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "国际歌",
+          "units": [
+            5
+          ],
+          "pages": [
+            81
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              81,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pep-g7s2",
+      "title": "七年级下册",
+      "grade": 7,
+      "semester": "下册",
+      "printedPages": 89,
+      "pdfOffset": 5,
+      "works": [
+        {
+          "title": "夜曲",
+          "units": [
+            1,
+            2
+          ],
+          "pages": [
+            2,
+            27
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "鹧鸪飞",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "游击队歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            6
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              6,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "大浪淘沙",
+          "units": [
+            2
+          ],
+          "pages": [
+            22
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "二泉映月",
+          "units": [
+            2
+          ],
+          "pages": [
+            22
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "战争安魂曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            26
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "牧神午后前奏曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            27
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "富春山居图",
+          "units": [
+            2
+          ],
+          "pages": [
+            32
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "春郊试马",
+          "units": [
+            2
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "关山月",
+          "units": [
+            2
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "满江红",
+          "units": [
+            2
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "平沙落雁",
+          "units": [
+            2
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "赛马",
+          "units": [
+            2
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "潇湘水云",
+          "units": [
+            2
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "杏花天影",
+          "units": [
+            2
+          ],
+          "pages": [
+            35
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "蓝色狂想曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            37
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "大漠之夜",
+          "units": [
+            2
+          ],
+          "pages": [
+            38
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "胡马嘶风曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            40
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "牧歌",
+          "units": [
+            3
+          ],
+          "pages": [
+            52
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              52,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "听妈妈讲那过去的事情",
+          "units": [
+            3
+          ],
+          "pages": [
+            53
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "前奏曲",
+          "units": [
+            3
+          ],
+          "pages": [
+            59
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "音画练习曲",
+          "units": [
+            3
+          ],
+          "pages": [
+            59
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "百鸟朝凤",
+          "units": [
+            3
+          ],
+          "pages": [
+            63
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              63,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "复仇的火焰在我心中燃烧",
+          "units": [
+            4
+          ],
+          "pages": [
+            66
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "林冲夜奔",
+          "units": [
+            4
+          ],
+          "pages": [
+            66
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "跳蚤之歌",
+          "units": [
+            4
+          ],
+          "pages": [
+            67
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "妆台秋思",
+          "units": [
+            4
+          ],
+          "pages": [
+            67
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我亲爱的爸爸",
+          "units": [
+            4
+          ],
+          "pages": [
+            75
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "中国人民解放军军歌",
+          "units": [
+            5
+          ],
+          "pages": [
+            84
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              84,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "保卫黄河",
+          "units": [
+            5
+          ],
+          "pages": [
+            86
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              86,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pep-g8s1",
+      "title": "八年级上册",
+      "grade": 8,
+      "semester": "上册",
+      "printedPages": 65,
+      "pdfOffset": 5,
+      "works": [
+        {
+          "title": "在太行山上",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              2,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "松花江上",
+          "units": [
+            1
+          ],
+          "pages": [
+            3
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "桑塔·露琪亚",
+          "units": [
+            1
+          ],
+          "pages": [
+            9
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              9,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "小小的船",
+          "units": [
+            1
+          ],
+          "pages": [
+            13
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              13,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "春江花月夜",
+          "units": [
+            1
+          ],
+          "pages": [
+            14
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              14,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "国际歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            19
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              19,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "前奏曲",
+          "units": [
+            1
+          ],
+          "pages": [
+            19
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "那就是我",
+          "units": [
+            2
+          ],
+          "pages": [
+            33
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              33,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "西风的话",
+          "units": [
+            2
+          ],
+          "pages": [
+            34
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              34,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "保卫黄河",
+          "units": [
+            3
+          ],
+          "pages": [
+            38
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              38,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "牧童短笛",
+          "units": [
+            3
+          ],
+          "pages": [
+            38
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              38,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "二部创意曲",
+          "units": [
+            3
+          ],
+          "pages": [
+            39
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "跳蚤之歌",
+          "units": [
+            4
+          ],
+          "pages": [
+            46
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "思乡曲",
+          "units": [
+            4
+          ],
+          "pages": [
+            53
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              53,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "第一回旋曲",
+          "units": [
+            4
+          ],
+          "pages": [
+            55
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "没有共产党就没有新中国",
+          "units": [
+            5
+          ],
+          "pages": [
+            62
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              62,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "我的祖国",
+          "units": [
+            5
+          ],
+          "pages": [
+            63
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              63,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pep-g8s2",
+      "title": "八年级下册",
+      "grade": 8,
+      "semester": "下册",
+      "printedPages": 74,
+      "pdfOffset": 5,
+      "works": [
+        {
+          "title": "送别",
+          "units": [
+            1
+          ],
+          "pages": [
+            2
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              2,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "第一回旋曲",
+          "units": [
+            1
+          ],
+          "pages": [
+            4
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "六月——船歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            4
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "长江之歌",
+          "units": [
+            1
+          ],
+          "pages": [
+            4
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "大海啊，故乡",
+          "units": [
+            1
+          ],
+          "pages": [
+            5
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              5,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "大海在呼唤",
+          "units": [
+            1
+          ],
+          "pages": [
+            5
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "保卫黄河",
+          "units": [
+            2
+          ],
+          "pages": [
+            19
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              19,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "战争安魂曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            21
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "长恨歌",
+          "units": [
+            2
+          ],
+          "pages": [
+            25
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "惊破霓裳羽衣曲",
+          "units": [
+            2
+          ],
+          "pages": [
+            26
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "史记·高祖本纪",
+          "units": [
+            3
+          ],
+          "pages": [
+            36
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "霸王卸甲",
+          "units": [
+            3
+          ],
+          "pages": [
+            38
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "芬兰颂",
+          "units": [
+            3
+          ],
+          "pages": [
+            40
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "第五（命运）交响曲",
+          "units": [
+            3
+          ],
+          "pages": [
+            41
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              41,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "第一小提琴协奏曲",
+          "units": [
+            3
+          ],
+          "pages": [
+            45
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              45,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "南泥湾",
+          "units": [
+            4
+          ],
+          "pages": [
+            55
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "洪湖赤卫队",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "江姐",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "木兰诗篇",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "山海情",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "伤逝",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "沂蒙山",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "原野",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "运河谣",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "长征",
+          "units": [
+            4
+          ],
+          "pages": [
+            56
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "天边有颗闪亮的星",
+          "units": [
+            4
+          ],
+          "pages": [
+            57
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              57,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "变脸",
+          "units": [
+            4
+          ],
+          "pages": [
+            65
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "空城计",
+          "units": [
+            4
+          ],
+          "pages": [
+            68
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "中国共产主义青年团团歌",
+          "units": [
+            5
+          ],
+          "pages": [
+            70
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              70,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "唱支山歌给党听",
+          "units": [
+            5
+          ],
+          "pages": [
+            71
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              71,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pep-g9s1",
+      "title": "九年级上册",
+      "grade": 9,
+      "semester": "上册",
+      "printedPages": 53,
+      "pdfOffset": 5,
+      "works": [
+        {
+          "title": "红旗颂",
+          "units": [
+            1
+          ],
+          "pages": [
+            5
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              5,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "回声",
+          "units": [
+            1
+          ],
+          "pages": [
+            8
+          ],
+          "types": [
+            "音乐作品"
+          ],
+          "scoreCrops": [
+            [
+              8,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "天路",
+          "units": [
+            3
+          ],
+          "pages": [
+            29
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": []
+        },
+        {
+          "title": "我爱你，中国",
+          "units": [
+            5
+          ],
+          "pages": [
+            48
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              48,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        },
+        {
+          "title": "妈妈教我一支歌",
+          "units": [
+            5
+          ],
+          "pages": [
+            50
+          ],
+          "types": [
+            "歌曲"
+          ],
+          "scoreCrops": [
+            [
+              50,
+              0.04,
+              0.035,
+              0.96,
+              0.94
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}
