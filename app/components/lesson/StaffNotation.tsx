@@ -161,7 +161,7 @@ function voiceGlyphs(melody: Melody, bars: MelodyNote[][], clef: Clef, shift: nu
   });
 }
 
-function flagCount(base: number) {
+export function flagCount(base: number) {
   return base <= 0.5 ? Math.round(Math.log2(1 / base)) : 0;
 }
 
@@ -210,7 +210,7 @@ function accidentalGlyph(value: number, x: number, y: number, key?: string) {
   return <g key={key}>{accidentalGlyph(-1, x - 3.5, y)}{accidentalGlyph(-1, x + 3.5, y)}</g>;
 }
 
-function restGlyph(base: number, x: number, staffTop: number, wholeBar: boolean) {
+export function restGlyph(base: number, x: number, staffTop: number, wholeBar: boolean) {
   if (wholeBar || base >= 4) return <rect x={x - 6} y={staffTop + 10} width="12" height="5" fill="currentColor" />;
   if (base >= 2) return <rect x={x - 6} y={staffTop + 15} width="12" height="5" fill="currentColor" />;
   if (base >= 1) return <path transform={`translate(${x} ${staffTop + 20})`} fill="currentColor" d={PATHS.quarterRest} />;
@@ -226,7 +226,7 @@ function restGlyph(base: number, x: number, staffTop: number, wholeBar: boolean)
   return <g>{parts}</g>;
 }
 
-function flagGlyph(stemX: number, stemEnd: number, up: boolean, count: number) {
+export function flagGlyph(stemX: number, stemEnd: number, up: boolean, count: number) {
   return Array.from({ length: count }, (_, i) => {
     const y = up ? stemEnd + i * 7 : stemEnd - i * 7;
     const d = up

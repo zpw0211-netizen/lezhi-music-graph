@@ -305,3 +305,14 @@
 @media (prefers-reduced-motion: reduce) {
   .rhythm-drum-img.is-hit { animation-duration: 1ms; }
 }
+
+/* Note figures (replacing the X glyphs): heads, stems, beams, flags and rests in currentColor. */
+.rhythm-figures { display: block; overflow: visible; }
+.rhythm-note, .rhythm-beams { transition: color .08s linear; }
+.rhythm-note.is-playing, .rhythm-beams.is-playing { color: var(--rhythm-seal); }
+.rhythm-note.is-good { color: var(--rhythm-pine); }
+.rhythm-note:is(.is-early, .is-late) { color: var(--rhythm-amber); }
+.rhythm-note.is-miss { color: var(--rhythm-seal); }
+.rhythm-note-mark { font: 600 9px var(--ui, sans-serif); fill: currentColor; }
+.rhythm-score:has(.rhythm-note-mark) .rhythm-bars { row-gap: 1.1em; }
+.rhythm-group.is-triplet .rhythm-triplet-mark { top: -.45em; }
