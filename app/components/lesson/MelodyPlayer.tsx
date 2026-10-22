@@ -201,6 +201,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
   const scoreRef = useRef<HTMLDivElement | null>(null);
   const [barsPerRow, setBarsPerRow] = useState(4);
   const [noteFit, setNoteFit] = useState(1);
+  const [staffRoom, setStaffRoom] = useState(640);
   const fitRef = useRef(1);
   const [view, setView] = useState<"score" | "line">("score");
   const [followOpen, setFollowOpen] = useState(false);
@@ -236,13 +237,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     window.addEventListener(VOCAL_PLAYBACK_STARTED, stop);
     return () => window.removeEventListener(VOCAL_PLAYBACK_STARTED, stop);
   }, [stop]);
-  const staffBarWidths = useMemo(() => melody.bars.map((_, barIndex) => {
-    const notes = Math.max(0, ...lines.map((line) => line.bars[barIndex]?.length ?? 0));
-    const beats = Math.max(1, ...lines.map((line) => line.bars[barIndex]?.reduce((sum, note) => sum + note.b, 0) ?? 0));
-    return Math.max(88, beats * 34, notes * 16);
-  }), [melody.bars, lines]);
-  // Keep the existing even-grid layout for jianpu. Staff rows fit the same way,
-  // accounting for clef and key-signature space at the start of each system.
+  // Keep the existing even-grid layout for jianpu; staff systems lay themselves out from the measured width.
   useEffect(() => {
     const score = scoreRef.current;
     if (!score) return;
@@ -251,40 +246,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       const notePx = (voice ? parseFloat(getComputedStyle(voice).fontSize) || 20 : 20) / fitRef.current;
       const style = getComputedStyle(score);
       const room = score.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-      if (notationStyle === "staff") {
-        const signatureCount = melody.key === "节奏" ? 0 : (() => {
-          const tonic = melody.key.replace(/\s/g, "").match(/^1=([♭♯#b]?)([A-G])/);
-          if (!tonic) return 0;
-          const name = tonic[2] + (tonic[1] === "♭" || tonic[1] === "b" ? "b" : tonic[1] ? "#" : "");
-          const sharpKeys: Record<string, number> = { C: 0, G: 1, D: 2, A: 3, E: 4, B: 5, "F#": 6, "C#": 7 };
-          const flatKeys: Record<string, number> = { F: 1, Bb: 2, Eb: 3, Ab: 4, Db: 5, Gb: 6, Cb: 7 };
-          return tonic[1] === "♭" || tonic[1] === "b" ? flatKeys[name] ?? 0 : tonic[1] ? sharpKeys[name] ?? 0 : flatKeys[name] ?? sharpKeys[name] ?? 0;
-        })();
-        const meterAt = (index: number) => {
-          const entries = melody.meter.split("、").filter(Boolean);
-          return entries.length === melody.bars.length ? entries[index] ?? entries[0] : entries[0] ?? "";
-        };
-        const extraTime = (index: number, first: number) => {
-          const changed = index === first ? first === 0 || meterAt(first) !== meterAt(first - 1) : meterAt(index) !== meterAt(index - 1);
-          return changed && /\d+\s*\/\s*\d+/.test(meterAt(index)) ? 22 : 0;
-        };
-        const count = Math.min([8, 4, 2, 1].find((n) => {
-          let widest = 0;
-          for (let start = 0; start < melody.bars.length; start += n) {
-            const end = Math.min(melody.bars.length, start + n);
-            let width = 52 + 14 + (melody.key === "节奏" ? 0 : 48 + signatureCount * 9) + extraTime(start, start);
-            for (let index = start; index < end; index += 1) {
-              width += staffBarWidths[index] + (index === start ? 0 : extraTime(index, start));
-            }
-            widest = Math.max(widest, width);
-          }
-          return widest <= room;
-        }) ?? 1, melody.bars.length);
-        fitRef.current = 1;
-        setBarsPerRow(count);
-        setNoteFit(1);
-        return;
-      }
+      if (notationStyle === "staff") { setStaffRoom(room); return; }
       const barPx = (n: number, scale: number) => n * (widestBar * notePx * scale + 26);
       const count = Math.min([8, 4, 2].find((n) => barPx(n, 0.8) <= room) ?? 1, melody.bars.length);
       const scale = barPx(count, 1) <= room ? 1 : Math.max(0.8, room / barPx(count, 1));
@@ -296,7 +258,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     const observer = new ResizeObserver(fit);
     observer.observe(score);
     return () => observer.disconnect();
-  }, [notationStyle, melody.key, melody.meter, melody.bars.length, staffBarWidths, widestBar, view]);
+  }, [notationStyle, melody.bars.length, widestBar, view]);
 
   /** Unlock audio and load the chosen instrument; null when the request was superseded. */
   const prepareAudio = async (request: number) => {
@@ -672,7 +634,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     </div>}
     {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} beatRef={beatRef} /> :
     <div ref={scoreRef} className={`melody-score${notationStyle === "staff" ? " is-staff" : ""}`} style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`${notationStyle === "staff" ? "五线谱" : "简谱"}旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
-      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} barsPerRow={barsPerRow} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
+      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
         {lines.map((line, voice) => {
           const notes = line.bars[barIndex] ?? [];
           const runsByLevel = beamRuns[voice]?.[barIndex] ?? new Map<number, Map<number, BeamRun>>();

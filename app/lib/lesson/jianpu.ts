@@ -24,6 +24,8 @@ export type Melody = {
   lyricWords?: number;
   /** Last bar that carries lyrics when the rest is an interlude or coda; the check counts syllables only up to it. */
   lyricsEnd?: number;
+  /** Staff editions: clef and octave shift per voice (main line first) when the textbook staff differs from the default. */
+  staff?: Array<{ clef?: "treble" | "bass"; octave?: number } | undefined>;
 };
 
 

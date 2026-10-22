@@ -382,28 +382,17 @@
 .melody-player.is-large .melody-score { row-gap:clamp(8px,1.2vh,22px); padding:clamp(10px,1.5vh,20px) clamp(10px,1.4vw,18px); }
 
 /* Staff notation shares the lesson card and toolbar; only the score rendering changes. */
-.melody-score.is-staff { display:block; overflow:hidden; }
-.staff-score { display:grid; gap:22px; width:100%; }
-.staff-system { display:block; width:100%; height:auto; overflow:visible; color:var(--ink, #26312c); }
-.staff-rule { stroke:var(--line, #9AA7A0); stroke-width:1; }
-.staff-ledger { stroke:currentColor; stroke-width:1; }
-.staff-barline { stroke:var(--ink-2, #66736c); stroke-width:1; }
-.staff-final-line { stroke:var(--ink-2, #66736c); stroke-width:1.5; }
-.staff-voice-label { font-size:10px; font-weight:600; }
-.staff-accidental { font-family:serif; font-size:18px; }
-.staff-time-signature { font:600 13px var(--font-score, serif); text-anchor:middle; }
-.staff-notehead { transition:fill .16s ease, stroke .16s ease; }
-.staff-note.is-active .staff-notehead { filter:drop-shadow(0 0 2px color-mix(in srgb, var(--brand-amber, #E9A83A), transparent 35%)); }
-.staff-beam { stroke-linecap:butt; }
-.staff-tuplet { font:600 10px var(--font-score, serif); }
-.staff-tuplet text { paint-order:stroke; stroke:var(--sheet, #fffdf7); stroke-width:3px; }
-.staff-lyric { font:500 12px var(--font-score, serif); }
+.melody-score.is-staff { display:block; overflow-x:auto; color:var(--ink, #26312c); }
+.staff-score { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; }
+.staff-system { display:block; max-width:100%; height:auto; overflow:visible; }
+.staff-rule { stroke:currentColor; stroke-width:.9; opacity:.75; }
+.staff-ledger { stroke:currentColor; stroke-width:1.1; }
+.staff-barline { stroke:currentColor; stroke-width:1.1; }
+.staff-voice-label { font:600 10px var(--font-ui, sans-serif); fill:currentColor; opacity:.7; }
+.staff-time-signature { font:700 23px Georgia, "Times New Roman", serif; fill:currentColor; }
+.staff-tuplet { font:italic 600 11px Georgia, "Times New Roman", serif; fill:currentColor; }
+.staff-lyric { font:400 13px var(--font-score, serif); fill:currentColor; }
+.staff-note { transition:color .12s ease; }
+.staff-note.is-active { color:var(--amber, #D9892B); }
+.staff-lyric.is-active { fill:var(--amber, #D9892B); }
 .staff-measure.is-dim { opacity:.28; transition:opacity .18s ease; }
-.staff-brace { color:var(--ink-2, #66736c); }
-.melody-player.is-large .staff-score { gap:clamp(12px, 2vh, 24px); }
-.melody-player.is-large .staff-lyric { font-size:14px; }
-@media (max-width:600px) {
-  .staff-score { gap:14px; }
-  .staff-voice-label { font-size:9px; }
-  .staff-lyric { font-size:10px; }
-}
