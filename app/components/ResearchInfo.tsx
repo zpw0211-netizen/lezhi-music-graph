@@ -34,13 +34,13 @@ export function ResearchInfo({ open, version, generatedAt, onClose }: Props) {
       <aside className="research-info" role="dialog" aria-modal="true" aria-labelledby="research-info-title" onMouseDown={(event) => event.stopPropagation()}>
         <header>
           <div className="research-info-heading">
-            <Image className="research-info-logo" src={publicAssetUrl("brand/yapu-ai-logo.webp")} alt="芽谱AI 音乐数字教材平台" width={224} height={80} unoptimized />
+            <Image className="research-info-logo" src={publicAssetUrl("brand/yapu-logo.webp")} alt="芽谱" width={176} height={80} unoptimized />
             <h2 id="research-info-title">芽谱AI研究信息</h2>
           </div>
           <button type="button" aria-label="关闭研究信息" onClick={onClose}>×</button>
         </header>
         <dl>
-          <div><dt>站点名称</dt><dd>芽谱 · {EDITION.label}{PUBLISHED_EDITION_LABEL}音乐教材</dd></div>
+          <div><dt>站点名称</dt><dd>芽谱AI — 音乐数字教材平台（{EDITION.label}{PUBLISHED_EDITION_LABEL}）</dd></div>
           <div><dt>研究对象</dt><dd>中小学音乐教材中的作品、人物、体裁、音乐要素、理论、文化，以及教学活动方面的知识联系</dd></div>
           <div><dt>教材范围</dt><dd>{EDITION.press}{PUBLISHED_SCOPE_LABEL}</dd></div>
           <div><dt>数据版本</dt><dd>{version}</dd></div>

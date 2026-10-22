@@ -185,9 +185,10 @@ body::before {
 }
 .home-portal .home-hero-primary { display: flex; align-items: flex-end; gap: clamp(21px, 2.6vw, 55px); min-width: 0; }
 .home-portal .home-title-plate { flex: 0 0 auto; }
-/* The 芽谱AI lockup (mark + name + 音乐数字教材平台) rises in once; on scroll the whole title eases back. */
+/* The 芽谱 logo rises in once, the 芽谱AI · 音乐数字教材平台 line follows; on scroll the title eases back. */
 .home-portal .home-wordmark { position: relative; display: flex; align-items: center; }
-.home-portal .brand-logo-img { display: block; width: clamp(300px, 26vw, 460px); height: auto; animation: home-logo-rise .9s cubic-bezier(.34, 1.56, .64, 1) .1s both; }
+.home-portal .brand-logo-img { display: block; width: clamp(220px, 19vw, 340px); height: auto; animation: home-logo-rise .9s cubic-bezier(.34, 1.56, .64, 1) .1s both; }
+.home-portal .home-brand-tagline { margin-top: 13px; color: var(--seal, #B5402F); font: 15px/1.6 var(--serif); letter-spacing: .28em; white-space: nowrap; animation: home-logo-rise .8s var(--ease) .45s both; }
 .home-portal .home-title-accessible {
   position: absolute;
   width: 1px;
@@ -699,7 +700,8 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
   .home-portal .home-hero::before { background-position: 60% 46%; }
   .home-portal .home-hero-inner { grid-template-columns: 1fr; gap: 8px; }
   .home-portal .home-hero-primary { gap: 21px; }
-  .home-portal .brand-logo-img { width: clamp(240px, 72vw, 340px); }
+  .home-portal .brand-logo-img { width: clamp(190px, 56vw, 260px); }
+  .home-portal .home-brand-tagline { margin-top: 8px; font-size: 13px; letter-spacing: .2em; }
   .home-portal .home-hero-kicker { margin: 0 0 8px; font-size: 12px; letter-spacing: .24em; }
   .home-portal .home-hero-lead { margin: 0 0 8px; font-size: clamp(16px, 4.6vw, 20px); }
   .home-portal .home-hero-search-column { padding: 0; }
@@ -774,7 +776,7 @@ html.motion-ready .home-portal [data-reveal].is-revealed { opacity: 1; transform
     animation: none !important;
     transition: none !important;
   }
-  .home-portal .brand-logo-img { animation: none; }
+  .home-portal .brand-logo-img, .home-portal .home-brand-tagline { animation: none; }
   .home-portal [data-reveal] { opacity: 1 !important; transform: none !important; }
   html.motion-ready .home-portal [data-reveal] { opacity: 1 !important; transform: none !important; }
   .home-portal .home-bookmark-paper,

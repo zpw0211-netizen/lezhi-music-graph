@@ -177,6 +177,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             <div className="home-title-plate">
               <p className="home-hero-kicker">{EDITION.label} · {PUBLISHED_GRADE_RANGE_LABEL}</p>
               <div className="home-wordmark"><BrandLogo /><h1 id="home-title" className="home-title-accessible">{SITE_NAME}</h1></div>
+              <p className="home-brand-tagline" aria-hidden="true">芽谱AI · 音乐数字教材平台</p>
             </div>
             <p className="home-hero-lead">翻开一册，<br />从这一课开始。</p>
           </div>

@@ -5,7 +5,7 @@ export function BrandMark() {
   return <img className="brand-mark-img" src={publicAssetUrl("brand/yapu-ai-mark.webp")} alt="" aria-hidden="true" width={139} height={160} />;
 }
 
-// The full 芽谱AI · 音乐数字教材平台 lockup (public/brand/yapu-ai-logo.webp) for the home hero and about panels.
+// The mark with the name 芽谱 (public/brand/yapu-logo.webp); 「AI · 音乐数字教材平台」 is set as page text below it.
 export function BrandLogo({ className = "brand-logo-img" }: { className?: string }) {
-  return <img className={className} src={publicAssetUrl("brand/yapu-ai-logo.webp")} alt="芽谱AI 音乐数字教材平台" width={1200} height={428} />;
+  return <img className={className} src={publicAssetUrl("brand/yapu-logo.webp")} alt="芽谱" width={900} height={408} />;
 }
