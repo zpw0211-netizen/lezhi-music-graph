@@ -26,6 +26,8 @@ export type Melody = {
   lyricsEnd?: number;
   /** Staff editions: clef and octave shift per voice (main line first) when the textbook staff differs from the default. */
   staff?: Array<{ clef?: "treble" | "bass"; octave?: number } | undefined>;
+  /** Staff editions: key whose signature the textbook prints when it spells the same pitches differently (1=♭G drawn with five flats). */
+  staffSignature?: string;
 };
 
 

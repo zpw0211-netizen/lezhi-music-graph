@@ -1,0 +1,26 @@
+// Generated from .tmp/staff-keys.txt: excerpts the staff textbooks print in another key (key: the jianpu moves
+// there, playback included) or spell with another signature (signature: same pitches). Key: book|work|melody index.
+export const STAFF_KEYS: Record<string, { key: string; tonicMidi: number } | { signature: string }> = {
+  "pep-g1s2|摇篮曲|0": { key: "1=C", tonicMidi: 60 },
+  "pep-g1s2|摇篮曲|3": { signature: "1=♭D" },
+  "pep-g1s2|劳动最光荣|0": { key: "1=C", tonicMidi: 60 },
+  "pep-g1s2|小邋遢|0": { key: "1=C", tonicMidi: 60 },
+  "pep-g1s2|大风车|0": { key: "1=C", tonicMidi: 60 },
+  "pep-g1s2|观灯|0": { key: "1=C", tonicMidi: 60 },
+  "pep-g2s1|小小的船|0": { key: "1=C", tonicMidi: 60 },
+  "pep-g2s2|粉刷匠|0": { key: "1=D", tonicMidi: 62 },
+  "pep-g2s2|歌唱祖国|0": { key: "1=F", tonicMidi: 65 },
+  "pep-g2s2|歌唱祖国|1": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s1|甜甜的秘密|0": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s2|酒歌|0": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s2|卖花姑娘|0": { key: "1=G", tonicMidi: 67 },
+  "pep-g3s2|牧羊人的歌|0": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s2|幸福花儿开心上|0": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s2|幸福花儿开心上|1": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s2|幸福花儿开心上|2": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s2|幸福花儿开心上|3": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s2|格桑拉|0": { key: "1=F", tonicMidi: 65 },
+  "pep-g4s1|斗牛士之歌|0": { signature: "1=F" },
+  "pep-g4s1|鸽子|0": { signature: "1=F" },
+  "pep-g7s2|牧歌|0": { signature: "1=♭D" },
+};

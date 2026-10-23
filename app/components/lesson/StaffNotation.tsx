@@ -137,7 +137,7 @@ function splitDuration(note: MelodyNote, length: number) {
 
 /** Notes of one voice as drawable glyphs, bar by bar, with accidentals resolved against the key and the bar. */
 function voiceGlyphs(melody: Melody, bars: MelodyNote[][], clef: Clef, shift: number): Glyph[][] {
-  const signature = keySignature(melody.key);
+  const signature = keySignature(melody.staffSignature ?? melody.key);
   return bars.map((bar) => {
     const seen = new Map<string, number>();
     const glyphs: Glyph[] = [];
@@ -288,7 +288,7 @@ function braceGlyph(x: number, y1: number, y2: number) {
 }
 
 function headerWidth(melody: Melody, showMeter: boolean, label: number) {
-  const sig = keySignature(melody.key);
+  const sig = keySignature(melody.staffSignature ?? melody.key);
   return HEADER_PAD + label + 32 + sig.count * 8.5 + (showMeter ? 24 : 0) + 6;
 }
 
@@ -410,7 +410,7 @@ type SystemProps = {
 function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, current, offsets, activePhrase }: SystemProps) {
   const grand = isGrandStaff(plan);
   const label = labelRoom(lines, plan);
-  const signature = keySignature(melody.key);
+  const signature = keySignature(melody.staffSignature ?? melody.key);
   const meter = meterAt(melody, start);
   const showMeter = plan.meterShown[start] && !!timeSignature(meter);
   const header = grid.header;

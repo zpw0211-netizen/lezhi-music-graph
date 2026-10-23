@@ -60,6 +60,7 @@ import WX_PEP_G8S1 from "./melodies-wx-pep-g8s1";
 import WX_PEP_G8S2 from "./melodies-wx-pep-g8s2";
 import WX_PEP_G9S1 from "./melodies-wx-pep-g9s1";
 import { DRAFT_MELODIES } from "./melodies-draft";
+import { STAFF_KEYS } from "./staff-key-data";
 import { STAFF_PLACEMENT } from "./staff-placement-data";
 import type { Melody } from "./jianpu";
 
@@ -117,7 +118,13 @@ export function melodiesFor(bookKey: string | undefined, ...names: string[]): Me
   const found = findMelodies(bookKey, names);
   if (!bookKey?.startsWith("wx-") || !found.name) return found.melodies;
   const prefix = `${bookKey.slice(3)}|${found.name.replace(/^《|》$/g, "")}|`;
-  return found.melodies.map((melody, index) => (STAFF_PLACEMENT[prefix + index] ? { ...melody, staff: STAFF_PLACEMENT[prefix + index] } : melody));
+  return found.melodies.map((melody, index) => {
+    const key = STAFF_KEYS[prefix + index];
+    const placed = STAFF_PLACEMENT[prefix + index];
+    // The staff textbook prints this excerpt in another key (same jianpu, other pitches), or spells it with another signature.
+    const keyed = !key ? melody : "key" in key ? { ...melody, key: key.key, tonic: key.key.replace(/^1=/, ""), tonicMidi: key.tonicMidi } : { ...melody, staffSignature: key.signature };
+    return placed ? { ...keyed, staff: placed } : keyed;
+  });
 }
 
 function findMelodies(bookKey: string | undefined, names: string[]): { melodies: Melody[]; name?: string } {
