@@ -292,13 +292,13 @@ function headerWidth(melody: Melody, showMeter: boolean, label: number) {
   return HEADER_PAD + label + 32 + sig.count * 8.5 + (showMeter ? 24 : 0) + 6;
 }
 
-type BarLayout = { onsets: number[]; widths: number[]; lead: number; tail: number; wholeRest: boolean };
+type BarLayout = { onsets: number[]; widths: number[]; lead: number; tail: number; wholeRest: boolean; total: number };
 
 function barLayout(voices: Glyph[][][], barIndex: number, meterLength: number | undefined, meterChange: boolean): BarLayout {
   const glyphs = voices.map((bars) => bars[barIndex] ?? []);
   const total = Math.max(EPS, ...glyphs.map((list) => list.reduce((sum, glyph) => sum + glyph.dur, 0)));
   const wholeRest = glyphs.every((list) => list.length === 1 && list[0].rest) && (!meterLength || Math.abs(total - meterLength) < EPS || total >= meterLength);
-  if (wholeRest) return { onsets: [0], widths: [56], lead: meterChange ? 26 : 8, tail: 6, wholeRest: true };
+  if (wholeRest) return { onsets: [0], widths: [56], lead: meterChange ? 26 : 8, tail: 6, wholeRest: true, total };
   const onsets = [...new Set(glyphs.flat().map((glyph) => Math.round(glyph.start * 1e4) / 1e4))].sort((a, b) => a - b);
   const widths = onsets.map((onset, index) => {
     const next = onsets[index + 1] ?? total;
@@ -313,7 +313,7 @@ function barLayout(voices: Glyph[][][], barIndex: number, meterLength: number | 
     return width;
   });
   const leadAccidental = glyphs.flat().some((glyph) => glyph.accidental != null && glyph.start < 1e-4);
-  return { onsets, widths, lead: (meterChange ? 26 : 10) + (leadAccidental ? 9 : 0), tail: 6, wholeRest: false };
+  return { onsets, widths, lead: (meterChange ? 26 : 10) + (leadAccidental ? 9 : 0), tail: 6, wholeRest: false, total };
 }
 
 function barNaturalWidth(layout: BarLayout) {
@@ -340,17 +340,40 @@ function gridHeader(melody: Melody, plan: StaffPlan, perRow: number, label: numb
   return widest;
 }
 
-/** Bar columns shared by all systems: column j is as wide as the widest bar in that position. */
-function gridColumns(plan: StaffPlan, perRow: number) {
+const onsetKey = (time: number) => Math.round(time * 1e4) / 1e4;
+
+type Column = { onsets: number[]; widths: number[]; lead: number; tail: number; natural: number; flexible: number };
+
+/**
+ * Bar columns shared by all systems. Column j takes the onsets of every bar in that position, so notes
+ * on the same beat sit under each other; each stretch of time is as wide as the bar that needs most room there.
+ */
+function gridColumns(plan: StaffPlan, perRow: number): Column[] {
   return Array.from({ length: perRow }, (_, column) => {
-    let natural = 0;
-    let flexible = 0;
-    for (let index = column; index < plan.bars.length; index += perRow) {
-      const bar = plan.bars[index];
-      natural = Math.max(natural, barNaturalWidth(bar));
-      flexible = Math.max(flexible, bar.widths.reduce((a, b) => a + b, 0));
+    const bars: BarLayout[] = [];
+    for (let index = column; index < plan.bars.length; index += perRow) bars.push(plan.bars[index]);
+    const lead = Math.max(...bars.map((bar) => bar.lead));
+    const tail = Math.max(...bars.map((bar) => bar.tail));
+    const end = Math.max(...bars.map((bar) => bar.total));
+    const playing = bars.filter((bar) => !bar.wholeRest);
+    const onsets = playing.length ? [...new Set(playing.flatMap((bar) => bar.onsets.map(onsetKey)))].sort((a, b) => a - b) : [0];
+    const spans = onsets.map((onset, k) => (onsets[k + 1] ?? end) - onset);
+    const widths = onsets.map(() => 0);
+    // Each bar's own spacing is a minimum over the stretch of time it covers; short stretches first.
+    const needs = bars.flatMap((bar) => bar.wholeRest
+      ? [{ from: 0, to: end, width: bar.widths[0] }]
+      : bar.onsets.map((onset, k) => ({ from: onsetKey(onset), to: onsetKey(bar.onsets[k + 1] ?? bar.total), width: bar.widths[k] })));
+    needs.sort((a, b) => a.to - a.from - (b.to - b.from));
+    for (const need of needs) {
+      const inside = onsets.map((onset, k) => k).filter((k) => onsets[k] >= need.from - 1e-4 && onsets[k] < need.to - 1e-4);
+      if (!inside.length) continue;
+      const have = inside.reduce((sum, k) => sum + widths[k], 0);
+      if (have >= need.width) continue;
+      const time = inside.reduce((sum, k) => sum + spans[k], 0) || inside.length;
+      for (const k of inside) widths[k] += (need.width - have) * ((spans[k] || 1) / time);
     }
-    return { natural, flexible };
+    const flexible = widths.reduce((a, b) => a + b, 0);
+    return { onsets, widths, lead, tail, natural: lead + flexible + tail, flexible };
   });
 }
 
@@ -362,7 +385,7 @@ function fitColumns(melody: Melody, plan: StaffPlan, perRow: number, label: numb
   const flexible = columns.reduce((sum, column) => sum + column.flexible, 0);
   const room = width - header - 4;
   const factor = 1 + (room - natural) / Math.max(1, flexible);
-  return { header, factor, widths: columns.map((column) => column.natural + (factor - 1) * column.flexible) };
+  return { header, factor, columns, widths: columns.map((column) => column.natural + (factor - 1) * column.flexible) };
 }
 
 /** Bars per system: all of them, else 8 or 4 so phrases line up, else the most that fit spread evenly over the rows. */
@@ -384,7 +407,7 @@ export function staffBarsPerRow(melody: Melody, plan: StaffPlan, width: number, 
 type SystemProps = {
   melody: Melody; lines: MelodyLineData[]; plan: StaffPlan; start: number; end: number; width: number; scale: number;
   /** Shared grid: header width and the width of each bar column. */
-  grid: { header: number; widths: number[] };
+  grid: { header: number; widths: number[]; columns: Column[] };
   current: number[]; offsets: number[][]; activePhrase: { startBar: number; endBar: number } | null;
 };
 
@@ -404,19 +427,19 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, curr
   for (let index = start; index < end; index += 1) {
     const bar = plan.bars[index];
     barX.push(cursor);
-    const lead = index === start && index > 0 && plan.meterShown[index] ? bar.lead - 16 : bar.lead;
-    // Spread this bar's notes over its column.
-    const flexible = bar.widths.reduce((a, b) => a + b, 0);
-    const factor = (grid.widths[index - start] - lead - bar.tail) / Math.max(1, flexible);
+    // Notes sit on the column's shared time grid.
+    const column = grid.columns[index - start];
+    const columnWidth = grid.widths[index - start];
+    const factor = (columnWidth - column.lead - column.tail) / Math.max(1, column.flexible);
+    const at = new Map<number, number>();
+    let x = cursor + column.lead;
+    column.onsets.forEach((onset, k) => { at.set(onset, x + 6); x += column.widths[k] * factor; });
     const map = new Map<number, number>();
-    let x = cursor + lead;
-    bar.onsets.forEach((onset, k) => {
-      const w = bar.widths[k] * factor;
-      map.set(onset, bar.wholeRest ? x + w / 2 : x + 6);
-      x += w;
-    });
+    bar.onsets.forEach((onset) => map.set(onset, bar.wholeRest
+      ? cursor + column.lead + (columnWidth - column.lead - column.tail) / 2
+      : at.get(onsetKey(onset)) ?? x));
     onsetX.push(map);
-    cursor = x + bar.tail;
+    cursor += columnWidth;
   }
   // A shorter last system ends at its last column, under the bar lines above it.
   const endX = cursor;
