@@ -150,6 +150,10 @@ function unitArtwork(unit: TextbookUnit) {
     : unitArtPath(unit.bookKey, unit.order) ?? `art/${unit.bookKey}.webp`;
 }
 
+function melodyEditionBookKey(bookKey?: string) {
+  return bookKey && EDITION.notation === "staff" ? `wx-${bookKey}` : bookKey;
+}
+
 function bookIntroduction(units: readonly TextbookUnit[]) {
   const themes = units.map((unit) => unit.theme?.trim() || unit.title).filter(Boolean);
   if (!themes.length) return "";
@@ -234,7 +238,7 @@ function WorkDetail({
   const triples = useMemo(() => bookData?.triples.filter((triple) => triple.subject === work?.id) ?? [], [bookData, work?.id]);
   const knowledge = useMemo(() => workKnowledge(triples, entitiesById), [entitiesById, triples]);
   const score = work?.scores?.[0];
-  const melodies = work ? melodiesFor(unit?.bookKey, bareWorkName(work.name), work.name) : [];
+  const melodies = work ? melodiesFor(melodyEditionBookKey(unit?.bookKey), bareWorkName(work.name), work.name) : [];
   const scoreStyle = work ? ({ viewTransitionName: "work-cover" } as CSSProperties) : undefined;
   const isLoading = unitsStatus === "loading" || bookDataStatus === "loading" || bookDataStatus === "idle";
   const hasLoadError = unitsStatus === "error" || bookDataStatus === "error";
@@ -271,8 +275,8 @@ function WorkDetail({
         </section>}
 
         {melodies.length > 0 && <section className="records-detail-melody" aria-labelledby="records-detail-melody-title">
-          <h2 id="records-detail-melody-title">简谱与旋律</h2>
-          <MelodySet melodies={melodies} large />
+          <h2 id="records-detail-melody-title">{EDITION.notation === "staff" ? "五线谱与旋律" : "简谱与旋律"}</h2>
+          <MelodySet melodies={melodies} large notationStyle={EDITION.notation ?? "jianpu"} />
         </section>}
 
         {(knowledge.length > 0 || !detailsReady) && <section className="records-detail-knowledge" aria-labelledby="records-detail-knowledge-title">
@@ -875,7 +879,7 @@ export function WorkLibrary({
               {shownWorks.map((work, workIndex) => {
                 const starred = Boolean(work.starred);
                 const isLearned = learned.has(learnedKey(currentBookKey, work.id));
-                const melodies = melodiesFor(currentBookKey, bareWorkName(work.name), work.name);
+                const melodies = melodiesFor(melodyEditionBookKey(currentBookKey), bareWorkName(work.name), work.name);
                 const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
                 const credits = [work.type, authors].filter(Boolean).join(" · ");
                 const modes = isPrimaryBook ? work.modes?.join("、") : "";
@@ -906,7 +910,7 @@ export function WorkLibrary({
                     </span>
                   </button>
                   {work.hasMelody && melodies[0] && <span className="records-score-play" onClickCapture={() => markLearned(work)}>
-                    <MelodyPlayer melody={melodies[0]} />
+                    <MelodyPlayer melody={melodies[0]} notationStyle={EDITION.notation ?? "jianpu"} />
                   </span>}
                 </article>;
               })}
