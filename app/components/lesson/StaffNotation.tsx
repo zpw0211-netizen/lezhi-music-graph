@@ -316,10 +316,6 @@ function barLayout(voices: Glyph[][][], barIndex: number, meterLength: number | 
   return { onsets, widths, lead: (meterChange ? 26 : 10) + (leadAccidental ? 9 : 0), tail: 6, wholeRest: false, total };
 }
 
-function barNaturalWidth(layout: BarLayout) {
-  return layout.lead + layout.widths.reduce((sum, width) => sum + width, 0) + layout.tail;
-}
-
 type StaffPlan = { voices: Glyph[][][]; placements: Array<{ clef: Clef; shift: number }>; bars: BarLayout[]; meterShown: boolean[] };
 
 export function planStaff(melody: Melody, lines: MelodyLineData[]): StaffPlan {
