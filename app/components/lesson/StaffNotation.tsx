@@ -204,8 +204,8 @@ const PATHS = {
 
 function clefGlyph(clef: Clef, x: number, staffTop: number) {
   if (clef === "treble") return <g transform={`translate(${x + 8} ${staffTop + 30})`} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-    <path strokeWidth="2.6" d={PATHS.treble} />
-    <circle cx="3" cy="21" r="3.6" fill="currentColor" stroke="none" />
+    <path strokeWidth="2.2" d={PATHS.treble} />
+    <circle cx="3" cy="21" r="3.2" fill="currentColor" stroke="none" />
     <path strokeWidth="1.6" d="M7 22 C8 27 2 29 -1 25" />
   </g>;
   if (clef === "bass") return <g transform={`translate(${x + 5} ${staffTop + 10})`} fill="currentColor">
@@ -259,12 +259,32 @@ function arc(x1: number, y1: number, x2: number, y2: number, below: boolean, key
 
 // ---------- layout ----------
 
-const segmentWidth = (duration: number) => 13 + 22 * Math.sqrt(duration);
+const segmentWidth = (duration: number) => 11 + 19 * Math.sqrt(duration);
 const HEADER_PAD = 6;
 
 /** Room for voice names ("第一声部", "木鱼") when a score has several staves. */
 export function labelWidth(lines: MelodyLineData[]) {
   return lines.length > 1 ? Math.min(56, Math.max(...lines.map((line) => line.label.length)) * 10.5 + 6) : 0;
+}
+
+/** A piano part (treble over bass, two staves) is printed as one grand staff: brace, shared bar lines, no voice names. */
+function isGrandStaff(plan: StaffPlan) {
+  return plan.placements.length === 2 && plan.placements[0].clef === "treble" && plan.placements[1].clef === "bass";
+}
+
+const BRACE_ROOM = 14;
+
+function labelRoom(lines: MelodyLineData[], plan: StaffPlan) {
+  return isGrandStaff(plan) ? BRACE_ROOM : labelWidth(lines);
+}
+
+/** A curly brace from y1 to y2 whose points face right, ending at x + width. */
+function braceGlyph(x: number, y1: number, y2: number) {
+  const w = 10;
+  const h = y2 - y1;
+  const p = (fx: number, fy: number) => `${x + fx * w} ${y1 + fy * h}`;
+  // Outer edge down to the middle point and back, then the thicker inner edge up again.
+  return <path key="brace" fill="currentColor" d={`M${p(1, 0)} C${p(0.05, 0.04)} ${p(0.75, 0.44)} ${p(0, 0.5)} C${p(0.75, 0.56)} ${p(0.05, 0.96)} ${p(1, 1)} L${p(1, 0.985)} C${p(0.55, 0.95)} ${p(1.45, 0.58)} ${p(0.12, 0.5)} C${p(1.45, 0.42)} ${p(0.55, 0.05)} ${p(1, 0.015)} Z`} />;
 }
 
 function headerWidth(melody: Melody, showMeter: boolean, label: number) {
@@ -310,43 +330,72 @@ export function planStaff(melody: Melody, lines: MelodyLineData[]): StaffPlan {
   return { voices, placements, bars, meterShown };
 }
 
-function systemNaturalWidth(melody: Melody, plan: StaffPlan, start: number, end: number, label: number) {
-  const showMeter = plan.meterShown[start] && !!timeSignature(meterAt(melody, start));
-  let width = headerWidth(melody, showMeter, label);
-  for (let index = start; index < end; index += 1) {
-    const bar = plan.bars[index];
-    width += barNaturalWidth(bar) - (index === start && plan.meterShown[index] && index > 0 ? 26 - 10 : 0);
-  }
-  return width + 4;
+const SQUEEZE = 0.8;
+
+/** One header width for every system (clef, key, and the time signature where it is shown), so bar lines line up. */
+function gridHeader(melody: Melody, plan: StaffPlan, perRow: number, label: number) {
+  let widest = 0;
+  for (let start = 0; start < melody.bars.length; start += perRow)
+    widest = Math.max(widest, headerWidth(melody, plan.meterShown[start] && !!timeSignature(meterAt(melody, start)), label));
+  return widest;
 }
 
-/** Bars per system: 8, 4, 2 or 1 so phrases line up, the most that fit the width. */
+/** Bar columns shared by all systems: column j is as wide as the widest bar in that position. */
+function gridColumns(plan: StaffPlan, perRow: number) {
+  return Array.from({ length: perRow }, (_, column) => {
+    let natural = 0;
+    let flexible = 0;
+    for (let index = column; index < plan.bars.length; index += perRow) {
+      const bar = plan.bars[index];
+      natural = Math.max(natural, barNaturalWidth(bar));
+      flexible = Math.max(flexible, bar.widths.reduce((a, b) => a + b, 0));
+    }
+    return { natural, flexible };
+  });
+}
+
+/** Bar columns fitted to the width: stretched to fill it, or squeezed down to SQUEEZE of the note spacing. */
+function fitColumns(melody: Melody, plan: StaffPlan, perRow: number, label: number, width: number) {
+  const header = gridHeader(melody, plan, perRow, label);
+  const columns = gridColumns(plan, perRow);
+  const natural = columns.reduce((sum, column) => sum + column.natural, 0);
+  const flexible = columns.reduce((sum, column) => sum + column.flexible, 0);
+  const room = width - header - 4;
+  const factor = 1 + (room - natural) / Math.max(1, flexible);
+  return { header, factor, widths: columns.map((column) => column.natural + (factor - 1) * column.flexible) };
+}
+
+/** Bars per system: all of them, else 8 or 4 so phrases line up, else the most that fit spread evenly over the rows. */
 export function staffBarsPerRow(melody: Melody, plan: StaffPlan, width: number, label: number) {
-  const fits = (n: number) => {
-    for (let start = 0; start < melody.bars.length; start += n)
-      if (systemNaturalWidth(melody, plan, start, Math.min(melody.bars.length, start + n), label) > width) return false;
-    return true;
-  };
-  return Math.min(melody.bars.length, [8, 4, 2, 1].find(fits) ?? 1);
+  const count = melody.bars.length;
+  const fits = (n: number) => fitColumns(melody, plan, n, label, width).factor >= SQUEEZE;
+  if (fits(count)) return count;
+  let most = Math.min(count - 1, 8);
+  while (most > 1 && !fits(most)) most -= 1;
+  // Rows of 4 or 8 bars follow the phrases; below that, rows of even length (5 bars → 3 + 2).
+  if (most >= 8 && count % 8 === 0) return 8;
+  if (most >= 4) return 4;
+  const even = Math.ceil(count / Math.ceil(count / most));
+  return fits(even) ? even : most;
 }
 
 // ---------- one system ----------
 
 type SystemProps = {
-  melody: Melody; lines: MelodyLineData[]; plan: StaffPlan; start: number; end: number; width: number; scale: number; stretch: boolean;
+  melody: Melody; lines: MelodyLineData[]; plan: StaffPlan; start: number; end: number; width: number; scale: number;
+  /** Shared grid: header width and the width of each bar column. */
+  grid: { header: number; widths: number[] };
   current: number[]; offsets: number[][]; activePhrase: { startBar: number; endBar: number } | null;
 };
 
-function StaffSystem({ melody, lines, plan, start, end, width, scale, stretch, current, offsets, activePhrase }: SystemProps) {
-  const label = labelWidth(lines);
+function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, current, offsets, activePhrase }: SystemProps) {
+  const grand = isGrandStaff(plan);
+  const label = labelRoom(lines, plan);
   const signature = keySignature(melody.key);
   const meter = meterAt(melody, start);
   const showMeter = plan.meterShown[start] && !!timeSignature(meter);
-  const header = headerWidth(melody, showMeter, label);
-  const natural = systemNaturalWidth(melody, plan, start, end, label);
-  const flexible = plan.bars.slice(start, end).reduce((sum, bar) => sum + bar.widths.reduce((a, b) => a + b, 0), 0);
-  const factor = stretch && natural < width ? 1 + (width - natural) / Math.max(1, flexible) : 1;
-  const totalWidth = Math.max(width, natural);
+  const header = grid.header;
+  const totalWidth = width;
 
   // Horizontal positions of bars and onsets.
   const barX: number[] = [];
@@ -356,6 +405,9 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, stretch, c
     const bar = plan.bars[index];
     barX.push(cursor);
     const lead = index === start && index > 0 && plan.meterShown[index] ? bar.lead - 16 : bar.lead;
+    // Spread this bar's notes over its column.
+    const flexible = bar.widths.reduce((a, b) => a + b, 0);
+    const factor = (grid.widths[index - start] - lead - bar.tail) / Math.max(1, flexible);
     const map = new Map<number, number>();
     let x = cursor + lead;
     bar.onsets.forEach((onset, k) => {
@@ -366,8 +418,9 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, stretch, c
     onsetX.push(map);
     cursor = x + bar.tail;
   }
-  const endX = Math.max(cursor, totalWidth - 4);
-  if (endX > cursor) barX.push(endX); else barX.push(cursor);
+  // A shorter last system ends at its last column, under the bar lines above it.
+  const endX = cursor;
+  barX.push(cursor);
 
   // Each voice: place glyphs, then draw.
   const staves: Array<{ above: number; below: number; body: ReactElement[]; lyricY: number }> = [];
@@ -438,7 +491,7 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, stretch, c
     // Staff lines.
     if (rhythm) body.push(<line key="rule" x1={label} x2={endX} y1={SPACE * 2} y2={SPACE * 2} className="staff-rule" />);
     else for (let i = 0; i < 5; i += 1) body.push(<line key={`rule-${i}`} x1={label} x2={endX} y1={i * SPACE} y2={i * SPACE} className="staff-rule" />);
-    if (label) body.push(<text key="label" x={0} y={SPACE * 2 + 4} className="staff-voice-label">{line.label}</text>);
+    if (label && !grand) body.push(<text key="label" x={0} y={SPACE * 2 + 4} className="staff-voice-label">{line.label}</text>);
 
     // Clef, key signature, time signature.
     const clefX = HEADER_PAD + label;
@@ -576,9 +629,17 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, stretch, c
   const tops: number[] = [];
   let height = 0;
   staves.forEach((staff) => { height += staff.above; tops.push(height); height += STAFF_H + staff.below; });
-  const bracket = staves.length > 1
-    ? <path d={`M${label + 1} ${tops[0]} V${tops[tops.length - 1] + STAFF_H}`} stroke="currentColor" strokeWidth="2.4" />
-    : null;
+  const bottom = tops[tops.length - 1] + STAFF_H;
+  const bracket = !grand
+    ? staves.length > 1 ? <path d={`M${label + 1} ${tops[0]} V${bottom}`} stroke="currentColor" strokeWidth="2.4" /> : null
+    : <g>
+      {braceGlyph(1, tops[0], bottom)}
+      <line x1={label} x2={label} y1={tops[0]} y2={bottom} className="staff-barline" />
+      {barX.slice(1, -1).map((x, k) => <line key={`gap-${k}`} x1={x} x2={x} y1={tops[0] + STAFF_H} y2={tops[1]} className="staff-barline" />)}
+      {end === melody.bars.length
+        ? <><line x1={barX[barX.length - 1] - 6} x2={barX[barX.length - 1] - 6} y1={tops[0] + STAFF_H} y2={tops[1]} className="staff-barline" /><rect x={barX[barX.length - 1] - 3.5} y={tops[0] + STAFF_H} width="3.5" height={tops[1] - tops[0] - STAFF_H} fill="currentColor" /></>
+        : <line x1={barX[barX.length - 1]} x2={barX[barX.length - 1]} y1={tops[0] + STAFF_H} y2={tops[1]} className="staff-barline" />}
+    </g>;
   const style: CSSProperties = { width: totalWidth * scale };
   return <svg className="staff-system" style={style} viewBox={`0 0 ${totalWidth} ${height}`} role="img" aria-label={`五线谱，第 ${start + 1} 至 ${end} 小节`}>
     {bracket}
@@ -589,15 +650,17 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, stretch, c
 const SYSTEM_GAP = 10;
 
 /** Systems at one size: bars per row from the width, each system laid out as an SVG. */
-function layoutAt(props: Omit<SystemProps, "plan" | "start" | "end" | "width" | "scale" | "stretch">, plan: StaffPlan, width: number, scale: number) {
+function layoutAt(props: Omit<SystemProps, "plan" | "start" | "end" | "width" | "scale" | "grid">, plan: StaffPlan, width: number, scale: number) {
   const { melody, lines } = props;
   const room = Math.max(160, width / scale);
-  const perRow = staffBarsPerRow(melody, plan, room, labelWidth(lines));
+  const label = labelRoom(lines, plan);
+  const perRow = staffBarsPerRow(melody, plan, room, label);
+  const grid = fitColumns(melody, plan, perRow, label, room);
   const systems: ReactElement[] = [];
   let height = 0;
   for (let start = 0; start < melody.bars.length; start += perRow) {
     const end = Math.min(melody.bars.length, start + perRow);
-    const svg = StaffSystem({ ...props, plan, start, end, width: room, scale, stretch: end - start === perRow || perRow >= melody.bars.length });
+    const svg = StaffSystem({ ...props, plan, start, end, width: room, scale, grid });
     height += Number(String(svg.props.viewBox).split(" ")[3]) * scale + (systems.length ? SYSTEM_GAP : 0);
     systems.push(<Fragment key={start}>{svg}</Fragment>);
   }
