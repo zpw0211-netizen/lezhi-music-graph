@@ -110,6 +110,18 @@ function placement(melody: Melody, bars: MelodyNote[][], voice: number): { clef:
   return { clef, shift: costAt(best) < home / 2 ? best : 0 };
 }
 
+/** Clef and written first pitch (e.g. "G4") of each voice, for checking against the textbook tables. */
+export function voiceOpenings(melody: Melody, lines: MelodyLineData[]) {
+  return lines.map((line, voice) => {
+    const { clef, shift } = placement(melody, line.bars, voice);
+    const first = line.bars.flat().find((note) => note.d > 0 && note.d < 8);
+    if (clef === "percussion" || !first) return { clef, shift, first: "" };
+    const pitch = spell(melody, first);
+    const accidental = pitch.alteration > 0 ? "♯" : pitch.alteration < 0 ? "♭" : "";
+    return { clef, shift, first: `${pitch.letter}${accidental}${pitch.octave + shift}` };
+  });
+}
+
 function splitDuration(note: MelodyNote, length: number) {
   const exact = DURATIONS.find((entry) => Math.abs(entry.value - length) < EPS && (note.dots == null || entry.dots === note.dots));
   if (exact) return [exact];

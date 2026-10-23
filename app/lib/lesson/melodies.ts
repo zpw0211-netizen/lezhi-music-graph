@@ -60,6 +60,7 @@ import WX_PEP_G8S1 from "./melodies-wx-pep-g8s1";
 import WX_PEP_G8S2 from "./melodies-wx-pep-g8s2";
 import WX_PEP_G9S1 from "./melodies-wx-pep-g9s1";
 import { DRAFT_MELODIES } from "./melodies-draft";
+import { STAFF_PLACEMENT } from "./staff-placement-data";
 import type { Melody } from "./jianpu";
 
 export type { Melody, MelodyNote } from "./jianpu";
@@ -110,27 +111,35 @@ for (const [, book] of BOOKS)
 for (const [name, segments] of Object.entries(DRAFT_MELODIES))
   if (!MELODIES[name]?.length) MELODIES[name] = segments;
 
-/** The melodies for a work as printed in one book; falls back to the book-agnostic table. Tries each name in turn. */
+/** The melodies for a work as printed in one book; falls back to the book-agnostic table. Tries each name in turn.
+ *  Staff editions (wx-*) also get the textbook's clef and octave for voices that differ from the default placement. */
 export function melodiesFor(bookKey: string | undefined, ...names: string[]): Melody[] {
+  const found = findMelodies(bookKey, names);
+  if (!bookKey?.startsWith("wx-") || !found.name) return found.melodies;
+  const prefix = `${bookKey.slice(3)}|${found.name.replace(/^《|》$/g, "")}|`;
+  return found.melodies.map((melody, index) => (STAFF_PLACEMENT[prefix + index] ? { ...melody, staff: STAFF_PLACEMENT[prefix + index] } : melody));
+}
+
+function findMelodies(bookKey: string | undefined, names: string[]): { melodies: Melody[]; name?: string } {
   if (bookKey?.startsWith("pep-") || bookKey?.startsWith("wx-pep-")) {
     const fallbackKey = bookKey.startsWith("wx-pep-") ? bookKey.slice(3) : bookKey;
-    if (!PEP_REVIEWED_BOOKS.has(bookKey) && !PEP_REVIEWED_BOOKS.has(fallbackKey)) return [];
+    if (!PEP_REVIEWED_BOOKS.has(bookKey) && !PEP_REVIEWED_BOOKS.has(fallbackKey)) return { melodies: [] };
     // 人教版的键不带《》；年表、地图等处传进来的是带《》的作品名，两种都要能查到。
     for (const name of names) {
       const own = BOOK_MELODIES[bookKey]?.[name.replace(/^《|》$/g, "")];
-      if (own?.length) return own;
+      if (own?.length) return { melodies: own, name };
       const fallback = BOOK_MELODIES[fallbackKey]?.[name.replace(/^《|》$/g, "")];
-      if (fallback?.length) return fallback;
+      if (fallback?.length) return { melodies: fallback, name };
     }
-    return [];
+    return { melodies: [] };
   }
   const fallbackKey = bookKey?.startsWith("wx-") ? bookKey.slice(3) : bookKey;
   for (const name of names) {
     const own = bookKey ? BOOK_MELODIES[bookKey]?.[name] : undefined;
-    if (own?.length) return KEY_MELODIES[name] ? [KEY_MELODIES[name], ...own] : own;
+    if (own?.length) return { melodies: KEY_MELODIES[name] ? [KEY_MELODIES[name], ...own] : own, name };
     const fallback = fallbackKey ? BOOK_MELODIES[fallbackKey]?.[name] : undefined;
-    if (fallback?.length) return KEY_MELODIES[name] ? [KEY_MELODIES[name], ...fallback] : fallback;
+    if (fallback?.length) return { melodies: KEY_MELODIES[name] ? [KEY_MELODIES[name], ...fallback] : fallback, name };
   }
-  for (const name of names) if (MELODIES[name]?.length) return MELODIES[name];
-  return [];
+  for (const name of names) if (MELODIES[name]?.length) return { melodies: MELODIES[name] };
+  return { melodies: [] };
 }
