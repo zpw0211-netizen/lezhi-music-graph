@@ -43,4 +43,8 @@ export const STAFF_PLACEMENT: Record<string, Array<{ clef?: "bass"; octave: numb
   "pep-g8s2|第五（命运）交响曲|6": [{octave: 2}],
   "pep-g3s1|甜甜的秘密|0": [undefined, {clef: "bass",octave: 0}, {clef: "bass",octave: 0}, {clef: "bass",octave: 0}],
   "g8s2|春江花月夜（合唱）|0": [undefined, {octave: 0}, {clef: "bass",octave: 0}],
+  "g7s1|台湾风情画|1": [{octave: 0}],
+  "g7s1|台湾风情画|3": [{octave: 0}],
+  "g8s1|梁山伯与祝英台|4": [{clef: "bass",octave: 0}],
+  "g8s1|百鸟朝凤|0": [{octave: 1}],
 };
