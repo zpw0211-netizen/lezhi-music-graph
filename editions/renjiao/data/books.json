@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "edition": { "key": "renjiao", "label": "人教版", "press": "人民教育出版社", "basePath": "/renjiao", "unitActivities": true, "hotSearches": ["娃哈哈", "国歌", "乃哟乃", "小夜曲", "快乐的罗梭"] },
+  "edition": { "key": "renjiao", "label": "人教版", "press": "人民教育出版社", "basePath": "/renjiao", "unitActivities": true, "hotSearches": ["娃哈哈", "国歌", "乃哟乃", "小夜曲", "快乐的罗梭"], "notationSibling": { "basePath": "/renjiao-staff", "books": ["pep-g1s1", "pep-g1s2", "pep-g2s1", "pep-g2s2", "pep-g3s1", "pep-g3s2", "pep-g4s1", "pep-g5s1", "pep-g6s1", "pep-g7s1", "pep-g7s2", "pep-g8s1", "pep-g8s2", "pep-g9s1"] } },
   "books": [
     { "key": "pep-g1s1", "stage": "小学", "grade": 1, "semester": "上册", "shortName": "一上", "fullName": "一年级上册", "title": "人教版一年级上册", "pages": 84, "pdfOffset": 9, "published": true, "unitArt": 8 },
     { "key": "pep-g1s2", "stage": "小学", "grade": 1, "semester": "下册", "shortName": "一下", "fullName": "一年级下册", "title": "人教版一年级下册", "pages": 73, "pdfOffset": 7, "published": true, "unitArt": 8 },

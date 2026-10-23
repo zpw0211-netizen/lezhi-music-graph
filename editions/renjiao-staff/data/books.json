@@ -2,9 +2,10 @@
   "version": 1,
   "edition": {
     "key": "renjiao-staff",
-    "label": "人教版（五线谱）",
+    "label": "人教版·五线谱",
     "press": "人民教育出版社",
     "basePath": "/renjiao-staff",
+    "notation": "staff",
     "unitActivities": true,
     "hotSearches": [
       "娃哈哈",
@@ -12,7 +13,26 @@
       "乃哟乃",
       "小夜曲",
       "快乐的罗梭"
-    ]
+    ],
+    "notationSibling": {
+      "basePath": "/renjiao",
+      "books": [
+        "pep-g1s1",
+        "pep-g1s2",
+        "pep-g2s1",
+        "pep-g2s2",
+        "pep-g3s1",
+        "pep-g3s2",
+        "pep-g4s1",
+        "pep-g5s1",
+        "pep-g6s1",
+        "pep-g7s1",
+        "pep-g7s2",
+        "pep-g8s1",
+        "pep-g8s2",
+        "pep-g9s1"
+      ]
+    }
   },
   "books": [
     {
@@ -25,7 +45,7 @@
       "title": "人教版一年级上册",
       "pages": 86,
       "pdfOffset": 9,
-      "published": false,
+      "published": true,
       "unitArt": 8
     },
     {
@@ -38,7 +58,7 @@
       "title": "人教版一年级下册",
       "pages": 75,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 8
     },
     {
@@ -51,7 +71,7 @@
       "title": "人教版二年级上册",
       "pages": 77,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 8
     },
     {
@@ -64,7 +84,7 @@
       "title": "人教版二年级下册",
       "pages": 78,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 8
     },
     {
@@ -77,7 +97,7 @@
       "title": "人教版三年级上册",
       "pages": 74,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 6
     },
     {
@@ -90,7 +110,7 @@
       "title": "人教版三年级下册",
       "pages": 59,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 6
     },
     {
@@ -103,7 +123,7 @@
       "title": "人教版四年级上册",
       "pages": 68,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 6
     },
     {
@@ -116,7 +136,7 @@
       "title": "人教版五年级上册",
       "pages": 58,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 6
     },
     {
@@ -129,7 +149,7 @@
       "title": "人教版六年级上册",
       "pages": 57,
       "pdfOffset": 7,
-      "published": false,
+      "published": true,
       "unitArt": 4
     },
     {
@@ -142,7 +162,7 @@
       "title": "人教版七年级上册",
       "pages": 84,
       "pdfOffset": 5,
-      "published": false,
+      "published": true,
       "unitArt": 4
     },
     {
@@ -155,7 +175,7 @@
       "title": "人教版七年级下册",
       "pages": 89,
       "pdfOffset": 5,
-      "published": false,
+      "published": true,
       "unitArt": 4
     },
     {
@@ -168,7 +188,7 @@
       "title": "人教版八年级上册",
       "pages": 65,
       "pdfOffset": 5,
-      "published": false,
+      "published": true,
       "unitArt": 4
     },
     {
@@ -181,7 +201,7 @@
       "title": "人教版八年级下册",
       "pages": 74,
       "pdfOffset": 5,
-      "published": false,
+      "published": true,
       "unitArt": 4
     },
     {
@@ -194,7 +214,7 @@
       "title": "人教版九年级上册",
       "pages": 53,
       "pdfOffset": 5,
-      "published": false,
+      "published": true,
       "unitArt": 4
     }
   ]
