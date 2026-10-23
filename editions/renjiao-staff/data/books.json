@@ -13,26 +13,7 @@
       "乃哟乃",
       "小夜曲",
       "快乐的罗梭"
-    ],
-    "notationSibling": {
-      "basePath": "/renjiao",
-      "books": [
-        "pep-g1s1",
-        "pep-g1s2",
-        "pep-g2s1",
-        "pep-g2s2",
-        "pep-g3s1",
-        "pep-g3s2",
-        "pep-g4s1",
-        "pep-g5s1",
-        "pep-g6s1",
-        "pep-g7s1",
-        "pep-g7s2",
-        "pep-g8s1",
-        "pep-g8s2",
-        "pep-g9s1"
-      ]
-    }
+    ]
   },
   "books": [
     {

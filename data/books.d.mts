@@ -17,7 +17,7 @@ export type BookRecord = {
   explorerPosition?: { x: number; y: number };
 };
 
-export type Edition = { key: string; label: string; press: string; basePath: string; notation?: "jianpu" | "staff"; notationSibling?: { basePath: string; books: string[] }; hotSearches?: string[] };
+export type Edition = { key: string; label: string; press: string; basePath: string; notation?: "jianpu" | "staff"; hotSearches?: string[] };
 export const EDITION: Edition;
 export function stripEditionPrefix(title: string | undefined | null): string;
 export const BOOK_REGISTRY: BookRecord[];

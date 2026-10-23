@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "edition": { "key": "renyin", "label": "人音版", "press": "人民音乐出版社", "basePath": "/renyin", "notationSibling": { "basePath": "/renyin-staff", "books": ["g1s1", "g1s2", "g2s1", "g2s2", "g3s1", "g3s2", "g4s1", "g5s1", "g7s1", "g7s2", "g8s1", "g8s2"] }, "hotSearches": ["黄河", "京剧", "民歌", "五声调式", "歌唱祖国"] },
+  "edition": { "key": "renyin", "label": "人音版", "press": "人民音乐出版社", "basePath": "/renyin", "hotSearches": ["黄河", "京剧", "民歌", "五声调式", "歌唱祖国"] },
   "books": [
     { "key": "g1s1", "stage": "小学", "grade": 1, "semester": "上册", "shortName": "一上", "fullName": "一年级上册", "title": "人音版一年级上册", "pages": 76, "pdfOffset": 10, "published": true, "unitArt": 6 },
     { "key": "g1s2", "stage": "小学", "grade": 1, "semester": "下册", "shortName": "一下", "fullName": "一年级下册", "title": "人音版一年级下册", "pages": 76, "pdfOffset": 8, "published": true, "unitArt": 6 },
