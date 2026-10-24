@@ -683,8 +683,10 @@ function layoutAt(props: Omit<SystemProps, "plan" | "start" | "end" | "width" | 
     height += Number(String(svg.props.viewBox).split(" ")[3]) * scale + (systems.length ? SYSTEM_GAP : 0);
     systems.push(<Fragment key={start}>{svg}</Fragment>);
   }
-  return { systems, height };
+  return { systems, height, perRow };
 }
+
+const LARGE_SCALES = [1.3, 1.2, 1.1, 1, 0.9, 0.8];
 
 export function StaffNotation({ melody, lines, current, offsets, width, height, activePhrase, large }: {
   melody: Melody; lines: MelodyLineData[]; current: number[]; offsets: number[][]; width: number;
@@ -694,11 +696,14 @@ export function StaffNotation({ melody, lines, current, offsets, width, height, 
 }) {
   const plan = planStaff(melody, lines);
   const props = { melody, lines, current, offsets, activePhrase };
-  let layout = layoutAt(props, plan, width, large ? 1.3 : width < 520 ? 0.85 : 1);
-  if (large && height && height > 0)
-    for (const scale of [1.2, 1.1, 1, 0.9, 0.8]) {
-      if (layout.height <= height) break;
-      layout = layoutAt(props, plan, width, scale);
-    }
+  if (!large) return <div className="staff-score">{layoutAt(props, plan, width, width < 520 ? 0.85 : 1).systems}</div>;
+  // 上课模式：先保证一行 4 小节（放不下就 3 小节），像课本一样按乐句成行，再按框高缩小。
+  const layouts = LARGE_SCALES.map((scale) => layoutAt(props, plan, width, scale));
+  const firstWith = (bars: number) => layouts.findIndex((layout) => layout.perRow >= Math.min(bars, melody.bars.length));
+  let index = firstWith(4);
+  if (index < 0) index = firstWith(3);
+  if (index < 0) index = layouts.length - 1;
+  while (height && height > 0 && index < layouts.length - 1 && layouts[index].height > height) index += 1;
+  const layout = layouts[index];
   return <div className="staff-score">{layout.systems}</div>;
 }
