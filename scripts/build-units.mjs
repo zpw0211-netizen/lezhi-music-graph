@@ -98,10 +98,12 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
   const unitWorkIds = new Set(unitTriples
     .filter((triple) => triple.predicate === "包含作品" && triple.objectId)
     .map((triple) => triple.objectId));
+  // 印了谱的作品按谱例所在页排，其余按首次出现的页排（都换成印刷页码）。
+  const orderPage = (entity) => getPrintedPage(getScoreMedia(entity.media)) ?? (entity.firstPage ?? 0) - pdfOffset;
   const unitWorks = [...unitWorkIds]
     .map((id) => entityById.get(id))
     .filter((entity) => entity && isWorkType(entity.type))
-    .sort((a, b) => (a.firstPage ?? 0) - (b.firstPage ?? 0) || a.name.localeCompare(b.name, "zh"));
+    .sort((a, b) => orderPage(a) - orderPage(b) || a.name.localeCompare(b.name, "zh"));
 
   // 目录里没有、只在节目单或年表里提到的曲名（没有栏目，课本没印谱，也没有旋律）不算一课，不进单元作品列表。
   const works = unitWorks.map((work) => {
