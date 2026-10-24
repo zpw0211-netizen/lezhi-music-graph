@@ -152,10 +152,9 @@
 .lesson-goals { margin:0 0 26px; padding:20px 24px; border:0; border-left:3px solid var(--seal); border-radius:0; background:color-mix(in srgb,var(--paper-2) 70%,transparent); font-family:var(--serif); font-size:16px; line-height:1.9; color:var(--ink-2); }
 .lesson-unit-works { margin:0; padding:0; list-style:none; display:grid; gap:0; border-top:1px solid var(--line); counter-reset:toc; }
 .lesson-unit-works button { display:flex; flex-direction:row; align-items:baseline; gap:10px; width:100%; padding:11px 2px; border:0; border-bottom:1px solid var(--line); border-radius:0; background:transparent; color:var(--ink-2); font-family:var(--serif); font-size:15px; text-align:left; transition:color .2s; }
-.lesson-unit-works button small, .lesson-unit-works .is-activity small { margin-left:auto; font-size:12px; color:var(--ink-3); flex:none; }
+.lesson-unit-works button small { margin-left:auto; font-size:12px; color:var(--ink-3); flex:none; }
 .lesson-unit-works button:hover { color:var(--pine); }
 .lesson-unit-works button.active { color:var(--seal); font-weight:600; box-shadow:inset 3px 0 0 var(--seal); padding-left:10px; }
-.lesson-unit-works .is-activity { display:flex; align-items:baseline; gap:10px; padding:11px 2px; border-bottom:1px solid var(--line); color:var(--ink-3); font-family:var(--serif); font-size:14px; }
 .lesson-empty { padding:60px; text-align:center; font-family:var(--serif); color:var(--ink-2); }
 .lesson-empty button { margin-left:12px; padding:4px 16px; border:1px solid var(--pine); border-radius:999px; background:none; color:var(--pine); font-family:var(--serif); cursor:pointer; }
 

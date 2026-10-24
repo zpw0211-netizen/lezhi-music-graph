@@ -164,7 +164,7 @@ export function LessonPage({
   const creators = lesson.own.filter((relation) => /^(作词|作曲|词曲作者|编曲|改编|记谱配词)$/.test(relation.predicate));
   const scoreMedia = getScoreMedia(work.media);
   const scorePage = getPrintedPage(scoreMedia);
-  // 栏目名和没有谱例的活动（我爱大自然、音乐万花筒……）不是一课：目录里照列，但不能点，翻页也跳过。
+  // 栏目名和没有谱例的活动（我爱大自然、音乐万花筒……）不是一课：目录和翻页都不列。
   const lessons = lesson.unitWorks.filter(isLessonEntity);
   const index = lessons.findIndex((entity) => entity.id === workId);
   const previous = index > 0 ? lessons[index - 1] : undefined;
@@ -264,10 +264,10 @@ export function LessonPage({
         <section data-reveal>
           <h3>{lesson.unit?.name ?? "本单元"}</h3>
           {lesson.goals.length > 0 && <ul className="lesson-goals">{lesson.goals.map((goal) => <li key={goal}>{goal}</li>)}</ul>}
-          <ol className="lesson-unit-works" data-reveal-group>{lesson.unitWorks.map((entity) => <li key={entity.id} data-reveal>
-            {isLessonEntity(entity) ? <button type="button" className={entity.id === workId ? "active" : ""} onClick={() => onOpenLesson(entity.id)}>
+          <ol className="lesson-unit-works" data-reveal-group>{lessons.map((entity) => <li key={entity.id} data-reveal>
+            <button type="button" className={entity.id === workId ? "active" : ""} onClick={() => onOpenLesson(entity.id)}>
               {entity.name}<small>{entity.type}</small>
-            </button> : <span className="is-activity">{entity.name}<small>{entity.type}</small></span>}
+            </button>
           </li>)}</ol>
         </section>
       </aside>
