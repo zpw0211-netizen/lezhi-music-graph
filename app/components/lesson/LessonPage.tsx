@@ -164,9 +164,11 @@ export function LessonPage({
   const creators = lesson.own.filter((relation) => /^(作词|作曲|词曲作者|编曲|改编|记谱配词)$/.test(relation.predicate));
   const scoreMedia = getScoreMedia(work.media);
   const scorePage = getPrintedPage(scoreMedia);
-  const index = lesson.unitWorks.findIndex((entity) => entity.id === workId);
-  const previous = index > 0 ? lesson.unitWorks[index - 1] : undefined;
-  const next = index >= 0 && index < lesson.unitWorks.length - 1 ? lesson.unitWorks[index + 1] : undefined;
+  // 栏目名和没有谱例的活动（我爱大自然、音乐万花筒……）不是一课：目录里照列，但不能点，翻页也跳过。
+  const lessons = lesson.unitWorks.filter(isLessonEntity);
+  const index = lessons.findIndex((entity) => entity.id === workId);
+  const previous = index > 0 ? lessons[index - 1] : undefined;
+  const next = index >= 0 && index < lessons.length - 1 ? lessons[index + 1] : undefined;
   // 面包屑只渲染真实存在的层级，缺单元归属的作品（如《阿米达》）不留空分隔符
   const crumbTrail = [lesson.book?.name, lesson.unit?.name].filter((name): name is string => Boolean(name));
 
@@ -263,9 +265,9 @@ export function LessonPage({
           <h3>{lesson.unit?.name ?? "本单元"}</h3>
           {lesson.goals.length > 0 && <ul className="lesson-goals">{lesson.goals.map((goal) => <li key={goal}>{goal}</li>)}</ul>}
           <ol className="lesson-unit-works" data-reveal-group>{lesson.unitWorks.map((entity) => <li key={entity.id} data-reveal>
-            <button type="button" className={entity.id === workId ? "active" : ""} onClick={() => onOpenLesson(entity.id)}>
+            {isLessonEntity(entity) ? <button type="button" className={entity.id === workId ? "active" : ""} onClick={() => onOpenLesson(entity.id)}>
               {entity.name}<small>{entity.type}</small>
-            </button>
+            </button> : <span className="is-activity">{entity.name}<small>{entity.type}</small></span>}
           </li>)}</ol>
         </section>
       </aside>
@@ -293,6 +295,8 @@ export function LessonPage({
     />}
   </section>;
 }
+
+const isLessonEntity = (entity: LessonEntity) => entity.name.startsWith("《");
 
 function ConceptCard({ conceptId, workId, entityMap, relationships, onOpenLesson, onClose }: {
   conceptId: string; workId: string; entityMap: Map<string, LessonEntity>; relationships: LessonRelation[];

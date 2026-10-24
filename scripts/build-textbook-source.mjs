@@ -22,6 +22,21 @@ const manifestPath = path.join(root, "content", "textbooks", "score-manifest.jso
 
 // 与 refine-public-ontology / build-canonical-graph 的作品类型保持一致（缺“音乐剧”时，人教版《音乐之声》等课打不开）。
 const WORK_TYPES = new Set(["音乐作品", "歌曲", "民歌", "器乐曲", "戏曲歌曲", "戏曲选段", "舞蹈音乐", "影视音乐", "交响作品", "合唱作品", "歌剧音乐", "音乐剧", "进行曲", "朗诵作品"]);
+// 教材写得更细的体裁（管弦乐曲、云南民歌、京剧……）归入作品类型，否则这些课打不开（人音五上《晨景》）；
+// 带谱例的音乐游戏、情境表演、小小音乐剧围绕一首曲子（一上《你我都是好朋友》），也算一课。
+// 原写法另记为“音乐体裁”。没有谱例的活动和练习仍不是作品。
+const SCORED_ACTIVITY = /^(音乐游戏|情境表演|小小音乐剧|音乐情景剧)$/;
+function workTypeOf(work) {
+  const type = work.type;
+  if (WORK_TYPES.has(type)) return type;
+  if (/民歌$/.test(type)) return "民歌";
+  if (/(乐曲|独奏曲|四重奏|协奏曲|协奏曲选段|钢琴曲|合奏曲|练习曲|改编曲)$/.test(type)) return "器乐曲";
+  if (type === "交响诗") return "交响作品";
+  if (type === "舞剧音乐") return "舞蹈音乐";
+  if (/^(京剧|戏曲)$/.test(type)) return "戏曲选段";
+  if (SCORED_ACTIVITY.test(type) && work.scores?.length) return "音乐作品";
+  return type;
+}
 const CATEGORY = {
   教材: "textbook", 单元: "textbook", 人物: "person", 创作主体: "person", 创作群体: "person", 署名主体: "person", 机构: "person",
   乐器: "instrument", 表演形式: "instrument", 音乐体裁: "genre", 戏曲行当: "genre", 来源作品: "genre",
@@ -150,7 +165,7 @@ for (const key of keys) {
   // Register works first so references from other facts resolve to them.
   for (const work of source.works) {
     if (work.mode && !Object.hasOwn(TEXTBOOK_MODES, work.mode)) throw new Error(`${key}: 未登记的学习方式“${work.mode}”（作品《${work.name}》）`);
-    const created = entity(work.name, work.type, { aliases: work.aliases ?? [] });
+    const created = entity(work.name, workTypeOf(work), { aliases: work.aliases ?? [] });
     note(created, work.page);
     workByName.set(normalizeWorkName(work.name), created);
   }
@@ -187,10 +202,12 @@ for (const key of keys) {
   for (const work of source.works) {
     const created = workByName.get(normalizeWorkName(work.name));
     const unit = unitByNo.get(work.unit);
-    if (unit) add(unit, "包含作品", work.name, work.type, "明", work.page);
+    if (unit) add(unit, "包含作品", work.name, workTypeOf(work), "明", work.page);
     if (work.mode) add(created, "学习方式", work.mode, TEXTBOOK_MODES[work.mode], "明", work.page);
     if (work.key) add(created, "教材标注", "重点学习曲目（☆）", null, "明", work.page);
     addFacts(created, work.facts, work.page);
+    if (workTypeOf(work) !== work.type && !SCORED_ACTIVITY.test(work.type) && !(work.facts ?? []).some(([predicate]) => /体裁/.test(predicate)))
+      add(created, "音乐体裁", work.type, "音乐体裁", "明", work.page);
     attachScores(created, work);
   }
   for (const concept of source.concepts ?? []) {
