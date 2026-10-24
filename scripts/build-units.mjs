@@ -103,6 +103,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     .filter((entity) => entity && isWorkType(entity.type))
     .sort((a, b) => (a.firstPage ?? 0) - (b.firstPage ?? 0) || a.name.localeCompare(b.name, "zh"));
 
+  // 目录里没有、只在节目单或年表里提到的曲名（没有栏目，课本没印谱，也没有旋律）不算一课，不进单元作品列表。
   const works = unitWorks.map((work) => {
     const ownTriples = triplesBySubject.get(work.id) ?? [];
     const media = getScoreMedia(work.media);
@@ -147,7 +148,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
       region: null,
       summary: summaryParts.join(" · "),
     };
-  });
+  }).filter((work) => work.modes.length > 0 || work.hasMelody || work.scores.length > 0 || work.type === "朗诵作品");
 
   // Section-based books (人教版) also list activities that are not musical works — a story, a game,
   // a theory corner — under the textbook section (学习方式) they belong to, in page order. Opt-in per edition.

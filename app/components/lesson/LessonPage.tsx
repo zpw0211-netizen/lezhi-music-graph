@@ -164,8 +164,11 @@ export function LessonPage({
   const creators = lesson.own.filter((relation) => /^(作词|作曲|词曲作者|编曲|改编|记谱配词)$/.test(relation.predicate));
   const scoreMedia = getScoreMedia(work.media);
   const scorePage = getPrintedPage(scoreMedia);
-  // 栏目名和没有谱例的活动（我爱大自然、音乐万花筒……）不是一课：目录和翻页都不列。
-  const lessons = lesson.unitWorks.filter(isLessonEntity);
+  // 栏目名、没有谱例的活动（我爱大自然、音乐万花筒……）和目录外只在节目单里提到的曲名不是一课：目录和翻页都不列。
+  // 规则与 build-units 的单元作品列表一致：有栏目、有旋律、有谱例或是朗诵作品才算一课。
+  const inContents = (entity: LessonEntity) => relationships.some((relation) => relation.subject === entity.id && relation.predicate === "学习方式");
+  const lessons = lesson.unitWorks.filter((entity) => isLessonEntity(entity)
+    && (inContents(entity) || entity.type === "朗诵作品" || getScoreMedia(entity.media).length > 0 || melodiesFor(melodyBookKey, entity.name).length > 0));
   const index = lessons.findIndex((entity) => entity.id === workId);
   const previous = index > 0 ? lessons[index - 1] : undefined;
   const next = index >= 0 && index < lessons.length - 1 ? lessons[index + 1] : undefined;
