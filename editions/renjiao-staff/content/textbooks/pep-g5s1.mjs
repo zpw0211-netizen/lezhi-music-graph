@@ -1,6 +1,7 @@
 import { factsForItem } from "../../data/lesson-facts.mjs";
 import { knowledgeForUnit } from "../../data/unit-knowledge.mjs";
 import { pageEnrichmentFor } from "../../data/page-enrichment.mjs";
+import { withPrintedScores } from "../../data/printed-scores.mjs";
 
 // 人教版《艺术·唱游·音乐》/《音乐》五年级上册（五线谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
@@ -48,19 +49,19 @@ const CONTENTS = [
     ["小小歌唱家","东方之珠",34,"歌曲"],
     ["小小歌唱家","七子之歌——澳门",36,"歌曲"],
     ["综合探索","港澳流行歌曲",37,"综合探索"],
-    ["小小演奏家","香蕉船",40,"音乐作品"],
+    ["小小演奏家","香蕉船",42,"音乐作品"],
   ]],
-  [5, "第五单元 祖国的宝岛台湾", 42, [
-    ["音乐万花筒","宝岛上的歌声",42,"音乐万花筒"],
-    ["音乐万花筒","丢丢铜",43,"音乐作品"],
-    ["小小歌唱家","童年",44,"歌曲"],
-    ["小小歌唱家","月亮月光光",46,"歌曲"],
-    ["小小演奏家","一只鸟仔",47,"音乐作品"],
-    ["综合探索","台湾校园歌曲",48,"综合探索"],
-    ["创乐工坊","起、承、转、合",50,"创乐工坊"],
+  [5, "第五单元 祖国的宝岛台湾", 44, [
+    ["音乐万花筒","宝岛上的歌声",44,"音乐万花筒"],
+    ["音乐万花筒","丢丢铜",45,"音乐作品"],
+    ["小小歌唱家","童年",46,"歌曲"],
+    ["小小歌唱家","月亮月光光",48,"歌曲"],
+    ["小小演奏家","一只鸟仔",49,"音乐作品"],
+    ["综合探索","台湾校园歌曲",50,"综合探索"],
+    ["创乐工坊","起、承、转、合",52,"创乐工坊"],
   ]],
-  [6, "第六单元 听妈妈讲那过去的事情", 52, [
-    ["小小音乐剧","听妈妈讲那过去的事情",52,"小小音乐剧"],
+  [6, "第六单元 听妈妈讲那过去的事情", 54, [
+    ["小小音乐剧","听妈妈讲那过去的事情",54,"小小音乐剧"],
   ]],
 ];
 
@@ -74,7 +75,7 @@ const baseParts = CONTENTS.map(([no, name, page, items]) => ({
 }));
 export const BASE_SOURCE = { ...textbook, parts: baseParts };
 
-textbook.parts = baseParts.map((part) => {
+textbook.parts = withPrintedScores("pep-g5s1", baseParts.map((part) => {
   const { no } = part.units[0];
   const baseWorks = part.works.map((work) => {
     const extra = ENRICHMENT.existingWorkFacts.find((item) => item.unit === no && bare(item.name) === bare(work.name));
@@ -89,6 +90,6 @@ textbook.parts = baseParts.map((part) => {
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
-});
+}));
 
 export default textbook;

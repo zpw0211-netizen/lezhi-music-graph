@@ -4,6 +4,7 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSyn
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
+import { PRINTED_SCORES } from "../editions/renjiao/data/printed-scores.mjs";
 
 // Transpile every lesson module into a temp folder so the relative imports resolve.
 const tempRoot = path.resolve(".tmp");
@@ -66,7 +67,9 @@ for (const [name, segments] of checks) {
 }
 
 // 人教版 titles must match a work in that book's own 人教版 source (editions/renjiao), never the 人音版 catalogue.
-const pepSourceText = (bookKey) => readFileSync(`editions/renjiao/content/textbooks/${bookKey}.mjs`, "utf8");
+// 正文里印了谱的作品（printed-scores.mjs）也算这一册的作品。
+const pepSourceText = (bookKey) => readFileSync(`editions/renjiao/content/textbooks/${bookKey}.mjs`, "utf8")
+  + (PRINTED_SCORES[bookKey] ?? []).map(([name]) => `"${name}"`).join("");
 const pepBookTitles = new Map(PEP_MELODY_BOOKS.map((book) => [book.key, book.title]));
 const pepBooksToCheck = requestedBook
   ? (requestedBook.startsWith("pep-") ? [requestedBook] : [])

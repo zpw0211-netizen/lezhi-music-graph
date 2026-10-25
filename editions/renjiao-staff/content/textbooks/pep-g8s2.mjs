@@ -1,6 +1,7 @@
 import { factsForItem } from "../../data/lesson-facts.mjs";
 import { knowledgeForUnit } from "../../data/unit-knowledge.mjs";
 import { pageEnrichmentFor } from "../../data/page-enrichment.mjs";
+import { withPrintedScores } from "../../data/printed-scores.mjs";
 
 // 人教版《艺术·唱游·音乐》/《音乐》八年级下册（五线谱）——目录级数据，由 editions/renjiao/scripts/build-sources-from-toc.mjs 生成。
 // 来源：教材目录页（PDF 文字层按版面位置读取，并对照目录页图核对）；单元、栏目、标题与页码照目录录入。
@@ -52,7 +53,7 @@ const CONTENTS = [
   ]],
 ];
 
-const SCORE_PAGES = {"送别":[[2,0.04,0.035,0.96,0.94]],"大海啊，故乡":[[5,0.04,0.035,0.96,0.94]],"保卫黄河":[[19,0.04,0.035,0.96,0.94]],"第五（命运）交响曲":[[41,0.04,0.035,0.96,0.94]],"第一小提琴协奏曲":[[45,0.04,0.035,0.96,0.94]],"天边有颗闪亮的星":[[57,0.04,0.035,0.96,0.94]],"中国共产主义青年团团歌":[[70,0.04,0.035,0.96,0.94]],"唱支山歌给党听":[[71,0.04,0.035,0.96,0.94]]};
+const SCORE_PAGES = {"送别":[[2,0.04,0.035,0.96,0.94]],"大海啊，故乡":[[5,0.04,0.035,0.96,0.94]],"保卫黄河":[[19,0.04,0.035,0.96,0.94]],"第一小提琴协奏曲":[[45,0.04,0.035,0.96,0.94]],"天边有颗闪亮的星":[[57,0.04,0.035,0.96,0.94]],"中国共产主义青年团团歌":[[70,0.04,0.035,0.96,0.94]],"唱支山歌给党听":[[71,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
 const ENRICHMENT = pageEnrichmentFor("pep-g8s2");
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
@@ -62,7 +63,7 @@ const baseParts = CONTENTS.map(([no, name, page, items]) => ({
 }));
 export const BASE_SOURCE = { ...textbook, parts: baseParts };
 
-textbook.parts = baseParts.map((part) => {
+textbook.parts = withPrintedScores("pep-g8s2", baseParts.map((part) => {
   const { no } = part.units[0];
   const baseWorks = part.works.map((work) => {
     const extra = ENRICHMENT.existingWorkFacts.find((item) => item.unit === no && bare(item.name) === bare(work.name));
@@ -77,6 +78,6 @@ textbook.parts = baseParts.map((part) => {
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
-});
+}));
 
 export default textbook;
