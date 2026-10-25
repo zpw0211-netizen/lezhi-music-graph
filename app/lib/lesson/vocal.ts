@@ -4,9 +4,9 @@
 import type { Melody } from "./jianpu";
 import manifest from "./vocal-manifest.json";
 
-/** FNV-1a over the melody's pitch, tempo, meter and notes (with lyrics). */
+/** FNV-1a over the melody's pitch, tempo, meter and notes (with lyrics). Drawing-only fields (dots) stay out. */
 export function vocalKey(melody: Melody) {
-  const text = JSON.stringify([melody.tonicMidi, melody.bpm, melody.meter, melody.bars]);
+  const text = JSON.stringify([melody.tonicMidi, melody.bpm, melody.meter, melody.bars], (key, value) => (key === "dots" ? undefined : value));
   let hash = 0x811c9dc5;
   for (let i = 0; i < text.length; i += 1) {
     hash ^= text.charCodeAt(i);
