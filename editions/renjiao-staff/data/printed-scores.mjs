@@ -311,13 +311,13 @@ export const PRINTED_SCORES = {
     ["渔阳鼙鼓动地来", "合唱作品", [[27, 0.11], 28, 29, 30]],
     ["第一叙事曲", "器乐曲", [[32, 0.4], 33, 34]],
     ["十面埋伏", "器乐曲", [37]],
-    ["c小调第五（命运）交响曲", "交响作品", [[41, 0.26], 42, [43, 0.035, 0.5]]],
+    ["第五（命运）交响曲", "交响作品", [[41, 0.26], 42, [43, 0.035, 0.5]]],
     ["第一钢琴协奏曲——春之采", "器乐曲", [[45, 0.28, 0.495]]],
     ["第一小提琴协奏曲", "器乐曲", [[45, 0.495, 0.665]]],
     ["唤凤", "器乐曲", [[45, 0.665]]],
     ["如是", "器乐曲", [[46, 0.13, 0.455]]],
     ["d小调第三钢琴协奏曲", "器乐曲", [[46, 0.455]]],
-    ["《威廉·退尔》序曲", "歌剧音乐", [[51, 0.36, 0.64]]],
+    ["威廉·退尔序曲", "歌剧音乐", [[51, 0.36, 0.64]]],
     ["飞驰的女武神", "歌剧音乐", [[52, 0.115, 0.6]]],
     ["沉思", "歌剧音乐", [[53, 0.115, 0.43]]],
     ["向劳动英雄们看齐", "歌剧音乐", [[54, 0.22, 0.6]]],
@@ -395,7 +395,7 @@ export function withPrintedScores(bookKey, parts) {
     }
     const scores = existing?.scores?.length ? existing.scores : pages.map((item) => (Array.isArray(item) ? [item[0], PAGE_BOX[0], item[1], PAGE_BOX[2], item[2] ?? PAGE_BOX[3]] : [item, ...PAGE_BOX]));
     byNo.get(no).works.push(existing
-      ? { ...existing, unit: no, page: existing.page ?? pageOf(pages[0]), scores }
+      ? { ...existing, type, unit: no, page: existing.page ?? pageOf(pages[0]), scores }
       : { name, type, unit: no, page: pageOf(pages[0]), facts: [], scores });
   }
   return [...byNo.values()];
