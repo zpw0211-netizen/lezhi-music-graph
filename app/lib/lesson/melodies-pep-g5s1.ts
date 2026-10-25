@@ -4,6 +4,21 @@ import type { Melody } from "./jianpu";
 
 const B = "五年级上册";
 const MELODIES: Record<string, Melody[]> = {
+  "《依呀呀噢咧噢》": [
+    segment(B, 15, "1=F", "2/4", 120,
+      "5/ 5/ 5/ 4/ | 3/ 1. | 2/ 2/ 2/ 1/ | 7,/ 5,. |" +
+      " 0/ 5 4/ | 3/ 4/ 2/ 3/ | 1/ 1/ 1/ 2/ | 1/ 7,/ 1 |" +
+      " 5 4 | 4/ 2/ 3/ 1/ | 0/ 2/ 1 | 1/ 1/ 0 |" +
+      " 3/ 2/ 3/ 2/ | 3/ 1. | 2/ 1/ 2/ 1/ | 2/ 7,/ 1/ ~3/ |" +
+      " 2/ 5. | ~5/ 4/ 3/ 4/ | 2/ 3/ 1/ 1/ | 1/ 2/ 1/ 7,/ | 1 -",
+      "Yi ya ya o lei o yi ya ya o lei o ye na mei la bang do bo lo lo bo na sei sei ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ Be na chi nei o ye be na chi nei o ye ma na ye na mei la bang do bo bo lo bo na sei sei",
+      {
+        edition: "人教版",
+        title: "完整旋律（含括号段）",
+        label: "主旋律",
+        note: "照录简谱第15页至终止双线，共21个2/4小节；含括号内4小节无词段和后续第二段旋律。两段拼音歌词按谱下印字录入，括号内4小节为无词段。页面标中速稍快、欢快地，未标数字速度，播放暂按120 BPM。",
+      }),
+  ],
   "《丢丢铜》": [
     segment(B, 43, "1=G", "2/4", 120,
       "2 3 | 2/ 3/ 2/ 1/ | 2/ 3// 3// 2/ 1/ | 2/ 0/ 1/ 6,/ |" +
