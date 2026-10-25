@@ -13,6 +13,7 @@ import { execFileSync } from "node:child_process";
 import { cp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { writeScoreSizes } from "./lib/score-sizes.mjs";
 
 const name = process.argv[2];
 if (!name) throw new Error("用法：node scripts/build-edition.mjs <edition>");
@@ -54,6 +55,8 @@ await cp(
   path.join(work, "data", "renjiao-research-facts.mjs"),
   { force: true },
 );
+// 各版本的谱例图路径相同，尺寸表按本版本自己的图重写。
+writeScoreSizes(work);
 
 // 3. Start from an empty dataset that keeps the shared ontology and policies.
 const datasetPath = path.join(work, "public", "data", "music-graph.json");

@@ -331,7 +331,7 @@ export const PRINTED_SCORES = {
     ["唱支山歌给党听", "歌曲", [71, 72]],
   ],
   "pep-g9s1": [
-    ["回声", "歌曲", [[8, 0.27], 9]],
+    ["回声", "歌曲", [[8, 0.27]]],
     ["c小调第五（命运）交响曲", "交响作品", [[13, 0.237]]],
     ["我听见时光的声音", "歌曲", [[18, 0.148], 19, 20]],
     ["声声慢", "歌曲", [[26, 0.217], 27]],
@@ -393,7 +393,7 @@ export function withPrintedScores(bookKey, parts) {
       const index = part.works.findIndex((work) => bare(work.name) === bare(name));
       if (index >= 0) [existing] = part.works.splice(index, 1);
     }
-    const scores = existing?.scores?.length ? existing.scores : pages.map((item) => (Array.isArray(item) ? [item[0], PAGE_BOX[0], item[1], PAGE_BOX[2], item[2] ?? PAGE_BOX[3]] : [item, ...PAGE_BOX]));
+    const scores = pages.map((item) => (Array.isArray(item) ? [item[0], PAGE_BOX[0], item[1], PAGE_BOX[2], item[2] ?? PAGE_BOX[3]] : [item, ...PAGE_BOX]));
     byNo.get(no).works.push(existing
       ? { ...existing, type, unit: no, page: existing.page ?? pageOf(pages[0]), scores }
       : { name, type, unit: no, page: pageOf(pages[0]), facts: [], scores });
