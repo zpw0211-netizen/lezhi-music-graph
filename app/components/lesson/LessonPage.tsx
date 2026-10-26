@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { melodiesFor } from "../../lib/lesson/melodies";
+import { melodiesFor, noMelodyReason } from "../../lib/lesson/melodies";
 import { VocalDemo } from "./VocalDemo";
 import { MelodySet } from "./MelodyPlayer";
 import { ReflectivePresent } from "./ReflectivePresent";
@@ -230,9 +230,10 @@ export function LessonPage({
           <h2><em>1</em>{work.type === "朗诵作品" ? "阅读 · 聆听" : "看谱 · 听旋律"}</h2>
           {melody ? <MelodySet melodies={melody} notationStyle={EDITION.notation ?? "jianpu"} /> : <p className="lesson-note">{work.type === "朗诵作品"
             ? "这是朗诵作品，没有固定的歌曲旋律。请结合教材原文体会语言节奏。"
-            : scoreMedia.length === 0
-              ? "这页的乐谱还没有整理为在线谱例；可以先对照教材原页视唱。"
-              : "这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。"}</p>}
+            : noMelodyReason(melodyBookKey, work.name)
+              ?? (scoreMedia.length === 0
+                ? "这页的乐谱还没有整理为在线谱例；可以先对照教材原页视唱。"
+                : "这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。")}</p>}
           <VocalDemo workName={work.name} assetUrl={assetUrl} />
           {scoreMedia.length > 0 && <details className="lesson-scores" open={!melody || melody.every((item) => item.quality === "draft")}>
             <summary>教材谱例原图（{scoreMedia.length} 张）</summary>
