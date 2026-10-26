@@ -64,6 +64,28 @@ const QUIZ: Array<{ test: RegExp; family: RegExp; ask: (work: string) => string 
   { test: /^速度$/, family: /^速度$/, ask: (w) => `${w}的速度标记是？` },
 ];
 
+type Creator = { id: string; label: string; value: string };
+/** 同一人既作词又作曲时只写一次「词曲」：教材数据常同时有「词曲作者」「作词」「作曲」三条，封面上会把一个名字写三遍。 */
+function mergeCreators(items: Creator[]): Creator[] {
+  const lyricist = items.filter((item) => item.label === "作词").map((item) => item.value);
+  const composer = items.filter((item) => item.label === "作曲").map((item) => item.value);
+  const both = new Set([
+    ...items.filter((item) => item.label === "词曲作者").map((item) => item.value),
+    ...lyricist.filter((value) => composer.includes(value)),
+  ]);
+  const seen = new Set<string>();
+  const out: Creator[] = [];
+  for (const item of items) {
+    const isBoth = both.has(item.value) && /^(作词|作曲|词曲作者)$/.test(item.label);
+    const label = isBoth ? "词曲" : item.label;
+    const key = `${label}|${item.value}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ ...item, label });
+  }
+  return out;
+}
+
 const hash = (value: string) => {
   let h = 2166136261;
   for (const char of value) h = Math.imul(h ^ char.codePointAt(0)!, 16777619) >>> 0;
@@ -161,7 +183,9 @@ export function LessonPage({
   const bookMelodies = melodiesFor(melodyBookKey, work.name);
   const melody = bookMelodies.length ? bookMelodies : undefined;
   const starred = isStarredWork(relationships.filter((relation) => relation.subject === workId));
-  const creators = lesson.own.filter((relation) => /^(作词|作曲|词曲作者|编曲|改编|记谱配词)$/.test(relation.predicate));
+  const creators = mergeCreators(lesson.own
+    .filter((relation) => /^(作词|作曲|词曲作者|编曲|改编|记谱配词)$/.test(relation.predicate))
+    .map((relation) => ({ id: relation.id, label: relation.predicate, value: valueOf(relation) })));
   const scoreMedia = getScoreMedia(work.media);
   const scorePage = getPrintedPage(scoreMedia);
   // 栏目名、没有谱例的活动（我爱大自然、音乐万花筒……）和目录外只在节目单里提到的曲名不是一课：目录和翻页都不列。
@@ -190,7 +214,7 @@ export function LessonPage({
             <p className="lesson-meta">
               <span className="lesson-type">{work.type}</span>
               {starred && <span className="lesson-star" title="教材标注的重点学习曲目">☆ 重点曲目</span>}
-              {creators.map((relation) => <span key={relation.id}><small>{relation.predicate}</small>{valueOf(relation)}</span>)}
+              {creators.map((item) => <span key={item.id}><small>{item.label}</small>{item.value}</span>)}
               {lesson.learningMode && <span><small>教材栏目</small>{valueOf(lesson.learningMode)}</span>}
               {lesson.workPage && lesson.workPage !== scorePage && <span><small>教材</small>第 {lesson.workPage} 页</span>}
               {scorePage && <span><small>教材</small>第 {scorePage} 页</span>}
@@ -285,7 +309,7 @@ export function LessonPage({
       bookName={lesson.book?.name}
       unitName={lesson.unit?.name ?? ""}
       scorePage={scorePage}
-      creators={creators.map((relation) => ({ id: relation.id, label: relation.label ?? relation.predicate, value: valueOf(relation) }))}
+      creators={creators}
       facts={lesson.own.filter((relation) => !relation.extended).map((relation) => ({ label: relation.label ?? relation.predicate, value: valueOf(relation) }))}
       melody={melody}
       notationStyle={EDITION.notation ?? "jianpu"}

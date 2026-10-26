@@ -46,8 +46,8 @@ type Shape = {
   lines: string[];
   /** 旋律相同的两句（从 1 数）。 */
   repeat?: [number, number];
-  /** 最高音所在的小节（从 1 数）和那里的字。 */
-  peak?: { bar: number; word?: string };
+  /** 最高音所在的小节（从 1 数）和那里的字；唱名歌词（do、sol）记在 syllable。 */
+  peak?: { bar: number; word?: string; syllable?: string };
   /** 最难的一句：大跳最多、或音符最密的那句。 */
   hard?: { index: number; reason: string };
 };
@@ -61,10 +61,16 @@ function shapeOf(melody: Melody | undefined): Shape | null {
   const words = (from: number, to: number) => flat.slice(from, to).map((note) => (note.slur || note.tie ? "" : note.lyric ?? "")).join("").replace(/[^\p{Script=Han}A-Za-z]/gu, "");
   // 有歌词的作品只数唱的句子，前奏、间奏不算；器乐曲按全部乐句数。
   const all = splitPhrases(melody.bars, "auto");
-  const texted = all.filter((phrase) => words(phrase.startNote, phrase.endNote));
+  // 只有一个衬词的句子（「啊」「呱」「呀呀呀」）不算一句，否则会出现「第一句『啊』」这样的任务。
+  const texted = all.filter((phrase) => {
+    const text = words(phrase.startNote, phrase.endNote);
+    return text.length >= 4 || (text.length >= 2 && !/^(\p{Script=Han})\1*$/u.test(text));
+  });
   const phrases = texted.length ? texted : all;
   if (phrases.length < 2) return null;
+  // 全曲只唱「啊」的练声曲按器乐曲数句，句子不引歌词。
   const lines = phrases.map((phrase) => {
+    if (!texted.length) return "";
     const text = words(phrase.startNote, phrase.endNote);
     return text.length > 9 ? `${text.slice(0, 8)}…` : text;
   });
@@ -85,7 +91,12 @@ function shapeOf(melody: Melody | undefined): Shape | null {
       const note = flat[i];
       if (!sung(note) || note.tie) continue;
       const midi = midiOf(melody, note);
-      if (midi > top) { top = midi; peak = { bar: barOf(i), word: note.slur ? undefined : note.lyric }; }
+      if (midi > top) {
+        top = midi;
+        // 歌词里的标点、括号去掉：「锵!」→ 锵，「（哎）」→ 哎。
+        const lyric = note.slur ? "" : (note.lyric ?? "").replace(/[^\p{Script=Han}A-Za-z]/gu, "");
+        peak = { bar: barOf(i), ...(/^\p{Script=Han}+$/u.test(lyric) ? { word: lyric } : /^[A-Za-z]+$/.test(lyric) ? { syllable: lyric } : {}) };
+      }
     }
   }
   // 最难的一句：六度以上的大跳记 2 分，四、五度记 1 分；没有跳进时看十六分音符的多少。
@@ -143,6 +154,8 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
   const line = (n: number) => (shape?.lines[n - 1] ? `第${cn(n)}句「${shape.lines[n - 1]}」` : `第${cn(n)}句`);
   const hardLine = shape?.hard ? line(shape.hard.index) : null;
   const half = shape ? Math.floor((shape.count - 1) / 2) || 1 : 0;
+  // 多段歌词或篇幅长的歌（十句以上）不报句数，「一共有二十八句」对学生没有意义；改为按段学。
+  const long = !!shape && shape.count > 10;
 
   const goals = ({
     sing: [
@@ -231,12 +244,12 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
 
   const secondListen = {
     sing: [
-      shape ? `歌曲一共有${cn(shape.count)}句。${shape.repeat ? `听一听：第${cn(shape.repeat[0])}句和第${cn(shape.repeat[1])}句的旋律一样吗？` : "听一听：哪几句的旋律相似？"}` : young ? "歌曲一共有几句？哪几句是一样的？" : "歌曲可以分成几个乐句？哪些乐句相同或相似？",
+      long ? `这首歌比较长。听一听：哪几句的旋律相同或相似？有没有几段歌词唱同一个旋律？` : shape ? `歌曲一共有${cn(shape.count)}句。${shape.repeat ? `听一听：第${cn(shape.repeat[0])}句和第${cn(shape.repeat[1])}句的旋律一样吗？` : "听一听：哪几句的旋律相似？"}` : young ? "歌曲一共有几句？哪几句是一样的？" : "歌曲可以分成几个乐句？哪些乐句相同或相似？",
       beat ? `边听边按“${beat.body}”拍出 ${meter} 拍，找到每小节的强拍。` : "跟着音乐拍出节拍，找到强拍。",
-      shape?.peak ? `旋律最高的地方在第 ${shape.peak.bar} 小节${shape.peak.word ? `的“${shape.peak.word}”字上` : ""}。唱到这里，心情是怎样的？` : "旋律在哪里最高？那里表达了怎样的感情？",
+      shape?.peak ? `旋律最高的地方在第 ${shape.peak.bar} 小节${shape.peak.word ? `的“${shape.peak.word}”字上` : shape.peak.syllable ? `唱“${shape.peak.syllable}”的地方` : ""}。唱到这里，心情是怎样的？` : "旋律在哪里最高？那里表达了怎样的感情？",
     ],
     play: [
-      shape ? `乐曲一共有${cn(shape.count)}句。${shape.repeat ? `第${cn(shape.repeat[0])}句和第${cn(shape.repeat[1])}句的旋律一样吗？` : "哪几句的旋律相似？"}` : "乐曲可以分成几个乐句？哪些乐句相同？",
+      long ? "乐曲比较长。听一听：哪几句的旋律相同或相似？" : shape ? `乐曲一共有${cn(shape.count)}句。${shape.repeat ? `第${cn(shape.repeat[0])}句和第${cn(shape.repeat[1])}句的旋律一样吗？` : "哪几句的旋律相似？"}` : "乐曲可以分成几个乐句？哪些乐句相同？",
       hardLine ? `看谱找一找${hardLine}，先把它的节奏拍一拍。` : "找出乐曲中最难的节奏，先拍一拍。",
       "在每句结束的地方做记号：这里换气（或换把位）。",
     ],
@@ -253,18 +266,18 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
       ? [
         "听人声范唱，用“lu”轻声跟着哼旋律",
         "按节奏读歌词，一句一拍手",
-        shape ? `一句一句学：打开「跟唱」，每句先听一遍，再跟唱一遍，共${cn(shape.count)}句` : "一句一句跟唱：老师唱一句、学生接一句",
+        long ? "一句一句学：打开「跟唱」，每句先听一遍，再跟唱一遍，一段学会再学下一段" : shape ? `一句一句学：打开「跟唱」，每句先听一遍，再跟唱一遍，共${cn(shape.count)}句` : "一句一句跟唱：老师唱一句、学生接一句",
         hardLine ? `${hardLine}多唱两遍，唱准再往下` : "难唱的句子多唱两遍",
         "完整演唱全曲，每句唱完再换气",
       ]
       : [
         "跟琴视唱旋律（唱谱），先唱慢一点",
         "按节奏朗读歌词，注意每个字的时值",
-        shape ? `填词演唱：打开「跟唱」，按${cn(shape.count)}句逐句学` : "填词演唱，标出难唱的乐句",
+        long ? "填词演唱：打开「跟唱」逐句学，一段唱熟再学下一段" : shape ? `填词演唱：打开「跟唱」，按${cn(shape.count)}句逐句学` : "填词演唱，标出难唱的乐句",
         hardLine ? `突破难点：${hardLine}（${shape!.hard!.reason}）单独练` : "单独练习难唱的乐句",
         "完整演唱，注意换气口和情绪",
       ] },
-    play: { title: "学奏乐曲", steps: ["唱一唱乐谱，熟悉旋律", shape ? `慢速分句练习，共${cn(shape.count)}句，一句会了再连下一句` : "慢速分句练习指法", hardLine ? `攻克难点：${hardLine}` : "攻克难点乐句", "完整、流畅地演奏全曲"] },
+    play: { title: "学奏乐曲", steps: ["唱一唱乐谱，熟悉旋律", long ? "慢速分句练习，一句会了再连下一句，一段熟了再练下一段" : shape ? `慢速分句练习，共${cn(shape.count)}句，一句会了再连下一句` : "慢速分句练习指法", hardLine ? `攻克难点：${hardLine}` : "攻克难点乐句", "完整、流畅地演奏全曲"] },
     listen: { title: "分段赏析", steps: ["哼唱主题旋律，记住它", "分段聆听，说出每段的情绪与要素变化", "对照背景，体会音乐表达的内容", "完整聆听，跟着主题做律动或画旋律线"] },
     create: { title: "编创步骤", steps: ["选定节奏型或旋律素材", "小组讨论，编出 2–4 小节", "用简谱或图形谱记录下来", "练习并准备展示"] },
   }[kind];
@@ -276,7 +289,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
     create: "先拍稳节奏，再加旋律；每改一次都唱一遍、听一遍。",
   }[kind];
 
-  const split = shape && shape.count >= 4 ? `第一组唱第一到第${cn(half)}句，第二组唱第${cn(half + 1)}到第${cn(shape.count - 1)}句，最后一句全班合唱` : null;
+  const split = shape && shape.count >= 4 && !long ? `第一组唱第一到第${cn(half)}句，第二组唱第${cn(half + 1)}到第${cn(shape.count - 1)}句，最后一句全班合唱` : null;
   // 教材标了演唱形式时，按教材的形式分组演唱。
   const form = pick(facts, /^演唱形式$/);
   const formTask = !form ? null
