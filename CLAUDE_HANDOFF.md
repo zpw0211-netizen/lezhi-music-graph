@@ -20,6 +20,6 @@
 - `node scripts/test-lib.mjs` 有一项长期失败：「年表作品链接：全量 664 条只链接 records 中可解析的 470 条」（实际 700 条）。它不在 CI 里，不影响发布。年表页计划由项目负责人以后删掉重做，到时这项测试一并处理。
 - 仓库里有几个目录看起来是早先的后端尝试，README 写的是「后端：无」，是否还要保留待项目负责人决定：`supabase/`、`db/`、`drizzle/`、`server/`、`worker/`。
 - 远程还有一个旧分支 `ui/v5-visual-redesign`，看名字是早先的界面改版，未确认是否可删。
-- `editions/renjiao-staff/README.md` 里还写着「14 册保持 `published: false`」，但 `data/books.json` 里已经全部是 `published: true`，文档没更新。
+- `editions/renjiao-staff/README.md` 是 T080B 交付时的记录，已在文首加上现状说明；其中「174 张谱例图」与目前目录里的 472 个文件对不上，用 `data/score-activation-audit.json` 前要重新生成。
 - 仓库历史约 287MB，主要是图片和音频；人教简谱与人教五线谱之间、人音版五线谱与公共目录之间共有约 213 个相同的图片/音频文件（约 28MB）。去重要改构建脚本，暂未做。
 - `.learnings/`（开发笔记）、`.openai/hosting.json`（旧托管配置）、`docs/` 与 `reports/` 里 8 月份的验收和调研报告不是运行所需，可以归档。
