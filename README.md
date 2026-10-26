@@ -169,7 +169,7 @@ git restore public/data
 | `npm run -s quality:constellation` | 节点详情页：1428 个 `details/CAN_*.json` 与规范图谱逐条一致，无孤立点和悬空引用 |
 | `npm run lint`、`npx tsc --noEmit -p .` | ESLint（Next 预设）与 TypeScript 类型检查 |
 | `node scripts/audit-ai-worker.mjs`、`node scripts/check-melodies.mjs`、`node scripts/check-staff.mjs` | AI 接口的数据校验（拒绝重复 id 与悬空引用）；旋律数据校验与统计（每小节时值、歌词字数、各册多少课有可播放旋律）；每条旋律都能排成五线谱 |
-| **目前跑不通的两条** | `quality:rebuild` 要从外部提取目录重建 `music-graph.json` / `canonical-graph.json`，该目录不在仓库里；`quality:v3` 是早期的图谱页验收脚本，三条断言指向已重构掉的代码，CI 未使用。这两条要么补齐来源/更新断言，要么删掉 |
+| **目前跑不通的一条** | `quality:rebuild` 要从外部提取目录重建 `music-graph.json` / `canonical-graph.json`，该目录不在仓库里。要么补齐来源，要么删掉（原来的 `quality:v3` 已删除） |
 
 审计脚本是功能保护网，不要为了让检查通过去改它们。
 
