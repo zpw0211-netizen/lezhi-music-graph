@@ -1,10 +1,10 @@
 # 芽谱
 
-面向中小学师生的数字音乐教材网站，整合人音版小学九册与初中六册，共十五册（简谱版）。学生按课看谱、听旋律、学知识点；老师上课时能整屏展示；研究者可以看跨册教材知识关联。
+面向中小学师生的数字音乐教材网站，整合人音版（小学九册、初中六册，共十五册）和人教版（十四册）两套教材，每套另有五线谱版本。学生按课看谱、听旋律、学知识点；老师上课时能整屏展示；研究者可以看跨册教材知识关联。
 
 页面上的内容都来自教材数据：教材里明确写出的是「教材知识」，教材之外的补充单独标注为「拓展知识」，不确定的内容不写。
 
-线上地址：<https://yapu.studio/>。根目录是芽谱入口页（`portal/`，每套教科书一个板块），本应用是其中的人音版板块，发布在 <https://yapu.studio/renyin/>；人教版板块将放在 `/renjiao/`。
+线上地址：<https://yapu.studio/>。根目录是芽谱入口页（`portal/`，每套教科书一个板块），本应用是其中的人音版板块，发布在 <https://yapu.studio/renyin/>；人教版在 `/renjiao/`，两个五线谱版本在 `/renyin-staff/`、`/renjiao-staff/`（见第 3 节「教材版本」）。
 
 ## 1. 技术栈
 
@@ -80,8 +80,25 @@ git restore public/data
 | `public/media/` | 钢琴采样（`instruments/piano/`）、教材谱面图（`scores/<册>/`）、人声录音（`recordings/`，目前为空） |
 | `public/art/`、`public/brand/` | 木刻插画与标志、字标字体许可（`SOURCES.md`、`README.md`、`OFL.txt`）；另有 `public/favicon.svg`、`public/og.jpg` |
 | `scripts/` | 数据构建与审计脚本（`audit-*.mjs` 是功能保护网）；`scripts/lib/` 共用工具，`scripts/brand/` 重建标志的 Python 脚本 |
+| `editions/` | 另外三个版本（人教版、人教版五线谱、人音版五线谱）自己的数据、插图和谱例图，见下面「教材版本」 |
 | `.github/workflows/pages.yml` | 推送 `main` 后的审计、构建与发布流程 |
 | `worker/`、`server/`、`db/`、`drizzle/`、`docs/`、`reports/` | 未部署的 AI 接口、原 Cloudflare 导入接口与数据库定义；历史验收记录与审计报告 |
+
+### 教材版本
+
+同一套代码出四个站点。人音版（简谱）就是仓库根目录本身；其余三个版本各有一个 `editions/<名>/` 目录，构建时叠加在根目录的一份临时副本上（`scripts/build-edition.mjs`），所以互不串数据。
+
+| 版本 | 网址 | 册数（已发布） | 记谱 | 教材源数据在哪 |
+|---|---|---|---|---|
+| 人音版 | `/renyin/` | 15（15） | 简谱 | `content/textbooks/`、`data/books.json` |
+| 人教版 | `/renjiao/` | 14（14） | 简谱 | `editions/renjiao/` |
+| 人教版·五线谱 | `/renjiao-staff/` | 14（14） | 五线谱 | `editions/renjiao-staff/` |
+| 人音版·五线谱 | `/renyin-staff/` | 15（12） | 五线谱 | `editions/renyin-staff/` |
+
+- 每个版本的 `data/books.json` 里有 `edition` 块：名称、出版社、网址前缀 `basePath`、记谱方式 `notation`。
+- 五线谱版本不单独维护课程和旋律，直接沿用对应出版社的简谱数据，由 `app/lib/lesson/staff-key-data.ts`、`staff-placement-data.ts` 补上谱号、调号和八度，在页面上画成五线谱。
+- 谱例图的路径在各版本里是同名的；构建某个版本时，会先从副本里删掉人音版的册数据和谱例图，再放入该版本自己的。
+- 人教版的册目、谱例页码和裁图清单在 `editions/renjiao/data/`（`printed-scores.mjs` 是每册正文里印了谱的作品清单）。
 
 ## 4. 路由
 
@@ -115,6 +132,24 @@ git restore public/data
 | `public/data/details/<册>.json` | 站点不读 | 册级明细；`quality:performance` 用它确认按需文件存在 |
 | `public/data/music-graph.json`、`canonical-graph.json` | 站点不读 | 构建输入与审计用；`scripts/prepare-github-pages.mjs` 会在发布产物里剔除这两个大文件 |
 
+### 旋律数据
+
+页面上能播放的旋律都是手工从教材谱例转写的，放在 `app/lib/lesson/` 下：
+
+| 文件 | 内容 |
+|---|---|
+| `melodies-g<年级><上下>.ts` | 人音版各册，如 `melodies-g7s2.ts` 是七年级下册 |
+| `melodies-pep-g<年级><上下>.ts` | 人教版各册，每册一个对象，键是作品名（不带《》） |
+| `melodies-wx-*.ts` | 五线谱版本里与简谱版不同的个别乐段，绝大多数册是空文件（只有七下、人教八上有少量内容） |
+| `jianpu.ts` | 记谱格式与解析：`segment(册, 页码, 调, 拍号, 速度, 音符, 歌词, 选项)` |
+| `melodies.ts` | 汇总各册并按册查找（`melodiesFor`）；`noMelodyReason` 登记人教版几课「谱例印了但配不出旋律」的原因 |
+
+音符写成简谱字符串：`5` 四分，`5/` 八分，`5//` 十六分，`5.` 附点，`'` 高八度、`,` 低八度，`#`/`b` 升降，`0` 休止，`-` 延长一拍，`~` 连音线，`|` 分小节。打击乐只有节奏没有音高时，调写 `"节奏"`，音符用 `9`（不定音高）。每首要写明教材页码和速度来源；课本没给数字速度的，在 `note` 里写「播放暂按多少 BPM」。
+
+校验：`node scripts/check-melodies.mjs` 检查每一小节的时值是否等于拍号、歌词字数是否对得上唱音，并统计各册多少课有旋律；加册名或作品名可只查一册（如 `pep-g8s2`），再加 `--show` 打印音符，`--missing` 列出还没有旋律的课。`node scripts/check-staff.mjs` 检查每条旋律都能排成五线谱。两个脚本都在 CI 里跑。
+
+以下几课课本上印了谱，但谱是总谱织体、和弦块、纯歌词页或教学图表，配不出单线旋律，页面上说明了原因而不是放一个不准的旋律：七下《大海》《四首海的间奏曲之四》、八下《霓裳羽衣曲》《宛转蛾眉马前死》、三上《滚核桃》（人教版）。
+
 ## 6. 质量检查
 
 `package.json` 里的 `quality:*` 脚本，加上 CI 另外直接调用的三个脚本。每条说明都对应脚本源码里的实际断言。
@@ -133,7 +168,7 @@ git restore public/data
 | `npm run -s quality:explorer` | 知识图谱页：示例查询的聚焦实体、十类筛选、schema 边与字面属性，并确认数据没被改动 |
 | `npm run -s quality:constellation` | 节点详情页：1428 个 `details/CAN_*.json` 与规范图谱逐条一致，无孤立点和悬空引用 |
 | `npm run lint`、`npx tsc --noEmit -p .` | ESLint（Next 预设）与 TypeScript 类型检查 |
-| `node scripts/audit-ai-worker.mjs`、`node scripts/check-melodies.mjs` | AI 接口的数据校验（拒绝重复 id 与悬空引用）；旋律数据统计（各册多少课有可播放旋律） |
+| `node scripts/audit-ai-worker.mjs`、`node scripts/check-melodies.mjs`、`node scripts/check-staff.mjs` | AI 接口的数据校验（拒绝重复 id 与悬空引用）；旋律数据校验与统计（每小节时值、歌词字数、各册多少课有可播放旋律）；每条旋律都能排成五线谱 |
 | **目前跑不通的两条** | `quality:rebuild` 要从外部提取目录重建 `music-graph.json` / `canonical-graph.json`，该目录不在仓库里；`quality:v3` 是早期的图谱页验收脚本，三条断言指向已重构掉的代码，CI 未使用。这两条要么补齐来源/更新断言，要么删掉 |
 
 审计脚本是功能保护网，不要为了让检查通过去改它们。
@@ -143,11 +178,14 @@ git restore public/data
 推送到 `main`（或在 Actions 页面手动触发）后，`.github/workflows/pages.yml` 依次执行：
 
 1. `npm ci`
-2. 质量检查：`npm run lint` → `quality:audit` → `quality:p0` → `quality:v21` → `quality:v22` → `quality:v23` → `quality:performance` → `node scripts/audit-ai-worker.mjs` → `quality:ai` → `quality:ai-candidate` → `node scripts/check-melodies.mjs`
+2. 质量检查：`npm run lint` → `quality:audit` → `quality:p0` → `quality:v21` → `quality:v22` → `quality:v23` → `quality:performance` → `node scripts/audit-ai-worker.mjs` → `quality:ai` → `quality:ai-candidate` → `node scripts/check-melodies.mjs` → `node scripts/check-staff.mjs`
 3. 静态构建（带上第 2 节的三个环境变量）
 4. `node scripts/prepare-github-pages.mjs`
 5. `npm run quality:pages`
-6. 把 `dist/client` 上传为 Pages 产物并发布
+6. 依次构建另外三个版本：`node scripts/build-edition.mjs renjiao`、`renyin-staff`、`renjiao-staff`，产物放进 `dist/client/<各自的网址前缀>/`。仓库变量 `PUBLISH_RENJIAO` 设为 `false` 会撤下人教版及其五线谱，`PUBLISH_STAFF` 设为 `false` 会撤下两个五线谱版本
+7. 把 `dist/client` 上传为 Pages 产物并发布
+
+CI 里同一时间只保留最新一次部署：连续推送时，前一次还没跑完的会被取消（显示 cancelled，不是失败），最新一次包含前面的全部改动。
 
 本地复现第 3–5 步，就是第 2 节「构建 GitHub Pages 版本」里的那段 PowerShell。仓库的合并和推送由项目负责人执行。
 

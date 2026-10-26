@@ -1,36 +1,25 @@
-# 芽谱项目 Claude 接续说明
+# 芽谱项目交接说明
 
-项目目录：`E:\Projects\music-graph-site`
-当前分支：`redesign/v6`
-本地预览：`http://localhost:4312/#/timeline`（预览服务仍在运行）
+更新于 2026-10-26。只写已经核实过的现状；读代码前先读 `README.md`（技术栈、目录、数据流、部署）。
 
-## 当前已获用户认可的页面
+## 现状
 
-用户刚确认学生向的作品年表页面“挺不错，就这样先”。该页面名为“音乐时光机”，面向中小学生，以课本歌曲聆听挑战、年代线索、作品对比和跳转到完整年表为主。当前设计先保持，不要擅自重做已确认的页面。
+- 只有一个正式分支 `main`，推送后 GitHub Actions（`.github/workflows/pages.yml`）自动质量检查、构建、发布到 GitHub Pages，一次约 4–6 分钟。连续推送时前一次会显示 cancelled，不是失败，最新一次包含全部改动。
+- 线上四个站点：人音版 `/renyin/`、人教版 `/renjiao/`、人教版五线谱 `/renjiao-staff/`、人音版五线谱 `/renyin-staff/`。说明见 README「教材版本」。
+- 提交前本地至少跑：`npx eslint app/lib/lesson`、`npx tsc --noEmit -p .`、`node scripts/check-melodies.mjs`、`node scripts/check-staff.mjs`（后两个也在 CI 里）。
 
-最近相关实现集中在：
-- `app/components/timeline/TimelinePage.tsx`
-- `app/timeline.css`
-- `app/components/exploration/ExplorationPage.tsx`
-- `app/page.tsx`
+## 人教版旋律（最近一轮工作）
 
-已验证：`tsc --noEmit`、改动 TSX 文件的 ESLint、`git diff --check` 均通过；本地预览 HTTP 200。Windows 下普通 `vinext dev` 遇到 Miniflare 运行时崩溃，因此预览以 `GITHUB_PAGES=true` 模式运行。
+- 人教版有谱例的作品基本都已转写，数据在 `app/lib/lesson/melodies-pep-g<年级><上下>.ts`，格式和校验见 README「旋律数据」。
+- 五课谱例配不出单线旋律（总谱织体、和弦块、纯歌词页、教学图表），页面显示具体原因：七下《大海》《四首海的间奏曲之四》、八下《霓裳羽衣曲》《宛转蛾眉马前死》、三上《滚核桃》。原因文字登记在 `app/lib/lesson/melodies.ts` 的 `NO_MELODY_REASONS`。
+- **所有转写都只过了代码检查（时值、歌词字数），没有人在网站上逐首听过。** 转写时把握较低、最该先听的：七下柴可夫斯基《♭b小调第一钢琴协奏曲》、九上莫扎特《A大调第二十三钢琴协奏曲》、八上《图画展览会》（只记和弦最高音）、八下《夕阳箫鼓》第 4 小节长音、二下《四物乐》小锣第 9–10 小节、二上《武松打虎》节奏。
+- 打击乐、说唱只有节奏时调写 `"节奏"`、音符用 `9`；课本没给数字速度的，速度是估的，`note` 里写了「播放暂按多少 BPM」。
 
-## 本轮协作与检查结果
+## 已知问题与待定事项
 
-- `scripts/test-lib.mjs`：82/82 通过。
-- `scripts/smoke-pages.mjs` 的首页入口断言已更新为 2 项（“声音与音乐探索”“知识图谱”），符合合并地图、年表和律盘后的入口结构。页面导航、播放、图谱/问答和 375/768px 响应式检查均通过；严格控制台检查仍报告 Vinext 开发服务缺少两份生成的 Geist 字体（`/_next/static/_vinext_fonts/...woff2`）。仓库内没有 `check.ps1`。
-- `audit-layout.mjs` 的 65 页审计在“音乐时光机”上未见 CLS ≥ 0.1；“五声律坊”首次进入在 1440×900 观察到 CLS 约 0.251，其中探索区首次出现贡献 0.223，律盘内容展开约贡献 0.028。用户认可了当前视觉布局，先不要为消除位移重排版；合并后可继续排查初始化跳动。
-- 开发服务器只在根路径响应，而静态资源配置使用 `/lezhi-music-graph/`。做本地完整资源检查时可通过 E 盘临时代理 `http://localhost:4313/lezhi-music-graph/` 映射到 `http://localhost:4312/`；临时脚本位于 `E:\Projects\.tmp\music-graph-site\basepath-proxy.mjs`。
-
-## 协作时请先检查
-
-当前工作区不是干净状态：分支 `redesign/v6` 有 21 个已修改文件和 3 个新增路径（总计 24 项，含本交接文件及 smoke 断言更新），包含前序芽谱导航、律盘、五声律坊、浅色主题、探索页及年表页面改动。不要执行会清理或重置工作区的操作；改动其他页面前先查看对应 diff，保留用户和 Codex 的现有修改。
-
-Claude 桌面端当前的 `music-graph-site` 项目会话有两个“Haiku verify”后台任务正在运行，且会话里提到按课学习重设计等待 Codex 当前工作结束后再合并。请先查看任务是否完成，并与其现有结果协调，再继续后续工作，避免并行改写相同文件。
-
-Claude 在当前会话中请 Codex 先提交 `redesign/v6` 分支改动，再由 Claude 合并“按课学习”。Claude 指定暂时不要改：`app/components/records/WorkLibrary.tsx`、`app/records.css` 的阅读区、`app/lib/records/*`、`app/lib/lesson/melodies-g*.ts`。提交后由 Claude 跑合并后的完整检查并核对绿色白色配色。
-
-## 用户最近指示
-
-用户要求把当前成果接入 Claude，并由 Codex 配合 Claude 做后续工作。当前页面先维持已认可版本；后续修改以用户新的具体意见和 Claude 当前任务结果为准。
+- `node scripts/test-lib.mjs` 有一项长期失败：「年表作品链接：全量 664 条只链接 records 中可解析的 470 条」（实际 700 条）。它不在 CI 里，不影响发布。年表页计划由项目负责人以后删掉重做，到时这项测试一并处理。
+- 仓库里有几个目录看起来是早先的后端尝试，README 写的是「后端：无」，是否还要保留待项目负责人决定：`supabase/`、`db/`、`drizzle/`、`server/`、`worker/`。
+- 远程还有一个旧分支 `ui/v5-visual-redesign`，看名字是早先的界面改版，未确认是否可删。
+- `editions/renjiao-staff/README.md` 里还写着「14 册保持 `published: false`」，但 `data/books.json` 里已经全部是 `published: true`，文档没更新。
+- 仓库历史约 287MB，主要是图片和音频；人教简谱与人教五线谱之间、人音版五线谱与公共目录之间共有约 213 个相同的图片/音频文件（约 28MB）。去重要改构建脚本，暂未做。
+- `.learnings/`（开发笔记）、`.openai/hosting.json`（旧托管配置）、`docs/` 与 `reports/` 里 8 月份的验收和调研报告不是运行所需，可以归档。
