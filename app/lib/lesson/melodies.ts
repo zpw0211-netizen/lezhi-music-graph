@@ -138,6 +138,14 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
       const fallback = BOOK_MELODIES[fallbackKey]?.[name.replace(/^《|》$/g, "")];
       if (fallback?.length) return { melodies: fallback, name };
     }
+    // 组名下收录的作品（如《草原上的歌》里的《快乐的牧羊人》）按段落标题找。
+    for (const name of names) {
+      const bare = name.replace(/^《|》$/g, "");
+      for (const key of [bookKey, fallbackKey]) {
+        const parts = Object.values(BOOK_MELODIES[key] ?? {}).flat().filter((melody) => melody.title === bare);
+        if (parts.length) return { melodies: parts };
+      }
+    }
     return { melodies: [] };
   }
   const fallbackKey = bookKey?.startsWith("wx-") ? bookKey.slice(3) : bookKey;
