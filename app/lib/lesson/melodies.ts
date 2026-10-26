@@ -141,7 +141,7 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
     // 组名下收录的作品（如《草原上的歌》里的《快乐的牧羊人》）按段落标题找；
     // 键名带括注（《伏尔塔瓦河（片段）》）或课名多出调名前缀（《c小调第五（命运）交响曲》）的也算同一首。
     for (const name of names) {
-      const bare = name.replace(/^《|》$/g, "");
+      const bare = name.replace(/^《|》$/g, "").replace(/\s+/g, "");
       for (const key of [bookKey, fallbackKey]) {
         const book = BOOK_MELODIES[key] ?? {};
         const parts = Object.values(book).flat().filter((melody) => melody.title === bare);
