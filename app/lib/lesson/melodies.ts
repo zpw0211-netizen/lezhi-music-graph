@@ -144,7 +144,7 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
       const bare = name.replace(/^《|》$/g, "").replace(/\s+/g, "");
       for (const key of [bookKey, fallbackKey]) {
         const book = BOOK_MELODIES[key] ?? {};
-        const parts = Object.values(book).flat().filter((melody) => melody.title === bare);
+        const parts = Object.values(book).flat().filter((melody) => melody.title?.replace(/（[^）]*）$/, "") === bare);
         if (parts.length) return { melodies: parts };
         const near = Object.keys(book).find((title) => title.replace(/（[^）]*）$/, "") === bare || (title.length >= 4 && bare.endsWith(title)));
         if (near) return { melodies: book[near], name: near };
