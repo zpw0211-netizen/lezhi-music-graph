@@ -20,7 +20,8 @@ python scripts/vocal/synth.py .vocal/work/missing.json .vocal/work/out    # 合�
 python scripts/vocal/finalize.py .vocal/work/missing.json .vocal/work/out # 音高检查 → mp3 → 写入 manifest
 ```
 
-`finalize.py` 只发布通过音高检查的文件（中位误差 ≤ 0.25 半音、偏离超过半音的音 ≤ 10%），不合格的列出来不发布。
+`finalize.py` 只发布通过音高检查的文件（中位误差 ≤ 0.25 半音、偏离超过半音的音 ≤ 10%），不合格的列出来不发布；
+极短的音（如 0.25 秒的拖腔）可能让检查误判，逐帧核对音高无误后可用 `--accept 指纹,指纹` 放行。
 之后提交 `public/audio/vocal/*.mp3` 和 `app/lib/lesson/vocal-manifest.json`；音频多时按 5 MB 左右分批推送，
 manifest 放在最后一批，避免线上指向还没上传的文件。
 

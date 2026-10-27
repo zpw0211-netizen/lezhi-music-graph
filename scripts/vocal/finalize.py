@@ -1,6 +1,6 @@
 """Encode synthesized vocals like the existing ones and merge them into the site manifest.
 
-python scripts/vocal/finalize.py <todo.json> <outdir>  -> writes public/audio/vocal/<key>.mp3, updates vocal-manifest.json
+python scripts/vocal/finalize.py <todo.json> <outdir> [--accept key,key]  -> writes public/audio/vocal/<key>.mp3, updates vocal-manifest.json
 Only files that pass the pitch check are published; the rest are listed.
 """
 import json
@@ -20,6 +20,8 @@ TARGET_DB = -21.0  # mean level of the existing recordings
 
 todo = {m["key"]: m for m in json.load(open(sys.argv[1], encoding="utf-8"))}
 out = sys.argv[2]
+# Keys checked by hand (frame-by-frame pitch) whose automatic check trips on very short notes.
+accept = set(sys.argv[sys.argv.index("--accept") + 1].split(",")) if "--accept" in sys.argv else set()
 manifest = json.load(open(MANIFEST, encoding="utf-8"))
 published, rejected = [], []
 for key, mel in todo.items():
@@ -34,7 +36,7 @@ for key, mel in todo.items():
     meta["leadBeats"] = round(sum(n["b"] for n in mel["notes"][:first]), 6)
     n, med, bad, octv = check(wav_path, mel, meta["offset"], meta["shift"])
     label = f"{key} {mel['book']} {mel['name']}#{mel['index']}"
-    if not n or med > 0.25 or bad > 0.1 or octv != 0:
+    if key not in accept and (not n or med > 0.25 or bad > 0.1 or octv != 0):
         rejected.append(f"{label}: notes={n} median={med} off={bad} octave={octv}")
         continue
     y, sr = sf.read(wav_path)

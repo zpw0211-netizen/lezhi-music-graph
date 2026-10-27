@@ -285,7 +285,11 @@ def build(mel, shift):
         out = [0] * k
         if cons_idx:
             want = [max(1.0, seg[j]) for j in cons_idx]
-            cap = max(len(cons_idx), int(wd * 0.45))
+            # the next syllable's consonants sit in the last note of this word: at most 45% of the word and half of
+            # that note, so a short melisma note at the end (悠~ 着) is still sung, not eaten by the 着's zh
+            w_start, w_end = words[wi][2], words[wi + 1][2] if wi + 1 < len(words) else end
+            last = max([w_start] + [pn[0] for pn in pitch_notes if w_start < pn[0] < w_end])
+            cap = max(len(cons_idx), min(int(wd * 0.45), int(frames(w_end - last) * 0.5)))
             scale = min(1.0, cap / sum(want))
             for j, w in zip(cons_idx, want):
                 out[j] = max(1, int(round(w * scale)))
