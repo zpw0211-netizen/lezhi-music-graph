@@ -57,3 +57,4 @@ public/data/details/CAN_*.json
 
 # singing synthesis models and intermediate files (scripts/vocal/setup.py)
 /.vocal/
+__pycache__/
