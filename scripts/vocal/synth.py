@@ -363,7 +363,9 @@ def main():
             continue
         med = float(np.median(sung))
         # 绮萱 is a child voice: men's tunes are sung an octave up (still in unison with the piano's pitch classes).
-        shift = 0  # written pitch, as the existing recordings do (unison with the piano)
+        # Written pitch (unison with the piano), except men's-range tunes the child voice cannot reach
+        # (median below F#3, e.g. 渔阳鼙鼓动地来, 丑末寅初): those are sung an octave up, same notes.
+        shift = 12 if med < 54 else 0
         try:
             wav, offset, lead_beats, _, _ = build(mel, shift)
         except Exception as exc:  # noqa: BLE001
