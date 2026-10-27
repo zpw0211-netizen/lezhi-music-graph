@@ -244,7 +244,7 @@
 /* ---- 响应式：手机按阅读顺序单列排 ---- */
 @media (max-width:1100px) {
   .lesson { padding:16px 24px 72px; }
-  .lesson-layout { grid-template-columns:1fr; gap:40px; }
+  .lesson-layout { grid-template-columns:minmax(0,1fr); gap:40px; }
   .lesson-side { position:static; }
 }
 @media (max-width:640px) {
