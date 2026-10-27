@@ -48,8 +48,10 @@ type TextbookUnit = {
   works: UnitWork[];
   /** Section-based books (人教版): the unit's non-work items, e.g. a story, game or theory corner. */
   activities?: UnitActivity[];
+  projects?: UnitProject[];
   keywords?: UnitKeyword[];
 };
+type UnitProject = { section: string; name: string; page: number; workIds: string[] };
 type UnitActivity = { id: string; name: string; section: string; page?: number | null };
 type WorkEntry = { unit: TextbookUnit; work: UnitWork };
 
@@ -753,7 +755,7 @@ export function WorkLibrary({
 
   const chapterContents = useMemo(() => units.map((unit) => {
     const anchorId = unitAnchorId(currentBookKey, unit.id);
-    const tasks = unit.kind === "project" ? [] : (unit.tasks ?? []);
+    const tasks = unit.kind === "project" || unit.projects?.length ? [] : (unit.tasks ?? []);
     const showTasks = tasks.length > 0 && taskUnits.has(unit.id);
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
     // Curated unit points (人教版) have a description and a page; the rest are auto-extracted and left out.
@@ -784,6 +786,44 @@ export function WorkLibrary({
     const featuredQuote = unit.works.find((work) => work.starred && work.summary)
       ?? unit.works.find((work) => work.summary);
     const unitLearned = learnedIn(unit.works);
+    const renderWorkCard = (work: UnitWork, workIndex: number) => {
+      const starred = Boolean(work.starred);
+      const isLearned = learned.has(learnedKey(currentBookKey, work.id));
+      const melodies = melodiesFor(melodyEditionBookKey(currentBookKey), bareWorkName(work.name), work.name);
+      const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
+      const credits = [work.type, authors].filter(Boolean).join(" · ");
+      const modes = isPrimaryBook ? work.modes?.join("、") : "";
+      const activityModeSet = (directory?.grade ?? 3) <= 2 ? EARLY_PRIMARY_ACTIVITY_MODES : LATER_PRIMARY_ACTIVITY_MODES;
+      const activityModes = isPrimaryBook ? (work.modes ?? []).filter((mode) => activityModeSet.includes(mode)) : [];
+      return <article className={`records-score-card${isLearned ? " is-learned" : ""}`} data-mode={modes || undefined} key={work.id} style={{ "--card-index": workIndex } as CSSProperties}>
+        <button
+          aria-label={`打开${work.name}作品详情${modes ? `，学习方式：${modes}` : ""}${isLearned ? "，已学" : ""}`}
+          className="records-score-open"
+          id={`records-work-${work.id}`}
+          onClick={(event) => openWork(work, event.currentTarget)}
+          type="button"
+        >
+          <span aria-hidden="true" className="records-score-image-wrap">
+            {work.scores?.[0]
+              ? <img alt="" className="records-score-image records-lazy-image" data-src={publicAssetUrl(work.scores[0])} decoding="async" loading="lazy" />
+              : <span className="records-score-placeholder"><span>{work.name}</span></span>}
+            {starred && <span className="records-star-seal">重点曲目</span>}
+            {isLearned && <span className="records-learned-seal">已学</span>}
+            {work.page != null && <span className="records-score-page">教材第 {work.page} 页</span>}
+          </span>
+          <span aria-hidden="true" className="records-score-copy">
+            <strong>{work.name}</strong>
+            {credits && <span className="records-score-authors">{credits}</span>}
+            {activityModes.length > 0 && <span className="records-primary-work-stamps" aria-label={`学习活动：${activityModes.join("、")}`}>
+              {activityModes.map((mode) => <span className="records-primary-work-stamp" key={mode}>{mode}</span>)}
+            </span>}
+          </span>
+        </button>
+        {work.hasMelody && melodies[0] && <span className="records-score-play" onClickCapture={() => markLearned(work)}>
+          <MelodyPlayer melody={melodies[0]} notationStyle={EDITION.notation ?? "jianpu"} />
+        </span>}
+      </article>;
+    };
     return <article
       aria-labelledby={`${anchorId}-title`}
       aria-roledescription="单元页"
@@ -812,7 +852,7 @@ export function WorkLibrary({
           <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
         </section>}
 
-        {unit.kind !== "project" && activityCounts.length > 0 && <section aria-label="这一单元学什么" className="records-unit-activities">
+        {unit.kind !== "project" && !unit.projects?.length && activityCounts.length > 0 && <section aria-label="这一单元学什么" className="records-unit-activities">
           <p className="records-notes-label">这一单元</p>
           <div aria-label="按学习方式挑选作品" className="records-activity-tiles" role="group">
             {activityCounts.map(({ group, count }) => <button
@@ -849,7 +889,7 @@ export function WorkLibrary({
               <button aria-pressed={!showTasks} onClick={() => toggleTasks(unit.id, false)} type="button">作品<small>{unit.works.length}</small></button>
               <button aria-pressed={showTasks} onClick={() => toggleTasks(unit.id, true)} type="button">课堂任务<small>{tasks.length}</small></button>
             </div>
-            : <h3>{unitActivities.length ? "本单元内容" : "作品名录"}</h3>}
+            : <h3>{unitActivities.length || unit.projects?.length ? "本单元内容" : "作品名录"}</h3>}
           {unit.works.length > 0 && <p className={`records-unit-progress${unitLearned === unit.works.length ? " is-done" : ""}`}>
             <span aria-hidden="true" style={{ "--unit-progress": unit.works.length ? unitLearned / unit.works.length : 0 } as CSSProperties} />
             已学 <b>{unitLearned}</b> / {unit.works.length}
@@ -870,45 +910,21 @@ export function WorkLibrary({
               正在看「{activityTitle}」的 {unitActivities.length ? `${shownWorks.length + shownActivities.length} 项内容` : `${shownWorks.length} 首作品`}
               <button onClick={() => toggleActivity(unit.id, null)} type="button">看全部</button>
             </p>}
+            {unit.projects?.length
+              ? unit.projects.map((project) => {
+                const projectWorks = project.workIds.map((id) => worksById.get(id)).filter((work): work is UnitWork => Boolean(work));
+                return <section aria-label={project.name} className="records-project" key={`${project.page}-${project.name}`}>
+                  <header className="records-project-head">
+                    <small>{project.section}</small>
+                    <strong>{project.name}</strong>
+                    <span>第 {project.page} 页</span>
+                  </header>
+                  {projectWorks.length > 0 && <div className="records-score-grid">{projectWorks.map(renderWorkCard)}</div>}
+                </section>;
+              })
+              : <>
             {shownWorks.length > 0 && <div className="records-score-grid">
-              {shownWorks.map((work, workIndex) => {
-                const starred = Boolean(work.starred);
-                const isLearned = learned.has(learnedKey(currentBookKey, work.id));
-                const melodies = melodiesFor(melodyEditionBookKey(currentBookKey), bareWorkName(work.name), work.name);
-                const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
-                const credits = [work.type, authors].filter(Boolean).join(" · ");
-                const modes = isPrimaryBook ? work.modes?.join("、") : "";
-                const activityModeSet = (directory?.grade ?? 3) <= 2 ? EARLY_PRIMARY_ACTIVITY_MODES : LATER_PRIMARY_ACTIVITY_MODES;
-                const activityModes = isPrimaryBook ? (work.modes ?? []).filter((mode) => activityModeSet.includes(mode)) : [];
-                return <article className={`records-score-card${isLearned ? " is-learned" : ""}`} data-mode={modes || undefined} key={work.id} style={{ "--card-index": workIndex } as CSSProperties}>
-                  <button
-                    aria-label={`打开${work.name}作品详情${modes ? `，学习方式：${modes}` : ""}${isLearned ? "，已学" : ""}`}
-                    className="records-score-open"
-                    id={`records-work-${work.id}`}
-                    onClick={(event) => openWork(work, event.currentTarget)}
-                    type="button"
-                  >
-                    <span aria-hidden="true" className="records-score-image-wrap">
-                      {work.scores?.[0]
-                        ? <img alt="" className="records-score-image records-lazy-image" data-src={publicAssetUrl(work.scores[0])} decoding="async" loading="lazy" />
-                        : <span className="records-score-placeholder"><span>{work.name}</span></span>}
-                      {starred && <span className="records-star-seal">重点曲目</span>}
-                      {isLearned && <span className="records-learned-seal">已学</span>}
-                      {work.page != null && <span className="records-score-page">教材第 {work.page} 页</span>}
-                    </span>
-                    <span aria-hidden="true" className="records-score-copy">
-                      <strong>{work.name}</strong>
-                      {credits && <span className="records-score-authors">{credits}</span>}
-                      {activityModes.length > 0 && <span className="records-primary-work-stamps" aria-label={`学习活动：${activityModes.join("、")}`}>
-                        {activityModes.map((mode) => <span className="records-primary-work-stamp" key={mode}>{mode}</span>)}
-                      </span>}
-                    </span>
-                  </button>
-                  {work.hasMelody && melodies[0] && <span className="records-score-play" onClickCapture={() => markLearned(work)}>
-                    <MelodyPlayer melody={melodies[0]} notationStyle={EDITION.notation ?? "jianpu"} />
-                  </span>}
-                </article>;
-              })}
+              {shownWorks.map(renderWorkCard)}
             </div>}
             {shownActivities.length > 0 && <section aria-label="栏目活动" className="records-unit-flow">
               {shownWorks.length > 0 && <p className="records-notes-label">栏目活动</p>}
@@ -918,6 +934,7 @@ export function WorkLibrary({
                 {item.page != null && <span className="records-unit-flow-page">第 {item.page} 页</span>}
               </li>)}</ol>
             </section>}
+              </>}
           </section>}
       </div>
     </article>;
@@ -950,7 +967,7 @@ export function WorkLibrary({
                     {units.map((unit) => <button key={unit.id} onClick={() => goToUnit(unit)} type="button">
                       <span>{unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order}</span>
                       <strong>{unit.title}</strong>
-                      <small>{learnedIn(unit.works) ? `${learnedIn(unit.works)}/` : ""}{unit.works.length} 首</small>
+                      <small>{unit.works.length ? `${learnedIn(unit.works) ? `${learnedIn(unit.works)}/` : ""}${unit.works.length} 首` : `${unit.projects?.length || unit.activities?.length || 0} 个项目`}</small>
                     </button>)}
                   </nav>
                   : <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />}

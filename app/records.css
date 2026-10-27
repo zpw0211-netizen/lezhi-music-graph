@@ -1278,3 +1278,10 @@
   ::view-transition-old(work-cover),
   ::view-transition-new(work-cover) { animation-duration: 1ms; }
 }
+
+.records-project { margin: 0 0 22px; }
+.records-project + .records-project { padding-top: 16px; border-top: 1px solid var(--records-line, rgba(0, 0, 0, .08)); }
+.records-project-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 12px; color: var(--records-ink); }
+.records-project-head small { padding: 1px 9px; border: 1px solid var(--records-seal); border-radius: 999px; color: var(--records-seal); font-size: 12px; white-space: nowrap; }
+.records-project-head strong { font-size: 17px; }
+.records-project-head span { margin-left: auto; color: var(--records-muted, rgba(0, 0, 0, .5)); font-size: 12px; white-space: nowrap; }

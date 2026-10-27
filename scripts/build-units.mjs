@@ -232,6 +232,9 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     : [];
   const name = unit.name;
   const title = name.replace(/^第[一二三四五六七八九十0-9]+单元\s*/, "");
+  // 人教版 units are a run of textbook projects (栏目), and a work belongs to the project whose pages it falls on.
+  // The printed table of contents gives each project's start page; works and activities are filed by page.
+  const projects = buildProjects(bookKey, title, works, activities);
   const result = {
     bookKey,
     order,
@@ -245,6 +248,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     tasks,
     works,
     ...(activities.length ? { activities } : {}),
+    ...(projects.length ? { projects } : {}),
     keywords,
     stats: {
       works: works.length,
@@ -256,6 +260,26 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
   if (!/^第[一二三四五六七八九十0-9]+单元/.test(name)) result.kind = "project";
   return result;
 };
+
+// Projects of one unit from the edition's table of contents (data/toc/<book>.json): a blank section continues the one above.
+function buildProjects(bookKey, unitTitle, works, activities) {
+  const file = path.join(ROOT, "data/toc", `${bookKey.replace(/^pep-/, "")}.json`);
+  if (!EDITION.unitActivities || !existsSync(file)) return [];
+  const tocUnit = JSON.parse(readFileSync(file, "utf8")).units?.find((entry) => entry.title === unitTitle);
+  if (!tocUnit?.items?.length) return [];
+  let section = "";
+  const projects = tocUnit.items
+    .map(([itemSection, name, page]) => { section = itemSection || section; return { section, name, page, workIds: [], activityIds: [] }; })
+    .sort((a, b) => a.page - b.page);
+  const projectAt = (page) => Math.max(0, projects.findLastIndex((project) => project.page <= page));
+  let previous = 0;
+  for (const work of [...works].sort((a, b) => (a.page ?? 0) - (b.page ?? 0))) {
+    previous = work.page == null ? previous : projectAt(work.page);
+    projects[previous].workIds.push(work.id);
+  }
+  for (const activity of activities) projects[activity.page == null ? 0 : projectAt(activity.page)].activityIds.push(activity.id);
+  return projects;
+}
 
 const units = [];
 for (const bookKey of BOOK_KEYS) {
