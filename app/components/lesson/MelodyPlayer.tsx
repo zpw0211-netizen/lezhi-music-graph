@@ -12,6 +12,7 @@ import { MelodyLine } from "./MelodyLine";
 import { StaffNotation, type MelodyLineData } from "./StaffNotation";
 import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
 import { findVocal, VOCAL_CREDIT } from "../../lib/lesson/vocal";
+import { percussionKind, playPercussion } from "../../lib/lesson/percussion";
 import { publicAssetUrl } from "../../lib/app/assets";
 
 type Line = { label: string; bars: MelodyNote[][] };
@@ -362,7 +363,11 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       if (note.d && !note.tie && !(voiced && note.d !== 9)) {
         let length = duration;
         for (let k = index + 1; k < to && notes[k].tie; k += 1) length += notes[k].b * beat;
-        if (note.d === 9) {
+        const kind = note.d === 9 ? percussionKind(lines[voice]?.label) : null;
+        if (kind) {
+          // Parts named after a percussion instrument (小锣, 圆鼓…) get their own timbre, so they can be told apart.
+          playPercussion(ctx, master, kind, t, levelScale);
+        } else if (note.d === 9) {
           const percussion = { wave: "triangle" as OscillatorType, overtone: 0.15, level: 0.8 * levelScale };
           length = Math.min(length, 0.12);
           for (const [wave, level, multiple] of [[percussion.wave, percussion.level, 1], ["sine" as OscillatorType, percussion.level * percussion.overtone, 2]] as const) {
