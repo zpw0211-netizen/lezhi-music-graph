@@ -3,7 +3,8 @@ import registry from "./books.json" with { type: "json" };
 /** The textbook series this build serves (人音版 or 人教版): every edition-specific label comes from here. */
 export const EDITION = registry.edition;
 /** "人音版一年级上册" → "一年级上册". */
-export const stripEditionPrefix = (title) => String(title ?? "").replace(new RegExp(`^${EDITION.label}`), "");
+// 五线谱版的 label 是“人教版·五线谱”，书名仍以“人教版”开头，所以只取“·”前面的版本名去前缀。
+export const stripEditionPrefix = (title) => String(title ?? "").replace(new RegExp(`^${EDITION.label.split("·")[0]}`), "");
 export const BOOK_REGISTRY = registry.books;
 export const PUBLISHED_BOOKS = BOOK_REGISTRY.filter((book) => book.published);
 export const PUBLISHED_BOOK_KEYS = PUBLISHED_BOOKS.map((book) => book.key);
