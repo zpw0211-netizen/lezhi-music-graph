@@ -188,10 +188,10 @@ const EMPTY_BOOKS: BookDirectory[] = [];
 const SITE_TITLE = SITE_NAME;
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
-  atlas: "声音与音乐探索 · 音乐地图",
-  lab: "声音与音乐探索 · 五声律坊",
-  timeline: "声音与音乐探索 · 音乐时光机",
-  rhythm: "声音与音乐探索 · 节奏训练",
+  atlas: "音乐探索与创造 · 音乐地图",
+  lab: "音乐探索与创造 · 五声律坊",
+  timeline: "音乐探索与创造 · 音乐时光机",
+  rhythm: "音乐探索与创造 · 节奏训练",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
