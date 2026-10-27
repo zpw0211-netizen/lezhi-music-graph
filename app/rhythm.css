@@ -79,7 +79,10 @@
 
 .rhythm-bars { display: grid; flex: 1 1 auto; grid-template-columns: repeat(auto-fill, minmax(calc(var(--bar-beats, 2) * 2.9em), 1fr)); row-gap: .7em; min-width: 0; }
 .rhythm-bar { display: flex; align-items: flex-start; gap: .32em; padding-right: .5em; }
-.rhythm-bar .rhythm-barline { margin-left: auto; }
+.rhythm-bar { padding-right: 0; gap: 0; }
+/* A pattern's slot is as wide as its beats, so the same beat lines up in every bar. */
+.rhythm-bar > :is(.rhythm-cell, .rhythm-placed, .rhythm-empty) { flex: 1 1 0; min-width: min-content; }
+.rhythm-bar .rhythm-barline { flex: 0 0 auto; }
 .rhythm-barline { align-self: stretch; width: .05em; min-height: 1.3em; margin-left: .1em; background: var(--rhythm-ink); }
 .rhythm-barline.is-final { width: .22em; margin-left: .2em; background: linear-gradient(90deg, var(--rhythm-ink) 0 .05em, transparent .05em .11em, var(--rhythm-ink) .11em); }
 

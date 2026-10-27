@@ -132,16 +132,17 @@ export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected
                 <button
                   key={index}
                   type="button"
+                  style={{ flexGrow: pattern.beats }}
                   className={`rhythm-placed${selected === index ? " is-selected" : ""}${playingHere ? " is-current" : ""}`}
                   aria-pressed={selected === index}
                   aria-label={`${pattern.name}，点选后可删除或在后面插入`}
                   onClick={() => onSelect(index)}
                 >{glyph}</button>
               ) : (
-                <span key={index} className={`rhythm-cell${playingHere ? " is-current" : ""}`}>{glyph}</span>
+                <span key={index} style={{ flexGrow: pattern.beats }} className={`rhythm-cell${playingHere ? " is-current" : ""}`}>{glyph}</span>
               );
             })}
-            {Array.from({ length: Math.round(bar.empty / meter.unit) }, (_, i) => <span key={`e${i}`} className={`rhythm-empty${meter.unit < 1 ? " is-eighth" : ""}`} aria-label="空拍" />)}
+            {Array.from({ length: Math.round(bar.empty / meter.unit) }, (_, i) => <span key={`e${i}`} style={{ flexGrow: meter.unit }} className={`rhythm-empty${meter.unit < 1 ? " is-eighth" : ""}`} aria-label="空拍" />)}
             <span className={`rhythm-barline${barIndex === bars.length - 1 ? " is-final" : ""}`} aria-hidden="true" />
           </div>
         ))}
