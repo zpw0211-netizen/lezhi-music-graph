@@ -303,7 +303,8 @@ def build(mel, shift):
     words.append((["AP"], [events[0][2]], events[0][0] - 0.3, events[0][0]))
     for k, (s, e, midi, phs) in enumerate(events):
         # onset consonants go before the note; the vowel and any coda (English) are sung from the onset
-        lead_n = next((j for j, p in enumerate(phs) if is_vowel(p)), len(phs))
+        # a syllable with no vowel (嗯 = syllabic n in Ria's dictionary) is sung whole from the onset
+        lead_n = next((j for j, p in enumerate(phs) if is_vowel(p)), 0)
         cons = phs[:lead_n]
         vows = phs[lead_n:]
         if cons:
@@ -343,8 +344,9 @@ def build(mel, shift):
     for wi, (k, wd) in enumerate(zip(word_div, word_dur)):
         seg = list(pred[p:p + k])
         names = toks[p:p + k]
-        nv = sum(1 for x in names if is_vowel(x))
-        cons_idx = [j for j, x in enumerate(names) if not is_vowel(x)]
+        # the word's nucleus: its vowels, or its first phoneme when the syllable has none (嗯)
+        vidx = [j for j, x in enumerate(names) if is_vowel(x)] or [0]
+        cons_idx = [j for j in range(k) if j not in vidx]
         out = [0] * k
         if cons_idx:
             want = [max(1.0, seg[j]) for j in cons_idx]
@@ -357,7 +359,6 @@ def build(mel, shift):
             for j, w in zip(cons_idx, want):
                 out[j] = max(1, int(round(w * scale)))
         rest = wd - sum(out)
-        vidx = [j for j, x in enumerate(names) if is_vowel(x)]
         if rest < len(vidx):  # word too short: shrink consonants
             for j in cons_idx:
                 while rest < len(vidx) and out[j] > 1:
