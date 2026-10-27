@@ -1285,7 +1285,7 @@
 .records-project-head small { padding: 1px 9px; border: 1px solid var(--records-seal); border-radius: 999px; color: var(--records-seal); font-size: 12px; white-space: nowrap; }
 .records-project-head strong { font-size: 17px; }
 .records-project-head span { margin-left: auto; color: var(--records-muted, rgba(0, 0, 0, .5)); font-size: 12px; white-space: nowrap; }
-.ink-app.theme-light .work-library .records-chapter-title-block h2[data-long] { font-size: clamp(26px, 2.5vw, 36px); }
+.ink-app.theme-light .work-library .records-chapter-title-block h2[data-long] { font-size: clamp(24px, 2.2vw, 32px); }
 .records-project.is-bare { margin-bottom: 0; padding: 12px 0; }
 .records-project.is-bare + .records-project { padding-top: 12px; }
 .records-project.is-bare .records-project-head { margin: 0; }

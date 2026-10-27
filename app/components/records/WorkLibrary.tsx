@@ -842,7 +842,7 @@ export function WorkLibrary({
           <span aria-hidden="true" className="records-chapter-number">{numeral}</span>
           <div>
             <p className="records-chapter-kicker">第 {numeral} 单元</p>
-            <h2 data-long={unit.title.length > 9 ? "true" : undefined} id={`${anchorId}-title`}>{unit.title}</h2>
+            <h2 data-long={unit.title.length > 7 ? "true" : undefined} id={`${anchorId}-title`}>{unit.title}</h2>
             {unit.theme && <span className="records-theme-seal">{unit.theme}</span>}
           </div>
         </header>
