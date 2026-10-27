@@ -47,6 +47,10 @@
     background: url("/renyin/art/home-sprouts.webp") 50% 46% / cover no-repeat;
     -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent); mask-image: linear-gradient(180deg, #000 55%, transparent);
   }
+  /* The research project this platform belongs to, in the top-left corner. */
+  /* In the flow (not absolute) so it never runs into the logo: 18px from the top, the logo starts below it. */
+  .project { margin: calc(18px - clamp(55px, 9vh, 89px)) 0 28px clamp(0px, 1.4vw - 6px, 13px); color: var(--ink-2); font: 13px/1.75 var(--serif); text-align: left; }
+  .project b { color: var(--ink); font-weight: 600; }
   .brand { display: inline-flex; align-items: center; gap: clamp(8px, 1.4vw, 21px); }
   .brand img { display: block; width: clamp(220px, 34vw, 400px); height: auto; }
   .kicker { margin-top: 13px; color: var(--seal); font: 15px/1.6 var(--serif); letter-spacing: .5em; text-indent: .5em; }
@@ -94,6 +98,9 @@
   @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 
   @media (max-width: 640px) {
+    .project { font-size: 12px; }
+  }
+  @media (max-width: 640px) {
     .kicker { letter-spacing: .3em; text-indent: .3em; font-size: 14px; }
     .card { grid-template-columns: 1fr; }
     .art { height: 144px; }
@@ -107,6 +114,7 @@
 </head>
 <body>
 <header class="hero">
+  <p class="project">国家社科基金教育学国家一般项目<br><b>《指向核心素养的青少年音乐创造力培养模式研究》</b><br>项目编号：BLA230249</p>
   <div class="brand">
     <img src="/yapu-logo.webp" alt="" width="900" height="408">
     <h1>芽谱AI — 音乐数字教材平台</h1>
