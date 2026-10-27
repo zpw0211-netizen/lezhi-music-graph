@@ -911,7 +911,7 @@ export function WorkLibrary({
               <button onClick={() => toggleActivity(unit.id, null)} type="button">看全部</button>
             </p>}
             {unit.projects?.length
-              ? unit.projects.map((project) => {
+              ? <div className="records-project-grid">{unit.projects.map((project) => {
                 const projectWorks = project.workIds.map((id) => worksById.get(id)).filter((work): work is UnitWork => Boolean(work));
                 return <section aria-label={project.name} className={projectWorks.length ? "records-project" : "records-project is-bare"} key={`${project.page}-${project.name}`}>
                   <header className="records-project-head">
@@ -921,7 +921,7 @@ export function WorkLibrary({
                   </header>
                   {projectWorks.length > 0 && <div className="records-score-grid">{projectWorks.map(renderWorkCard)}</div>}
                 </section>;
-              })
+              })}</div>
               : <>
             {shownWorks.length > 0 && <div className="records-score-grid">
               {shownWorks.map(renderWorkCard)}
