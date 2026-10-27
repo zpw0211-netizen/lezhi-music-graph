@@ -120,6 +120,8 @@ type Timbre = InstrumentId | "vocal";
 const VOCAL_LABEL = "人声（童声）";
 /** With a male recording for a lower part: women's voice on top, men's voice below. */
 const CHOIR_LABEL = "人声（女声＋男声）";
+/** Every recorded part sung by the male voice (男声合唱, 男低音独唱). */
+const MALE_LABEL = "人声（男声）";
 /** Seconds of the recording played before a phrase's first beat, so its opening consonant is not clipped. */
 const VOCAL_PREROLL = 0.15;
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
@@ -166,7 +168,8 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
   const vocals = useMemo(() => lines.map((_, part) => findVocal(melody, part)), [lines, melody]);
   const vocal = vocals[0];
   const anyVocal = vocals.some(Boolean);
-  const vocalLabel = vocals.some((v) => v?.singer === "ria") && vocals.filter(Boolean).length > 1 ? CHOIR_LABEL : VOCAL_LABEL;
+  const singers = new Set(vocals.flatMap((v) => (v ? [v.singer] : [])));
+  const vocalLabel = !singers.has("ria") ? VOCAL_LABEL : singers.has("qixuan") ? CHOIR_LABEL : MALE_LABEL;
   const timbres = useMemo(() => [...INSTRUMENTS, ...(anyVocal ? [{ id: "vocal" as const, label: vocalLabel }] : [])], [anyVocal, vocalLabel]);
   /** Sampled instrument for everything the recorded voices do not sing (other parts, cues). */
   const sampleInstrument: InstrumentId = instrument === "vocal" ? "piano" : instrument;
