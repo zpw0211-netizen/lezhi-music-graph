@@ -57,7 +57,7 @@ const visitParts = (book: string, name: string, melody: Melody, index: number) =
     const key = vocalKey(melody, part);
     if (seen.has(key)) return;
     seen.add(key);
-    if (part > 0 && findVocal(melody, part)) return;
+    if (part > 0 ? findVocal(melody, part) : findVocal(melody)?.singer === "ria") return;
     const notes = line.bars.flat();
     let words = notes;
     if (!notes.some(sungWord)) {
