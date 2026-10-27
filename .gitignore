@@ -54,3 +54,6 @@ public/data/details/CAN_*.json
 
 # Scratch copies for second-edition builds (scripts/build-edition.mjs)
 /.edition-build/
+
+# singing synthesis models and intermediate files (scripts/vocal/setup.py)
+/.vocal/
