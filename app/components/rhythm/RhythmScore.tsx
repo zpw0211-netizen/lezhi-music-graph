@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { tokenKey, type Meter, type RhythmBar, type RhythmPattern } from "../../lib/rhythm/patterns";
 import { flagCount, flagGlyph, restGlyph } from "../lesson/StaffNotation";
 import type { Verdict } from "../../lib/rhythm/scoring";
@@ -121,7 +122,7 @@ export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected
   return (
     <div className={`rhythm-score`} aria-label="节奏谱">
       <span className="rhythm-meter" aria-label={`${meter.id} 拍`}><span>{meter.top}</span><span>{meter.bottom}</span></span>
-      <div className="rhythm-bars">
+      <div className="rhythm-bars" style={{ "--bar-beats": meter.beats } as CSSProperties}>
         {bars.map((bar, barIndex) => (
           <div className="rhythm-bar" key={barIndex}>
             {bar.groups.map(({ index, pattern }) => {
