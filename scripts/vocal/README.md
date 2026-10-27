@@ -32,6 +32,9 @@ python scripts/vocal/audit.py .vocal/work/voiced.json > .vocal/work/audit.jsonl
 npx tsx scripts/vocal/export.ts keys <指纹…>                              # 把要重做的导出到 .vocal/work/keys.json 再合成
 ```
 
+`inspect_voices.py` 做更全面的检查（节拍对齐与漂移、漏唱、前奏间奏里多唱、文件长度、响度与削波、音色），
+结果每行一条 JSON：`python scripts/vocal/inspect_voices.py .vocal/work/voiced.json > .vocal/work/inspect.jsonl`。
+
 音全部很短（< 0.15 秒）的歌，检查测不到音，会显示 notes=0；这不代表录音有问题，可用 `qa.py` 的 `min_dur` 参数复查。
 
 ## 合成约定
