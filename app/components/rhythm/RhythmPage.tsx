@@ -323,7 +323,7 @@ export function RhythmPage() {
       score.style.fontSize = "";
       if (document.fullscreenElement !== stage) return;
       let size = parseFloat(getComputedStyle(score).fontSize);
-      for (let i = 0; i < 24 && stage.scrollHeight > stage.clientHeight - 12 && size > 18; i += 1) {
+      for (let i = 0; i < 24 && stage.scrollHeight > stage.clientHeight && size > 18; i += 1) {
         size *= 0.92;
         score.style.fontSize = `${size}px`;
       }
