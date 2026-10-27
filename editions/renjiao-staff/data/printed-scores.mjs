@@ -378,6 +378,7 @@ export const PRINTED_SCORES = {
 };
 
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const withoutNote = (title) => bare(title).replace(/[（(][^）)]*[）)]$/, "");
 const PAGE_BOX = [0.04, 0.035, 0.96, 0.94];
 const pageOf = (item) => (Array.isArray(item) ? item[0] : item);
 
@@ -391,8 +392,12 @@ export function withPrintedScores(bookKey, parts) {
   for (const [name, type, pages] of printed) {
     const no = unitOf(pageOf(pages[0]));
     let existing;
+    // 目录里常把节选写成“杨靖宇大摆口袋阵（前奏）”，而印谱清单里只写曲名；找不到同名作品时，再按去掉括注的曲名找，免得同一课出现两次。
+    const sameWork = [...byNo.values()].some((part) => part.works.some((work) => bare(work.name) === bare(name)))
+      ? (work) => bare(work.name) === bare(name)
+      : (work) => withoutNote(work.name) === bare(name);
     for (const part of byNo.values()) {
-      const index = part.works.findIndex((work) => bare(work.name) === bare(name));
+      const index = part.works.findIndex(sameWork);
       if (index >= 0) [existing] = part.works.splice(index, 1);
     }
     const scores = pages.map((item) => (Array.isArray(item) ? [item[0], PAGE_BOX[0], item[1], PAGE_BOX[2], item[2] ?? PAGE_BOX[3]] : [item, ...PAGE_BOX]));
