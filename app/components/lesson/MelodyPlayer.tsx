@@ -11,13 +11,8 @@ import { SlidingIndicator } from "../graph/SlidingIndicator";
 import { MelodyLine } from "./MelodyLine";
 import { StaffNotation, type MelodyLineData } from "./StaffNotation";
 import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
-<<<<<<< Updated upstream
-import { findVocal, VOCAL_CREDIT } from "../../lib/lesson/vocal";
-import { loadPercussionStrokes, percussionKind, playPercussion } from "../../lib/lesson/percussion";
-=======
 import { findVocal, vocalCredit, type Vocal } from "../../lib/lesson/vocal";
-import { percussionKind, playPercussion } from "../../lib/lesson/percussion";
->>>>>>> Stashed changes
+import { loadPercussionStrokes, percussionKind, playPercussion } from "../../lib/lesson/percussion";
 import { publicAssetUrl } from "../../lib/app/assets";
 
 type Line = { label: string; bars: MelodyNote[][] };
