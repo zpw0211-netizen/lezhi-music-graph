@@ -842,7 +842,7 @@ export function WorkLibrary({
           <span aria-hidden="true" className="records-chapter-number">{numeral}</span>
           <div>
             <p className="records-chapter-kicker">第 {numeral} 单元</p>
-            <h2 id={`${anchorId}-title`}>{unit.title}</h2>
+            <h2 data-long={unit.title.length > 9 ? "true" : undefined} id={`${anchorId}-title`}>{unit.title}</h2>
             {unit.theme && <span className="records-theme-seal">{unit.theme}</span>}
           </div>
         </header>
@@ -876,7 +876,7 @@ export function WorkLibrary({
           </li>)}</ul>
         </section>}
 
-        {unit.kind !== "project" && featuredQuote?.summary && <blockquote className="records-unit-quote">
+        {unit.kind !== "project" && !unit.projects?.length && featuredQuote?.summary && <blockquote className="records-unit-quote">
           <p>「{featuredQuote.summary}」</p>
           <cite>——{featuredQuote.name}的表现主题</cite>
         </blockquote>}
@@ -913,7 +913,7 @@ export function WorkLibrary({
             {unit.projects?.length
               ? unit.projects.map((project) => {
                 const projectWorks = project.workIds.map((id) => worksById.get(id)).filter((work): work is UnitWork => Boolean(work));
-                return <section aria-label={project.name} className="records-project" key={`${project.page}-${project.name}`}>
+                return <section aria-label={project.name} className={projectWorks.length ? "records-project" : "records-project is-bare"} key={`${project.page}-${project.name}`}>
                   <header className="records-project-head">
                     <small>{project.section}</small>
                     <strong>{project.name}</strong>
