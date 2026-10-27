@@ -208,7 +208,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             </div>
             <span className="home-scroll-stamp" aria-label="上次读到" hidden={lastReadBookKey !== book.key}>上次读到</span>
             <div className="home-scroll-copy">
-              <p className="home-scroll-overline">卷 {volume} · {EDITION.label}</p>
+              <p className="home-scroll-overline">卷 {volume} · {EDITION.label.split("·")[0]}</p>
               <h3>{shortBookTitle(book)}</h3>
               <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
               {/* 单元目录还在加载时不显示“0 个单元”，但保留这一行的高度，避免内容跳动。 */}
