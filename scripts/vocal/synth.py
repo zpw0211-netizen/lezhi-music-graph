@@ -1,7 +1,7 @@
-"""DiffSinger (绮萱 v2.7.0) singing for 芽谱 melodies, ONNX only.
+"""DiffSinger singing for 芽谱 melodies, ONNX only. Voices: 绮萱 v2.7.0 (child, default) and Ria/狸安 v0.4 (male).
 
-Usage: python scripts/vocal/synth.py <todo.json> <outdir> [key ...]   (todo.json from export.ts)
-Writes <key>.wav and <key>.json ({offset, leadBeats, shift}) per melody.
+Usage: python scripts/vocal/synth.py <todo.json> <outdir> [--voice qixuan|ria] [key ...]   (todo.json from export.ts)
+Writes <key>.wav and <key>.json ({offset, leadBeats, shift, voice}) per melody.
 
 Pipeline: lyrics -> pinyin -> phonemes; duration model places consonants before each
 note onset; the pitch curve is built from the notes themselves (exact pitch, short glides,
@@ -20,12 +20,10 @@ import soundfile as sf
 from pypinyin import Style, lazy_pinyin, load_phrases_dict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from paths import EN_DICT, VOCODER, VOICEBANK, ZH_DICT  # noqa: E402
+from paths import EN_DICT, RIA, VOCODER, VOCODER_2024, VOICEBANK, ZH_DICT  # noqa: E402
 
-VB = str(VOICEBANK)
 SR, HOP = 44100, 512
 FPS = SR / HOP
-ZH = 3
 
 # Common mis-readings in song lyrics (pypinyin defaults to the speech reading).
 load_phrases_dict({
@@ -43,54 +41,117 @@ load_phrases_dict({
 })
 SOLFEGE = {"do": "duo", "re": "lai", "mi": "mi", "fa": "fa", "sol": "suo", "so": "suo", "la": "la", "si": "xi", "ti": "xi"}
 
-with open(ZH_DICT, encoding="utf-8") as f:
-    DICT = json.load(f)
-
-
-def load_ids(path):
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
-
-
 def session(path):
     opts = ort.SessionOptions()
     opts.intra_op_num_threads = os.cpu_count() or 4
-    return ort.InferenceSession(path, opts, providers=["CPUExecutionProvider"])
+    return ort.InferenceSession(str(path), opts, providers=["CPUExecutionProvider"])
 
 
-ACOUSTIC = session(os.path.join(VB, "0101_qixuan_muon1_acoustic.qixuan.onnx"))
-AC_IDS = load_ids(os.path.join(VB, "0101_qixuan_muon1_acoustic.phonemes.json"))
-DUR_LING = session(os.path.join(VB, "dsdur", "0102_qixuan_newdict_dur.qixuan.linguistic.onnx"))
-DUR = session(os.path.join(VB, "dsdur", "0102_qixuan_newdict_dur.qixuan.dur.onnx"))
-DUR_IDS = load_ids(os.path.join(VB, "dsdur", "0102_qixuan_newdict_dur.phonemes.json"))
-VAR_LING = session(os.path.join(VB, "dsvariance", "0102_qixuan_muon1_multivar.qixuan.linguistic.onnx"))
-VAR = session(os.path.join(VB, "dsvariance", "0102_qixuan_muon1_multivar.qixuan.variance.onnx"))
-VAR_IDS = load_ids(os.path.join(VB, "dsvariance", "0102_qixuan_muon1_multivar.phonemes.json"))
-VOC = session(str(VOCODER))
+def read_dsdict(path):
+    """dsdict.yaml → ({grapheme: [phonemes]}, {symbol: is_vowel}); handles quoted and plain YAML keys."""
+    entries, vowels, current, sym = {}, {}, None, None
+    key = re.compile(r"^(-?\s*)'?(grapheme|symbol|type)'?:\s*'?([^']*?)'?\s*$")
+    item = re.compile(r"^\s+-\s*'?([^']+?)'?\s*$")
+    for line in open(path, encoding="utf-8"):
+        m = key.match(line)
+        if m:
+            field, value = m.group(2), m.group(3)
+            if field == "grapheme":
+                current, sym = value, None
+                entries[current] = []
+            elif field == "symbol":
+                sym, current = value, None
+            elif sym:
+                vowels[sym] = value == "vowel"
+            continue
+        m = item.match(line)
+        if m and current is not None:
+            entries[current].append(m.group(1))
+    return entries, vowels
+
+
+def phoneme_ids(path):
+    """phonemes.json ({name: id}) or phonemes.txt (one name per line, id = line number)."""
+    if str(path).endswith(".json"):
+        return json.load(open(path, encoding="utf-8"))
+    return {line.strip(): i for i, line in enumerate(open(path, encoding="utf-8")) if line.strip()}
+
+
+class Voice:
+    """One DiffSinger voicebank: dictionary, phoneme tables and ONNX sessions."""
+
+    def __init__(self, name, root, acoustic, ac_ids, dur_ling, dur, dur_ids, var_ling, var, var_ids, vocoder, zh, english=None, lang=False,
+                 mel_factor=1.0):
+        root = str(root)
+        j = lambda *p: os.path.join(root, *p)  # noqa: E731
+        self.name = name
+        self.dict, self.vowels = zh
+        self.en = english
+        self.lang = lang
+        self.acoustic, self.ac_ids = session(j(acoustic)), phoneme_ids(j(ac_ids))
+        self.dur_ling, self.dur, self.dur_ids = session(j(dur_ling)), session(j(dur)), phoneme_ids(j(dur_ids))
+        self.var_ling, self.var, self.var_ids = session(j(var_ling)), session(j(var)), phoneme_ids(j(var_ids))
+        self.var_names = [o.name[:-len("_pred")] for o in self.var.get_outputs()]  # breathiness, voicing (, tension)
+        self.ac_inputs = {i.name for i in self.acoustic.get_inputs()}
+        self.voc = session(vocoder)
+        # Acoustic models emit natural-log mel; vocoders whose config names no mel_base (2024.02) expect log10.
+        self.mel_factor = mel_factor
+
+
+def qixuan():
+    zh = json.load(open(ZH_DICT, encoding="utf-8"))
+    vowels = {}
+    for name in ("dsdict-zh.yaml", "dsdict-en.yaml"):
+        vowels.update(_symbol_types(VOICEBANK / "dsdur" / name))
+    en = json.load(open(EN_DICT, encoding="utf-8"))
+    # Readings the dictionary gets wrong for these songs (heteronyms, missing compounds).
+    en.update({"wind": ["en/w", "en/ih", "en/n", "en/d"]})
+    return Voice("qixuan", VOICEBANK, "0101_qixuan_muon1_acoustic.qixuan.onnx", "0101_qixuan_muon1_acoustic.phonemes.json",
+                 "dsdur/0102_qixuan_newdict_dur.qixuan.linguistic.onnx", "dsdur/0102_qixuan_newdict_dur.qixuan.dur.onnx",
+                 "dsdur/0102_qixuan_newdict_dur.phonemes.json", "dsvariance/0102_qixuan_muon1_multivar.qixuan.linguistic.onnx",
+                 "dsvariance/0102_qixuan_muon1_multivar.qixuan.variance.onnx", "dsvariance/0102_qixuan_muon1_multivar.phonemes.json",
+                 VOCODER, (zh, vowels), english=en, lang=True)
+
+
+def _symbol_types(path):
+    """The symbols block at the top of 绮萱's 14–28 MB dictionaries, without parsing the entries."""
+    vowels, sym = {}, None
+    for line in open(path, encoding="utf-8"):
+        if line.startswith("entries:"):
+            break
+        if line.startswith("- symbol:"):
+            sym = line.split(":", 1)[1].strip()
+        elif line.strip().startswith("type:") and sym:
+            vowels[sym] = line.split(":", 1)[1].strip() == "vowel"
+    return vowels
+
+
+def ria():
+    return Voice("ria", RIA, "ria-lynxnet.onnx", "ria-lynxnet.phonemes.txt", "dsdur/dur.linguistic.onnx", "dsdur/dur.dur.onnx",
+                 "dsdur/dur.phonemes.txt", "dsvariance/vari.linguistic.onnx", "dsvariance/vari.variance.onnx", "dsvariance/vari.phonemes.txt",
+                 VOCODER_2024, read_dsdict(RIA / "dsdur" / "dsdict-zh.yaml"), mel_factor=1 / math.log(10))
+
+
+VOICES = {"qixuan": qixuan, "ria": ria}
+V = None  # the voice in use, set by use()
+_loaded = {}
+
+
+def use(name):
+    global V
+    if name not in _loaded:
+        _loaded[name] = VOICES[name]()
+    V = _loaded[name]
+    return V
+
 
 HAN = re.compile(r"[一-鿿]")
 
 
 def is_vowel(ph):
-    return ph in ("SP", "AP") or DICT_VOWELS.get(ph, False)
+    return ph in ("SP", "AP") or V.vowels.get(ph, False)
 
 
-DICT_VOWELS = {}
-for name in ("dsdict-zh.yaml", "dsdict-en.yaml"):
-    with open(os.path.join(VB, "dsdur", name), encoding="utf-8") as f:
-        sym = None
-        for line in f:
-            if line.startswith("entries:"):
-                break
-            if line.startswith("- symbol:"):
-                sym = line.split(":", 1)[1].strip()
-            elif line.strip().startswith("type:") and sym:
-                DICT_VOWELS[sym] = line.split(":", 1)[1].strip() == "vowel"
-
-with open(EN_DICT, encoding="utf-8") as f:
-    EN = json.load(f)
-# Readings the dictionary gets wrong for these songs (heteronyms, missing compounds).
-EN.update({"wind": ["en/w", "en/ih", "en/n", "en/d"]})
 LANG = {"en": 1, "ja": 2, "zh": 3}
 
 
@@ -106,21 +167,23 @@ def english(notes):
              and re.sub(r"[^A-Za-z]", "", n["lyric"]).lower() not in SOLFEGE]
     per_note = {}
     # Vocables written in pinyin (Yi ya lei mei…): when every Latin syllable of the song is pinyin, sing it as Chinese.
-    if frags and all(f in DICT for _, f in frags):
-        return {i: [(f, DICT[f])] for i, f in frags}
+    if frags and all(f in V.dict for _, f in frags):
+        return {i: [(f, V.dict[f])] for i, f in frags}
+    if frags and V.en is None:
+        raise ValueError(f"{V.name} has no English dictionary")
     k = 0
     while k < len(frags):
         for span in (3, 2, 1):
             word = "".join(f for _, f in frags[k:k + span])
-            if k + span <= len(frags) and word in EN:
+            if k + span <= len(frags) and word in V.en:
                 break
         else:
             raise ValueError(f"no phonemes for English {frags[k][1]!r}")
         part = frags[k:k + span]
-        phs = EN[word]
+        phs = V.en[word]
         # syllables: each vowel with the consonants before it; one consonant between vowels starts the
         # next syllable, a cluster leaves its first consonant behind as a coda
-        vowels = [j for j, p in enumerate(phs) if DICT_VOWELS.get(p)]
+        vowels = [j for j, p in enumerate(phs) if V.vowels.get(p)]
         cuts = [0]
         for a, b in zip(vowels, vowels[1:]):
             gap = b - a - 1
@@ -165,11 +228,11 @@ def syllables(notes):
     for (kind, c), i in zip(chars, owner):
         py = next(readings) if kind == "H" else c
         py = py.replace("ü", "v").replace("ue", "ve") if py.startswith(("l", "n")) and "ue" in py else py.replace("ü", "v")
-        if py not in DICT:
+        if py not in V.dict:
             py = {"lo": "luo", "yo": "you", "ng": "en", "n": "en", "m": "mu", "hm": "hen", "hng": "heng"}.get(py, py)
-        if py not in DICT:
+        if py not in V.dict:
             raise ValueError(f"no phonemes for {c!r} ({py})")
-        per_note.setdefault(i, []).append((c, DICT[py]))
+        per_note.setdefault(i, []).append((c, V.dict[py]))
     for i, entry in english(notes).items():
         if entry:
             per_note.setdefault(i, []).extend(entry)
@@ -270,10 +333,10 @@ def build(mel, shift):
         word_dur.append(max(1, b - a))
     n_frames = sum(word_dur)
     # duration model
-    ids = np.array([[DUR_IDS[p] for p in toks]], dtype=np.int64)
-    langs = np.array([[lang_of(p) for p in toks]], dtype=np.int64)
-    enc, mask = DUR_LING.run(None, {"tokens": ids, "languages": langs, "word_div": np.array([word_div], np.int64), "word_dur": np.array([word_dur], np.int64)})
-    pred = DUR.run(None, {"encoder_out": enc, "x_masks": mask, "ph_midi": np.array([mids], np.int64)})[0][0]
+    ids = np.array([[V.dur_ids[p] for p in toks]], dtype=np.int64)
+    langs = {"languages": np.array([[lang_of(p) for p in toks]], dtype=np.int64)} if V.lang else {}
+    enc, mask = V.dur_ling.run(None, {"tokens": ids, **langs, "word_div": np.array([word_div], np.int64), "word_dur": np.array([word_dur], np.int64)})
+    pred = V.dur.run(None, {"encoder_out": enc, "x_masks": mask, "ph_midi": np.array([mids], np.int64)})[0][0]
     # fit predicted phoneme durations into each word: vowel(s) first, consonants at the tail
     ph_dur = []
     p = 0
@@ -336,27 +399,34 @@ def build(mel, shift):
         fade = np.minimum(1.0, x / 0.4)
         f[sel] += 0.22 * fade * np.sin(2 * math.pi * 5.4 * x)
     f0 = 440.0 * 2 ** ((f - 69) / 12)
-    # variance (breathiness, voicing)
-    vids = np.array([[VAR_IDS[p] for p in toks]], dtype=np.int64)
+    # variance (breathiness, voicing, and tension where the voice has it)
+    vids = np.array([[V.var_ids[p] for p in toks]], dtype=np.int64)
     pd = np.array([ph_dur], dtype=np.int64)
-    venc, _ = VAR_LING.run(None, {"tokens": vids, "languages": langs, "ph_dur": pd})
+    venc, _ = V.var_ling.run(None, {"tokens": vids, **langs, "ph_dur": pd})
     zeros = np.zeros((1, n_frames), np.float32)
-    br, vo = VAR.run(None, {"encoder_out": venc, "ph_dur": pd, "pitch": f[None].astype(np.float32), "breathiness": zeros, "voicing": zeros,
-                             "retake": np.ones((1, n_frames, 2), bool), "steps": np.array(10, np.int64)})
-    aids = np.array([[AC_IDS[p] for p in toks]], dtype=np.int64)
-    mel_ = ACOUSTIC.run(None, {"tokens": aids, "languages": langs, "durations": pd, "f0": f0[None].astype(np.float32),
-                               "breathiness": br.astype(np.float32), "voicing": vo.astype(np.float32),
-                               "gender": zeros, "velocity": np.ones((1, n_frames), np.float32),
-                               "depth": np.array(0.6, np.float32), "steps": np.array(20, np.int64)})[0]
-    wav = VOC.run(None, {"mel": mel_.astype(np.float32), "f0": f0[None].astype(np.float32)})[0][0]
+    preds = V.var.run(None, {"encoder_out": venc, "ph_dur": pd, "pitch": f[None].astype(np.float32), **{n: zeros for n in V.var_names},
+                             "retake": np.ones((1, n_frames, len(V.var_names)), bool), "steps": np.array(10, np.int64)})
+    aids = np.array([[V.ac_ids[p] for p in toks]], dtype=np.int64)
+    feed = {"tokens": aids, **langs, "durations": pd, "f0": f0[None].astype(np.float32),
+            **{n: p.astype(np.float32) for n, p in zip(V.var_names, preds)},
+            "gender": zeros, "velocity": np.ones((1, n_frames), np.float32),
+            "depth": np.array(0.6, np.float32), "steps": np.array(20, np.int64)}
+    mel_ = V.acoustic.run(None, {k: v for k, v in feed.items() if k in V.ac_inputs})[0]
+    wav = V.voc.run(None, {"mel": (mel_ * V.mel_factor).astype(np.float32), "f0": f0[None].astype(np.float32)})[0][0]
     lead_beats = round(first / beat, 6)  # beats before the first syllable; instrumental intros are not sung
     return wav, lead, lead_beats, f, t0
 
 
 def main():
-    todo = json.load(open(sys.argv[1], encoding="utf-8"))
-    out = sys.argv[2]
-    only = set(sys.argv[3:])
+    args = sys.argv[1:]
+    voice = "qixuan"
+    if "--voice" in args:
+        i = args.index("--voice")
+        voice = args[i + 1]
+        del args[i:i + 2]
+    todo = json.load(open(args[0], encoding="utf-8"))
+    out = args[1]
+    only = set(args[2:])
     os.makedirs(out, exist_ok=True)
     for mel in todo:
         if only and mel["key"] not in only:
@@ -366,10 +436,19 @@ def main():
             print("skip (no sung notes)", mel["key"], mel["name"], flush=True)
             continue
         med = float(np.median(sung))
-        # 绮萱 is a child voice: men's tunes are sung an octave up (still in unison with the piano's pitch classes).
+        singer = mel.get("voice") or voice  # export.ts parts sets it per choral part
+        use(singer)
         # Written pitch (unison with the piano), except men's-range tunes the child voice cannot reach
-        # (median below F#3, e.g. 渔阳鼙鼓动地来, 丑末寅初): those are sung an octave up, same notes.
-        shift = 12 if med < 54 else 0
+        # (median below F#3, e.g. 渔阳鼙鼓动地来, 丑末寅初): 绮萱 sings those an octave up, same notes.
+        # Ria (male, A2–G#4) sings parts written in the treble range an octave down, as men double a children's
+        # lower part, so women's and men's voices are told apart.
+        # Parts marked 男 are written at men's pitch already: they only drop an octave if they go above Ria's range.
+        if singer == "qixuan":
+            shift = 12 if med < 54 else 0
+        elif "男" in mel.get("label", ""):
+            shift = -12 if max(sung) > 69 else 0
+        else:
+            shift = -12 if med > 64 else 0
         try:
             wav, offset, lead_beats, _, _ = build(mel, shift)
         except Exception as exc:  # noqa: BLE001
@@ -378,8 +457,8 @@ def main():
         peak = float(np.max(np.abs(wav))) or 1.0
         wav = wav / peak * 0.89
         sf.write(os.path.join(out, mel["key"] + ".wav"), wav, SR)
-        json.dump({"offset": round(offset, 4), "leadBeats": lead_beats, "shift": shift}, open(os.path.join(out, mel["key"] + ".json"), "w"))
-        print("ok", mel["key"], mel["book"], mel["name"], f"{len(wav)/SR:.1f}s", "shift", shift, flush=True)
+        json.dump({"offset": round(offset, 4), "leadBeats": lead_beats, "shift": shift, "voice": singer}, open(os.path.join(out, mel["key"] + ".json"), "w"))
+        print("ok", mel["key"], mel["book"], mel["name"], mel.get("label", ""), singer, f"{len(wav)/SR:.1f}s", "shift", shift, flush=True)
 
 
 if __name__ == "__main__":

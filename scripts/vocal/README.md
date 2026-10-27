@@ -1,13 +1,14 @@
-# 人声演唱合成（绮萱 / DiffSinger）
+# 人声演唱合成（绮萱 / Ria · DiffSinger）
 
-给带歌词的旋律合成「人声（童声）」音色用的录音。网站按旋律指纹查找录音（`app/lib/lesson/vocal.ts`）：
+给带歌词的旋律合成「人声」音色用的录音：主旋律由绮萱（童声）演唱；合唱作品的低声部（以及标明「男」的声部）
+由 Ria / 狸安（男声）演唱，播放时高声部女声、低声部男声，能听出来。网站按旋律指纹查找录音（`app/lib/lesson/vocal.ts`）：
 旋律的音高、速度、拍号、音符或歌词一改，指纹就变，旧录音自动失效，需要重新合成。
 
 ## 一次性准备
 
 ```bash
 pip install onnxruntime numpy soundfile pypinyin librosa
-python scripts/vocal/setup.py        # 下载绮萱 v2.7.0 声库和 PC-NSF-HiFiGAN 声码器（约 470 MB）到 .vocal/
+python scripts/vocal/setup.py        # 下载绮萱 v2.7.0、Ria v0.4 声库和两个声码器（约 900 MB）到 .vocal/
 ```
 
 模型和中间文件都放在 `.vocal/`（不进 git），可用环境变量 `VOCAL_HOME` 换位置。另需 `ffmpeg`。
@@ -24,6 +25,22 @@ python scripts/vocal/finalize.py .vocal/work/missing.json .vocal/work/out # 音�
 极短的音（如 0.25 秒的拖腔）可能让检查误判，逐帧核对音高无误后可用 `--accept 指纹,指纹` 放行。
 之后提交 `public/audio/vocal/*.mp3` 和 `app/lib/lesson/vocal-manifest.json`；音频多时按 5 MB 左右分批推送，
 manifest 放在最后一批，避免线上指向还没上传的文件。
+
+## 合唱声部（男声）
+
+```bash
+npx tsx scripts/vocal/export.ts parts                                     # → .vocal/work/parts.json，每条带 "voice"
+python scripts/vocal/synth.py .vocal/work/parts.json .vocal/work/parts-out
+python scripts/vocal/finalize.py .vocal/work/parts.json .vocal/work/parts-out
+```
+
+- 声部指纹 `vocalKey(melody, part)` 同时覆盖该声部和主旋律（借用主旋律歌词的声部，主旋律歌词一改也会失效）。
+- 选声：标签含「女」→ 绮萱；含「男」或是第二声部以后 → Ria。声部自己没有歌词、但节奏与主旋律逐音相同时借用主旋律歌词；
+  节奏不同又没有歌词的不唱（仍由钢琴弹）。
+- 八度：Ria 音域 A2–G#4。写在高音区的童声低声部（中位音高于 E4）降八度唱，像男声叠唱；标明「男」的声部按记谱音高，
+  只有超出音域（最高音高于 A4）才降八度。
+- Ria 的使用规范要求注明声库名：播放器的署名行按实际用到的声库写「绮萱、Ria（狸安）」。Ria 的声学模型输出自然对数 mel，
+  它配套的 2024.02 声码器要 log10 mel，合成时会换算。
 
 ## 检查已发布的人声
 

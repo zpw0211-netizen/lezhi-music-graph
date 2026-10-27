@@ -50,7 +50,8 @@ for key, mel in todo.items():
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", tmp, "-ac", "1", "-ar", "44100", "-codec:a", "libmp3lame", "-q:a", "8",
                     os.path.join(AUDIO, key + ".mp3")], check=True)
     os.remove(tmp)
-    manifest[key] = [meta["offset"], meta["leadBeats"]]
+    # 绮萱 entries stay [offset, leadBeats]; other voices name themselves ([offset, leadBeats, "ria"])
+    manifest[key] = [meta["offset"], meta["leadBeats"]] + ([meta["voice"]] if meta.get("voice", "qixuan") != "qixuan" else [])
     published.append(f"{label}: {med:.2f}st")
 manifest = dict(sorted(manifest.items()))
 with open(MANIFEST, "w", encoding="utf-8") as f:

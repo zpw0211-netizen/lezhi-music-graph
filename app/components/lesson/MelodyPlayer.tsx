@@ -11,8 +11,13 @@ import { SlidingIndicator } from "../graph/SlidingIndicator";
 import { MelodyLine } from "./MelodyLine";
 import { StaffNotation, type MelodyLineData } from "./StaffNotation";
 import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
+<<<<<<< Updated upstream
 import { findVocal, VOCAL_CREDIT } from "../../lib/lesson/vocal";
 import { loadPercussionStrokes, percussionKind, playPercussion } from "../../lib/lesson/percussion";
+=======
+import { findVocal, vocalCredit, type Vocal } from "../../lib/lesson/vocal";
+import { percussionKind, playPercussion } from "../../lib/lesson/percussion";
+>>>>>>> Stashed changes
 import { publicAssetUrl } from "../../lib/app/assets";
 
 type Line = { label: string; bars: MelodyNote[][] };
@@ -118,6 +123,8 @@ const sharedSamplers: Partial<Record<InstrumentId, InstrumentSampler>> = {};
 const sharedVocals: Record<string, Promise<AudioBuffer>> = {};
 type Timbre = InstrumentId | "vocal";
 const VOCAL_LABEL = "人声（童声）";
+/** With a male recording for a lower part: women's voice on top, men's voice below. */
+const CHOIR_LABEL = "人声（女声＋男声）";
 /** Seconds of the recording played before a phrase's first beat, so its opening consonant is not clipped. */
 const VOCAL_PREROLL = 0.15;
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
@@ -160,11 +167,15 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
   const lines = useMemo<Line[]>(() => [{ label: melody.label ?? "旋律", bars: melody.bars }, ...(melody.voices ?? [])], [melody]);
   const [playing, setPlaying] = useState(false);
   const [instrument, setInstrument] = useState<Timbre>("piano");
-  const vocal = useMemo(() => findVocal(melody), [melody]);
-  const timbres = useMemo(() => [...INSTRUMENTS, ...(vocal ? [{ id: "vocal" as const, label: VOCAL_LABEL }] : [])], [vocal]);
-  /** Sampled instrument for everything the recorded voice does not sing (other parts, cues). */
+  /** One recording per part where one was sung: the main line (绮萱) and lower choral parts (Ria, male). */
+  const vocals = useMemo(() => lines.map((_, part) => findVocal(melody, part)), [lines, melody]);
+  const vocal = vocals[0];
+  const anyVocal = vocals.some(Boolean);
+  const vocalLabel = vocals.some((v) => v?.singer === "ria") && vocals.filter(Boolean).length > 1 ? CHOIR_LABEL : VOCAL_LABEL;
+  const timbres = useMemo(() => [...INSTRUMENTS, ...(anyVocal ? [{ id: "vocal" as const, label: vocalLabel }] : [])], [anyVocal, vocalLabel]);
+  /** Sampled instrument for everything the recorded voices do not sing (other parts, cues). */
   const sampleInstrument: InstrumentId = instrument === "vocal" ? "piano" : instrument;
-  const singing = instrument === "vocal" && !!vocal;
+  const singing = instrument === "vocal" && anyVocal;
   const [loadingSampler, setLoadingSampler] = useState(false);
   const [audioMode, setAudioMode] = useState<"unknown" | "sampled" | "synth">("unknown");
   const [current, setCurrent] = useState<number[]>([]);
@@ -282,20 +293,24 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     if (lines.some((line) => percussionKind(line.label))) await loadPercussionStrokes(ctx);
     let sampler = sharedSamplers[sampleInstrument] ?? null;
     let samplerLoadFailed = false;
-    let voice: AudioBuffer | null = null;
-    if (singing && vocal) {
+    let voices: (AudioBuffer | null)[] = vocals.map(() => null);
+    if (singing) {
       samplerLoading.current = true;
       setLoadingSampler(true);
-      setAnnouncement("载入" + VOCAL_LABEL + "…");
+      setAnnouncement("载入" + vocalLabel + "…");
       try {
         await ctx.resume();
-        const url = publicAssetUrl(vocal.file);
-        sharedVocals[url] ??= fetch(url).then((response) => {
-          if (!response.ok) throw new Error(String(response.status));
-          return response.arrayBuffer();
-        }).then((data) => ctx.decodeAudioData(data));
-        voice = await sharedVocals[url].catch((error) => { delete sharedVocals[url]; throw error; });
+        voices = await Promise.all(vocals.map((part) => {
+          if (!part) return null;
+          const url = publicAssetUrl(part.file);
+          sharedVocals[url] ??= fetch(url).then((response) => {
+            if (!response.ok) throw new Error(String(response.status));
+            return response.arrayBuffer();
+          }).then((data) => ctx.decodeAudioData(data));
+          return sharedVocals[url].catch((error) => { delete sharedVocals[url]; throw error; });
+        }));
       } catch {
+        voices = vocals.map(() => null);
         samplerLoadFailed = true;
       } finally {
         samplerLoading.current = false;
@@ -324,16 +339,16 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     }
     // The reader may have left the lesson while the samples were loading.
     if (!mounted.current || request !== playRequestRef.current) return null;
-    return { ctx, sampler, samplerLoadFailed, voice };
+    return { ctx, sampler, samplerLoadFailed, voices, voice: voices[0] };
   };
 
   /**
-   * Play the recorded voice for melody beats [from, to) so that beat `from` sounds at `at`;
+   * Play a part's recorded voice for melody beats [from, to) so that beat `from` sounds at `at`;
    * without `to` the recording runs to its end.
    */
-  const scheduleVocal = (ctx: AudioContext, out: AudioNode, buffer: AudioBuffer, from: number, at: number, beat: number, to?: number) => {
-    if (!vocal) return;
-    let offset = vocal.offset + (from - vocal.leadBeats) * beat - VOCAL_PREROLL;
+  const scheduleVocal = (ctx: AudioContext, out: AudioNode, buffer: AudioBuffer, from: number, at: number, beat: number, to?: number, part: Vocal | null = vocal) => {
+    if (!part) return;
+    let offset = part.offset + (from - part.leadBeats) * beat - VOCAL_PREROLL;
     let when = at - VOCAL_PREROLL;
     if (offset < 0) { when -= offset; offset = 0; }
     const stopAt = to == null ? when + buffer.duration - offset : at + (to - from) * beat;
@@ -412,10 +427,11 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     const request = ++playRequestRef.current;
     const audio = await prepareAudio(request);
     if (!audio) return;
-    const { ctx, sampler, samplerLoadFailed, voice } = audio;
+    const { ctx, sampler, samplerLoadFailed, voices } = audio;
+    const voiced = voices.some(Boolean);
 
     const beat = 60 / playTempo;
-    const start = ctx.currentTime + (voice ? 0.12 + VOCAL_PREROLL : 0.12);
+    const start = ctx.currentTime + (voiced ? 0.12 + VOCAL_PREROLL : 0.12);
     const master = ctx.createGain();
     master.gain.value = lines.length > 1 ? 0.24 : 0.34;
     master.connect(ctx.destination);
@@ -426,11 +442,11 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         let t = start;
         return notes.map((note) => { const at = t; t += note.b * beat; end = Math.max(end, t); return at; });
       }
-      const scheduled = scheduleRange(ctx, master, sampler, part, 0, notes.length, start, beat, 1, part === 0 && !!voice);
+      const scheduled = scheduleRange(ctx, master, sampler, part, 0, notes.length, start, beat, 1, !!voices[part]);
       end = Math.max(end, scheduled.end);
       return scheduled.times;
     });
-    if (voice && enabled[0]) scheduleVocal(ctx, master, voice, 0, start, beat);
+    voices.forEach((buffer, part) => { if (buffer && enabled[part]) scheduleVocal(ctx, master, buffer, 0, start, beat, undefined, vocals[part]); });
     let raf = 0;
     let previousNotes = "";
     const tick = () => {
@@ -690,6 +706,6 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     </div>}
     {/* Source notes and sample credits live in the home page footer; only a fallback warning shows here. */}
     {!rhythmOnly && audioMode === "synth" && <p className="melody-source">所选音色未能载入，暂用电子音色示范。</p>}
-    {singing && <p className="melody-source melody-vocal-credit">人声为 {VOCAL_CREDIT}，按谱面歌词自动演唱。</p>}
+    {singing && <p className="melody-source melody-vocal-credit">人声为 {vocalCredit(vocals.flatMap((v) => (v ? [v.singer] : [])))}，按谱面歌词自动演唱。</p>}
   </div>;
 }
