@@ -24,11 +24,13 @@ const TERM_PREDICATES = {
 const TERM_TYPES = new Set(Object.keys(TERM_PREDICATES));
 const GENERIC_TERMS = new Set(["人教版", "人民教育出版社", "课程教材研究所", "教材", "单元", "作品", "音乐作品", "艺术", "学校", "教师"]);
 const PERSON_AMBIGUOUS = new Set(["东方", "江山", "中国", "世界", "少年", "人民", "春天", "快乐", "月亮", "小九"]);
+// 文本层里栏目名、速度术语、上一首的曲名粘在人名前面被当成作者（如“让我们来听一听 作曲”“小兔子乖乖黎锦晖”），逐个排除。
+const PERSON_NOT_NAMES = new Set(["小兔子乖乖黎锦晖","英国儿歌杨世明","哈哈新疆民歌石夫","美国童谣汪爱丽","强渐弱春游李叔同","你知道","稍慢抒情地陈其钢","同时期的还有一位","了解一位你喜欢的","产陇东民歌张寒晖","主题歌张千一","莉花江苏民歌何仿","科学校随黄自学习","培养专业","皖革命民歌李焕之","吴大叔帮潘冬子","家东方之珠罗大佑","根据台湾童谣","自上古时期","俄罗斯浪漫乐派","成长训练营贺绿汀","选段张寒晖","让我们来听一听","后期俄罗斯代表性","想你了解人工智能","你认为人工智能","主题歌王立平","家通过复杂细致的","我们来听听","由匈牙利","意大利","悠远地张千一"]);
 const PERSON_CUE = /作曲家|作词家|音乐家|歌唱家|演唱家|演奏家|钢琴家|指挥家|艺术家|词曲作者|作曲|作词|词曲|译配|填词|编曲|整理者|记录者|代表作品|生卒|国籍|（(?:18|19|20)\d{2}/u;
 const PERSON_NAME_NOISE = /作词|作曲|词曲|歌曲|歌唱|编创|前奏|后奏|音乐|乐理|第[一二三四五六七八九十]|一说|老师|同学|选自|编写|编者|课程|教育|出版社|活动|作品|演唱|演奏|乐队|合唱|齐唱|曲|词/u;
 const isPersonName = (value) => {
   const name = String(value ?? "").trim();
-  return /^[\p{Script=Han}·]{2,8}$/u.test(name) && !PERSON_NAME_NOISE.test(name) && !PERSON_AMBIGUOUS.has(name);
+  return /^[\p{Script=Han}·]{2,8}$/u.test(name) && !PERSON_NAME_NOISE.test(name) && !PERSON_AMBIGUOUS.has(name) && !PERSON_NOT_NAMES.has(name);
 };
 const TASK_RULES = [
   ["聆听辨析", "聆听并比较作品的音乐特点", /聆听|听一听|听范唱|欣赏|听音乐|辨认|比较|感受|判断/u],
