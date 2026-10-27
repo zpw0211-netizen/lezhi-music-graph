@@ -173,26 +173,7 @@
 }
 .rhythm-empty.is-eighth { width: .8em; }
 
-/* 显示方式：谱面 / 大卡片 */
-.rhythm-view { display: flex; justify-content: flex-end; gap: 4px; margin: -6px 0 10px; }
-.rhythm-view button { min-height: 30px; padding: 0 12px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; color: var(--rhythm-ink-3); font-size: 12px !important; white-space: nowrap; }
-.rhythm-view button.is-active { border-color: #9CC0A9; background: var(--rhythm-pine-soft); color: var(--rhythm-pine); font-weight: 600; }
-
 .rhythm-cell { display: inline-flex; border-radius: .16em; }
-.rhythm-score.is-cards { font-size: clamp(40px, 5.4vw, 96px); }
-.rhythm-score.is-cards .rhythm-bars { display: grid; grid-template-columns: repeat(var(--bars-per-row, 2), max-content); row-gap: .35em; }
-.rhythm-score.is-cards .rhythm-bar { gap: .2em; padding-right: .3em; }
-.rhythm-score.is-cards :is(.rhythm-cell, .rhythm-placed) {
-  align-items: center; justify-content: center;
-  min-width: 1.6em; min-height: 1.9em; padding: .2em .25em;
-  border: .025em solid var(--rhythm-line); border-radius: .14em;
-  background: #fff; box-shadow: 0 .04em .12em rgb(23 34 28 / 8%);
-  transition: border-color .12s ease, background .12s ease, transform .12s ease;
-}
-.rhythm-score.is-cards :is(.rhythm-cell, .rhythm-placed).is-current { border-color: var(--rhythm-seal); background: #FBEFEC; transform: translateY(-.04em); }
-.rhythm-score.is-cards .rhythm-meter { font-size: .42em; }
-.rhythm-score.is-cards .rhythm-barline { min-height: 1.9em; }
-.rhythm-score.is-cards .rhythm-empty { min-width: 1.6em; height: 1.9em; }
 
 /* 跟拍打分的判定 */
 .rhythm-token { position: relative; }
@@ -298,8 +279,6 @@
   .rhythm-play-row { flex-direction: column; align-items: stretch; }
   .rhythm-drum-wrap { justify-self: center; }
   .rhythm-drum { width: 156px; height: 156px; }
-  .rhythm-score.is-cards { font-size: 34px; }
-  .rhythm-score.is-cards .rhythm-bars { grid-template-columns: max-content; }
   .rhythm-result-actions { margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {

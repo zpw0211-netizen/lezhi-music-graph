@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { tokenKey, type Meter, type RhythmBar, type RhythmPattern } from "../../lib/rhythm/patterns";
 import { flagCount, flagGlyph, restGlyph } from "../lesson/StaffNotation";
 import type { Verdict } from "../../lib/rhythm/scoring";
@@ -108,11 +107,10 @@ export function PatternGlyph({ pattern, activeKey, marks, groupIndex }: {
   );
 }
 
-/** The rhythm score, as a line of bars or as one big card per pattern. */
-export function RhythmScore({ bars, meter, cards, activeKey, marks, countdown, selected, onSelect }: {
+/** The rhythm score, as a line of bars. */
+export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected, onSelect }: {
   bars: RhythmBar[];
   meter: Meter;
-  cards: boolean;
   activeKey: string | null;
   marks?: Map<string, Verdict>;
   countdown: number | null;
@@ -121,10 +119,9 @@ export function RhythmScore({ bars, meter, cards, activeKey, marks, countdown, s
   onSelect?: (index: number) => void;
 }) {
   return (
-    <div className={`rhythm-score${cards ? " is-cards" : ""}`} aria-label="节奏谱">
+    <div className={`rhythm-score`} aria-label="节奏谱">
       <span className="rhythm-meter" aria-label={`${meter.id} 拍`}><span>{meter.top}</span><span>{meter.bottom}</span></span>
-      {/* Big cards keep whole bars per row: two short bars, or one bar of four beats. */}
-      <div className="rhythm-bars" style={cards ? { "--bars-per-row": meter.beats >= 4 ? 1 : 2 } as CSSProperties : undefined}>
+      <div className="rhythm-bars">
         {bars.map((bar, barIndex) => (
           <div className="rhythm-bar" key={barIndex}>
             {bar.groups.map(({ index, pattern }) => {

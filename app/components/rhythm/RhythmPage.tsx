@@ -57,7 +57,6 @@ export function RhythmPage() {
   const [randomIds, setRandomIds] = useState<string[]>([]);
   const [editIds, setEditIds] = useState<string[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
-  const [cards, setCards] = useState(false);
   const [rhythmOn, setRhythmOn] = useState(true);
   const [metronomeOn, setMetronomeOn] = useState(true);
   const [countIn, setCountIn] = useState(true);
@@ -96,7 +95,6 @@ export function RhythmPage() {
     if (typeof saved.bpm === "number") setBpm(Math.min(160, Math.max(40, saved.bpm)));
     setAllowed(savedAllowed);
     if (Array.isArray(saved.edit)) setEditIds(saved.edit.filter((id) => typeof id === "string"));
-    if (typeof saved.cards === "boolean") setCards(saved.cards);
     setRandomIds(generateRhythm(savedAllowed, savedMeter, savedBars));
     const stars = readJson<{ stars: number[] }>(LEVELS_KEY)?.stars;
     const savedStars = Array.isArray(stars) ? stars.map((n) => Number(n) || 0) : [];
@@ -113,8 +111,8 @@ export function RhythmPage() {
 
   useEffect(() => {
     if (!loaded) return;
-    writeJson(STORAGE_KEY, { mode, meter: meterId, bars: barCount, bpm, allowed, edit: editIds, cards } satisfies Saved);
-  }, [loaded, mode, meterId, barCount, bpm, allowed, editIds, cards]);
+    writeJson(STORAGE_KEY, { mode, meter: meterId, bars: barCount, bpm, allowed, edit: editIds } satisfies Saved);
+  }, [loaded, mode, meterId, barCount, bpm, allowed, editIds]);
   useEffect(() => { if (loaded) writeJson(LEVELS_KEY, { stars: levelStars }); }, [loaded, levelStars]);
   useEffect(() => { if (loaded) writeJson(MINE_KEY, { list: mine }); }, [loaded, mine]);
 
@@ -316,6 +314,29 @@ export function RhythmPage() {
   };
   const deletePractice = (id: string) => setMine((current) => current.filter((p) => p.id !== id));
 
+  // Projected full screen: shrink the score until the whole stage (every bar, the controls) fits on one screen.
+  useEffect(() => {
+    const stage = stageRef.current;
+    const score = stage?.querySelector<HTMLElement>(".rhythm-score");
+    if (!stage || !score) return;
+    const fit = () => {
+      score.style.fontSize = "";
+      if (document.fullscreenElement !== stage) return;
+      let size = parseFloat(getComputedStyle(score).fontSize);
+      for (let i = 0; i < 24 && stage.scrollHeight > stage.clientHeight + 1 && size > 18; i += 1) {
+        size *= 0.93;
+        score.style.fontSize = `${size}px`;
+      }
+    };
+    fit();
+    document.addEventListener("fullscreenchange", fit);
+    window.addEventListener("resize", fit);
+    return () => {
+      document.removeEventListener("fullscreenchange", fit);
+      window.removeEventListener("resize", fit);
+    };
+  }, [shownBars, meter, mode, result, countdown]);
+
   const fullscreen = () => {
     const stage = stageRef.current;
     if (!stage) return;
@@ -413,15 +434,9 @@ export function RhythmPage() {
       )}
 
       <div className="rhythm-stage" ref={stageRef}>
-        <div className="rhythm-view" role="radiogroup" aria-label="显示方式">
-          {([[false, "谱面"], [true, "大卡片"]] as const).map(([value, label]) => (
-            <button key={label} type="button" role="radio" aria-checked={cards === value} className={cards === value ? "is-active" : ""} onClick={() => setCards(value)}>{label}</button>
-          ))}
-        </div>
         <RhythmScore
           bars={shownBars}
           meter={meter}
-          cards={cards}
           activeKey={activeKey}
           marks={result?.marks}
           countdown={countdown}
