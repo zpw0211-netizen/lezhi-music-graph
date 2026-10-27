@@ -1,6 +1,9 @@
-// Synthesised timbres for the unpitched X notes of percussion ensembles, so that the parts of a
+import { publicAssetUrl } from "../app/assets";
+
+// Timbres for the unpitched X notes of percussion ensembles, so that the parts of a
 // score (small gong, big gong, drums, cymbals…) can be told apart by ear. A part is recognised
-// by its label; any other label keeps the plain thump the player always used.
+// by its label; any other label keeps the plain thump the player always used. Recorded strokes
+// are used when they have loaded; otherwise a synthesised approximation plays.
 export type PercussionKind = "smallGong" | "bigGong" | "roundDrum" | "hourglassDrum" | "smallCymbal" | "bigCymbal" | "woodBlock";
 
 const KINDS: Array<[string, PercussionKind]> = [
@@ -16,6 +19,38 @@ const KINDS: Array<[string, PercussionKind]> = [
 /** The timbre for a part label such as “大锣”, or null when the label names no known instrument. */
 export function percussionKind(label: string | undefined): PercussionKind | null {
   return KINDS.find(([name]) => label?.includes(name))?.[1] ?? null;
+}
+
+/** Recorded single strokes (public/media/instruments/percussion, see SOURCES.md) and how each kind uses them. */
+type Stroke = { file: string; rate: number; gain: number; ring: number };
+const STROKES: Record<PercussionKind, Stroke> = {
+  smallGong: { file: "xiaoluo", rate: 1, gain: 0.85, ring: 0.6 },
+  bigGong: { file: "daluo", rate: 1, gain: 0.8, ring: 1.5 },
+  roundDrum: { file: "frame", rate: 1, gain: 1.1, ring: 0.7 },
+  hourglassDrum: { file: "bangu", rate: 0.88, gain: 1.3, ring: 0.3 },
+  smallCymbal: { file: "naobo", rate: 1.2, gain: 0.7, ring: 0.45 },
+  bigCymbal: { file: "naobo", rate: 0.82, gain: 0.75, ring: 1.3 },
+  woodBlock: { file: "block", rate: 1, gain: 1.7, ring: 0.2 },
+};
+const strokeBuffers = new WeakMap<BaseAudioContext, Map<string, AudioBuffer>>();
+const strokeLoading = new WeakMap<BaseAudioContext, Promise<void>>();
+
+/** Fetch and decode the recordings once per AudioContext. Resolves quietly when they cannot be loaded; the synthesised sounds then play instead. */
+export function loadPercussionStrokes(ctx: BaseAudioContext): Promise<void> {
+  const existing = strokeLoading.get(ctx);
+  if (existing) return existing;
+  const buffers = new Map<string, AudioBuffer>();
+  strokeBuffers.set(ctx, buffers);
+  const files = [...new Set(Object.values(STROKES).map((stroke) => stroke.file))];
+  const loading = Promise.all(files.map(async (file) => {
+    try {
+      const response = await fetch(publicAssetUrl(`media/instruments/percussion/${file}.mp3`));
+      if (!response.ok) return;
+      buffers.set(file, await ctx.decodeAudioData(await response.arrayBuffer()));
+    } catch { /* keep the synthesised sound for this instrument */ }
+  })).then(() => undefined);
+  strokeLoading.set(ctx, loading);
+  return loading;
 }
 
 const noiseBuffers = new WeakMap<BaseAudioContext, AudioBuffer>();
@@ -65,8 +100,29 @@ function noise(ctx: AudioContext, out: AudioNode, when: number, type: BiquadFilt
   source.stop(when + decay + 0.02);
 }
 
+/** Plays the recorded stroke for `kind`; false when it has not loaded. */
+function playStroke(ctx: AudioContext, out: AudioNode, kind: PercussionKind, when: number, level: number) {
+  const stroke = STROKES[kind];
+  const buffer = strokeBuffers.get(ctx)?.get(stroke.file);
+  if (!buffer) return false;
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  source.playbackRate.value = stroke.rate;
+  // Cymbals and small gongs are damped by the player; the others ring out as recorded.
+  const ring = Math.min(stroke.ring, buffer.duration / stroke.rate);
+  gain.gain.setValueAtTime(stroke.gain * level, when);
+  gain.gain.setValueAtTime(stroke.gain * level, when + Math.max(0, ring - 0.06));
+  gain.gain.linearRampToValueAtTime(0, when + ring);
+  source.connect(gain).connect(out);
+  source.start(when);
+  source.stop(when + ring + 0.02);
+  return true;
+}
+
 /** Strikes one note of `kind` at time `when`. */
 export function playPercussion(ctx: AudioContext, out: AudioNode, kind: PercussionKind, when: number, level = 1) {
+  if (playStroke(ctx, out, kind, when, level)) return;
   switch (kind) {
     case "smallGong": // bright, short ring with inharmonic partials
       [[1, 0.5, 0.5], [1.52, 0.35, 0.38], [2.35, 0.22, 0.28], [3.1, 0.14, 0.2]].forEach(([ratio, gain, decay]) => tone(ctx, out, when, 1250 * ratio, 1250 * ratio, 0, gain * level, decay, 0.002));

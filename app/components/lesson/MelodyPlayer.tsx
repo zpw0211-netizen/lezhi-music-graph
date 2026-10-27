@@ -12,7 +12,7 @@ import { MelodyLine } from "./MelodyLine";
 import { StaffNotation, type MelodyLineData } from "./StaffNotation";
 import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
 import { findVocal, VOCAL_CREDIT } from "../../lib/lesson/vocal";
-import { percussionKind, playPercussion } from "../../lib/lesson/percussion";
+import { loadPercussionStrokes, percussionKind, playPercussion } from "../../lib/lesson/percussion";
 import { publicAssetUrl } from "../../lib/app/assets";
 
 type Line = { label: string; bars: MelodyNote[][] };
@@ -278,6 +278,8 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       return null;
     }
     const ctx = getPianoAudioContext();
+    // Percussion parts play recorded strokes; if they cannot be fetched the synthesised sounds are used.
+    if (lines.some((line) => percussionKind(line.label))) await loadPercussionStrokes(ctx);
     let sampler = sharedSamplers[sampleInstrument] ?? null;
     let samplerLoadFailed = false;
     let voice: AudioBuffer | null = null;

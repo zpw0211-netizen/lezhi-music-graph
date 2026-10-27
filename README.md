@@ -194,6 +194,7 @@ CI 里同一时间只保留最新一次部署：连续推送时，前一次还�
 | 内容 | 许可 | 清单文件 |
 |---|---|---|
 | 钢琴采样（22 个 MP3） | Salamander Grand Piano，Alexander Holm，CC BY 3.0 | `public/media/instruments/piano/SOURCES.md`，逐文件列出源网址、许可原文链接、下载日期、SHA-256 |
+| 打击乐单音（小锣、大锣、铙钹、板鼓、框鼓、木鱼块，共 6 个） | Freesound：ajaysm 的四个京剧打击乐单音 CC BY 4.0；框鼓、木鱼块 CC0 | `public/media/instruments/percussion/SOURCES.md`，逐文件列出来源页、许可、改动说明和 SHA-256 |
 | 木刻插画、首页收尾图、分享图 | 由 AI 图像工具生成，适用 OpenAI Terms of Use | `public/art/SOURCES.md`，含每张图的提示词记录 |
 | 标志字标（霞鹜文楷 LXGW WenKai） | SIL Open Font License 1.1 | `public/brand/README.md`、`public/brand/OFL.txt` |
 | 界面字体（Geist / Geist Mono） | 由 `next/font/google` 在构建时拉取并内联 | `app/layout.tsx` |
