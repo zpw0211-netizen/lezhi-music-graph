@@ -61,6 +61,7 @@
   box-shadow: 0 8px 30px rgb(23 34 28 / 4%);
 }
 .rhythm-stage:fullscreen { display: flex; flex-direction: column; justify-content: center; gap: 24px; padding: 6vh 6vw; border-radius: 0; font-size: 1.5em; }
+.rhythm-stage:fullscreen > * { flex-shrink: 0; }
 .rhythm-stage:fullscreen .rhythm-score { font-size: clamp(44px, 5.2vw, 92px); }
 
 .rhythm-score {
