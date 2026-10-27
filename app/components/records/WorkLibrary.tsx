@@ -87,6 +87,7 @@ type ActivityKey = (typeof ACTIVITY_GROUPS)[number]["key"];
 // Keyword types a pupil can read at a glance; key, meter and tempo marks and long theme sentences stay in the graph.
 const FRIENDLY_KEYWORD_TYPES = new Set(["乐器", "民族", "地域", "音乐体裁", "表演形式"]);
 const FRIENDLY_KEYWORD_LIMIT = 8;
+const KEYPOINT_LIMIT = 4;
 
 function workActivities(work: UnitWork): ActivityKey[] {
   const modes: readonly string[] = work.modes ?? [];
@@ -755,7 +756,12 @@ export function WorkLibrary({
     const tasks = unit.kind === "project" ? [] : (unit.tasks ?? []);
     const showTasks = tasks.length > 0 && taskUnits.has(unit.id);
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
-    const friendlyKeywords = (unit.keywords ?? [])
+    // Curated unit points (人教版) have a description and a page; the rest are auto-extracted and left out.
+    const keyPoints = (unit.knowledgePoints ?? [])
+      .filter((point) => point.description && point.name.length <= 8)
+      .slice(0, KEYPOINT_LIMIT)
+      .map((point) => ({ name: point.name, type: point.type, count: 0 }));
+    const friendlyKeywords = keyPoints.length ? keyPoints : (unit.keywords ?? [])
       .filter((keyword) => keyword.type && FRIENDLY_KEYWORD_TYPES.has(keyword.type) && keyword.name.length <= 8)
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, "zh"))
       .slice(0, FRIENDLY_KEYWORD_LIMIT);
@@ -804,17 +810,6 @@ export function WorkLibrary({
         {Boolean(unit.goals?.length) && <section className="records-chapter-goals" aria-label="本单元先读">
           <h3>本单元先读</h3>
           <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
-        </section>}
-
-        {Boolean(unit.knowledgePoints?.length) && <section aria-label="知识要点" className="records-unit-keypoints">
-          <p className="records-notes-label">知识要点</p>
-          <ul className="records-keypoint-list">{unit.knowledgePoints?.map((point) => <li key={`${point.name}-${point.type}`}>
-            <button type="button" onClick={() => onKnowledge(point.name, point.type)}>
-              <span className="records-keypoint-heading"><strong>{point.name}</strong><small>{point.type}</small></span>
-              {point.description && <span className="records-keypoint-description">{point.description}</span>}
-              {Number.isInteger(point.page) && <span className="records-keypoint-source">教材第 {point.page} 页</span>}
-            </button>
-          </li>)}</ul>
         </section>}
 
         {unit.kind !== "project" && activityCounts.length > 0 && <section aria-label="这一单元学什么" className="records-unit-activities">
