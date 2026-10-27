@@ -207,4 +207,4 @@ CI 里同一时间只保留最新一次部署：连续推送时，前一次还�
 
 AI 问答当前为本地检索模式：回答由 `app/lib/ai/` 在浏览器里检索十五册教材数据后生成，会标出依据的教材内容和页码，不调用大模型，页面上也会写明「尚未接入 AI 大模型」（`app/components/assistant/AssistantPage.tsx`）。
 
-`worker/ai-api.ts` 是为将来部署到 Cloudflare Workers 准备的 AI 接口，尚未部署。
+`worker/ai-api.ts` 是 Cloudflare Workers 上的 AI 接口，调用 DeepSeek（`deepseek-v4-flash`，密钥放 Worker 的 secret `DEEPSEEK_API_KEY`），尚未部署。部署后在构建时设置 `NEXT_PUBLIC_AI_API_URL` 为 Worker 地址，问答页才会调用；未设置或调用失败时仍用本地检索回答。

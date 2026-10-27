@@ -8,6 +8,7 @@ import { fetchWithRetry } from "../../lib/app/fetch-retry";
 // 首页示例问题分「学生常问 / 备课常用」两组，全部逐题跑过本地图谱问答
 // （scripts/test-sample-questions.mjs）：答案非空、引用教材证据、口径为 supported。
 // 增删问题必须同步复跑该脚本。
+const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL ?? "";
 export const SAMPLE_QUESTIONS = {
   student: [
     { q: "《歌唱祖国》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}七年级上册 · 词曲作者与创作背景` },
@@ -114,6 +115,15 @@ export function AssistantPage({
     return promise;
   };
 
+  const askModel = async (q: string): Promise<AnswerResult | null> => {
+    if (!AI_API_URL) return null;
+    try {
+      const response = await fetch(`${AI_API_URL.replace(/\/$/, "")}/ask`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ question: q }), signal: AbortSignal.timeout(50000) });
+      const body = await response.json() as { ok?: boolean } & Partial<AnswerResult>;
+      return response.ok && body.ok && typeof body.answer === "string" ? body as AnswerResult : null;
+    } catch { return null; }
+  };
+
   const submit = async (rawQuestion?: string) => {
     const q = (rawQuestion ?? question).trim();
     if (!q || busy) return;
@@ -123,7 +133,9 @@ export function AssistantPage({
     try {
       const retrieval = await enrichGraph(graph, q, [], loadEvidence);
       const base = graphAnswer(retrieval, q);
-      const result = unitWorksAnswer(q, units, graph.books, base) ?? base;
+      const local = unitWorksAnswer(q, units, graph.books, base);
+      // The model only rewrites answers built from retrieval; unit lists stay local. Any failure keeps the local answer.
+      const result = local ?? (await askModel(q)) ?? base;
       if (alive.current) {
         setCurrentMessage({ question: q, result });
         setQuestion("");
@@ -494,7 +506,7 @@ export function AssistantPage({
           <footer className="composer-bottom">
             {composer("folio")}
             <div className="modest-notice">
-              <span>※ 这里的回答只来自{PUBLISHED_BOOK_COUNT_LABEL}教材内容，尚未接入 AI 大模型。所引页码皆可在纸质课本中翻查实证。</span>
+              <span>※ 这里的回答只来自{PUBLISHED_BOOK_COUNT_LABEL}教材内容，{AI_API_URL ? "部分回答由 AI 大模型依据教材检索结果整理，并标明出处。" : "尚未接入 AI 大模型。"}所引页码皆可在纸质课本中翻查实证。</span>
               <span className="seal-text">只用教材内容回答</span>
             </div>
           </footer>

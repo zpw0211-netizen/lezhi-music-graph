@@ -44,10 +44,10 @@ const { generateAnswer } = await compile("app/lib/ai/response-generation.ts");
 const retrieval = await enrichGraph(graph, questions[2], [], load);
 const mockModel = async (_url, options) => {
   const request = JSON.parse(options.body);
-  assert.equal(request.model, "gpt-5.6-terra"); assert.equal(request.store, false); assert.equal(request.text.format.type, "json_schema");
-  return Response.json({ output: [{ content: [{ type: "output_text", text: JSON.stringify({ answer: "《保卫黄河》的作曲家是冼星海。", shortAnswer: "冼星海。", auxiliaryExplanation: "", usedEvidenceIds: [retrieval.evidence[0].id], confidence: "supported" }) }] }] });
+  assert.equal(request.model, "deepseek-v4-flash"); assert.equal(request.response_format.type, "json_object"); assert.match(_url, /\/chat\/completions$/);
+  return Response.json({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ answer: "《保卫黄河》的作曲家是冼星海。", shortAnswer: "冼星海。", auxiliaryExplanation: "", usedEvidenceIds: [retrieval.evidence[0].id], confidence: "supported" }) } }] });
 };
-assert.equal((await generateAnswer(retrieval, questions[2], [], { apiKey: "mock-key", model: "gpt-5.6-terra" }, mockModel)).poweredBy, "gpt");
+assert.equal((await generateAnswer(retrieval, questions[2], [], { apiKey: "mock-key", model: "deepseek-v4-flash" }, mockModel)).poweredBy, "gpt");
 const auditOutputDirectory = new URL("../.tmp-audit/", import.meta.url);
 await mkdir(auditOutputDirectory, { recursive: true });
 await writeFile(
