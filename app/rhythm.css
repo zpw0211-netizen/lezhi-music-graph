@@ -53,6 +53,7 @@
 
 /* 节奏谱舞台：投屏时它就是整页。 */
 .rhythm-stage {
+  container-type: inline-size;
   position: relative;
   padding: clamp(18px, 3vw, 36px) clamp(16px, 3vw, 40px) 20px;
   border: 1px solid var(--rhythm-line);
@@ -78,6 +79,9 @@
 .rhythm-meter span:last-child { padding-top: .1em; }
 
 .rhythm-bars { display: grid; flex: 1 1 auto; grid-template-columns: repeat(auto-fill, minmax(calc(var(--bar-beats, 2) * 2.9em), 1fr)); row-gap: .7em; min-width: 0; }
+.rhythm-score.is-four { font-size: min(44px, calc(100cqw / (var(--bar-beats, 2) * 9.6 + 3))); }
+.rhythm-stage:fullscreen .rhythm-score.is-four { font-size: min(80px, calc(100cqw / (var(--bar-beats, 2) * 9.6 + 3))); }
+.rhythm-score.is-four .rhythm-bars { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .rhythm-bar { display: flex; align-items: flex-start; gap: .32em; padding-right: .5em; }
 .rhythm-bar { padding-right: 0; gap: 0; }
 /* A pattern's slot is as wide as its beats, so the same beat lines up in every bar. */
