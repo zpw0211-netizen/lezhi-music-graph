@@ -3,7 +3,7 @@
 // dot above; beats count quarter notes. `tie` holds the previous note (same pitch);
 // `slur` is a new pitch sung on the previous syllable (a melisma), so it sounds but takes no lyric;
 // `a` is an accidental (1 = ♯, -1 = ♭, 0 = explicit ♮).
-export type MelodyNote = { d: number; /** octave dots above/below; supports three-dot textbook bass notes */ o?: number; b: number; lyric?: string; tie?: boolean; slur?: boolean; a?: -1 | 0 | 1; tri?: boolean; tuplet?: number; dots?: 1 | 2 };
+export type MelodyNote = { d: number; /** octave dots above/below; supports three-dot textbook bass notes */ o?: number; b: number; lyric?: string; tie?: boolean; slur?: boolean; a?: -1 | 0 | 1; tri?: boolean; tuplet?: number; dots?: 1 | 2; /** bracketed instrumental interlude inside a song: the singer rests */ inst?: boolean };
 export type Melody = {
   /** Heading when a work has several excerpts (主题一, 引子…). */
   title?: string;
@@ -35,7 +35,7 @@ export type Melody = {
  * Compact jianpu text → bars. Bars split on "|", notes on spaces.
  *   5  quarter · 5/ eighth · 5// sixteenth · 5/// thirty-second · 5//// sixty-fourth · 5. / 5/. dotted · "-" adds a beat to the previous note
  *   5' dot above · 5, dot below · #4 sharp · b7 flat · ♮4 natural · 0 rest · ~5 tie (same pitch) or slur (new pitch, no syllable) · 5//t triplet, 5//t5 quintuplet, 5//t4 quadruplet
- * Lyrics: one item per sung note (not rests or ties); "~" = melisma (no syllable).
+ * Lyrics: one item per sung note (not rests or ties); "~" = melisma (no syllable); "_" = instrumental interlude note (the singer rests).
  */
 export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
   const words = lyrics.split(/\s+/).filter(Boolean);
@@ -60,7 +60,7 @@ export function jianpu(text: string, lyrics = ""): MelodyNote[][] {
       const samePitch = previous && previous.d === note.d && (previous.o ?? 0) === (note.o ?? 0) && (previous.a ?? 0) === (note.a ?? 0);
       if (tie && samePitch) note.tie = true;
       else if (tie && note.d) note.slur = true;
-      else if (note.d) { const word = words[w++]; if (word && word !== "~") note.lyric = word; }
+      else if (note.d) { const word = words[w++]; if (word === "_") note.inst = true; else if (word && word !== "~") note.lyric = word; }
       if (note.d) previous = note;
       notes.push(note);
     }
