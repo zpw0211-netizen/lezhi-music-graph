@@ -444,7 +444,9 @@ def main():
         # Ria (male, A2–G#4) sings parts written in the treble range an octave down, as men double a children's
         # lower part, so women's and men's voices are told apart.
         # Parts marked 男 are written at men's pitch already: they only drop an octave if they go above Ria's range.
-        if singer == "qixuan":
+        if mel.get("male"):  # men's version of a tune 绮萱 sings: an octave down once it climbs above Ria's G#4
+            shift = -12 if max(sung) > 68 else 0
+        elif singer == "qixuan":
             shift = 12 if med < 54 else 0
         elif "男" in mel.get("label", ""):
             shift = -12 if max(sung) > 69 else 0

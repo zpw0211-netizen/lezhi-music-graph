@@ -4,6 +4,8 @@
 //   npx tsx scripts/vocal/export.ts keys k1 k2 …         these fingerprints only (to re-sing), written to .vocal/work/keys.json
 //   npx tsx scripts/vocal/export.ts parts [out.json]     choral parts for the male voice: lower parts without a recording
 //                                                        (and main lines labelled 男…), each with "voice": "ria" | "qixuan"
+//   npx tsx scripts/vocal/export.ts male [bookRegex]     men's version (Ria) of main lines already sung by 绮萱, for a
+//                                                        men's/women's voice switch; written to .vocal/work/male.json
 // Covers every book's transcriptions and the book-agnostic key melodies. Staff editions share the jianpu books' data.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -16,8 +18,9 @@ const SKIP = new Set(["fb794de6" /* 人教一上 小兔子乖乖 */]);
 
 const [mode = "missing", ...rest] = process.argv.slice(2);
 const keys = mode === "keys" ? new Set(rest) : null;
+const bookFilter = mode === "male" && rest[0] ? new RegExp(rest[0]) : null;
 const home = process.env.VOCAL_HOME ?? resolve(import.meta.dirname, "../../.vocal");
-const outPath = mode === "keys" ? resolve(home, "work/keys.json") : rest[0] ?? resolve(home, `work/${mode}.json`);
+const outPath = mode === "keys" || mode === "male" ? resolve(home, `work/${mode}.json`) : rest[0] ?? resolve(home, `work/${mode}.json`);
 
 const out: unknown[] = [];
 const seen = new Set<string>();
@@ -27,9 +30,12 @@ const visit = (book: string, name: string, melody: Melody, index: number) => {
   const key = vocalKey(melody);
   if (seen.has(key)) return;
   seen.add(key);
-  if (keys ? !keys.has(key) : SKIP.has(key) || (mode === "voiced") !== !!findVocal(melody)) return;
+  if (mode === "male") {
+    if (bookFilter && !bookFilter.test(book)) return;
+    if (findVocal(melody)?.singer !== "qixuan") return; // men's songs are already sung by Ria
+  } else if (keys ? !keys.has(key) : SKIP.has(key) || (mode === "voiced") !== !!findVocal(melody)) return;
   out.push({
-    key, book, name, index, bpm: melody.bpm, meter: melody.meter,
+    key, book, name, index, bpm: melody.bpm, meter: melody.meter, ...(mode === "male" ? { voice: "ria", male: true } : {}),
     notes: notes.map((note) => ({ d: note.d, b: note.b, midi: note.d > 0 && note.d < 8 ? midiOf(melody, note) : null, lyric: note.lyric ?? null, slur: !!note.slur, tie: !!note.tie })),
   });
 };

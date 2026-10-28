@@ -1,6 +1,7 @@
 """Encode synthesized vocals like the existing ones and merge them into the site manifest.
 
 python scripts/vocal/finalize.py <todo.json> <outdir> [--accept key,key]  -> writes public/audio/vocal/<key>.mp3, updates vocal-manifest.json
+  --male: men's versions (export.ts male) go to public/audio/vocal-male/ and vocal-manifest-male.json instead
 Only files that pass the pitch check are published; the rest are listed.
 """
 import json
@@ -15,14 +16,18 @@ import soundfile as sf
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from qa import check  # noqa: E402
 
-from paths import AUDIO, MANIFEST  # noqa: E402
+from paths import AUDIO, AUDIO_MALE, MANIFEST, MANIFEST_MALE  # noqa: E402
 TARGET_DB = -21.0  # mean level of the existing recordings
 
 todo = {m["key"]: m for m in json.load(open(sys.argv[1], encoding="utf-8"))}
 out = sys.argv[2]
 # Keys checked by hand (frame-by-frame pitch) whose automatic check trips on very short notes.
 accept = set(sys.argv[sys.argv.index("--accept") + 1].split(",")) if "--accept" in sys.argv else set()
-manifest = json.load(open(MANIFEST, encoding="utf-8"))
+male = "--male" in sys.argv
+if male:
+    AUDIO, MANIFEST = AUDIO_MALE, MANIFEST_MALE
+    os.makedirs(AUDIO, exist_ok=True)
+manifest = json.load(open(MANIFEST, encoding="utf-8")) if os.path.exists(MANIFEST) else {}
 published, rejected = [], []
 for key, mel in todo.items():
     wav_path = os.path.join(out, key + ".wav")
@@ -51,7 +56,7 @@ for key, mel in todo.items():
                     os.path.join(AUDIO, key + ".mp3")], check=True)
     os.remove(tmp)
     # 绮萱 entries stay [offset, leadBeats]; other voices name themselves ([offset, leadBeats, "ria"])
-    manifest[key] = [meta["offset"], meta["leadBeats"]] + ([meta["voice"]] if meta.get("voice", "qixuan") != "qixuan" else [])
+    manifest[key] = [meta["offset"], meta["leadBeats"]] + ([meta["voice"]] if not male and meta.get("voice", "qixuan") != "qixuan" else [])
     published.append(f"{label}: {med:.2f}st")
 manifest = dict(sorted(manifest.items()))
 with open(MANIFEST, "w", encoding="utf-8") as f:
