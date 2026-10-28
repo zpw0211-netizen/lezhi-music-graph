@@ -158,6 +158,15 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
       const fallback = BOOK_MELODIES[fallbackKey]?.[name.replace(/^《|》$/g, "")];
       if (fallback?.length) return { melodies: fallback, name };
     }
+    // 键名偶尔带《》或用全角括号（《c小调第五（命运）交响曲》），图谱里写的是半角 (命运)：去掉书名号、空格，括号不分全角半角再比一次。
+    const loose = (title: string) => title.replace(/^《|》$/g, "").replace(/\s+/g, "").replace(/（/g, "(").replace(/）/g, ")");
+    for (const name of names) {
+      for (const key of [bookKey, fallbackKey]) {
+        const book = BOOK_MELODIES[key] ?? {};
+        const hit = Object.keys(book).find((title) => loose(title) === loose(name));
+        if (hit && book[hit].length) return { melodies: book[hit], name: hit };
+      }
+    }
     // 组名下收录的作品（如《草原上的歌》里的《快乐的牧羊人》）按段落标题找；
     // 键名带括注（《伏尔塔瓦河（片段）》）或课名多出调名前缀（《c小调第五（命运）交响曲》）的也算同一首。
     for (const name of names) {
