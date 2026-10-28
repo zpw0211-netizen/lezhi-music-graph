@@ -11,8 +11,8 @@ import { BOOK_MELODIES, MELODIES } from "../../app/lib/lesson/melodies";
 import { midiOf, type Melody, type MelodyNote } from "../../app/lib/lesson/jianpu";
 import { findVocal, vocalKey } from "../../app/lib/lesson/vocal";
 
-// Left without a voice on purpose (an earlier decision; no sung pitch worth synthesizing).
-const SKIP = new Set(["fb794de6" /* 人教一上 小兔子乖乖 */]);
+// Left without a voice on purpose (none at present; 人教一上《小兔子乖乖》 was here until 2026-10-28).
+const SKIP = new Set<string>([]);
 
 const [mode = "missing", ...rest] = process.argv.slice(2);
 const keys = mode === "keys" ? new Set(rest) : null;
