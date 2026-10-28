@@ -47,6 +47,10 @@
     background: url("/renyin/art/home-sprouts.webp") 50% 46% / cover no-repeat;
     -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent); mask-image: linear-gradient(180deg, #000 55%, transparent);
   }
+  /* The research project this platform belongs to, in the top-left corner. */
+  /* In the flow (not absolute) so it never runs into the logo: 18px from the top, the logo starts below it. */
+  .project { margin: calc(18px - clamp(55px, 9vh, 89px)) 0 28px clamp(0px, 1.4vw - 6px, 13px); color: var(--ink-2); font: 13px/1.75 var(--serif); text-align: left; }
+  .project b { color: var(--ink); font-weight: 600; }
   .brand { display: inline-flex; align-items: center; gap: clamp(8px, 1.4vw, 21px); }
   .brand img { display: block; width: clamp(220px, 34vw, 400px); height: auto; }
   .kicker { margin-top: 13px; color: var(--seal); font: 15px/1.6 var(--serif); letter-spacing: .5em; text-indent: .5em; }
@@ -87,11 +91,15 @@
   a.card:hover .go b { transform: translateX(5px); }
   .muted { margin-left: auto; color: var(--ink-3); font: 14px/1.5 var(--serif); white-space: nowrap; }
   footer { padding: 0 21px 34px; color: var(--ink-3); font: 12px/1.8 var(--ui); text-align: center; }
+  footer .rights { max-width: 46em; margin: 6px auto 0; text-wrap: pretty; }
 
   /* The 芽谱AI lockup rises in once. */
   .brand img { animation: rise .9s cubic-bezier(.34, 1.56, .64, 1) .1s both; }
   @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 
+  @media (max-width: 640px) {
+    .project { font-size: 12px; }
+  }
   @media (max-width: 640px) {
     .kicker { letter-spacing: .3em; text-indent: .3em; font-size: 14px; }
     .card { grid-template-columns: 1fr; }
@@ -106,6 +114,7 @@
 </head>
 <body>
 <header class="hero">
+  <p class="project">国家社科基金教育学国家一般项目<br><b>《指向核心素养的青少年音乐创造力培养模式研究》</b><br>项目编号：BLA230249</p>
   <div class="brand">
     <img src="/yapu-logo.webp" alt="" width="900" height="408">
     <h1>芽谱AI — 音乐数字教材平台</h1>
@@ -122,7 +131,7 @@
     <div class="art"><img src="/renyin/art/g3s1.webp" alt="" width="1200" height="750" loading="eager"></div>
     <div class="body">
       <div class="head"><span class="num">壹</span><h2>人音版 · 简谱</h2><span class="press">人民音乐出版社</span></div>
-      <p class="desc">按课学习、知识图谱、声音与音乐探索、问问教材。小学九册的歌曲旋律都已对照课本逐页核对，可以直接播放。</p>
+      <p class="desc">按课学习、知识图谱、音乐探索与创造、问问教材。小学九册的歌曲旋律都已对照课本逐页核对，可以直接播放。</p>
       <div class="foot"><span>小学一至六年级 · 初中七至九年级 · 十五册</span><span class="chip live">已上线</span><span class="go">进入 <b>→</b></span></div>
     </div>
   </a>
@@ -155,6 +164,9 @@
   </a>
 </main>
 
-<footer>芽谱AI · 音乐数字教材平台 · yapu.studio</footer>
+<footer>
+  <div>芽谱AI · 音乐数字教材平台 · yapu.studio</div>
+  <p class="rights">本站依据人音版、人教版义务教育音乐教材编写，教材内容版权归人民音乐出版社、人民教育出版社所有。</p>
+</footer>
 </body>
 </html>

@@ -8,7 +8,7 @@ worker/ai-api.ts 从服务器指定 Pages 地址读取 graph-index 和按册 evi
 
 仅允许 https://zpw0211-netizen.github.io origin，但 CORS 不是身份认证：非浏览器客户端可伪造 Origin。默认公共接口全局 30 次/分钟限额保护成本。生产启用前确认限额命名空间未与其他 Worker 冲突，配置预算；有需要再配置账号/Turnstile。服务端密钥使用 Worker secret，请求和回答不持久化。
 
-用户授权后：wrangler login；wrangler secret put OPENAI_API_KEY --config worker/wrangler.jsonc；wrangler deploy --config worker/wrangler.jsonc。不要把 key 放入 NEXT_PUBLIC_*、聊天或 Git。Pages 构建设置 NEXT_PUBLIC_AI_API_URL=https://真实Worker地址/ask。普通模型 OPENAI_MODEL 默认 gpt-5.6-terra；分析 OPENAI_ANALYSIS_MODEL 默认 gpt-5.6-sol。Responses 使用 store:false 与严格 JSON schema。模型账号可用性尚待真实测试。
+用户授权后：wrangler login；wrangler secret put DEEPSEEK_API_KEY --config worker/wrangler.jsonc；wrangler deploy --config worker/wrangler.jsonc。不要把 key 放入 NEXT_PUBLIC_*、聊天或 Git。Pages 构建设置 NEXT_PUBLIC_AI_API_URL=https://真实Worker地址/ask。普通模型 OPENAI_MODEL 默认 gpt-5.6-terra；分析 OPENAI_ANALYSIS_MODEL 默认 gpt-5.6-sol。Responses 使用 store:false 与严格 JSON schema。模型账号可用性尚待真实测试。
 
 ## 证据边界
 

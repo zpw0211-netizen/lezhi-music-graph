@@ -1,8 +1,13 @@
 # 人教版五线谱数据交付（T080B）
 
-本目录在 `editions/renjiao/` 基础上建立，页面与教材课程数据沿用现有版本。版名与网址入口为 `renjiao-staff`；14 册仍保持 `published: false`，避免在五线谱页面接入前对外开放。
+> **状态（2026-10-26 更新）：** 下面是 T080B 交付当时的记录，数字和「阶段边界」反映的是当时的情况。现状：
+> - 14 册在 `data/books.json` 里已全部 `published: true`，随 CI 以 `/renjiao-staff/` 发布；总开关是仓库变量 `PUBLISH_STAFF` 和 `PUBLISH_RENJIAO`，任一设为 `false` 就撤下本版本（见根目录 `README.md` 第 7 节）。
+> - 五线谱的画法已经在应用代码里实现，本版本直接沿用人教版简谱的课程和旋律数据；`node scripts/check-staff.mjs` 校验每条旋律都能排成五线谱。
+> - 文中「174 张」是交付时的统计（`data/score-activation-audit.json`）；现在 `public/media/scores/pep-*` 下共有 472 个谱例图文件，两个数字的差异我没有逐一核对原因，用这份审计文件前请先重新生成。
 
-工作树已沿用唯一指定的 `github` 远程快进至 `b320747`。从最初核实的 `34a2610` 到此提交之间的更新涉及品牌与人声资源，没有改动 `editions/renjiao` 教材源数据。
+本目录在 `editions/renjiao/` 基础上建立，页面与教材课程数据沿用现有版本。版名与网址入口为 `renjiao-staff`；交付时 14 册保持 `published: false`，避免在五线谱页面接入前对外开放（现已全部发布，见上方状态）。
+
+交付时，工作树已沿用唯一指定的 `github` 远程快进至 `b320747`。从最初核实的 `34a2610` 到此提交之间的更新涉及品牌与人声资源，没有改动 `editions/renjiao` 教材源数据。
 
 ## 扫描来源与页码
 
@@ -33,6 +38,6 @@ python editions/renjiao-staff/scripts/crop-wx-pep-pdfs.py
 node editions/renjiao-staff/scripts/activate-staff-scores.mjs
 ```
 
-## 阶段边界
+## 交付时的阶段边界（已过时，现状见文首）
 
 五线谱画法由 Claude 负责，本任务不合并画法、不制作应用截图。分册仍未发布。正式谱面目录仅保留五线谱扫描的 174 张图片，`data/lesson-scores.json` 与教材模块同步为五线谱页码/裁切映射。没有新建或修改旋律文件，没有安装依赖、推送或部署。

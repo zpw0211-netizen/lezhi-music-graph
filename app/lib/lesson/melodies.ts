@@ -112,6 +112,26 @@ for (const [, book] of BOOKS)
 for (const [name, segments] of Object.entries(DRAFT_MELODIES))
   if (!MELODIES[name]?.length) MELODIES[name] = segments;
 
+/** 人教版里谱例印出来却无法配成旋律示范的课：说明原因，页面不再写“还在整理中”。键为册，再为作品名（不带《》）。 */
+const NO_MELODY_REASONS: Record<string, Record<string, string>> = {
+  "pep-g7s2": {
+    "大海": "教材谱例是管弦乐总谱的开头，只有震音和固定音型，没有可以单独记出的主旋律，所以不提供旋律示范。请对照下方谱例，边听边找各声部的层次。",
+    "四首海的间奏曲之四": "教材谱例是管弦乐总谱的开头，只有节奏型和织体，没有可以单独记出的主旋律，所以不提供旋律示范。请对照下方谱例，边听边找各声部的层次。",
+  },
+  "pep-g8s2": {
+    "霓裳羽衣曲": "教材谱例是钢琴改编谱，以和弦块为主，没有可以单独记出的单线旋律，所以不提供旋律示范。请对照下方谱例，边听边感受音乐的速度变化。",
+    "宛转蛾眉马前死": "教材这一页只印了歌词和背景介绍，没有印谱，所以不提供旋律示范。可以对照歌词，边听录音边感受歌曲表现的情绪。",
+  },
+  "pep-g3s1": {
+    "滚核桃": "教材这一页印的是五种节奏型的学习图表，没有印这首打击乐合奏的谱，所以不提供旋律示范。可以边听边找图表里的节奏型。",
+  },
+};
+/** 没有旋律示范的原因（仅人教版的个别课）；其余课返回 undefined，沿用“还在整理中”的通用说明。 */
+export function noMelodyReason(bookKey: string | undefined, name: string): string | undefined {
+  const key = bookKey?.replace(/^wx-/, "");
+  return key ? NO_MELODY_REASONS[key]?.[name.replace(/^《|》$/g, "")] : undefined;
+}
+
 /** The melodies for a work as printed in one book; falls back to the book-agnostic table. Tries each name in turn.
  *  Staff editions (wx-*) also get the textbook's clef and octave for voices that differ from the default placement. */
 export function melodiesFor(bookKey: string | undefined, ...names: string[]): Melody[] {
@@ -141,6 +161,15 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
       if (own?.length) return { melodies: own, name };
       const fallback = BOOK_MELODIES[fallbackKey]?.[name.replace(/^《|》$/g, "")];
       if (fallback?.length) return { melodies: fallback, name };
+    }
+    // 键名偶尔带《》或用全角括号（《c小调第五（命运）交响曲》），图谱里写的是半角 (命运)：去掉书名号、空格，括号不分全角半角再比一次。
+    const loose = (title: string) => title.replace(/^《|》$/g, "").replace(/\s+/g, "").replace(/（/g, "(").replace(/）/g, ")");
+    for (const name of names) {
+      for (const key of [bookKey, fallbackKey]) {
+        const book = BOOK_MELODIES[key] ?? {};
+        const hit = Object.keys(book).find((title) => loose(title) === loose(name));
+        if (hit && book[hit].length) return { melodies: book[hit], name: hit };
+      }
     }
     // 组名下收录的作品（如《草原上的歌》里的《快乐的牧羊人》）按段落标题找；
     // 键名带括注（《伏尔塔瓦河（片段）》）或课名多出调名前缀（《c小调第五（命运）交响曲》）的也算同一首。

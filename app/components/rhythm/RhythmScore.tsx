@@ -29,7 +29,7 @@ function figures(pattern: RhythmPattern): Figure[] {
     const value = pattern.triplet ? figure.dur * 1.5 : figure.dur;
     figure.dots = figure.dots || [1.5, 3, 0.75, 0.375].some((dotted) => Math.abs(value - dotted) < 1e-6) ? 1 : 0;
     figure.base = figure.dots ? value / 1.5 : value;
-    figure.width = 17 + 13 * Math.sqrt(figure.dur) + (figure.dots ? 5 : 0);
+    figure.width = 6 + 29 * figure.dur + (figure.dots ? 5 : 0);
     figure.x = x + 7;
     x += figure.width;
   }
@@ -79,7 +79,7 @@ export function PatternGlyph({ pattern, activeKey, marks, groupIndex }: {
   return (
     <span className={`rhythm-group${pattern.triplet ? " is-triplet" : ""}`}>
       {pattern.triplet && <span className="rhythm-triplet-mark" aria-hidden="true">3</span>}
-      <svg className="rhythm-figures" viewBox={`0 0 ${width} 42`} style={{ width: `${width / EM}em`, height: `${42 / EM}em` }} role="img" aria-label={pattern.name}>
+      <svg className="rhythm-figures" viewBox={`0 0 ${width} 42`} style={{ width: `${width / EM}em`, height: `${42 / EM}em`, maxWidth: "100%" }} role="img" aria-label={pattern.name}>
         {notes.map((note, n) => {
           const keys = groupIndex === undefined ? [] : note.tokens.map((token) => tokenKey(groupIndex, token));
           const active = !!activeKey && keys.includes(activeKey);
@@ -108,11 +108,10 @@ export function PatternGlyph({ pattern, activeKey, marks, groupIndex }: {
   );
 }
 
-/** The rhythm score, as a line of bars or as one big card per pattern. */
-export function RhythmScore({ bars, meter, cards, activeKey, marks, countdown, selected, onSelect }: {
+/** The rhythm score, as a line of bars. */
+export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected, onSelect }: {
   bars: RhythmBar[];
   meter: Meter;
-  cards: boolean;
   activeKey: string | null;
   marks?: Map<string, Verdict>;
   countdown: number | null;
@@ -121,10 +120,9 @@ export function RhythmScore({ bars, meter, cards, activeKey, marks, countdown, s
   onSelect?: (index: number) => void;
 }) {
   return (
-    <div className={`rhythm-score${cards ? " is-cards" : ""}`} aria-label="节奏谱">
+    <div className={`rhythm-score is-four`} style={{ "--bar-beats": meter.beats } as CSSProperties} aria-label="节奏谱">
       <span className="rhythm-meter" aria-label={`${meter.id} 拍`}><span>{meter.top}</span><span>{meter.bottom}</span></span>
-      {/* Big cards keep whole bars per row: two short bars, or one bar of four beats. */}
-      <div className="rhythm-bars" style={cards ? { "--bars-per-row": meter.beats >= 4 ? 1 : 2 } as CSSProperties : undefined}>
+      <div className="rhythm-bars">
         {bars.map((bar, barIndex) => (
           <div className="rhythm-bar" key={barIndex}>
             {bar.groups.map(({ index, pattern }) => {
@@ -134,16 +132,17 @@ export function RhythmScore({ bars, meter, cards, activeKey, marks, countdown, s
                 <button
                   key={index}
                   type="button"
+                  style={{ flexGrow: pattern.beats }}
                   className={`rhythm-placed${selected === index ? " is-selected" : ""}${playingHere ? " is-current" : ""}`}
                   aria-pressed={selected === index}
                   aria-label={`${pattern.name}，点选后可删除或在后面插入`}
                   onClick={() => onSelect(index)}
                 >{glyph}</button>
               ) : (
-                <span key={index} className={`rhythm-cell${playingHere ? " is-current" : ""}`}>{glyph}</span>
+                <span key={index} style={{ flexGrow: pattern.beats }} className={`rhythm-cell${playingHere ? " is-current" : ""}`}>{glyph}</span>
               );
             })}
-            {Array.from({ length: Math.round(bar.empty / meter.unit) }, (_, i) => <span key={`e${i}`} className={`rhythm-empty${meter.unit < 1 ? " is-eighth" : ""}`} aria-label="空拍" />)}
+            {Array.from({ length: Math.round(bar.empty / meter.unit) }, (_, i) => <span key={`e${i}`} style={{ flexGrow: meter.unit }} className={`rhythm-empty${meter.unit < 1 ? " is-eighth" : ""}`} aria-label="空拍" />)}
             <span className={`rhythm-barline${barIndex === bars.length - 1 ? " is-final" : ""}`} aria-hidden="true" />
           </div>
         ))}

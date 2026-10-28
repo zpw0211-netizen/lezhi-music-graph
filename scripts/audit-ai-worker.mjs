@@ -88,7 +88,7 @@ const validationLogs = [];
 globalThis.fetch = async () => ({ ok: true, json: async () => invalidIndex });
 console.error = (...parts) => validationLogs.push(parts.join(" "));
 const env = {
-  OPENAI_API_KEY: "audit-only-mock-key",
+  DEEPSEEK_API_KEY: "audit-only-mock-key",
   ALLOWED_ORIGIN: "https://zpw0211-netizen.github.io",
   GRAPH_DATA_URL: "https://example.test/data",
   AI_RATE_LIMIT: { limit: async () => ({ success: true }) },

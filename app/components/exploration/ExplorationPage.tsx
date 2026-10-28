@@ -47,13 +47,13 @@ export function ExplorationPage({
       <header className="exploration-heading">
         <div className="exploration-intro">
           <p className="exploration-kicker">芽谱 · 探索空间</p>
-          <h1 id="exploration-title">声音与音乐探索</h1>
+          <h1 id="exploration-title">音乐探索与创造</h1>
           <p>从一段旋律开始，再去地图、年代、五声和节奏里发现音乐。</p>
         </div>
         <div
           className="exploration-tabs"
           role="tablist"
-          aria-label="声音与音乐探索方式"
+          aria-label="音乐探索与创造方式"
           aria-orientation="horizontal"
         >
           {tabs.map((tab, index) => {

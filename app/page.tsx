@@ -188,10 +188,10 @@ const EMPTY_BOOKS: BookDirectory[] = [];
 const SITE_TITLE = SITE_NAME;
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
-  atlas: "声音与音乐探索 · 音乐地图",
-  lab: "声音与音乐探索 · 五声律坊",
-  timeline: "声音与音乐探索 · 音乐时光机",
-  rhythm: "声音与音乐探索 · 节奏训练",
+  atlas: "音乐探索与创造 · 音乐地图",
+  lab: "音乐探索与创造 · 五声律坊",
+  timeline: "音乐探索与创造 · 音乐时光机",
+  rhythm: "音乐探索与创造 · 节奏训练",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
@@ -277,13 +277,15 @@ export default function Home() {
   );
   const searchResults = useKnowledgeSearch(canonicalGraph, query);
 
-  // Lesson and work pages are addressed by the bare work title (?work=歌唱祖国).
+  // Lesson and work pages are addressed by the bare work title (?work=歌唱祖国). Full- and half-width brackets match
+  // each other: the graph spells 《c小调第五(命运)交响曲》, the table of contents links it as （命运）.
+  const titleKey = (title: string) => title.replace(/（/g, "(").replace(/）/g, ")");
   const { worksByTitle, worksByTitleAndBook } = useMemo(() => {
     const byTitle = new Map<string, Entity>();
     const byTitleAndBook = new Map<string, Entity>();
     for (const entity of canonicalGraph?.entities ?? []) {
       if (!entity.name.startsWith("《")) continue;
-      const title = bareWorkName(entity.name);
+      const title = titleKey(bareWorkName(entity.name));
       if (!byTitle.has(title) || isWorkType(entity.type)) byTitle.set(title, entity);
       for (const bookKey of entity.bookKeys ?? []) {
         byTitleAndBook.set(`${bookKey}\u0000${title}`, entity);
@@ -293,8 +295,8 @@ export default function Home() {
   }, [canonicalGraph]);
   const routeWork = route.work
     ? route.book
-      ? worksByTitleAndBook.get(`${route.book}\u0000${route.work}`)
-      : worksByTitle.get(route.work)
+      ? worksByTitleAndBook.get(`${route.book}\u0000${titleKey(route.work)}`)
+      : worksByTitle.get(titleKey(route.work))
     : undefined;
   const entityById = (id: string) => explorer.canonicalEntityById.get(id);
 

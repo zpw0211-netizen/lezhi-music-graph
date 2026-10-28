@@ -173,7 +173,7 @@ async function main() {
     const stageCounts = [...new Set(PUBLISHED_BOOKS.map((book) => book.stage))].map((stage) => PUBLISHED_BOOKS.filter((book) => book.stage === stage).length);
     if (!stageCounts.includes(scrollCount)) fail(`首页教材画卷数量不正确：${scrollCount}，预期其中之一 ${stageCounts.join("/")}`);
     const bookmarkCount = await page.locator(".home-portal .home-bookmark-list .home-bookmark-item").count();
-    if (bookmarkCount !== 2) fail(`首页探索入口数量不正确：${bookmarkCount}，预期 2（声音与音乐探索、知识图谱）`);
+    if (bookmarkCount !== 2) fail(`首页探索入口数量不正确：${bookmarkCount}，预期 2（音乐探索与创造、知识图谱）`);
   });
 
   await step("桌面：按课学习导航到 #/records", async () => {

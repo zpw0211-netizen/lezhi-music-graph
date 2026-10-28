@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { melodiesFor } from "../../lib/lesson/melodies";
+import { melodiesFor, noMelodyReason } from "../../lib/lesson/melodies";
 import { VocalDemo } from "./VocalDemo";
 import { MelodySet } from "./MelodyPlayer";
 import { ReflectivePresent } from "./ReflectivePresent";
@@ -115,17 +115,23 @@ export function LessonPage({
     const learningMode = allOwn.find((relation) => relation.predicate === "学习方式");
     const own = allOwn.filter((relation) => !HIDDEN.test(relation.predicate));
     const unitLinks = relationships.filter((relation) => relation.predicate === "包含作品" && relation.objectId === workId);
-    const unitLink = (requestedBookKey ? unitLinks.find((candidate) => {
+    const bookKeysOf = (candidate: LessonRelation) => {
       const candidateBook = relationships.find((relation) => relation.predicate === "包含单元" && relation.objectId === candidate.subject);
-      return entityMap.get(candidateBook?.subject ?? "")?.bookKeys?.includes(requestedBookKey);
-    }) : undefined) ?? unitLinks[0];
+      return entityMap.get(candidateBook?.subject ?? "")?.bookKeys ?? [];
+    };
+    // A link without a book (search, graph) opens the first occurrence that has a melody: a work only mentioned on an
+    // 综合探索 page (人教 茉莉花、送别、雪花) would otherwise open there, with no melody to play.
+    const hasMelody = (bookKey: string) => melodiesFor(EDITION.notation === "staff" ? `wx-${bookKey}` : bookKey, work?.name ?? "").length > 0;
+    const unitLink = (requestedBookKey
+      ? unitLinks.find((candidate) => bookKeysOf(candidate).includes(requestedBookKey))
+      : unitLinks.find((candidate) => bookKeysOf(candidate).some(hasMelody))) ?? unitLinks[0];
     const unit = unitLink ? entityMap.get(unitLink.subject) : undefined;
     const unitRelations = unit ? relationships.filter((relation) => relation.subject === unit.id) : [];
     const bookLink = unit ? relationships.find((relation) => relation.predicate === "包含单元" && relation.objectId === unit.id) : undefined;
     const book = bookLink ? entityMap.get(bookLink.subject) : undefined;
     const lessonBookKey = requestedBookKey && book?.bookKeys?.includes(requestedBookKey)
       ? requestedBookKey
-      : book?.bookKeys?.[0];
+      : book?.bookKeys?.find(hasMelody) ?? book?.bookKeys?.[0];
     const pageOf = (entity?: LessonEntity) => (entity ? entity.firstPageByBook?.[lessonBookKey ?? ""] ?? entity.firstPage ?? 0 : 0);
     const unitWorks = unitRelations
       .filter((relation) => relation.predicate === "包含作品" && relation.objectId)
@@ -230,9 +236,10 @@ export function LessonPage({
           <h2><em>1</em>{work.type === "朗诵作品" ? "阅读 · 聆听" : "看谱 · 听旋律"}</h2>
           {melody ? <MelodySet melodies={melody} notationStyle={EDITION.notation ?? "jianpu"} /> : <p className="lesson-note">{work.type === "朗诵作品"
             ? "这是朗诵作品，没有固定的歌曲旋律。请结合教材原文体会语言节奏。"
-            : scoreMedia.length === 0
-              ? "这页的乐谱还没有整理为在线谱例；可以先对照教材原页视唱。"
-              : "这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。"}</p>}
+            : noMelodyReason(melodyBookKey, work.name)
+              ?? (scoreMedia.length === 0
+                ? "这页的乐谱还没有整理为在线谱例；可以先对照教材原页视唱。"
+                : "这首作品的旋律示范还在整理中，可以先对照下方教材谱例视唱。")}</p>}
           <VocalDemo workName={work.name} assetUrl={assetUrl} />
           {scoreMedia.length > 0 && <details className="lesson-scores" open={!melody || melody.every((item) => item.quality === "draft")}>
             <summary>教材谱例原图（{scoreMedia.length} 张）</summary>

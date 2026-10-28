@@ -34,7 +34,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
   const items: NavItem[] = [
     { label: "按课学习", view: "records" },
     { label: "知识图谱", view: "graph" },
-    { label: "声音与音乐探索", view: "atlas", href: "#/atlas" },
+    { label: "音乐探索与创造", view: "atlas", href: "#/atlas" },
     { label: "智能问答", view: "assistant" },
   ];
   const routeToken = locationHash.startsWith("#/") ? locationHash.slice(2).split("/")[0] : "";
