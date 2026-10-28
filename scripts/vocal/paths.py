@@ -14,6 +14,3 @@ EN_DICT = HOME / "endict.json"
 WORK = HOME / "work"
 MANIFEST = REPO / "app" / "lib" / "lesson" / "vocal-manifest.json"
 AUDIO = REPO / "public" / "audio" / "vocal"
-# men's versions of the main lines (export.ts male), for a men's/women's voice switch
-MANIFEST_MALE = REPO / "app" / "lib" / "lesson" / "vocal-manifest-male.json"
-AUDIO_MALE = REPO / "public" / "audio" / "vocal-male"
