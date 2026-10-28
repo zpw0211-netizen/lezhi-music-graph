@@ -183,6 +183,16 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
         if (near) return { melodies: book[near], name: near };
       }
     }
+    // 课上欣赏的作品印在别的册（一下《致春天》听三下的《春天来了》、二下的《春江花月夜》）：到其他已核对的人教册里找同名作品。
+    const staff = bookKey.startsWith("wx-");
+    for (const name of names) {
+      const bare = name.replace(/^《|》$/g, "");
+      // the staff edition prefers its own transcriptions, then the jianpu ones
+      for (const key of [...PEP_REVIEWED_BOOKS].sort((a, b) => Number(b.startsWith("wx-") === staff) - Number(a.startsWith("wx-") === staff))) {
+        const other = BOOK_MELODIES[key]?.[bare];
+        if (other?.length) return { melodies: other, name };
+      }
+    }
     return { melodies: [] };
   }
   const fallbackKey = bookKey?.startsWith("wx-") ? bookKey.slice(3) : bookKey;
