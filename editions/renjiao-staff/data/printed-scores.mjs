@@ -2,6 +2,8 @@
 // 记下正文里印了谱的作品：[作品名, 类型, [印刷页码…]]。作品按谱所在页归入单元，每页裁一张谱例图；
 // 页码写成 [页码, 上沿, 下沿] 时只裁这一段（按页高比例），让谱例从作品标题开始。
 // 只提到名字、没有印谱的曲名不在这里。
+import { withCredits } from "./work-credits.mjs";
+
 export const PRINTED_SCORES = {
   "pep-g1s1": [
     ["小兔子乖乖", "歌曲", [[17, 0.035, 0.571]]],
@@ -385,7 +387,7 @@ const pageOf = (item) => (Array.isArray(item) ? item[0] : item);
 /** Puts every printed score into the unit its pages fall in: an existing work moves there and gets the page crops; a missing one is added. */
 export function withPrintedScores(bookKey, parts) {
   const printed = PRINTED_SCORES[bookKey];
-  if (!printed) return parts;
+  if (!printed) return withCredits(bookKey, parts);
   const starts = parts.map((part) => part.units[0]).sort((a, b) => a.page - b.page);
   const unitOf = (page) => [...starts].reverse().find((unit) => unit.page <= page)?.no ?? starts[0].no;
   const byNo = new Map(parts.map((part) => [part.units[0].no, { ...part, works: [...part.works] }]));
@@ -405,5 +407,6 @@ export function withPrintedScores(bookKey, parts) {
       ? { ...existing, type, unit: no, page: existing.page ?? pageOf(pages[0]), scores }
       : { name, type, unit: no, page: pageOf(pages[0]), facts: [], scores });
   }
-  return [...byNo.values()];
+  // 署名是每册拼装的最后一步：作词、作曲一律以 work-credits.mjs 为准，自动提取的署名不再采用。
+  return withCredits(bookKey, [...byNo.values()]);
 }
