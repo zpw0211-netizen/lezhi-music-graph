@@ -115,17 +115,23 @@ export function LessonPage({
     const learningMode = allOwn.find((relation) => relation.predicate === "学习方式");
     const own = allOwn.filter((relation) => !HIDDEN.test(relation.predicate));
     const unitLinks = relationships.filter((relation) => relation.predicate === "包含作品" && relation.objectId === workId);
-    const unitLink = (requestedBookKey ? unitLinks.find((candidate) => {
+    const bookKeysOf = (candidate: LessonRelation) => {
       const candidateBook = relationships.find((relation) => relation.predicate === "包含单元" && relation.objectId === candidate.subject);
-      return entityMap.get(candidateBook?.subject ?? "")?.bookKeys?.includes(requestedBookKey);
-    }) : undefined) ?? unitLinks[0];
+      return entityMap.get(candidateBook?.subject ?? "")?.bookKeys ?? [];
+    };
+    // A link without a book (search, graph) opens the first occurrence that has a melody: a work only mentioned on an
+    // 综合探索 page (人教 茉莉花、送别、雪花) would otherwise open there, with no melody to play.
+    const hasMelody = (bookKey: string) => melodiesFor(EDITION.notation === "staff" ? `wx-${bookKey}` : bookKey, work?.name ?? "").length > 0;
+    const unitLink = (requestedBookKey
+      ? unitLinks.find((candidate) => bookKeysOf(candidate).includes(requestedBookKey))
+      : unitLinks.find((candidate) => bookKeysOf(candidate).some(hasMelody))) ?? unitLinks[0];
     const unit = unitLink ? entityMap.get(unitLink.subject) : undefined;
     const unitRelations = unit ? relationships.filter((relation) => relation.subject === unit.id) : [];
     const bookLink = unit ? relationships.find((relation) => relation.predicate === "包含单元" && relation.objectId === unit.id) : undefined;
     const book = bookLink ? entityMap.get(bookLink.subject) : undefined;
     const lessonBookKey = requestedBookKey && book?.bookKeys?.includes(requestedBookKey)
       ? requestedBookKey
-      : book?.bookKeys?.[0];
+      : book?.bookKeys?.find(hasMelody) ?? book?.bookKeys?.[0];
     const pageOf = (entity?: LessonEntity) => (entity ? entity.firstPageByBook?.[lessonBookKey ?? ""] ?? entity.firstPage ?? 0 : 0);
     const unitWorks = unitRelations
       .filter((relation) => relation.predicate === "包含作品" && relation.objectId)
