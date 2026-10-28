@@ -31,29 +31,6 @@ body::before {
 .home-portal svg { display: block; }
 
 /* The shared navigation keeps its primary destinations visible on every viewport. */
-/* The research project, the nav's first row on every page. The nav sticks with that row above the viewport,
-   so the line scrolls away and the links stay; a fixed height keeps the offset exact. */
-.home-nav.has-project { --project-strip-h: 30px; top: calc(-1 * var(--project-strip-h)); }
-.project-strip {
-  box-sizing: border-box;
-  width: min(1440px, 100%);
-  height: var(--project-strip-h);
-  margin: 0 auto;
-  padding: 0 clamp(18px, 3vw, 44px);
-  overflow: hidden;
-  color: #5b6a62;
-  font: 12px/30px "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.project-strip span + span { margin-left: 1.2em; }
-.project-strip b { color: #17221c; font-weight: 600; }
-@media (max-width: 640px) {
-  /* phones show the project only on the entry page (portal/index.html), not inside the editions */
-  .home-nav.has-project { --project-strip-h: 0px; }
-  .project-strip { display: none; }
-}
-
 .home-nav {
   position: sticky;
   top: 0;

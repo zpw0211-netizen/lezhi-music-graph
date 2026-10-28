@@ -1,7 +1,7 @@
 "use client";
 import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { BrandMark } from "./home/BrandMark";
-import { BRAND_NAME, PROJECT } from "../lib/app/brand";
+import { BRAND_NAME } from "../lib/app/brand";
 import { WorkbenchIcon } from "./WorkbenchIcon";
 import { AccountDialog } from "./account/AccountDialog";
 import type { AccountView } from "./account/AccountPanel";
@@ -43,8 +43,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
       ?? (["lab", "timeline", "rhythm"].includes(routeToken) ? "atlas" : undefined)
     : undefined;
   const currentView = hashView ?? active;
-  return <><nav className="home-nav has-project" aria-label="主导航">
-    <p className="project-strip"><span>{PROJECT.source}<b>{PROJECT.title}</b></span><span>项目编号：{PROJECT.number}</span></p>
+  return <><nav className="home-nav" aria-label="主导航">
     <div className="home-nav-inner">
       <button type="button" className="home-brand" onClick={() => onNavigate("home")} aria-label={`${BRAND_NAME}首页`}>
         <BrandMark /><span>{BRAND_NAME}</span>
