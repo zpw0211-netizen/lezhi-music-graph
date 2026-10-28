@@ -29,7 +29,7 @@ function figures(pattern: RhythmPattern): Figure[] {
     const value = pattern.triplet ? figure.dur * 1.5 : figure.dur;
     figure.dots = figure.dots || [1.5, 3, 0.75, 0.375].some((dotted) => Math.abs(value - dotted) < 1e-6) ? 1 : 0;
     figure.base = figure.dots ? value / 1.5 : value;
-    figure.width = 17 + 13 * Math.sqrt(figure.dur) + (figure.dots ? 5 : 0);
+    figure.width = 6 + 29 * figure.dur + (figure.dots ? 5 : 0);
     figure.x = x + 7;
     x += figure.width;
   }

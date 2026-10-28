@@ -79,8 +79,8 @@
 .rhythm-meter span:last-child { padding-top: .1em; }
 
 .rhythm-bars { display: grid; flex: 1 1 auto; grid-template-columns: repeat(auto-fill, minmax(calc(var(--bar-beats, 2) * 2.9em), 1fr)); row-gap: .7em; min-width: 0; }
-.rhythm-score.is-four { font-size: min(50px, calc(100cqw / (var(--bar-beats, 2) * 9.6 + 3))); }
-.rhythm-stage:fullscreen .rhythm-score.is-four { font-size: min(80px, calc(100cqw / (var(--bar-beats, 2) * 9.6 + 3))); }
+.rhythm-score.is-four { font-size: min(50px, calc(100cqw / (var(--bar-beats, 2) * 11.2 + 3))); }
+.rhythm-stage:fullscreen .rhythm-score.is-four { font-size: min(80px, calc(100cqw / (var(--bar-beats, 2) * 11.2 + 3))); }
 .rhythm-score.is-four .rhythm-bars { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .rhythm-bar { display: flex; align-items: flex-start; gap: .32em; padding-right: .5em; }
 .rhythm-bar { padding-right: 0; gap: 0; }
