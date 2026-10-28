@@ -79,7 +79,7 @@ export function PatternGlyph({ pattern, activeKey, marks, groupIndex }: {
   return (
     <span className={`rhythm-group${pattern.triplet ? " is-triplet" : ""}`}>
       {pattern.triplet && <span className="rhythm-triplet-mark" aria-hidden="true">3</span>}
-      <svg className="rhythm-figures" viewBox={`0 0 ${width} 42`} style={{ width: `${width / EM}em`, height: `${42 / EM}em` }} role="img" aria-label={pattern.name}>
+      <svg className="rhythm-figures" viewBox={`0 0 ${width} 42`} style={{ width: `${width / EM}em`, height: `${42 / EM}em`, maxWidth: "100%" }} role="img" aria-label={pattern.name}>
         {notes.map((note, n) => {
           const keys = groupIndex === undefined ? [] : note.tokens.map((token) => tokenKey(groupIndex, token));
           const active = !!activeKey && keys.includes(activeKey);
@@ -109,11 +109,9 @@ export function PatternGlyph({ pattern, activeKey, marks, groupIndex }: {
 }
 
 /** The rhythm score, as a line of bars. */
-export function RhythmScore({ bars, meter, fourAcross, activeKey, marks, countdown, selected, onSelect }: {
+export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected, onSelect }: {
   bars: RhythmBar[];
   meter: Meter;
-  /** Editing: four bars to a row so a whole phrase is on screen without scrolling. */
-  fourAcross?: boolean;
   activeKey: string | null;
   marks?: Map<string, Verdict>;
   countdown: number | null;
@@ -122,7 +120,7 @@ export function RhythmScore({ bars, meter, fourAcross, activeKey, marks, countdo
   onSelect?: (index: number) => void;
 }) {
   return (
-    <div className={`rhythm-score${fourAcross ? " is-four" : ""}`} style={{ "--bar-beats": meter.beats } as CSSProperties} aria-label="节奏谱">
+    <div className={`rhythm-score is-four`} style={{ "--bar-beats": meter.beats } as CSSProperties} aria-label="节奏谱">
       <span className="rhythm-meter" aria-label={`${meter.id} 拍`}><span>{meter.top}</span><span>{meter.bottom}</span></span>
       <div className="rhythm-bars">
         {bars.map((bar, barIndex) => (

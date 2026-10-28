@@ -437,7 +437,6 @@ export function RhythmPage() {
         <RhythmScore
           bars={shownBars}
           meter={meter}
-          fourAcross={mode === "edit"}
           activeKey={activeKey}
           marks={result?.marks}
           countdown={countdown}
