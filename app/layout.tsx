@@ -84,6 +84,14 @@ export default function RootLayout({
         className={`${geistMono.variable} antialiased`}
       >
         <AccountProvider>{children}</AccountProvider>
+        {/* Offline cache, written per edition by prepare-github-pages.mjs from scripts/pages-sw.js. */}
+        {publicBasePath && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("${publicBasePath}/sw.js",{scope:"${publicBasePath}/"}).catch(function(){})});`,
+            }}
+          />
+        )}
       </body>
     </html>
   );
