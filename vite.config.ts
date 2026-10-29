@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
-import { defineConfig } from 'vite';
+import { readFileSync } from 'node:fs';
+import { defineConfig, type Plugin } from 'vite';
 import { sites } from '@openai/sites-vite-plugin';
 import hostingConfig from './.openai/hosting.json';
 
@@ -11,12 +12,30 @@ const isGitHubPages = process.env.GITHUB_PAGES === 'true';
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID = '00000000-0000-4000-8000-000000000000';
 const { d1, r2 } = hostingConfig;
 
+// 人音 editions never look up 人教 books (findMelodies keeps pep-* keys apart), so their
+// transcriptions — about half the melody data — are left out of those editions' bundles.
+const EMPTY_MELODIES = '\0yapu-empty-melodies';
+function omitPepMelodies(): Plugin {
+  const books = JSON.parse(readFileSync(new URL('./data/books.json', import.meta.url), 'utf8'));
+  const omit = String(books.edition?.key ?? '').startsWith('renyin');
+  return {
+    name: 'yapu-omit-pep-melodies',
+    enforce: 'pre',
+    resolveId(source) {
+      if (omit && /^\.\/melodies-(wx-)?pep-g\d+s[12]$/.test(source)) return EMPTY_MELODIES;
+    },
+    load(id) {
+      if (id === EMPTY_MELODIES) return 'export default {};';
+    },
+  };
+}
+
 export default defineConfig(async () => {
   const base = {
     css: { postcss: { plugins: [tailwindcss()] } },
     server: isCodexSeatbeltSandbox ? { watch: { useFsEvents: false, usePolling: true } } : undefined,
   };
-  if (isGitHubPages) return { ...base, plugins: [vinext()] };
+  if (isGitHubPages) return { ...base, plugins: [omitPepMelodies(), vinext()] };
   process.env.WRANGLER_WRITE_LOGS ??= 'false';
   process.env.WRANGLER_LOG_PATH ??= '.wrangler/logs';
   process.env.MINIFLARE_REGISTRY_PATH ??= '.wrangler/registry';

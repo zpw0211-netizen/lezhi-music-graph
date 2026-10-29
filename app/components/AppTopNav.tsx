@@ -3,9 +3,11 @@ import { useState, useSyncExternalStore, type FormEvent, type ReactNode } from "
 import { BrandMark } from "./home/BrandMark";
 import { BRAND_NAME } from "../lib/app/brand";
 import { WorkbenchIcon } from "./WorkbenchIcon";
-import { AccountDialog } from "./account/AccountDialog";
+import dynamic from "next/dynamic";
 import type { AccountView } from "./account/AccountPanel";
 import { useAccount } from "./account/AccountProvider";
+// The account SDK is large and only needed once someone opens the dialog.
+const AccountDialog = dynamic(() => import("./account/AccountDialog").then(module => module.AccountDialog));
 export type NavView = "home" | "records" | "graph" | "assistant" | "research" | "lab" | "atlas";
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
 type NavItem = { label: string; view: NavView; href?: string } | { label: string; view: "timeline"; href: string };
