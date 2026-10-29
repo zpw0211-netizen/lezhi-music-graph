@@ -4,10 +4,12 @@
 //   npx tsx scripts/vocal/export.ts keys k1 k2 …         these fingerprints only (to re-sing), written to .vocal/work/keys.json
 //   npx tsx scripts/vocal/export.ts parts [out.json]     choral parts for the male voice: lower parts without a recording
 //                                                        (and main lines labelled 男…), each with "voice": "ria" | "qixuan"
-// Covers every book's transcriptions and the book-agnostic key melodies. Staff editions share the jianpu books' data.
+// Covers every book's transcriptions and the book-agnostic key melodies; staff editions as they show them
+// (their own transcriptions, and jianpu excerpts moved to the key the staff textbook prints).
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { BOOK_MELODIES, MELODIES } from "../../app/lib/lesson/melodies";
+import { BOOK_MELODIES, MELODIES, melodiesFor } from "../../app/lib/lesson/melodies";
+import { STAFF_KEYS } from "../../app/lib/lesson/staff-key-data";
 import { midiOf, type Melody, type MelodyNote } from "../../app/lib/lesson/jianpu";
 import { findVocal, vocalKey } from "../../app/lib/lesson/vocal";
 
@@ -76,10 +78,17 @@ const visitParts = (book: string, name: string, melody: Melody, index: number) =
 
 const each = (fn: typeof visit) => {
   for (const [book, works] of Object.entries(BOOK_MELODIES)) {
-    if (book.startsWith("wx-")) continue;
-    for (const [name, melodies] of Object.entries(works)) melodies.forEach((melody, index) => fn(book, name, melody, index));
+    // staff books: as the staff edition shows them (its own transcriptions, moved to the key it prints)
+    if (book.startsWith("wx-")) for (const name of Object.keys(works)) melodiesFor(book, name).forEach((melody, index) => fn(book, name, melody, index));
+    else for (const [name, melodies] of Object.entries(works)) melodies.forEach((melody, index) => fn(book, name, melody, index));
   }
   for (const [name, melodies] of Object.entries(MELODIES)) melodies.forEach((melody, index) => fn("key", name, melody, index));
+  // jianpu excerpts the staff edition prints in another key: a different fingerprint, so a recording of their own
+  for (const [entry, value] of Object.entries(STAFF_KEYS)) {
+    if (!("key" in value)) continue;
+    const [book, work] = entry.split("|");
+    melodiesFor(`wx-${book}`, work, `《${work}》`).forEach((melody, index) => fn(`wx-${book}`, work, melody, index));
+  }
 };
 each(mode === "parts" ? visitParts : visit);
 

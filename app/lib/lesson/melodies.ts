@@ -138,14 +138,18 @@ export function melodiesFor(bookKey: string | undefined, ...names: string[]): Me
   const found = findMelodies(bookKey, names);
   if (!bookKey?.startsWith("wx-") || !found.name) return found.melodies;
   const prefix = `${bookKey.slice(3)}|${found.name.replace(/^《|》$/g, "")}|`;
-  return found.melodies.map((melody, index) => {
+  return found.melodies.flatMap((melody, index) => {
+    if (STAFF_OMIT.has(prefix + index)) return [];
     const key = STAFF_KEYS[prefix + index];
     const placed = STAFF_PLACEMENT[prefix + index];
     // The staff textbook prints this excerpt in another key (same jianpu, other pitches), or spells it with another signature.
     const keyed = !key ? melody : "key" in key ? { ...melody, key: key.key, tonic: key.key.replace(/^1=/, ""), tonicMidi: key.tonicMidi } : { ...melody, staffSignature: key.signature };
-    return placed ? { ...keyed, staff: placed } : keyed;
+    return [placed ? { ...keyed, staff: placed } : keyed];
   });
 }
+
+/** Excerpts only the jianpu textbook prints (book|work|melody index): the staff edition leaves them out. */
+const STAFF_OMIT = new Set(["g8s2|水调歌头·明月几时有|1"]);
 
 function findMelodies(bookKey: string | undefined, names: string[]): { melodies: Melody[]; name?: string } {
   if (bookKey?.startsWith("pep-") || bookKey?.startsWith("wx-pep-")) {
@@ -177,6 +181,16 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
         if (parts.length) return { melodies: parts };
         const near = Object.keys(book).find((title) => title.replace(/（[^）]*）$/, "") === bare || (title.length >= 4 && bare.endsWith(title)));
         if (near) return { melodies: book[near], name: near };
+      }
+    }
+    // 课上欣赏的作品印在别的册（一下《致春天》听三下的《春天来了》、二下的《春江花月夜》）：到其他已核对的人教册里找同名作品。
+    const staff = bookKey.startsWith("wx-");
+    for (const name of names) {
+      const bare = name.replace(/^《|》$/g, "");
+      // the staff edition prefers its own transcriptions, then the jianpu ones
+      for (const key of [...PEP_REVIEWED_BOOKS].sort((a, b) => Number(b.startsWith("wx-") === staff) - Number(a.startsWith("wx-") === staff))) {
+        const other = BOOK_MELODIES[key]?.[bare];
+        if (other?.length) return { melodies: other, name };
       }
     }
     return { melodies: [] };
