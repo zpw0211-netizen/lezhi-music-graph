@@ -31,6 +31,7 @@ export const STAFF_PLACEMENT: Record<string, Array<{ clef?: "bass"; octave: numb
   "pep-g2s2|月亮，月亮|0": [{octave: 0}],
   "pep-g2s2|勇敢的鄂伦春|0": [undefined, {clef: "bass",octave: 0}],
   "pep-g3s1|献给爱丽丝（片段）|0": [undefined, {clef: "bass",octave: 0}],
+  "pep-g3s1|可可西里（片段）|0": [undefined, {clef: "bass",octave: 0}, {clef: "bass",octave: 0}, {clef: "bass",octave: 0}],
   "pep-g3s2|月亮叔叔住得远|2": [{octave: -1}],
   "pep-g4s1|对花|0": [undefined, {octave: 0}],
   "pep-g4s1|斗牛士之歌|0": [undefined, undefined, {clef: "bass",octave: 0}, {clef: "bass",octave: 0}, undefined],
