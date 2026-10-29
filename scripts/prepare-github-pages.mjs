@@ -1,4 +1,5 @@
-import { access, cp, mkdir, copyFile, readdir, writeFile, rm } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { access, cp, mkdir, copyFile, readdir, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 
 // yapu.studio layout: the entry page (portal/) sits at the domain root and links to one
@@ -53,6 +54,17 @@ for (const relativePath of excludedGraphFiles) {
 
 if (!(await exists(path.join(siteRoot, "404.html"))) && (await exists(siteIndex))) {
   await copyFile(siteIndex, path.join(siteRoot, "404.html"));
+}
+
+// Offline cache for each edition (scripts/pages-sw.js). Its version is a hash of the page and the
+// data files, so a rebuild with nothing changed does not make visitors download everything again.
+if (basePath && (await exists(siteIndex))) {
+  const hash = createHash("sha256");
+  const dataRoot = path.join(siteRoot, "data");
+  const files = [siteIndex, ...((await exists(dataRoot)) ? (await readdir(dataRoot, { recursive: true })).map((file) => path.join(dataRoot, file)).sort() : [])];
+  for (const file of files) if (file === siteIndex || file.endsWith(".json")) hash.update(path.relative(siteRoot, file)).update(await readFile(file));
+  const worker = await readFile(path.resolve("scripts/pages-sw.js"), "utf8");
+  await writeFile(path.join(siteRoot, "sw.js"), worker.replace("__YAPU_BUILD__", hash.digest("hex").slice(0, 12)));
 }
 
 // The entry page is placed only by the primary edition build (a second edition sets PAGES_ENTRY=0).
