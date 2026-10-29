@@ -171,14 +171,23 @@ def english(notes):
         return {i: [(f, V.dict[f])] for i, f in frags}
     if frags and V.en is None:
         raise ValueError(f"{V.name} has no English dictionary")
-    k = 0
-    while k < len(frags):
+    # join fragments into the fewest dictionary words that cover them all ("me ga ther" is me + gather, not mega + ther)
+    n = len(frags)
+    best = [0] * (n + 1)
+    choice = [0] * n
+    for k in range(n - 1, -1, -1):
+        best[k] = None
         for span in (3, 2, 1):
-            word = "".join(f for _, f in frags[k:k + span])
-            if k + span <= len(frags) and word in V.en:
-                break
-        else:
-            raise ValueError(f"no phonemes for English {frags[k][1]!r}")
+            if k + span <= n and best[k + span] is not None and "".join(f for _, f in frags[k:k + span]) in V.en:
+                if best[k] is None or best[k + span] + 1 < best[k]:
+                    best[k], choice[k] = best[k + span] + 1, span
+    if n and best[0] is None:
+        bad = next(f for k, (_, f) in enumerate(frags) if best[k] is None and (k + 1 == n or best[k + 1] is not None))
+        raise ValueError(f"no phonemes for English {bad!r}")
+    k = 0
+    while k < n:
+        span = choice[k]
+        word = "".join(f for _, f in frags[k:k + span])
         part = frags[k:k + span]
         phs = V.en[word]
         # syllables: each vowel with the consonants before it; one consonant between vowels starts the
