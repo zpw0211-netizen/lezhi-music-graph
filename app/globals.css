@@ -1357,9 +1357,11 @@ body:has(.neo-card.expanded) { overflow:hidden; }
 }
 
 @media (max-width: 1100px) {
+  /* 窄屏由整页滚动；这里若是滚动容器（overflow:auto），顶部导航的 sticky 会相对它而不是窗口，导航就跟着滚走。 */
   .graph-first {
     height: auto;
-    overflow: auto;
+    overflow: visible;
+    overflow-x: clip;
   }
   .graph-first .workspace {
     height: auto;

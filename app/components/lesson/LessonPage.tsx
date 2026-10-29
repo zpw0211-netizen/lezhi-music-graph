@@ -190,7 +190,7 @@ export function LessonPage({
   const melody = bookMelodies.length ? bookMelodies : undefined;
   const starred = isStarredWork(relationships.filter((relation) => relation.subject === workId));
   const creators = mergeCreators(lesson.own
-    .filter((relation) => /^(作词|作曲|词曲作者|编曲|改编|记谱配词)$/.test(relation.predicate))
+    .filter((relation) => /^(作词|作曲|词曲作者|填词|改词|编词|译配|译词|配歌|配曲|编曲|编配|改编|整理|整理改编|记谱|记谱配词|记录|传谱|编合唱|配合唱)$/.test(relation.predicate))
     .map((relation) => ({ id: relation.id, label: relation.predicate, value: valueOf(relation) })));
   const scoreMedia = getScoreMedia(work.media);
   const scorePage = getPrintedPage(scoreMedia);
