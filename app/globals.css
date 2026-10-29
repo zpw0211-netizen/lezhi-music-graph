@@ -8,6 +8,8 @@
 * { box-sizing:border-box; }
 html, body { min-height:100%; }
 body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font-ui); }
+/* Prose blocks avoid a lone character on their last line (narrow phone columns). Chips and labels are left alone. */
+p, li, dd, dt, h1, h2, h3, h4, h5, h6, blockquote, figcaption, .lesson-quiz button { text-wrap:pretty; }
 button,input { font:inherit; } button { cursor:pointer; }
 .app-shell { min-height:100vh; display:flex; background:radial-gradient(circle at 72% -10%,#1d2d56 0,transparent 35%),var(--bg); }
 .sidebar { width:248px; flex:0 0 248px; min-height:100vh; padding:26px 16px 20px; border-right:1px solid var(--line); background:#09101fe5; display:flex; flex-direction:column; }.eyebrow { margin:0; color:var(--muted); letter-spacing:.16em; font-size:10px; font-weight:700; }

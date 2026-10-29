@@ -790,8 +790,9 @@ export function WorkLibrary({
       const starred = Boolean(work.starred);
       const isLearned = learned.has(learnedKey(currentBookKey, work.id));
       const melodies = melodiesFor(melodyEditionBookKey(currentBookKey), bareWorkName(work.name), work.name);
-      const authors = work.authors?.map((author) => `${author.role} ${author.name}`).join(" · ");
-      const credits = [work.type, authors].filter(Boolean).join(" · ");
+      // Each credit stays one unit when the line wraps, so a name never breaks onto its own line.
+      const credits = [work.type, ...(work.authors?.map((author) => `${author.role} ${author.name}`) ?? [])].filter(Boolean)
+        .flatMap((part, index) => [index ? " · " : "", <span key={index}>{part}</span>]);
       const modes = isPrimaryBook ? work.modes?.join("、") : "";
       const activityModeSet = (directory?.grade ?? 3) <= 2 ? EARLY_PRIMARY_ACTIVITY_MODES : LATER_PRIMARY_ACTIVITY_MODES;
       const activityModes = isPrimaryBook ? (work.modes ?? []).filter((mode) => activityModeSet.includes(mode)) : [];
@@ -813,7 +814,7 @@ export function WorkLibrary({
           </span>
           <span aria-hidden="true" className="records-score-copy">
             <strong>{work.name}</strong>
-            {credits && <span className="records-score-authors">{credits}</span>}
+            {credits.length > 0 && <span className="records-score-authors">{credits}</span>}
             {activityModes.length > 0 && <span className="records-primary-work-stamps" aria-label={`学习活动：${activityModes.join("、")}`}>
               {activityModes.map((mode) => <span className="records-primary-work-stamp" key={mode}>{mode}</span>)}
             </span>}
