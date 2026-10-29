@@ -76,8 +76,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   // Every page needs the graph index; start downloading it with the scripts
-  // instead of after hydration. Matches the fetch() in useGraphIndex.
-  preload(`${publicBasePath}/data/graph-index.json`, { as: "fetch", crossOrigin: "anonymous" });
+  // instead of after hydration. Matches the fetch() in useGraphIndex. The book directory
+  // comes first so 按课学习 can open early; the full graph yields bandwidth to it.
+  preload(`${publicBasePath}/data/graph-books.json`, { as: "fetch", crossOrigin: "anonymous", fetchPriority: "high" });
+  preload(`${publicBasePath}/data/graph-index.json`, { as: "fetch", crossOrigin: "anonymous", fetchPriority: "low" });
   return (
     <html lang="zh-CN">
       <body

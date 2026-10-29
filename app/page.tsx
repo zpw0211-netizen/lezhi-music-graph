@@ -448,7 +448,8 @@ export default function Home() {
         <div className={`route-view${view === "atlas" || view === "lab" || view === "timeline" || view === "rhythm" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
-          {view === "records" && index.status !== "ready" && <RecordsStartup failed={index.status === "error"} />}
+          {/* 按课学习 needs only the book directory, which arrives well before the full graph. */}
+          {view === "records" && !dataset && <RecordsStartup failed={index.status === "error"} />}
           {view === "home" && (
             <HomePortal
             books={books}

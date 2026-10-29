@@ -237,6 +237,10 @@ const graphIndex = {
 
 const indexText = `${JSON.stringify(graphIndex)}\n`;
 await writeFile(path.join(dataDir, "graph-index.json"), indexText, "utf8");
+// The book directory alone (a few KB): 按课学习 needs only this plus one book's file, so it can open
+// before the full graph above has arrived.
+const directory = { version: graphIndex.version, generatedAt: graphIndex.generatedAt, dataset: graphIndex.dataset };
+await writeFile(path.join(dataDir, "graph-books.json"), `${JSON.stringify(directory)}\n`, "utf8");
 
 console.log(
   JSON.stringify(

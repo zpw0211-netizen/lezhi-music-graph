@@ -12,6 +12,7 @@ export const STAFF_KEYS: Record<string, { key: string; tonicMidi: number } | { s
   "pep-g2s2|歌唱祖国|0": { key: "1=F", tonicMidi: 65 },
   "pep-g2s2|歌唱祖国|1": { key: "1=F", tonicMidi: 65 },
   "pep-g3s1|甜甜的秘密|0": { key: "1=F", tonicMidi: 65 },
+  "pep-g3s1|可可西里（片段）|0": { key: "1=D", tonicMidi: 62 },
   "pep-g3s2|酒歌|0": { key: "1=F", tonicMidi: 65 },
   "pep-g3s2|卖花姑娘|0": { key: "1=G", tonicMidi: 67 },
   "pep-g3s2|牧羊人的歌|0": { key: "1=F", tonicMidi: 65 },

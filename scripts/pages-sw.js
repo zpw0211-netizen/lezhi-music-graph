@@ -9,6 +9,7 @@ const IMAGE_CACHE = `${PREFIX}images`;
 const IMAGE_LIMIT = 400;
 const INDEX = SCOPE;
 const GRAPH = `${SCOPE}data/graph-index.json`;
+const BOOKS = `${SCOPE}data/graph-books.json`;
 
 const fresh = (url) => fetch(url, { cache: "no-cache" }).then((response) => {
   if (!response.ok) throw new Error(`${url} ${response.status}`);
@@ -23,7 +24,7 @@ self.addEventListener("install", (event) => {
     const html = await page.clone().text();
     const assets = [...new Set([...html.matchAll(/(?:href|src)="([^"]*\/_next\/static\/[^"]+)"/g)].map((match) => match[1]))];
     await cache.put(INDEX, page);
-    await Promise.all([GRAPH, ...assets].map(async (url) => cache.put(url, await fresh(url))));
+    await Promise.all([GRAPH, BOOKS, ...assets].map(async (url) => cache.put(url, await fresh(url))));
     await self.skipWaiting();
   })());
 });
