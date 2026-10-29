@@ -17,10 +17,13 @@ const requiredFiles = [
   "og.jpg",
   "data/graph-quality.json",
   "data/graph-index.json",
+  "data/graph-books.json",
   ...PUBLISHED_BOOK_KEYS.flatMap((key) => [`data/books/${key}.json`, `data/evidence/${key}.json`]),
 ];
 // .nojekyll belongs at the artifact root; with a base path it is checked with the entry page below.
 if (basePath) requiredFiles.splice(requiredFiles.indexOf(".nojekyll"), 1);
+// The offline cache is written only for an edition published under a base path.
+if (basePath) requiredFiles.push("sw.js");
 const excludedFiles = [
   "data/music-graph.json",
   "data/canonical-graph.json",

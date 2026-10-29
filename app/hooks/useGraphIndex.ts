@@ -96,11 +96,20 @@ export type GraphIndexState = {
   generatedAt?: string;
 };
 
-/** Loads the published-textbook graph index once. */
+/** Loads the published-textbook graph index once. The small book directory (data/graph-books.json) lands
+ * first, so pages that only list books and lessons can open while the full graph is still downloading;
+ * status stays "loading" until the full graph is in. */
 export function useGraphIndex() {
   const [state, setState] = useState<GraphIndexState>({ status: "loading", dataset: null, canonicalGraph: null });
   useEffect(() => {
     let active = true;
+    fetchWithRetry(publicAssetUrl("data/graph-books.json"))
+      .then((response) => (response.ok ? (response.json() as Promise<Omit<GraphIndexPayload, "canonicalGraph">>) : null))
+      .then((directory) => {
+        if (active && directory && Array.isArray(directory.dataset?.books) && directory.dataset.books.length)
+          setState((previous) => (previous.dataset ? previous : { ...previous, dataset: directory.dataset, generatedAt: directory.generatedAt }));
+      })
+      .catch(() => undefined);
     const load = async () => {
       const response = await fetchWithRetry(publicAssetUrl("data/graph-index.json"));
       if (!response.ok) throw new Error("graph-index unavailable");
