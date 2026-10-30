@@ -60,6 +60,19 @@ function loadJson<T>(path: string): Promise<T> {
   return cache.get(path) as Promise<T>;
 }
 
+let pageDataLoad: Promise<[TimelineData, TimelineUnit[], Awaited<ReturnType<typeof loadYearSupplement>>, Awaited<ReturnType<typeof loadPeopleSupplement>>, AtlasTimelineData | null]> | null = null;
+/** Starts the time machine's downloads; the exploration page calls it while idle so the tab opens without a wait. */
+export function preloadTimeline() {
+  pageDataLoad ??= Promise.all([
+    loadJson<TimelineData>("timeline.json"),
+    loadJson<TimelineUnit[]>("units.json"),
+    loadYearSupplement(),
+    loadPeopleSupplement(),
+    loadJson<AtlasTimelineData>("atlas.json").catch(() => null),
+  ]).catch(error => { pageDataLoad = null; throw error; });
+  return pageDataLoad;
+}
+
 function bookShortName(bookKey: string) {
   return (BOOKS[bookKey] ?? bookKey).replace("年级", "").replace("册", "");
 }
@@ -506,13 +519,7 @@ export function TimelinePage({ books, stage, onStageChange, onOpenWork }: {
 
   useEffect(() => {
     let active = true;
-    Promise.all([
-      loadJson<TimelineData>("timeline.json"),
-      loadJson<TimelineUnit[]>("units.json"),
-      loadYearSupplement(),
-      loadPeopleSupplement(),
-      loadJson<AtlasTimelineData>("atlas.json").catch(() => null),
-    ]).then(([timeline, units, supplements, peopleSupplements, atlas]) => {
+    preloadTimeline().then(([timeline, units, supplements, peopleSupplements, atlas]) => {
       if (!active) return;
       let enriched = withSupplementalYears(timeline, supplements);
       if (atlas) enriched = withPrintedPages(enriched, atlas);

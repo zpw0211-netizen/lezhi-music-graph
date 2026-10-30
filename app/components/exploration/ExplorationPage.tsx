@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { publicAssetUrl } from "../../lib/app/assets";
 import type { AppView } from "../../lib/app/routing";
 
 type ExplorationView = Extract<AppView, "atlas" | "timeline" | "lab" | "rhythm">;
@@ -22,6 +23,21 @@ export function ExplorationPage({
   children: ReactNode;
 }) {
   const tabRefs = useRef<Partial<Record<ExplorationView, HTMLButtonElement | null>>>({});
+
+  // Once the open tab has had its turn, fetch the other three (code, data, art) in the background:
+  // every request to the host costs a long round trip, so a tab fetched on click keeps the class waiting.
+  useEffect(() => {
+    const preload = () => {
+      void import("../timeline/TimelinePage").then((module) => module.preloadTimeline()).catch(() => undefined);
+      void import("../lab/LabPage").catch(() => undefined);
+      void import("../rhythm/RhythmPage").catch(() => undefined);
+      void import("../atlas/AtlasPage").catch(() => undefined);
+      new Image().src = publicAssetUrl("art/rhythm/drum.webp");
+    };
+    const idle = window.requestIdleCallback?.(preload, { timeout: 2500 });
+    const timer = idle === undefined ? window.setTimeout(preload, 1200) : undefined;
+    return () => { if (idle !== undefined) window.cancelIdleCallback(idle); if (timer !== undefined) window.clearTimeout(timer); };
+  }, []);
 
   const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const activeIndex = tabs.findIndex((tab) => tab.view === activeView);

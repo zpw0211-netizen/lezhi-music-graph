@@ -1,5 +1,6 @@
 import { Fragment, type CSSProperties, type ReactElement } from "react";
-import { midiOf, type Melody, type MelodyNote } from "../../lib/lesson/melodies";
+// From jianpu, not melodies: the rhythm page borrows the glyph helpers and must not pull in every book's melodies.
+import { midiOf, type Melody, type MelodyNote } from "../../lib/lesson/jianpu";
 
 // Engraved five-line staff for the 五线谱 editions, drawn from the same Melody data as jianpu.
 // Units: one staff space = 10. Positions count half-spaces up from the bottom line (0 = bottom
