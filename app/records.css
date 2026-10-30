@@ -794,6 +794,7 @@
 .records-score-copy { display: grid; align-content: start; justify-items: start; gap: 2px; padding: 10px 0 0; }
 .records-score-copy strong { color: var(--records-ink); font: 600 18px/1.35 var(--records-serif); }
 .records-score-authors { color: var(--records-ink-3); font: 12px/1.5 var(--records-ui); }
+.records-score-authors > span { display: inline-block; }
 
 
 .records-score-play { display: block; margin-top: 8px; }
