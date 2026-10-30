@@ -45,7 +45,7 @@ const onsets = (bars: MelodyNote[][]) => {
   return out.join(",");
 };
 // Not choral voices: instruments, clapping, cues.
-const NOT_SUNG = /打击|拍手|拟声|伴奏|左手|右手|钢琴|铝板琴|竖笛|器乐|前奏|应答句/;
+const NOT_SUNG = /打击|拍手|拟声|伴奏|左手|右手|钢琴|铝板琴|竖笛|器乐|前奏|应答句|括号|和弦/;
 /** Lower parts are the men's (Ria) unless marked for women; a main line marked 男 is the men's too. */
 const singerOf = (label: string | undefined, part: number) => (/女/.test(label ?? "") ? "qixuan" : /男/.test(label ?? "") || part > 0 ? "ria" : "qixuan");
 
@@ -69,9 +69,16 @@ const visitParts = (book: string, name: string, melody: Melody, index: number) =
       let k = 0;
       words = notes.map((note) => (pitched(note) && !note.tie && !note.slur ? { ...note, lyric: syllables[k++] } : note));
     }
+    // In a choral part a note without a syllable right after a sung one ("~" in its lyrics) carries that syllable on.
+    let held = false;
+    const melisma = words.map((note) => {
+      if (!pitched(note)) { held = false; return false; }
+      if (note.lyric) { held = true; return false; }
+      return held && !note.inst && !note.tie && !note.slur;
+    });
     out.push({
       key, book, name, index, part, label: line.label ?? "", voice: singerOf(line.label, part), bpm: melody.bpm, meter: melody.meter,
-      notes: words.map((note) => ({ d: note.d, b: note.b, midi: pitched(note) ? midiOf(melody, note) : null, lyric: note.lyric ?? null, slur: !!note.slur, tie: !!note.tie })),
+      notes: words.map((note, i) => ({ d: note.d, b: note.b, midi: pitched(note) ? midiOf(melody, note) : null, lyric: note.lyric ?? null, slur: !!note.slur || melisma[i], tie: !!note.tie })),
     });
   });
 };
