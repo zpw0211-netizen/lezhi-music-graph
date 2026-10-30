@@ -258,12 +258,13 @@ def plan(mel, shift):
     pitch_notes = []  # (start, end, midi) for the pitch curve, every sounding note
     t = 0.0
     first = None
+    voiced = False  # the last pitched note was sung (rests in between don't reset it)
     for i, n in enumerate(notes):
         dur = n["b"] * beat
         sung = n["midi"] is not None and n["d"] < 8
         if sung:
             midi = n["midi"] + shift
-            if n["tie"] and pitch_notes:
+            if n["tie"] and pitch_notes and abs(pitch_notes[-1][1] - t) < 1e-6:
                 s, _, m = pitch_notes[-1]
                 pitch_notes[-1] = (s, t + dur, m)
             else:
@@ -283,8 +284,15 @@ def plan(mel, shift):
                     s = e
                 if first is None:
                     first = t
+                voiced = True
             elif (n["slur"] or n["tie"]) and events and abs(events[-1][1] - t) < 1e-6:
                 events[-1][1] = t + dur  # melisma / tie; unslurred notes without lyrics are instrumental (intro, interlude)
+            elif (n["slur"] or n["tie"]) and voiced and events and t - events[-1][1] <= 2 * beat + 1e-6:
+                # a melisma resumed after a breath (slur across a rest): carry on with the syllable's vowel
+                phs = events[-1][3]
+                events.append([t, t + dur, midi, phs[next((j for j, p in enumerate(phs) if is_vowel(p)), 0):]])
+            else:
+                voiced = False
         t += dur
     total_end = t
     if first is None:
