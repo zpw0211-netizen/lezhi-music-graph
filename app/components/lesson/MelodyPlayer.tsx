@@ -167,6 +167,8 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
   /** One recording per part where one was sung: the main line (绮萱) and lower choral parts (Ria, male). */
   const vocals = useMemo(() => lines.map((_, part) => findVocal(melody, part)), [lines, melody]);
   const vocal = vocals[0];
+  /** Several lines with words are a choir; without words (打击乐合奏, 铝板琴 accompaniment) an ensemble. */
+  const playLabel = lines.length < 2 ? "播放旋律" : lines.some((line) => line.bars.some((bar) => bar.some((note) => note.lyric))) ? "播放合唱" : "播放合奏";
   const anyVocal = vocals.some(Boolean);
   const singers = new Set(vocals.flatMap((v) => (v ? [v.singer] : [])));
   const vocalLabel = !singers.has("ria") ? VOCAL_LABEL : singers.has("qixuan") ? CHOIR_LABEL : MALE_LABEL;
@@ -601,9 +603,9 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
     <div className="melody-controls">
-      <button type="button" className={`melody-play ${playing ? "is-playing" : ""}`} onClick={() => void play()} disabled={loadingSampler || !!follow} aria-label={loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}>
+      <button type="button" className={`melody-play ${playing ? "is-playing" : ""}`} onClick={() => void play()} disabled={loadingSampler || !!follow} aria-label={loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : playLabel}>
         {!loadingSampler && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
-        {loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : lines.length > 1 ? "播放合唱" : "播放旋律"}
+        {loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : playLabel}
       </button>
       {canFollow && <button type="button" className={`melody-follow-toggle${followOpen ? " is-open" : ""}`} aria-expanded={followOpen} onClick={() => { if (follow) stop(); setFollowOpen((open) => !open); }}>跟唱</button>}
       <span role="status" aria-live="polite" aria-atomic="true" style={VISUALLY_HIDDEN}>{announcement}</span>
