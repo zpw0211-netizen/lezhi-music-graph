@@ -252,8 +252,12 @@
 
 @media (max-width: 480px) {
   .home-nav-inner { gap: 4px 8px; padding: 7px 12px; }
-  .home-nav-links { display: grid; grid-template-columns: repeat(2, max-content); justify-content: end; gap: 0 13px; }
-  .home-nav-links button { width: 100%; padding: 4px 5px; font-size: 12px; text-align: center; }
+  /* 五个栏目在手机上排成一整行，放在品牌和登录下面（两列会剩下单独一项）；选择器加一层，盖过 account.css 的排序。 */
+  .home-nav-content { display: contents; }
+  .home-nav-inner .home-nav-actions { order: 1; margin-left: auto; }
+  .home-nav-inner .home-nav-links { order: 3; }
+  .home-nav-links { width: 100%; display: grid; grid-template-columns: repeat(5, auto); justify-content: space-between; gap: 0; }
+  .home-nav-links button, .home-nav-links a { width: 100%; padding: 4px 2px; font-size: 12px; text-align: center; white-space: nowrap; }
   .ink-app.network-mode .home-nav-links button { padding: 4px 5px; font-size: 12px; }
   .home-nav-actions { gap: 8px; }
   .home-nav-cta { height: 34px; padding: 0 11px; font-size: 12px; }

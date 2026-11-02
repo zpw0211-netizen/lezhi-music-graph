@@ -14,6 +14,7 @@ import {
   type LessonFact, type LessonKind, type StageKey,
 } from "../../lib/lesson/reflective";
 import { REGULAR_STAGES, regularScript } from "../../lib/lesson/regular";
+import { STANDARD } from "../../lib/lesson/curriculum";
 
 type ScoreAsset = { url: string; title?: string };
 type Question = { id: string; prompt: string; options: string[]; answer: string };
@@ -453,6 +454,7 @@ export function ReflectivePresent({
       </div>
       <aside className="reflect-teacher" aria-label="教师提示（课堂上不显示）">
         <p><b>设计意图</b>{DESIGN_NOTES[slide.key]}</p>
+        {(slide.key === "cover" || slide.key === "r-cover") && <p><b>课标依据</b>{regular.standard.band} · 学习任务“{regular.standard.task}”（{STANDARD}第 {regular.standard.page} 页）</p>}
         {(slide.key === "cover" || slide.key === "wonder") && <div className="reflect-teacher-goals"><b>教学目标</b>
           <ul>{script.goals.map((goal, index) => <li key={goal.area}><em>{goal.area}</em>{text(`goal-${index}`, goal.text)}</li>)}</ul>
         </div>}

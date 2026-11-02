@@ -95,7 +95,7 @@ const hash = (value: string) => {
 type Question = { id: string; prompt: string; options: string[]; answer: string; page: number | null };
 
 export function LessonPage({
-  workId, bookKey: requestedBookKey, entities, relationships, assetUrl, onBack, onOpenLesson, onWorkGraph,
+  workId, bookKey: requestedBookKey, entities, relationships, assetUrl, onBack, onOpenLesson, onWorkGraph, onPlan,
 }: {
   workId: string;
   bookKey?: string;
@@ -105,6 +105,8 @@ export function LessonPage({
   onBack: () => void;
   onOpenLesson: (id: string) => void;
   onWorkGraph: (id: string) => void;
+  /** 打开智能备课，课题已选好。 */
+  onPlan?: () => void;
 }) {
   const entityMap = useMemo(() => new Map(entities.map((entity) => [entity.id, entity])), [entities]);
   const work = entityMap.get(workId);
@@ -228,6 +230,7 @@ export function LessonPage({
           </div>
           <div className="lesson-hero-actions">
             <button ref={presentButtonRef} type="button" className="lesson-present" onClick={() => setPresenting(true)}><WorkbenchIcon name="expand" />上课模式</button>
+            {onPlan && <button type="button" onClick={onPlan}><WorkbenchIcon name="spark" />智能备课</button>}
             <button type="button" onClick={() => onWorkGraph(workId)}><WorkbenchIcon name="graph" />作品图谱</button>
           </div>
         </header>
