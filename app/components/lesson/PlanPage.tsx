@@ -39,7 +39,7 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
 }) {
   const relations = graph.relationships as unknown as Relation[];
   const entityMap = useMemo(() => new Map(graph.entities.map((entity) => [entity.id, entity])), [graph.entities]);
-  const bookKey = books.some((book) => book.key === routeBook) ? routeBook! : books.find((book) => book.key === "g8s1")?.key ?? books[0]?.key ?? "g8s1";
+  const bookKey = books.some((book) => book.key === routeBook) ? routeBook! : books.find((book) => /(^|-)g8s1$/.test(book.key))?.key ?? books[0]?.key ?? "g8s1";
 
   // 本册能备课的作品：目录里列出的课（有教材栏目），或有旋律数据的作品。
   const listed = useMemo(() => new Set(relations.filter((relation) => relation.predicate === "学习方式").map((relation) => relation.subject)), [relations]);

@@ -18,7 +18,29 @@ export function standardTask(kind: LessonKind, band: Band): { task: string; page
   return ({ sing: { task: "独唱与合作演唱", page: 28 }, play: { task: "独奏与合作演奏", page: 32 }, listen: { task: "听赏与评述", page: 22 }, create: { task: "编创与展示", page: 35 } } as const)[kind];
 }
 
-export type GoalContext = { work: string; grade?: number; mood?: string; origin: string; solemn: boolean; ensemble: boolean };
+/**
+ * 文化理解目标里"了解……"的对象：优先用教材数据里的民族、地域、国家，其次是作曲家与创作年代、出处、体裁；
+ * 都没有时才用笼统的"作品的创作背景"。只取已核对的事实，不补写。
+ */
+export function originOf(facts: Array<{ label: string; value: string }>, fallback = "作品的创作背景") {
+  const pick = (pattern: RegExp) => facts.find((fact) => pattern.test(fact.label) && fact.value.length <= 20)?.value;
+  const nation = pick(/^(所属民族|民族)$/);
+  if (nation) return `${nation}音乐`;
+  const place = pick(/^(地域|所属地域|民歌地域)$/);
+  if (place) return `${place}的音乐`;
+  const country = pick(/^所属国家$/);
+  if (country) return `${country}的音乐`;
+  const composer = facts.find((fact) => /^(作曲|词曲作者)$/.test(fact.label) && fact.value.length <= 12 && !/佚名|不详|民歌|民间/.test(fact.value))?.value;
+  const year = pick(/^(创作年代|创作时间)$/);
+  if (composer) return year ? `作曲家${composer}和作品${year}的创作背景` : `作曲家${composer}和这首作品的创作背景`;
+  const source = pick(/^(选自|选自作品)$/);
+  if (source) return `${source}的故事和音乐`;
+  const genre = facts.find((fact) => /^(音乐体裁|体裁|民歌体裁)$/.test(fact.label) && fact.value.length <= 8)?.value;
+  if (genre) return `${genre}这种体裁的特点`;
+  return fallback;
+}
+
+export type GoalContext ={ work: string; grade?: number; mood?: string; origin: string; solemn: boolean; ensemble: boolean };
 export type Goal = { area: "审美感知" | "艺术表现" | "创意实践" | "文化理解"; text: string };
 
 /** 四项核心素养目标，按学段取课标学业要求的说法。 */

@@ -3,7 +3,7 @@
 // 提问和任务按课型（歌唱课 / 演奏课 / 欣赏课 / 编创课）取模板中的示例，并填入本课作品名与教材事实。
 // 这里只生成文字脚本；页面上的谱例、旋律、插图由 ReflectivePresent 按数据有无决定是否出现。
 
-import { BAND_NAMES, bandOf, peerReview, standardGoals, standardTask } from "./curriculum";
+import { BAND_NAMES, bandOf, originOf, peerReview, standardGoals, standardTask } from "./curriculum";
 
 export type LessonKind = "sing" | "play" | "listen" | "create";
 export type StageKey = "motivate" | "conflict" | "construct" | "transfer" | "summary";
@@ -90,9 +90,7 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
   const level = stageOfGrade(input.grade);
   const meter = pick(facts, /^拍号$/);
   const mood = pick(facts, /情绪|表现情感|情感特点/);
-  const nation = pick(facts, /所属民族/);
-  const place = pick(facts, /^(地域|所属地域)$/);
-  const origin = nation ? `${nation}音乐` : place ? `${place}的音乐` : "这首作品的文化背景";
+  const origin = originOf(facts, "这首作品的文化背景");
   const playful = level === "low";
   const solemn = SOLEMN_WORKS.test(work);
   const ensemble = /合奏|重奏/.test(work);

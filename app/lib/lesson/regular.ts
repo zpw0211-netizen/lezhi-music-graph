@@ -6,7 +6,7 @@
 import { midiOf, type Melody, type MelodyNote } from "./jianpu";
 import { splitPhrases } from "./phrases";
 import { stageOfGrade, type LessonFact, type LessonKind, type StageKey } from "./reflective";
-import { BAND_NAMES, CREATE_FLOW, bandOf, peerReview, standardGoals, standardTask } from "./curriculum";
+import { BAND_NAMES, CREATE_FLOW, bandOf, originOf, peerReview, standardGoals, standardTask } from "./curriculum";
 
 /** 四项核心素养，课件里按这个顺序出现。 */
 export const LITERACIES = ["审美感知", "艺术表现", "创意实践", "文化理解"] as const;
@@ -152,7 +152,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
   const mood = pick(facts, /情绪|表现情感|情感特点/);
   const nation = pick(facts, /所属民族/);
   const place = pick(facts, /^(地域|所属地域)$/);
-  const origin = nation ? `${nation}音乐` : place ? `${place}的音乐` : "作品的创作背景";
+  const origin = originOf(facts);
   const solemn = SOLEMN_WORKS.test(work);
   const ensemble = /合奏|重奏|合唱/.test(work);
   const beat = pulse(meter);
@@ -321,7 +321,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
       ] },
     play: { title: "创意实践", tasks: [
       { level: "基础", task: `用强、弱两种力度演奏${shape ? line(1) : "同一乐句"}，说说哪种更好听。` },
-      { level: "提高", task: "为乐曲配一个两小节的节奏伴奏，和同学合作演奏。" },
+      { level: "提高", task: "用乐器为乐曲编一个两小节的节奏伴奏，和同学合作演奏。" },
       { level: "拓展", task: `改变${shape ? line(1) : "一个乐句"}的节奏，演奏给同学听，请他们说出哪里变了。` },
     ] },
     listen: { title: "创意实践", tasks: [
@@ -345,7 +345,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
     { area: "审美感知", text: `我感受到了${work}的情绪${mood ? `（${mood}）` : ""}，知道了它是怎样表现出来的。` },
     { area: "艺术表现", text: { sing: "我能有感情地演唱这首歌。", play: "我能正确、流畅地演奏这首乐曲。", listen: "我能哼唱主题，并用动作表现音乐。", create: "我能完整地表演小组的作品。" }[kind] },
     { area: "创意实践", text: { sing: solemn ? "我知道了为什么要庄严地演唱。" : "我为歌曲设计了自己的表现方式。", play: "我尝试了用不同的方式演奏。", listen: "我用自己的方式表达了对音乐的理解。", create: "我和同学一起编创了一段音乐。" }[kind] },
-    { area: "文化理解", text: solemn ? `我了解了${work}的由来和意义。` : `我了解了${origin}和它背后的故事。` },
+    { area: "文化理解", text: solemn ? `我了解了${work}的由来和意义。` : nation || place ? `我了解了${origin}和它背后的故事。` : `我了解了${origin}。` },
   ];
 
   // 民歌、戏曲唱段计入每学年背唱的曲目（课标第 29–31 页）。
