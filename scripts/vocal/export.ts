@@ -4,6 +4,7 @@
 //   npx tsx scripts/vocal/export.ts keys k1 k2 …         these fingerprints only (to re-sing), written to .vocal/work/keys.json
 //   npx tsx scripts/vocal/export.ts parts [out.json]     choral parts for the male voice: lower parts without a recording
 //                                                        (and main lines labelled 男…), each with "voice": "ria" | "qixuan"
+//   npx tsx scripts/vocal/export.ts partkeys k1 k2 …     these part fingerprints only (to re-sing), to .vocal/work/partkeys.json
 // Covers every book's transcriptions and the book-agnostic key melodies; staff editions as they show them
 // (their own transcriptions, and jianpu excerpts moved to the key the staff textbook prints).
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -17,9 +18,9 @@ import { findVocal, vocalKey } from "../../app/lib/lesson/vocal";
 const SKIP = new Set<string>([]);
 
 const [mode = "missing", ...rest] = process.argv.slice(2);
-const keys = mode === "keys" ? new Set(rest) : null;
+const keys = mode === "keys" || mode === "partkeys" ? new Set(rest) : null;
 const home = process.env.VOCAL_HOME ?? resolve(import.meta.dirname, "../../.vocal");
-const outPath = mode === "keys" ? resolve(home, "work/keys.json") : rest[0] ?? resolve(home, `work/${mode}.json`);
+const outPath = keys ? resolve(home, `work/${mode}.json`) : rest[0] ?? resolve(home, `work/${mode}.json`);
 
 const out: unknown[] = [];
 const seen = new Set<string>();
@@ -47,7 +48,11 @@ const onsets = (bars: MelodyNote[][]) => {
 // Not choral voices: instruments, clapping, cues.
 const NOT_SUNG = /打击|拍手|拟声|伴奏|左手|右手|钢琴|铝板琴|竖笛|器乐|前奏|应答句|括号|和弦/;
 /** Lower parts are the men's (Ria) unless marked for women; a main line marked 男 is the men's too. */
-const singerOf = (label: string | undefined, part: number) => (/女/.test(label ?? "") ? "qixuan" : /男/.test(label ?? "") || part > 0 ? "ria" : "qixuan");
+const singerOf = (label: string | undefined, part: number, key = "") => (/女/.test(label ?? "") || CHILD_PARTS.has(key) ? "qixuan" : /男/.test(label ?? "") || part > 0 ? "ria" : "qixuan");
+// Parts the children sing although they are not the main line (by vocal key).
+const CHILD_PARTS = new Set([
+  "467d86b8", // 人教一下《找朋友》第二声部：一年级的问答歌
+]);
 
 const visitParts = (book: string, name: string, melody: Melody, index: number) => {
   const main = melody.bars.flat();
@@ -59,7 +64,7 @@ const visitParts = (book: string, name: string, melody: Melody, index: number) =
     const key = vocalKey(melody, part);
     if (seen.has(key)) return;
     seen.add(key);
-    if (part > 0 ? findVocal(melody, part) : findVocal(melody)?.singer === "ria") return;
+    if (keys ? !keys.has(key) : part > 0 ? findVocal(melody, part) : findVocal(melody)?.singer === "ria") return;
     const notes = line.bars.flat();
     let words = notes;
     if (!notes.some(sungWord)) {
@@ -77,7 +82,7 @@ const visitParts = (book: string, name: string, melody: Melody, index: number) =
       return held && !note.inst && !note.tie && !note.slur;
     });
     out.push({
-      key, book, name, index, part, label: line.label ?? "", voice: singerOf(line.label, part), bpm: melody.bpm, meter: melody.meter,
+      key, book, name, index, part, label: line.label ?? "", voice: singerOf(line.label, part, key), bpm: melody.bpm, meter: melody.meter,
       notes: words.map((note, i) => ({ d: note.d, b: note.b, midi: pitched(note) ? midiOf(melody, note) : null, lyric: note.lyric ?? null, slur: !!note.slur || melisma[i], tie: !!note.tie })),
     });
   });
@@ -97,7 +102,7 @@ const each = (fn: typeof visit) => {
     melodiesFor(`wx-${book}`, work, `《${work}》`).forEach((melody, index) => fn(`wx-${book}`, work, melody, index));
   }
 };
-each(mode === "parts" ? visitParts : visit);
+each(mode === "parts" || mode === "partkeys" ? visitParts : visit);
 
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, JSON.stringify(out));
