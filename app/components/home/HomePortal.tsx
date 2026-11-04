@@ -201,6 +201,8 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           const art = bookArt(book);
           const bookUnits = unitsByBook.get(book.key) ?? [];
           const workCount = bookUnits.reduce((sum, unit) => sum + (unit.works?.length ?? 0), 0);
+          // 湘艺版按“课”编排（标题写作“第一课 唱歌、游戏”），这里也说“课”。
+          const unitWord = bookUnits.some(unit => /^第[一二三四五六七八九十]+课/.test(unit.title ?? "")) ? "课" : "单元";
           const volume = volumeNumeral(book.key, orderedBooks);
           return <article key={book.key} className="home-feature" id="home-book-feature" aria-live="polite" aria-label={`卷${volume}，${book.title}`}>
             <div className="home-feature-art" aria-hidden="true">
@@ -210,9 +212,9 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             <div className="home-scroll-copy">
               <p className="home-scroll-overline">卷 {volume} · {EDITION.label.split("·")[0]}</p>
               <h3>{shortBookTitle(book)}</h3>
-              <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个单元一个单元读这册教材。` : "按单元阅读教材内容与关联作品。"}</p>
+              <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个${unitWord}一个${unitWord}读这册教材。` : `按${unitWord}阅读教材内容与关联作品。`}</p>
               {/* 单元目录还在加载时不显示“0 个单元”，但保留这一行的高度，避免内容跳动。 */}
-              <p className="home-scroll-countline" aria-hidden={!bookUnits.length} style={bookUnits.length ? undefined : { visibility: "hidden" }}>{bookUnits.length} 个单元 · {fmt(workCount)} 首作品</p>
+              <p className="home-scroll-countline" aria-hidden={!bookUnits.length} style={bookUnits.length ? undefined : { visibility: "hidden" }}>{bookUnits.length} {unitWord === "课" ? "课" : "个单元"} · {fmt(workCount)} 首作品</p>
               <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>
                 <button type="button" aria-label={`${unit.numeral || unit.order}，${unit.name || unit.title}，进入${book.title}`} onClick={() => openUnit(book, unit)}>
                   <span className="home-unit-number">{unit.numeral || unit.order}</span><span className="home-unit-title">{unit.title || unit.name}</span>

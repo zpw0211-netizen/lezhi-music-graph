@@ -89,6 +89,17 @@ jobs:
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
           NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
+      # 湘艺版 (/xiangyi/) publishes only the books marked published in editions/xiangyi/data/books.json;
+      # PUBLISH_XIANGYI set to "false" takes it off the site.
+      - name: Build 湘艺版 edition
+        if: ${{ vars.PUBLISH_XIANGYI != 'false' }}
+        run: node scripts/build-edition.mjs xiangyi
+        env:
+          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
+          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

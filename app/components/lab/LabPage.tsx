@@ -3,7 +3,10 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { bareWorkName, type BookDirectory, type CanonicalGraph } from "../../lib/app/types";
 import { StageBookPicker } from "../StageBookPicker";
 import { PUBLISHED_BOOK_SHORT_NAMES, availableBookStages, booksForStage, type BookStage } from "../../lib/app/books";
-import { MELODIES, type Melody } from "../../lib/lesson/melodies";
+import { MELODIES, melodiesFor, type Melody } from "../../lib/lesson/melodies";
+
+/** 湘艺版只用本册录的旋律，不借别的版本同名歌的谱。 */
+const labMelodies = (name: string, bookKey?: string): Melody[] => (bookKey && /^(wx-)?xy-/.test(bookKey) ? melodiesFor(bookKey, name) : MELODIES[name] ?? []);
 import { getPianoAudioContext, loadPianoSampler, playPianoSample, type PianoSampler } from "../../lib/lesson/piano-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
@@ -492,7 +495,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [learningProgress, setLearningProgress] = useState<LearningProgress>({ heard: false, played: false, challenged: false, explored: false });
-  const [selected, setSelected] = useState<{ name: string; index: number } | null>(null);
+  const [selected, setSelected] = useState<{ name: string; index: number; bookKey?: string } | null>(null);
   const [selectedBookKey, setSelectedBookKey] = useState("");
   const [workPlaying, setWorkPlaying] = useState(false);
   const [inspect, setInspect] = useState<Inspect>(null);
@@ -515,7 +518,8 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
     .filter(({ work }) => (work.bookKeys ?? []).some((key) => stageBookKeys.has(key))
       && (!selectedBookKey || work.bookKeys?.includes(selectedBookKey)))
     .slice(0, 8), [graph, selectedBookKey, stageBookKeys]);
-  const selectedMelody: Melody | undefined = selected ? MELODIES[selected.name]?.[selected.index] : undefined;
+  const selectedMelodies = useMemo(() => (selected ? labMelodies(selected.name, selected.bookKey) : []), [selected]);
+  const selectedMelody: Melody | undefined = selectedMelodies[selected?.index ?? 0];
   const selectedMode = MODES.find((mode) => mode.id === scale) ?? MODES[0];
   const scaleTitle = selectedMode.title;
   const baseScaleNotes = useMemo<ScaleNote[]>(() => scale === "pentatonic"
@@ -1100,8 +1104,8 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
         <h2>听《{bareWorkName(selected.name)}》</h2>
         <button type="button" onClick={() => { stopLab(); setSelected(null); }}>收起</button>
       </div>
-      {MELODIES[selected.name].length > 1 && <div className="lupan-excerpts" role="group" aria-label="选择谱例片段">
-        {MELODIES[selected.name].map((melody, index) => <button
+      {selectedMelodies.length > 1 && <div className="lupan-excerpts" role="group" aria-label="选择谱例片段">
+        {selectedMelodies.map((melody, index) => <button
           type="button"
           key={index}
           aria-pressed={selected.index === index}
@@ -1132,7 +1136,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       />}
       <div className="lupan-works-grid">
         {works.map(({ work, evidence }) => {
-          const melodies = MELODIES[work.name];
+          const melodies = labMelodies(work.name, work.bookKeys?.[0]);
           const book = PUBLISHED_BOOK_SHORT_NAMES[work.bookKeys?.[0] ?? ""] ?? "教材";
           return <article className="lupan-work-slip" key={work.id}>
             <span className="lupan-work-book">{book}</span>
@@ -1146,7 +1150,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
                   stopLab();
                   setQuestion(null);
                   revealPlayerAfterRender.current = true;
-                  setSelected({ name: work.name, index: 0 });
+                  setSelected({ name: work.name, index: 0, bookKey: work.bookKeys?.[0] });
                   setMessage(`已选择${work.name}，点击「播放旋律」。`);
                 }}
                 aria-label={`听${work.name}旋律`}

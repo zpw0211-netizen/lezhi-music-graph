@@ -59,6 +59,7 @@ import WX_PEP_G7S2 from "./melodies-wx-pep-g7s2";
 import WX_PEP_G8S1 from "./melodies-wx-pep-g8s1";
 import WX_PEP_G8S2 from "./melodies-wx-pep-g8s2";
 import WX_PEP_G9S1 from "./melodies-wx-pep-g9s1";
+import XY_G1S1 from "./melodies-xy-g1s1";
 import { DRAFT_MELODIES } from "./melodies-draft";
 import { STAFF_KEYS } from "./staff-key-data";
 import { STAFF_PLACEMENT } from "./staff-placement-data";
@@ -90,6 +91,8 @@ const WX_PEP_BOOKS: Array<[string, Record<string, Melody[]>]> = ([
   ["wx-pep-g4s1", WX_PEP_G4S1], ["wx-pep-g5s1", WX_PEP_G5S1], ["wx-pep-g6s1", WX_PEP_G6S1], ["wx-pep-g7s1", WX_PEP_G7S1], ["wx-pep-g7s2", WX_PEP_G7S2],
   ["wx-pep-g8s1", WX_PEP_G8S1], ["wx-pep-g8s2", WX_PEP_G8S2], ["wx-pep-g9s1", WX_PEP_G9S1],
 ] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
+// 湘艺版各册自己的转写，同样按版本分开存放，键去掉《》。
+const XY_BOOKS: Array<[string, Record<string, Melody[]>]> = ([["xy-g1s1", XY_G1S1]] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
 const GRADE_LABELS: Record<string, string> = { "1": "一年级", "2": "二年级", "3": "三年级", "4": "四年级", "5": "五年级", "6": "六年级", "7": "七年级", "8": "八年级", "9": "九年级" };
 export const PEP_MELODY_BOOKS = PEP_BOOKS.map(([key]) => {
   const match = key.match(/^pep-g(\d+)s([12])$/);
@@ -99,7 +102,7 @@ export const PEP_MELODY_BOOKS = PEP_BOOKS.map(([key]) => {
   return { key, grade: Number(grade), semester: term, title: `${GRADE_LABELS[grade]}${term}` };
 });
 /** Each book's own transcriptions. A work printed in several books (国歌, 草原上…) keeps each book's version apart. */
-export const BOOK_MELODIES: Record<string, Record<string, Melody[]>> = Object.fromEntries([...BOOKS, ...PEP_BOOKS, ...WX_BOOKS, ...WX_PEP_BOOKS]);
+export const BOOK_MELODIES: Record<string, Record<string, Melody[]>> = Object.fromEntries([...BOOKS, ...PEP_BOOKS, ...WX_BOOKS, ...WX_PEP_BOOKS, ...XY_BOOKS]);
 /** Book-agnostic lookup (律坊, fallbacks): the key melody plus the first book that prints the work. */
 export const MELODIES: Record<string, Melody[]> = Object.fromEntries(Object.entries(KEY_MELODIES).map(([name, melody]) => [name, [melody]]));
 const fromBook = new Set<string>();
@@ -152,6 +155,14 @@ export function melodiesFor(bookKey: string | undefined, ...names: string[]): Me
 const STAFF_OMIT = new Set(["g8s2|水调歌头·明月几时有|1"]);
 
 function findMelodies(bookKey: string | undefined, names: string[]): { melodies: Melody[]; name?: string } {
+  // 湘艺版只用本册自己录的旋律：同名歌在别的版本里印的谱不一定一样，不借用。
+  if (bookKey?.startsWith("xy-") || bookKey?.startsWith("wx-xy-")) {
+    for (const name of names) {
+      const own = BOOK_MELODIES[bookKey]?.[name.replace(/^《|》$/g, "")];
+      if (own?.length) return { melodies: own, name };
+    }
+    return { melodies: [] };
+  }
   if (bookKey?.startsWith("pep-") || bookKey?.startsWith("wx-pep-")) {
     const fallbackKey = bookKey.startsWith("wx-pep-") ? bookKey.slice(3) : bookKey;
     if (!PEP_REVIEWED_BOOKS.has(bookKey) && !PEP_REVIEWED_BOOKS.has(fallbackKey)) return { melodies: [] };
