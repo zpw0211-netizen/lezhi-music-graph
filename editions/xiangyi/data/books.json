@@ -38,7 +38,8 @@
       "title": "湘艺版一年级下册",
       "pages": 78,
       "pdfOffset": 2,
-      "published": false
+      "published": true,
+      "unitArt": 12
     },
     {
       "key": "xy-g2s1",
@@ -50,7 +51,15 @@
       "title": "湘艺版二年级上册",
       "pages": 74,
       "pdfOffset": 2,
-      "published": false
+      "published": true,
+      "unitArt": [
+        1,
+        3,
+        4,
+        10,
+        11,
+        12
+      ]
     },
     {
       "key": "xy-g2s2",
@@ -62,7 +71,20 @@
       "title": "湘艺版二年级下册",
       "pages": 74,
       "pdfOffset": 2,
-      "published": false
+      "published": true,
+      "unitArt": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
     },
     {
       "key": "xy-g3s1",

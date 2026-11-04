@@ -3,4 +3,8 @@
 风格：湘绣（丝线刺绣），模板 `E:\Projects\yapu-collab\XY-ART-TEMPLATE.md`，用户 2026-11-03 确认样张。
 工具：Codex 内置 image_gen。逐图的教材依据、完整提示词和自检记录见 `E:\Projects\yapu-collab\codex3\T099-xiangyi-art-batch.report.md`（一上一节及 2026-11-04 眼睛复核一节）。
 
-本目录目前只收一年级上册：封面 `xy-g1s1.webp`，单元图 `units/xy-g1s1-u1.webp` 至 `u12.webp`。
+收录：
+- 一年级上册、一年级下册：封面与第 1—12 课单元图（T099 首批，已验收）。
+- 二年级上册：单元图 u1、u3、u4、u10—u12 为 T101 重画版（2026-11-05 验收）；封面为 T099 旧图，暂用；u2、u5—u9 待补画，暂以封面代替。
+- 二年级下册：单元图 u1—u11 为 T101 重画版（2026-11-05 验收）；封面为 T099 旧图，暂用；u12 待补画，暂以封面代替。
+T101 的提示词与验收记录见 `E:\Projects\yapu-collab\codex3\T101-xiangyi-art-redo.md` 及其报告。

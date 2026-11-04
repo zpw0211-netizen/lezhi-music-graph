@@ -11,8 +11,8 @@ export type BookRecord = {
   published: boolean;
   legacySourceDir?: string;
   coverArt?: boolean;
-  /** Units 1..n have an illustration at public/art/units/<key>-u<n>.webp. */
-  unitArt?: number;
+  /** Units 1..n (or just the listed unit orders) have an illustration at public/art/units/<key>-u<n>.webp. */
+  unitArt?: number | number[];
   fullGraphPosition?: { x: number; y: number };
   explorerPosition?: { x: number; y: number };
 };
