@@ -3,6 +3,8 @@
 // 提问和任务按课型（歌唱课 / 演奏课 / 欣赏课 / 编创课）取模板中的示例，并填入本课作品名与教材事实。
 // 这里只生成文字脚本；页面上的谱例、旋律、插图由 ReflectivePresent 按数据有无决定是否出现。
 
+import { BAND_NAMES, bandOf, originOf, peerReview, standardGoals, standardTask } from "./curriculum";
+
 export type LessonKind = "sing" | "play" | "listen" | "create";
 export type StageKey = "motivate" | "conflict" | "construct" | "transfer" | "summary";
 export type LessonFact = { label: string; value: string };
@@ -34,10 +36,9 @@ export function lessonKindOf(mode: string | undefined, workType: string, workNam
   return SONG_TYPES.test(workType) ? "sing" : "listen";
 }
 
-/** 学段：低年级（1–2）、中高年级（3–6）、初中（7–9）。 */
-export function stageOfGrade(grade: number | undefined): "low" | "mid" | "junior" {
-  if (!grade || grade <= 2) return grade ? "low" : "mid";
-  return grade <= 6 ? "mid" : "junior";
+/** 学段，按课标的四个学段：1–2 低年级、3–5 中年级、6–7 高年级与初一、8–9 初二初三（课标第 7 页）。 */
+export function stageOfGrade(grade: number | undefined): "low" | "mid" | "upper" | "junior" {
+  return ({ 1: "low", 2: "mid", 3: "upper", 4: "junior" } as const)[bandOf(grade)];
 }
 
 const pick = (facts: LessonFact[], pattern: RegExp) => facts.find((fact) => pattern.test(fact.label))?.value;
@@ -63,6 +64,8 @@ export function cultureFacts(facts: LessonFact[]): LessonFact[] {
 
 export type ReflectiveScript = {
   kind: LessonKind;
+  /** 本课在课标里的学段和学习任务。 */
+  standard: { band: string; task: string; page: number };
   scene: string;
   goals: Array<{ area: string; text: string }>;
   questionStarters: string[];
@@ -87,39 +90,12 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
   const level = stageOfGrade(input.grade);
   const meter = pick(facts, /^拍号$/);
   const mood = pick(facts, /情绪|表现情感|情感特点/);
-  const nation = pick(facts, /所属民族/);
-  const place = pick(facts, /^(地域|所属地域)$/);
-  const origin = nation ? `${nation}音乐` : place ? `${place}的音乐` : "这首作品的文化背景";
+  const origin = originOf(facts, "这首作品的文化背景");
   const playful = level === "low";
   const solemn = SOLEMN_WORKS.test(work);
   const ensemble = /合奏|重奏/.test(work);
 
-  const goals = {
-    sing: [
-      { area: "审美感知", text: `听辨${work}的旋律、节奏和情绪${mood ? `，说出它“${mood}”的感觉从哪里来` : "，说出自己的感受"}。` },
-      { area: "艺术表现", text: `用自然、有弹性的声音唱好${work}，做到音准、节奏准确，表达出歌曲的情感。` },
-      { area: "创意实践", text: solemn ? "比较不同的速度、力度，体会为什么要庄严、有力地演唱。" : "尝试用不同的速度、力度或情绪演唱一个乐句，比较效果并说出理由。" },
-      { area: "文化理解", text: solemn ? `了解${work}的创作背景和演唱礼仪。` : `了解${origin}，体会音乐和生活、文化的联系。` },
-    ],
-    play: [
-      { area: "审美感知", text: `聆听${work}，感受旋律和节奏的特点${mood ? `，体会它“${mood}”的情绪` : ""}。` },
-      { area: "艺术表现", text: `用正确的姿势和演奏方法演奏${work}，做到节奏稳定、音色干净${ensemble ? "，合奏时声部整齐" : ""}。` },
-      { area: "创意实践", text: "尝试用不同的力度或速度演奏一个乐句，比较效果并说出理由。" },
-      { area: "文化理解", text: `了解${origin}，体会乐器演奏和音乐表达的联系。` },
-    ],
-    listen: [
-      { area: "审美感知", text: `聆听${work}，辨识旋律、节奏、音色和情绪的变化。` },
-      { area: "艺术表现", text: "用哼唱、模唱或身体动作表现作品的主题片段。" },
-      { area: "创意实践", text: "选一个最喜欢的片段，用文字、绘画或动作做出自己的诠释。" },
-      { area: "文化理解", text: `了解${origin}，说出音乐表达了怎样的生活与情感。` },
-    ],
-    create: [
-      { area: "审美感知", text: "感受节奏、旋律变化带来的不同情绪。" },
-      { area: "艺术表现", text: "清楚地演示自己小组的编创成果，说明创作思路。" },
-      { area: "创意实践", text: `以${work}为素材完成一段简单的节奏或旋律编创，并在反思中不断修改。` },
-      { area: "文化理解", text: "体会音乐编创和生活场景、情感表达之间的关系。" },
-    ],
-  }[kind];
+  const goals = standardGoals(kind, { work, grade: input.grade, mood, origin, solemn, ensemble });
 
   const scene = {
     sing: playful ? `先听一听${work}，跟着音乐轻轻拍手，想一想：歌里唱了什么？` : `聆听${work}的示范演唱，说一说：歌曲给你留下的第一印象是什么？`,
@@ -252,8 +228,10 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
     ],
   }[kind];
 
+  const band = bandOf(input.grade);
   return {
     kind,
+    standard: { band: BAND_NAMES[band], ...standardTask(kind, band) },
     scene,
     goals,
     questionStarters: ["我想知道……", "我好奇的是……", "我觉得最难的是……"],
@@ -265,7 +243,7 @@ export function reflectiveScript(input: { workName: string; kind: LessonKind; gr
     practiceTip,
     chain: ["我们的观点有哪些不同？", "我们是怎样达成共识的？", "这个过程中发现了什么新问题？", "我对音乐有了哪些新理解？"],
     transfer,
-    showcase: ["我是怎样把刚才的反思用到新任务里的？", "遇到了什么新问题？和之前的问题有关系吗？", "我的成果达到预期了吗？还可以怎样改进？"],
+    showcase: ["我是怎样把刚才的反思用到新任务里的？", "遇到了什么新问题？和之前的问题有关系吗？", "我的成果达到预期了吗？还可以怎样改进？", peerReview(kind, input.grade)],
     selfCheck: kind === "sing" ? ["音准与节奏", "情感表达", "反思与改进"] : kind === "play" ? ["演奏方法", "节奏与音色", "反思与改进"] : kind === "listen" ? ["听辨要素", "表达理解", "反思与改进"] : ["创意与贴合", "完整呈现", "反思与改进"],
     wrapUp: ["这节课我通过反思解决了哪些问题？", "我还有哪些没解决的问题？课后怎样继续探究？", "下次学音乐，我可以怎样运用今天的反思方法？"],
     homework: {

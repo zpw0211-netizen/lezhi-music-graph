@@ -19,6 +19,7 @@ import type {
 import { useGraphExplorer } from "./components/explorer/useGraphExplorer";
 import { HomePortal } from "./components/home/HomePortal";
 import type { LessonPage as LessonPageComponent } from "./components/lesson/LessonPage";
+import type { PlanPage as PlanPageComponent } from "./components/lesson/PlanPage";
 import type { WorkGraph as WorkGraphComponent } from "./components/records/WorkGraph";
 import type { WorkLibrary as WorkLibraryComponent } from "./components/records/WorkLibrary";
 import type { ResearchAnalysis as ResearchAnalysisComponent } from "./components/ResearchAnalysis";
@@ -142,6 +143,10 @@ const LessonPage = nextDynamic<PropsOf<typeof LessonPageComponent>>(
   () => import("./components/lesson/LessonPage").then((module) => module.LessonPage),
   { loading: viewLoading },
 );
+const PlanPage = nextDynamic<PropsOf<typeof PlanPageComponent>>(
+  () => import("./components/lesson/PlanPage").then((module) => module.PlanPage),
+  { loading: viewLoading },
+);
 const WorkGraph = nextDynamic<PropsOf<typeof WorkGraphComponent>>(
   () => import("./components/records/WorkGraph").then((module) => module.WorkGraph),
   { loading: viewLoading },
@@ -196,6 +201,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   assistant: "智能问答",
   research: "研究分析",
   records: "按课学习",
+  plan: "智能备课",
   lesson: "按课学习",
   work: "作品图谱",
   import: "教材数据导入",
@@ -526,6 +532,21 @@ export default function Home() {
               const work = entityById(id);
               if (work) navigate({ view: "work", ...(route.book ? { book: route.book } : {}), work: bareWorkName(work.name) });
             }}
+            onPlan={() => {
+              const bookKey = route.book ?? routeWork.bookKeys?.[0];
+              navigate({ view: "plan", ...(bookKey ? { book: bookKey, work: bareWorkName(routeWork.name) } : {}) });
+            }}
+            />
+          )}
+          {view === "plan" && canonicalGraph && (
+            <PlanPage
+            graph={canonicalGraph}
+            books={books}
+            bookKey={route.book}
+            work={route.work}
+            assetUrl={publicAssetUrl}
+            onRoute={(bookKey, work) => navigate({ view: "plan", book: bookKey, ...(work ? { work } : {}) }, { replace: true })}
+            onOpenLesson={(work, bookKey) => navigate({ view: "lesson", book: bookKey, work })}
             />
           )}
           {view === "work" && canonicalGraph && routeWork && (

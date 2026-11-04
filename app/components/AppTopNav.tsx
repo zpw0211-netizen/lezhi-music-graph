@@ -8,7 +8,7 @@ import type { AccountView } from "./account/AccountPanel";
 import { useAccount } from "./account/AccountProvider";
 // The account SDK is large and only needed once someone opens the dialog.
 const AccountDialog = dynamic(() => import("./account/AccountDialog").then(module => module.AccountDialog));
-export type NavView = "home" | "records" | "graph" | "assistant" | "research" | "lab" | "atlas";
+export type NavView = "home" | "records" | "plan" | "graph" | "assistant" | "research" | "lab" | "atlas";
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
 type NavItem = { label: string; view: NavView; href?: string } | { label: string; view: "timeline"; href: string };
 
@@ -35,6 +35,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
   const locationHash = useSyncExternalStore(subscribeToLocation, getLocationHash, getServerHash);
   const items: NavItem[] = [
     { label: "按课学习", view: "records" },
+    { label: "智能备课", view: "plan" },
     { label: "知识图谱", view: "graph" },
     { label: "音乐探索与创造", view: "atlas", href: "#/atlas" },
     { label: "智能问答", view: "assistant" },

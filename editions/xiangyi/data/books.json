@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "edition": {
+    "key": "xiangyi",
+    "label": "湘艺版",
+    "press": "湖南文艺出版社",
+    "basePath": "/xiangyi",
+    "unitActivities": true,
+    "hotSearches": [
+      "上学歌",
+      "国旗，国旗真美丽",
+      "其多列",
+      "火车开啦",
+      "粉刷匠"
+    ]
+  },
+  "books": [
+    {
+      "key": "xy-g1s1",
+      "stage": "小学",
+      "grade": 1,
+      "semester": "上册",
+      "shortName": "一上",
+      "fullName": "一年级上册",
+      "title": "湘艺版一年级上册",
+      "pages": 74,
+      "pdfOffset": 2,
+      "published": true,
+      "unitArt": 12
+    },
+    {
+      "key": "xy-g1s2",
+      "stage": "小学",
+      "grade": 1,
+      "semester": "下册",
+      "shortName": "一下",
+      "fullName": "一年级下册",
+      "title": "湘艺版一年级下册",
+      "pages": 78,
+      "pdfOffset": 2,
+      "published": false
+    },
+    {
+      "key": "xy-g2s1",
+      "stage": "小学",
+      "grade": 2,
+      "semester": "上册",
+      "shortName": "二上",
+      "fullName": "二年级上册",
+      "title": "湘艺版二年级上册",
+      "pages": 74,
+      "pdfOffset": 2,
+      "published": false
+    },
+    {
+      "key": "xy-g2s2",
+      "stage": "小学",
+      "grade": 2,
+      "semester": "下册",
+      "shortName": "二下",
+      "fullName": "二年级下册",
+      "title": "湘艺版二年级下册",
+      "pages": 74,
+      "pdfOffset": 2,
+      "published": false
+    },
+    {
+      "key": "xy-g3s1",
+      "stage": "小学",
+      "grade": 3,
+      "semester": "上册",
+      "shortName": "三上",
+      "fullName": "三年级上册",
+      "title": "湘艺版三年级上册",
+      "pages": 74,
+      "pdfOffset": 8,
+      "published": false
+    },
+    {
+      "key": "xy-g3s2",
+      "stage": "小学",
+      "grade": 3,
+      "semester": "下册",
+      "shortName": "三下",
+      "fullName": "三年级下册",
+      "title": "湘艺版三年级下册",
+      "pages": 74,
+      "pdfOffset": 8,
+      "published": false
+    },
+    {
+      "key": "xy-g4s1",
+      "stage": "小学",
+      "grade": 4,
+      "semester": "上册",
+      "shortName": "四上",
+      "fullName": "四年级上册",
+      "title": "湘艺版四年级上册",
+      "pages": 74,
+      "pdfOffset": 8,
+      "published": false
+    },
+    {
+      "key": "xy-g5s1",
+      "stage": "小学",
+      "grade": 5,
+      "semester": "上册",
+      "shortName": "五上",
+      "fullName": "五年级上册",
+      "title": "湘艺版五年级上册",
+      "pages": 74,
+      "pdfOffset": 8,
+      "published": false
+    },
+    {
+      "key": "xy-g6s1",
+      "stage": "小学",
+      "grade": 6,
+      "semester": "上册",
+      "shortName": "六上",
+      "fullName": "六年级上册",
+      "title": "湘艺版六年级上册",
+      "pages": 74,
+      "pdfOffset": 8,
+      "published": false
+    },
+    {
+      "key": "xy-g7s1",
+      "stage": "初中",
+      "grade": 7,
+      "semester": "上册",
+      "shortName": "七上",
+      "fullName": "七年级上册",
+      "title": "湘艺版七年级上册",
+      "pages": 78,
+      "pdfOffset": 6,
+      "published": false
+    },
+    {
+      "key": "xy-g7s2",
+      "stage": "初中",
+      "grade": 7,
+      "semester": "下册",
+      "shortName": "七下",
+      "fullName": "七年级下册",
+      "title": "湘艺版七年级下册",
+      "pages": 78,
+      "pdfOffset": 6,
+      "published": false
+    },
+    {
+      "key": "xy-g8s1",
+      "stage": "初中",
+      "grade": 8,
+      "semester": "上册",
+      "shortName": "八上",
+      "fullName": "八年级上册",
+      "title": "湘艺版八年级上册",
+      "pages": 74,
+      "pdfOffset": 6,
+      "published": false
+    },
+    {
+      "key": "xy-g8s2",
+      "stage": "初中",
+      "grade": 8,
+      "semester": "下册",
+      "shortName": "八下",
+      "fullName": "八年级下册",
+      "title": "湘艺版八年级下册",
+      "pages": 74,
+      "pdfOffset": 6,
+      "published": false
+    },
+    {
+      "key": "xy-g9s1",
+      "stage": "初中",
+      "grade": 9,
+      "semester": "上册",
+      "shortName": "九上",
+      "fullName": "九年级上册",
+      "title": "湘艺版九年级上册",
+      "pages": 82,
+      "pdfOffset": 6,
+      "published": false
+    }
+  ]
+}

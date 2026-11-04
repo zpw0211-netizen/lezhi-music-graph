@@ -62,7 +62,7 @@ const normalizeWorkName = (value) => String(value ?? "").normalize("NFKC").toLoc
 const SENTENCE_TYPES = new Set(["学习活动", "主题与情感", "学习目标"]);
 const ATTRIBUTE_PREDICATES = new Set(["学习方式"]);
 const requested = process.argv.slice(2);
-const sourceFiles = new Set((await readdir(sourceDir)).filter((file) => /^(pep-)?g\ds\d\.mjs$/.test(file)));
+const sourceFiles = new Set((await readdir(sourceDir)).filter((file) => file.endsWith(".mjs") && BOOK_BY_KEY.has(file.slice(0, -4))));
 const publishedKeys = new Set(BOOK_REGISTRY.filter((book) => book.published).map((book) => book.key));
 const available = BOOK_REGISTRY
   .filter((book) => book.published && sourceFiles.has(`${book.key}.mjs`))

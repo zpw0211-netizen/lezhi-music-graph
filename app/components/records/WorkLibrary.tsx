@@ -153,6 +153,9 @@ function unitArtwork(unit: TextbookUnit) {
     : unitArtPath(unit.bookKey, unit.order) ?? `art/${unit.bookKey}.webp`;
 }
 
+/** 湘艺版的“单元”就是一课，标题写作“第一课 唱歌、游戏”。 */
+const LESSON_TITLE = /^第[一二三四五六七八九十]+课\s*(.*)$/;
+
 function melodyEditionBookKey(bookKey?: string) {
   return bookKey && EDITION.notation === "staff" ? `wx-${bookKey}` : bookKey;
 }
@@ -753,11 +756,15 @@ export function WorkLibrary({
     });
   }, []);
 
+  const lessonBook = units.some((unit) => LESSON_TITLE.test(unit.title));
   const chapterContents = useMemo(() => units.map((unit) => {
     const anchorId = unitAnchorId(currentBookKey, unit.id);
     const tasks = unit.kind === "project" || unit.projects?.length ? [] : (unit.tasks ?? []);
     const showTasks = tasks.length > 0 && taskUnits.has(unit.id);
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
+    const lessonTitle = unit.title.match(LESSON_TITLE);
+    const chapterTitle = lessonTitle?.[1] || unit.title;
+    const unitWord = lessonBook ? "本课" : "本单元";
     // Curated unit points (人教版) have a description and a page; the rest are auto-extracted and left out.
     const keyPoints = (unit.knowledgePoints ?? [])
       .filter((point) => point.description && point.name.length <= 8)
@@ -842,19 +849,20 @@ export function WorkLibrary({
         <header className="records-chapter-title-block">
           <span aria-hidden="true" className="records-chapter-number">{numeral}</span>
           <div>
-            <p className="records-chapter-kicker">第 {numeral} 单元</p>
-            <h2 data-long={unit.title.length > 7 ? "true" : undefined} id={`${anchorId}-title`}>{unit.title}</h2>
+            {/* 湘艺版按“课”编排，标题自带“第一课”：眉题写成“第 壹 课”，标题只留课名；书末的联欢会、选唱等不编号。 */}
+            {lessonTitle ? <p className="records-chapter-kicker">第 {numeral} 课</p> : !lessonBook && <p className="records-chapter-kicker">第 {numeral} 单元</p>}
+            <h2 data-long={chapterTitle.length > 7 ? "true" : undefined} id={`${anchorId}-title`}>{chapterTitle}</h2>
             {unit.theme && <span className="records-theme-seal">{unit.theme}</span>}
           </div>
         </header>
 
-        {Boolean(unit.goals?.length) && <section className="records-chapter-goals" aria-label="本单元先读">
-          <h3>本单元先读</h3>
+        {Boolean(unit.goals?.length) && <section className="records-chapter-goals" aria-label={`${unitWord}先读`}>
+          <h3>{unitWord}先读</h3>
           <ul>{unit.goals?.map((goal) => <li key={goal}>{goal}</li>)}</ul>
         </section>}
 
-        {unit.kind !== "project" && !unit.projects?.length && activityCounts.length > 0 && <section aria-label="这一单元学什么" className="records-unit-activities">
-          <p className="records-notes-label">这一单元</p>
+        {unit.kind !== "project" && !unit.projects?.length && activityCounts.length > 0 && <section aria-label={lessonBook ? "这一课学什么" : "这一单元学什么"} className="records-unit-activities">
+          <p className="records-notes-label">{lessonBook ? "这一课" : "这一单元"}</p>
           <div aria-label="按学习方式挑选作品" className="records-activity-tiles" role="group">
             {activityCounts.map(({ group, count }) => <button
               aria-pressed={activityFilter === group.key}
@@ -886,11 +894,11 @@ export function WorkLibrary({
       <div className="records-leaf records-leaf-works">
         <div className="records-leaf-head">
           {tasks.length > 0
-            ? <div aria-label="本单元内容" className="records-leaf-tabs" role="group">
+            ? <div aria-label={`${unitWord}内容`} className="records-leaf-tabs" role="group">
               <button aria-pressed={!showTasks} onClick={() => toggleTasks(unit.id, false)} type="button">作品<small>{unit.works.length}</small></button>
               <button aria-pressed={showTasks} onClick={() => toggleTasks(unit.id, true)} type="button">课堂任务<small>{tasks.length}</small></button>
             </div>
-            : <h3>{unitActivities.length || unit.projects?.length ? "本单元内容" : "作品名录"}</h3>}
+            : <h3>{unitActivities.length || unit.projects?.length ? `${unitWord}内容` : "作品名录"}</h3>}
           {unit.works.length > 0 && <p className={`records-unit-progress${unitLearned === unit.works.length ? " is-done" : ""}`}>
             <span aria-hidden="true" style={{ "--unit-progress": unit.works.length ? unitLearned / unit.works.length : 0 } as CSSProperties} />
             已学 <b>{unitLearned}</b> / {unit.works.length}
@@ -939,7 +947,7 @@ export function WorkLibrary({
           </section>}
       </div>
     </article>;
-  }), [activityFilters, currentBookKey, directory?.grade, isPrimaryBook, learned, learnedIn, markLearned, onKnowledge, openWork, taskUnits, toggleActivity, toggleTasks, units, worksById]);
+  }), [activityFilters, currentBookKey, directory?.grade, isPrimaryBook, learned, lessonBook, learnedIn, markLearned, onKnowledge, openWork, taskUnits, toggleActivity, toggleTasks, units, worksById]);
 
   if (!directory) return null;
   const displayTitle = stripEditionPrefix(directory.title);
@@ -961,10 +969,10 @@ export function WorkLibrary({
                 <p aria-hidden="true" className="records-book-brush">音乐 ·</p>
                 <h1 id="records-book-title">{displayTitle}</h1>
                 <p className="records-book-intro">{units.length
-                  ? `${units.length} 个单元，${workCount} 首作品——${bookIntroduction(units)}`
+                  ? `${units.length} ${lessonBook ? "课" : "个单元"}，${workCount} 首作品——${bookIntroduction(units)}`
                   : unitsError ? "本册目录暂时无法读取。" : "正在读取本册目录…"}</p>
                 {units.length > 0
-                  ? <nav aria-label={`${directory.title}单元目录`} className="records-book-directory">
+                  ? <nav aria-label={`${directory.title}${lessonBook ? "课" : "单元"}目录`} className="records-book-directory">
                     {units.map((unit) => <button key={unit.id} onClick={() => goToUnit(unit)} type="button">
                       <span>{unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order}</span>
                       <strong>{unit.title}</strong>
@@ -973,7 +981,7 @@ export function WorkLibrary({
                   </nav>
                   : <div aria-hidden="true" className="records-book-directory records-book-directory-placeholder" />}
                 {!unitsError && <div className="records-cover-actions">
-                  <button className="records-cover-start" disabled={!units.length} onClick={() => goToPage(1)} type="button">翻开第一单元{chevron("right")}</button>
+                  <button className="records-cover-start" disabled={!units.length} onClick={() => goToPage(1)} type="button">{lessonBook ? "翻开第一课" : "翻开第一单元"}{chevron("right")}</button>
                   <span aria-hidden="true" className="records-swipe-hint"><i />左右滑动翻页</span>
                 </div>}
                 {unitsError && <div className="records-data-status" role="status">
@@ -1036,7 +1044,7 @@ export function WorkLibrary({
                 return <li key={unit.id}>
                   <button
                     aria-current={pageIndex === index + 1 ? "page" : undefined}
-                    aria-label={`第${numeral}单元 ${unit.title}，已学 ${done} / ${unit.works.length}`}
+                    aria-label={`${lessonBook ? "" : `第${numeral}单元 `}${unit.title}，已学 ${done} / ${unit.works.length}`}
                     className={done && done === unit.works.length ? "is-done" : ""}
                     onClick={() => goToPage(index + 1)}
                     style={{ "--unit-progress": unit.works.length ? done / unit.works.length : 0 } as CSSProperties}

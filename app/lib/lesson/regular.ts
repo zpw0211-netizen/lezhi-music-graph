@@ -6,6 +6,7 @@
 import { midiOf, type Melody, type MelodyNote } from "./jianpu";
 import { splitPhrases } from "./phrases";
 import { stageOfGrade, type LessonFact, type LessonKind, type StageKey } from "./reflective";
+import { BAND_NAMES, CREATE_FLOW, bandOf, originOf, peerReview, standardGoals, standardTask } from "./curriculum";
 
 /** 四项核心素养，课件里按这个顺序出现。 */
 export const LITERACIES = ["审美感知", "艺术表现", "创意实践", "文化理解"] as const;
@@ -119,6 +120,8 @@ function shapeOf(melody: Melody | undefined): Shape | null {
 }
 
 export type RegularScript = {
+  /** 本课在课标里的学段和学习任务。 */
+  standard: { band: string; task: string; page: number };
   goals: Array<{ area: Literacy; text: string }>;
   /** 教学重点与难点，只在备课时给老师看。 */
   focus: { key: string; hard: string };
@@ -142,11 +145,14 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
   const level = stageOfGrade(input.grade);
   const young = level === "low";
   const junior = level === "junior";
+  // 6–7 年级起按课标的高学段要求提问（分析要素、作品结构）。
+  const upper = level === "upper" || junior;
+  const band = bandOf(input.grade);
   const meter = pick(facts, /^拍号$/) ?? input.melody?.meter;
   const mood = pick(facts, /情绪|表现情感|情感特点/);
   const nation = pick(facts, /所属民族/);
   const place = pick(facts, /^(地域|所属地域)$/);
-  const origin = nation ? `${nation}音乐` : place ? `${place}的音乐` : "作品的创作背景";
+  const origin = originOf(facts);
   const solemn = SOLEMN_WORKS.test(work);
   const ensemble = /合奏|重奏|合唱/.test(work);
   const beat = pulse(meter);
@@ -157,32 +163,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
   // 多段歌词或篇幅长的歌（十句以上）不报句数，「一共有二十八句」对学生没有意义；改为按段学。
   const long = !!shape && shape.count > 10;
 
-  const goals = ({
-    sing: [
-      { area: "审美感知", text: `聆听${work}，感受歌曲${mood ? `“${mood}”的` : "的"}情绪，说出速度、节拍、旋律起伏等要素怎样表现情绪。` },
-      { area: "艺术表现", text: `用${young ? "自然、好听" : "自然、圆润"}的声音有感情地演唱${work}，做到音准、节奏准确，吐字清楚。` },
-      { area: "创意实践", text: solemn ? "比较不同的速度和力度，体会庄严、有力地演唱的道理。" : young ? "为歌曲编配简单的律动或拍手伴奏。" : "为歌曲设计演唱形式或伴奏，并说出这样设计的理由。" },
-      { area: "文化理解", text: solemn ? `了解${work}的由来和演唱礼仪，增强家国情怀。` : `了解${origin}，体会音乐与生活、文化的联系。` },
-    ],
-    play: [
-      { area: "审美感知", text: `聆听${work}，感受乐曲${mood ? `“${mood}”的` : "的"}情绪和旋律特点。` },
-      { area: "艺术表现", text: `用正确的姿势和方法演奏${work}，做到节奏稳定、音色干净${ensemble ? "，合奏整齐" : ""}。` },
-      { area: "创意实践", text: "尝试改变力度或速度演奏一个乐句，或为乐曲配上简单的节奏伴奏。" },
-      { area: "文化理解", text: `了解${origin}，以及乐器在音乐表达中的作用。` },
-    ],
-    listen: [
-      { area: "审美感知", text: `完整聆听${work}，辨识主题旋律，感受速度、力度、音色的变化${mood ? `和“${mood}”的情绪` : ""}。` },
-      { area: "艺术表现", text: "哼唱主题旋律，用身体律动或画旋律线表现音乐的变化。" },
-      { area: "创意实践", text: young ? "听着音乐编一段动作或画一幅画，表现自己的感受。" : "用文字、绘画或动作对作品做出自己的诠释。" },
-      { area: "文化理解", text: `了解${origin}，说出作品表达的生活与情感。` },
-    ],
-    create: [
-      { area: "审美感知", text: `从${work}里找出有特点的节奏或旋律，感受它们带来的情绪。` },
-      { area: "艺术表现", text: "清楚、完整地表演自己小组的编创作品。" },
-      { area: "创意实践", text: `以${work}为素材，编创一段节奏或旋律，并用简谱或图形谱记录下来。` },
-      { area: "文化理解", text: "体会音乐编创与生活场景、情感表达的联系。" },
-    ],
-  } satisfies Record<LessonKind, RegularScript["goals"]>)[kind];
+  const goals = standardGoals(kind, { work, grade: input.grade, mood, origin, solemn, ensemble });
 
   const focus = {
     sing: { key: `有感情地演唱${work}。`, hard: hardLine ? `唱准${hardLine}（${shape!.hard!.reason}），气息连贯、换气自然。` : meter ? `唱准难点乐句的音高与节奏，把握 ${meter} 拍的强弱规律。` : "唱准难点乐句的音高与节奏，气息连贯、换气自然。" },
@@ -204,7 +185,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
   const scene = {
     sing: young ? `小朋友，今天我们要学唱一首新歌${work}。先听一听，歌里唱了什么？` : `今天我们学习${work}。先完整听一遍，说说歌曲给你的第一印象。`,
     play: `今天我们学习演奏${work}。先听示范演奏，看看手指怎样动。`,
-    listen: `今天我们来欣赏${work}。请你一边听，一边想象音乐描绘了怎样的画面。`,
+    listen: `今天我们来欣赏${work}。先不看介绍，完整听一遍，一边听一边想象音乐描绘了怎样的画面。`,
     create: `今天我们以${work}为素材来编创音乐。先听一听，找出你印象最深的节奏。`,
   }[kind];
 
@@ -255,7 +236,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
     ],
     listen: [
       "主题旋律出现了几次？每听到一次就举一次手。",
-      junior ? "作品可以分成几部分？各部分的速度、力度、音色有什么对比？" : "音乐分成几段？每段的情绪一样吗？",
+      upper ? "作品可以分成几部分？各部分的速度、力度、音色有什么对比？" : "音乐分成几段？每段的情绪一样吗？",
       "速度、力度和音色的变化，分别表现了什么？",
     ],
     create: ["素材里的节奏型是什么？试着拍一拍。", "这段旋律是上行还是下行？给人什么感觉？", "如果换成别的节奏，情绪会怎样变化？"],
@@ -265,21 +246,27 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
     sing: { title: "学唱歌曲", steps: young
       ? [
         "听人声范唱，用“lu”轻声跟着哼旋律",
+        "跟着旋律用手势比一比高低，或看图形谱找一找旋律往哪里走",
         "按节奏读歌词，一句一拍手",
         long ? "一句一句学：打开「跟唱」，每句先听一遍，再跟唱一遍，一段学会再学下一段" : shape ? `一句一句学：打开「跟唱」，每句先听一遍，再跟唱一遍，共${cn(shape.count)}句` : "一句一句跟唱：老师唱一句、学生接一句",
         hardLine ? `${hardLine}多唱两遍，唱准再往下` : "难唱的句子多唱两遍",
         "完整演唱全曲，每句唱完再换气",
       ]
       : [
-        "跟琴视唱旋律（唱谱），先唱慢一点",
+        // 先听后唱：从感性体验到理性认知，再到实践运用（课标第 31 页）。
+        "完整聆听人声范唱，跟着旋律轻声模唱",
+        "用唱名视唱旋律（唱谱），先唱慢一点",
         "按节奏朗读歌词，注意每个字的时值",
         long ? "填词演唱：打开「跟唱」逐句学，一段唱熟再学下一段" : shape ? `填词演唱：打开「跟唱」，按${cn(shape.count)}句逐句学` : "填词演唱，标出难唱的乐句",
         hardLine ? `突破难点：${hardLine}（${shape!.hard!.reason}）单独练` : "单独练习难唱的乐句",
+        ...(band === 3 ? ["变声期的同学用自然、不喊叫的声音，在舒适的音区演唱，保护嗓音"] : []),
         "完整演唱，注意换气口和情绪",
       ] },
     play: { title: "学奏乐曲", steps: ["唱一唱乐谱，熟悉旋律", long ? "慢速分句练习，一句会了再连下一句，一段熟了再练下一段" : shape ? `慢速分句练习，共${cn(shape.count)}句，一句会了再连下一句` : "慢速分句练习指法", hardLine ? `攻克难点：${hardLine}` : "攻克难点乐句", "完整、流畅地演奏全曲"] },
-    listen: { title: "分段赏析", steps: ["哼唱主题旋律，记住它", "分段聆听，说出每段的情绪与要素变化", "对照背景，体会音乐表达的内容", "完整聆听，跟着主题做律动或画旋律线"] },
-    create: { title: "编创步骤", steps: ["选定节奏型或旋律素材", "小组讨论，编出 2–4 小节", "用简谱或图形谱记录下来", "练习并准备展示"] },
+    // 以听赏为主、讲解讨论为辅（课标第 27 页）。
+    listen: { title: "分段赏析", steps: [young ? "跟着主题哼一哼、动一动，记住它" : "模唱主题旋律，记住它", "分段聆听，说出每段的情绪与要素变化", upper ? "随乐律动或用课堂乐器试奏主题片段，体会它的特点" : "随音乐律动，表现主题的情绪", "对照背景，体会音乐表达的内容", "完整聆听，跟着主题做律动或画旋律线"] },
+    // 编创与展示的流程（课标第 39 页）：前四步在这里，展示、评价、改进在"展示作品"。
+    create: { title: "编创步骤", steps: [`${CREATE_FLOW[0]}：说一说想用音乐表现什么`, `${CREATE_FLOW[1]}：选定节奏型或旋律素材，小组讨论编几小节`, `${CREATE_FLOW[2]}：编出 2–4 小节，用简谱或图形谱记录下来`, `${CREATE_FLOW[3]}：小组试唱（奏）、试演，找出要改的地方`] },
   }[kind];
 
   const practiceTip = {
@@ -289,26 +276,34 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
     create: "先拍稳节奏，再加旋律；每改一次都唱一遍、听一遍。",
   }[kind];
 
-  const split = shape && shape.count >= 4 && !long ? `第一组唱第一到第${cn(half)}句，第二组唱第${cn(half + 1)}到第${cn(shape.count - 1)}句，最后一句全班合唱` : null;
+  const split = shape && shape.count >= 4 && !long ? `第一组唱${half === 1 ? "第一句" : `第一到第${cn(half)}句`}，第二组唱第${cn(half + 1)}到第${cn(shape.count - 1)}句，最后一句全班合唱` : null;
   // 教材标了演唱形式时，按教材的形式分组演唱。
   const form = pick(facts, /^演唱形式$/);
   const formTask = !form ? null
     : /对唱/.test(form) ? `按教材的${form}：甲组、乙组一问一答，合唱的地方全班一起唱`
       : /轮唱/.test(form) ? `按教材的${form}：两组相隔一句先后进入`
-        : /二部|二声部|合唱/.test(form) ? `按教材的${form}：分声部先各唱一遍，再合起来`
+        : /二部|二声部|合唱/.test(form) ? `按教材的${form}：各声部先模唱自己的旋律，再用声部叠加的方法——先唱稳一个声部，另一个声部再加入`
           : /领唱/.test(form) ? `按教材的${form}：请一位同学领唱，全班接唱`
             : null;
+  // 有分声部旋律、教材却没标演唱形式的歌，也按合唱来练（课标第 31 页：重视合唱教学）。
+  const choir = !formTask && (input.melody?.voices?.length ?? 0) > 0
+    ? "合唱：各声部先模唱自己的旋律，再用声部叠加的方法——先唱稳一个声部，另一个声部再加入" : null;
+  // 8–9 年级学习基本指挥图式（课标第 30–31 页）。
+  const beats = Number(meter?.match(/^(\d+)/)?.[1]);
+  const conduct = band === 4 && [2, 3, 4].includes(beats) ? `请一位同学用${cn(beats)}拍子的基本图式指挥全班演唱` : null;
   const perform = {
     sing: solemn
       ? { title: "规范演唱", forms: ["全体起立，双手自然下垂，目视前方", "齐唱全曲，声音饱满有力，速度稳定", "唱完后互相评一评：站姿、声音、精神面貌"] }
       : { title: "表现歌曲", forms: [
-        formTask ?? (split ? `分组接唱：${split}` : "分组接唱：两组一句一句接着唱"),
+        // 指挥并进第一条，卡片保持四张，不留单独一张。
+        `${formTask ?? choir ?? (split ? `分组接唱：${split}` : "分组接唱：两组一句一句接着唱")}${conduct ? `；${conduct}` : ""}`,
         beat ? `边唱边做律动：${beat.body}` : "边唱边做律动",
         young ? "请三位同学用碰铃或双响筒，在每小节第一拍敲一下伴奏" : "加入打击乐：双响筒敲强拍，沙锤摇弱拍",
+        peerReview("sing", input.grade),
       ] },
-    play: { title: "表现乐曲", forms: ensemble ? ["分声部练习，每个声部先单独演奏一遍", "合奏，听着其他声部对齐速度", "第二遍加入力度变化"] : [split ? `分组接奏：${split.replace(/唱/g, "奏")}` : "分组演奏，一组一句", "一组演奏，一组用歌声或打击乐合作", "第二遍加入力度变化：前弱后强"] },
-    listen: { title: "参与表现", forms: ["主题一出现，就跟着哼唱", "随音乐做律动：强拍拍手、弱拍拍腿", "用手在空中画出主题的旋律线"] },
-    create: { title: "展示作品", forms: ["每组展示编创作品，限时 1 分钟", "展示前说一句：我们想表现的是……", "其他组用“我喜欢……我建议……”评价"] },
+    play: { title: "表现乐曲", forms: ensemble ? ["分声部练习，每个声部先单独演奏一遍", "合奏，听着其他声部对齐速度", "第二遍加入力度变化", peerReview("play", input.grade)] : [split ? `分组接奏：${split.replace(/唱/g, "奏")}` : "分组演奏，一组一句", "一组演奏，一组用歌声或打击乐合作", "第二遍加入力度变化：前弱后强", peerReview("play", input.grade)] },
+    listen: { title: "参与表现", forms: ["主题一出现，就跟着哼唱", "随音乐做律动：强拍拍手、弱拍拍腿", young ? "用线条、色块或图形画出听到的音乐" : "用手在空中画出主题的旋律线"] },
+    create: { title: "展示作品", forms: [`${CREATE_FLOW[4]}：每组展示编创作品，限时 1 分钟，展示前说一句“我们想表现的是……”`, `${CREATE_FLOW[5]}：${peerReview("create", input.grade).replace(/^互评：/, "").replace(/[，；][^，；]*再展示一遍$/, "")}`, `${CREATE_FLOW[6]}：根据大家的建议修改作品，再演一遍`] },
   }[kind];
 
   const firstLine = shape?.lines[0]?.replace(/…$/, "");
@@ -326,7 +321,7 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
       ] },
     play: { title: "创意实践", tasks: [
       { level: "基础", task: `用强、弱两种力度演奏${shape ? line(1) : "同一乐句"}，说说哪种更好听。` },
-      { level: "提高", task: "为乐曲配一个两小节的节奏伴奏，和同学合作演奏。" },
+      { level: "提高", task: "用乐器为乐曲编一个两小节的节奏伴奏，和同学合作演奏。" },
       { level: "拓展", task: `改变${shape ? line(1) : "一个乐句"}的节奏，演奏给同学听，请他们说出哪里变了。` },
     ] },
     listen: { title: "创意实践", tasks: [
@@ -343,22 +338,24 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
 
   const culture = solemn
     ? `${work}有特殊的意义，演唱时要庄严、规范。说一说你知道的相关故事。`
-    : nation || place ? `${work}是${origin}。说一说，它的音乐和当地的生活、风俗有什么联系？`
+    : nation || place ? `${work}是${origin}。联系当地的方言和风土人情说一说，它的音乐和当地的生活、风俗有什么联系？`
       : `说一说，${work}表达了怎样的生活和情感？你在生活中有过类似的感受吗？`;
 
   const review: RegularScript["review"] = [
     { area: "审美感知", text: `我感受到了${work}的情绪${mood ? `（${mood}）` : ""}，知道了它是怎样表现出来的。` },
     { area: "艺术表现", text: { sing: "我能有感情地演唱这首歌。", play: "我能正确、流畅地演奏这首乐曲。", listen: "我能哼唱主题，并用动作表现音乐。", create: "我能完整地表演小组的作品。" }[kind] },
     { area: "创意实践", text: { sing: solemn ? "我知道了为什么要庄严地演唱。" : "我为歌曲设计了自己的表现方式。", play: "我尝试了用不同的方式演奏。", listen: "我用自己的方式表达了对音乐的理解。", create: "我和同学一起编创了一段音乐。" }[kind] },
-    { area: "文化理解", text: solemn ? `我了解了${work}的由来和意义。` : `我了解了${origin}和它背后的故事。` },
+    { area: "文化理解", text: solemn ? `我了解了${work}的由来和意义。` : nation || place ? `我了解了${origin}和它背后的故事。` : `我了解了${origin}。` },
   ];
 
+  // 民歌、戏曲唱段计入每学年背唱的曲目（课标第 29–31 页）。
+  const folk = /民歌|小调|山歌|号子|戏曲|京剧|唱段|戏歌|黄梅|越剧|豫剧|昆曲/.test([work, ...facts.map((fact) => fact.value)].join(" "));
   const homework = {
-    sing: young ? `把${work}唱给家人听，并教他们做一做律动。` : `熟练演唱${work}，录一段自己的演唱，听一听哪里还可以更好。`,
+    sing: folk && !young ? `背唱${work}，计入本学年的背唱曲目；录一段自己的演唱，听一听哪里还可以更好。` : young ? `把${work}唱给家人听，并教他们做一做律动。` : `熟练演唱${work}，录一段自己的演唱，听一听哪里还可以更好。`,
     play: `每天练习${work} 10 分钟，${hardLine ? `重点练${hardLine}` : "把难点乐句练熟"}。`,
     listen: `再听一遍${work}，向家人介绍它的主题和情绪。`,
     create: "修改完善小组的编创作品，下节课展示。",
   }[kind];
 
-  return { goals, focus, warmup, scene, firstListen, secondListen, learn, practiceTip, perform, create, culture, review, homework };
+  return { standard: { band: BAND_NAMES[band], ...standardTask(kind, band) }, goals, focus, warmup, scene, firstListen, secondListen, learn, practiceTip, perform, create, culture, review, homework };
 }

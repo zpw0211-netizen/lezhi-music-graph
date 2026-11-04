@@ -29,8 +29,8 @@ Module._extensions[".ts"] = (module, filename) => {
 const { isWorkType } = require(path.join(ROOT, "app/lib/app/types.ts"));
 const { getPrintedPage, getScoreMedia, hasMelody, isStarredWork, parseUnitTask } = require(path.join(ROOT, "app/lib/app/unit-data.ts"));
 const { MELODIES, melodiesFor } = require(path.join(ROOT, "app/lib/lesson/melodies.ts"));
-// 人教版 books only use their own transcriptions; never another edition's melody of the same title.
-const workHasMelody = (bookKey, name) => (bookKey.startsWith("pep-")
+// 人教版 and 湘艺版 books only use their own transcriptions; never another edition's melody of the same title.
+const workHasMelody = (bookKey, name) => (/^(pep|xy)-/.test(bookKey)
   ? melodiesFor(bookKey, name.replace(/^《|》$/g, ""), name).length > 0
   : hasMelody(name, MELODIES));
 
@@ -72,7 +72,8 @@ const SUMMARY_PREDICATES = [
   "音乐特点", "旋律特点", "描绘内容", "民歌体裁", "演唱风格", "主题性质", "内容",
   "创作背景", "历史背景", "时代背景",
 ];
-const CREATOR_PREDICATES = ["作曲", "作词", "词曲作者", "编曲", "改编"];
+// 湘艺版的署名照书分得更细（配歌、译配、译词、收集、集体创作、音乐署名），一并显示；其他版本保持原样。
+const CREATOR_PREDICATES = ["作曲", "作词", "词曲作者", "编曲", "改编", ...(EDITION.key === "xiangyi" ? ["配歌", "译配", "译词", "收集", "集体创作", "音乐署名"] : [])];
 const FINANCIAL_DIGITS = ["零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"];
 
 const valueOf = (triple, entityById) => {
@@ -257,7 +258,8 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
       pages: pageRange,
     },
   };
-  if (!/^第[一二三四五六七八九十0-9]+单元/.test(name)) result.kind = "project";
+  // 湘艺版按“课”编排，每一课（含新年联欢会、我的音乐天地）都是普通单元，不当学习项目。
+  if (EDITION.key !== "xiangyi" && !/^第[一二三四五六七八九十0-9]+单元/.test(name)) result.kind = "project";
   return result;
 };
 
@@ -295,6 +297,8 @@ for (const bookKey of BOOK_KEYS) {
     .map((entity) => [entity.name, entity]));
   const sourceUnits = book.entities
     .filter((entity) => entity.type === "单元")
+    // 湘艺版只按课排：新年联欢会、我的音乐天地等课外栏目不单列成课，其作品仍在图谱和搜索里。
+    .filter((entity) => EDITION.key !== "xiangyi" || /^第[一二三四五六七八九十]+课/.test(entity.name))
     .sort((a, b) => (a.firstPage ?? 0) - (b.firstPage ?? 0) || a.name.localeCompare(b.name, "zh"));
   units.push(...sourceUnits.map((unit, index) => buildUnit(unit, index, bookKey, entityById, triplesBySubject, workByName)));
 }
