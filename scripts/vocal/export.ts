@@ -52,6 +52,8 @@ const singerOf = (label: string | undefined, part: number, key = "") => (/女/.t
 // Parts the children sing although they are not the main line (by vocal key).
 const CHILD_PARTS = new Set([
   "467d86b8", // 人教一下《找朋友》第二声部：一年级的问答歌
+  "99b3232c", // 人教一下《老爷爷赶鹅》应答声部
+  "18e6db7e", // 人教一下《绿色的祖国》鸟声应答
 ]);
 
 const visitParts = (book: string, name: string, melody: Melody, index: number) => {
