@@ -83,7 +83,8 @@
         8,
         9,
         10,
-        11
+        11,
+        12
       ]
     },
     {
@@ -96,7 +97,17 @@
       "title": "湘艺版三年级上册",
       "pages": 74,
       "pdfOffset": 8,
-      "published": false
+      "published": true,
+      "unitArt": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
     },
     {
       "key": "xy-g3s2",
@@ -108,7 +119,16 @@
       "title": "湘艺版三年级下册",
       "pages": 74,
       "pdfOffset": 8,
-      "published": false
+      "published": true,
+      "unitArt": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8
+      ]
     },
     {
       "key": "xy-g4s1",
@@ -120,7 +140,16 @@
       "title": "湘艺版四年级上册",
       "pages": 74,
       "pdfOffset": 8,
-      "published": false
+      "published": true,
+      "unitArt": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
     },
     {
       "key": "xy-g5s1",
@@ -132,7 +161,14 @@
       "title": "湘艺版五年级上册",
       "pages": 74,
       "pdfOffset": 8,
-      "published": false
+      "published": true,
+      "unitArt": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
     },
     {
       "key": "xy-g6s1",
@@ -144,7 +180,15 @@
       "title": "湘艺版六年级上册",
       "pages": 74,
       "pdfOffset": 8,
-      "published": false
+      "published": true,
+      "unitArt": [
+        2,
+        3,
+        4,
+        5,
+        8,
+        9
+      ]
     },
     {
       "key": "xy-g7s1",
