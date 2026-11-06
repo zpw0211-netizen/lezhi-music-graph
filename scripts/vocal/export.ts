@@ -58,6 +58,7 @@ const CHILD_PARTS = new Set([
   "d37db445", // 湘艺二上《白鸽》括号内声部：部分同学唱
   "a25eccfa", // 湘艺二下《牧羊女》第二声部
   "58ae1098", // 湘艺二下《王老先生》第二声部
+  "0c5b920a", // 湘艺三上《雪花》第二部分第二声部（二声部合唱）
 ]);
 
 const visitParts = (book: string, name: string, melody: Melody, index: number) => {
