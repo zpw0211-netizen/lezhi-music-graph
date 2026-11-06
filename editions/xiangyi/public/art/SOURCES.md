@@ -10,3 +10,4 @@
 T101 的提示词与验收记录见 `E:\Projects\yapu-collab\codex3\T101-xiangyi-art-redo.md` 及其报告。
 - 2026-11-05 第二批（T101 返工 + T102，Claude 验收，见 `E:\Projects\.tmp\claude\xy-handoff\art-accepted-2026-11-05b\README.md`）：一上 u11、二下 u2/u6（替换）与 u12；三上封面 + u1—u8；三下封面 + u1—u6、u8；四上封面 + u2—u8；五上 u4—u8；六上 u2—u5、u8、u9。
 - 五上、六上封面为 T099 旧图，暂用（T104 补画中）；三下 u7、四上 u1、五上 u1—u3、六上 u1/u6/u7 待补画，暂以封面代替。
+- 八下、九上：封面 + u1—u6 为 T102 成品（2026-11-06 Claude 验收）；八下 u2 三个孩子坐姿偏大（约占画高四成），待返工。
