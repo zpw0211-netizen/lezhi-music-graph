@@ -1989,6 +1989,16 @@
       "out": "media/scores/xy-g3s1/sub2sx-1.webp"
     },
     {
+      "pdfPage": 21,
+      "box": [
+        0.09,
+        0.27,
+        0.89,
+        0.5
+      ],
+      "out": "media/scores/xy-g3s1/sub2sx-2.webp"
+    },
+    {
       "pdfPage": 22,
       "box": [
         0.11,
@@ -2584,9 +2594,9 @@
       "pdfPage": 50,
       "box": [
         0.08,
-        0.22,
+        0.18,
         0.94,
-        0.68
+        0.57
       ],
       "out": "media/scores/xy-g3s2/o647g7-1.webp"
     },
