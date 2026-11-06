@@ -39,7 +39,7 @@
       "pages": 78,
       "pdfOffset": 2,
       "published": true,
-      "unitArt": 12
+      "unitArt": 14
     },
     {
       "key": "xy-g2s1",
@@ -52,14 +52,7 @@
       "pages": 74,
       "pdfOffset": 2,
       "published": true,
-      "unitArt": [
-        1,
-        3,
-        4,
-        10,
-        11,
-        12
-      ]
+      "unitArt": 12
     },
     {
       "key": "xy-g2s2",
@@ -84,7 +77,8 @@
         9,
         10,
         11,
-        12
+        12,
+        14
       ]
     },
     {
@@ -98,16 +92,7 @@
       "pages": 74,
       "pdfOffset": 8,
       "published": true,
-      "unitArt": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
-      ]
+      "unitArt": 8
     },
     {
       "key": "xy-g3s2",
@@ -120,15 +105,7 @@
       "pages": 74,
       "pdfOffset": 8,
       "published": true,
-      "unitArt": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        8
-      ]
+      "unitArt": 8
     },
     {
       "key": "xy-g4s1",
@@ -141,15 +118,7 @@
       "pages": 74,
       "pdfOffset": 8,
       "published": true,
-      "unitArt": [
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
-      ]
+      "unitArt": 8
     },
     {
       "key": "xy-g5s1",
@@ -162,13 +131,7 @@
       "pages": 74,
       "pdfOffset": 8,
       "published": true,
-      "unitArt": [
-        4,
-        5,
-        6,
-        7,
-        8
-      ]
+      "unitArt": 8
     },
     {
       "key": "xy-g6s1",
@@ -181,14 +144,7 @@
       "pages": 74,
       "pdfOffset": 8,
       "published": true,
-      "unitArt": [
-        2,
-        3,
-        4,
-        5,
-        8,
-        9
-      ]
+      "unitArt": 9
     },
     {
       "key": "xy-g7s1",
@@ -226,7 +182,8 @@
       "title": "湘艺版八年级上册",
       "pages": 74,
       "pdfOffset": 6,
-      "published": false
+      "published": true,
+      "unitArt": 6
     },
     {
       "key": "xy-g8s2",
