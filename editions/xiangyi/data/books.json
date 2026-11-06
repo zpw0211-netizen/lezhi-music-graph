@@ -195,7 +195,7 @@
       "title": "湘艺版八年级下册",
       "pages": 74,
       "pdfOffset": 6,
-      "published": false
+      "published": true
     },
     {
       "key": "xy-g9s1",
@@ -207,7 +207,7 @@
       "title": "湘艺版九年级上册",
       "pages": 82,
       "pdfOffset": 6,
-      "published": false
+      "published": true
     }
   ]
 }
