@@ -169,9 +169,13 @@ const STAFF_OMIT = new Set(["g8s2|水调歌头·明月几时有|1"]);
 function findMelodies(bookKey: string | undefined, names: string[]): { melodies: Melody[]; name?: string } {
   // 湘艺版只用本册自己录的旋律：同名歌在别的版本里印的谱不一定一样，不借用。
   if (bookKey?.startsWith("xy-") || bookKey?.startsWith("wx-xy-")) {
+    const book = BOOK_MELODIES[bookKey] ?? {};
     for (const name of names) {
-      const own = BOOK_MELODIES[bookKey]?.[name.replace(/^《|》$/g, "")];
-      if (own?.length) return { melodies: own, name };
+      const bare = name.replace(/^《|》$/g, "");
+      if (book[bare]?.length) return { melodies: book[bare], name };
+      // The graph's shared name can omit a comma printed in this book.
+      const alias = Object.keys(book).find((title) => title.replace(/[,，]/g, "") === bare.replace(/[,，]/g, ""));
+      if (alias) return { melodies: book[alias], name: alias };
     }
     return { melodies: [] };
   }
@@ -221,9 +225,11 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
   const fallbackKey = bookKey?.startsWith("wx-") ? bookKey.slice(3) : bookKey;
   for (const name of names) {
     const own = bookKey ? BOOK_MELODIES[bookKey]?.[name] : undefined;
-    if (own?.length) return { melodies: KEY_MELODIES[name] ? [KEY_MELODIES[name], ...own] : own, name };
     const fallback = fallbackKey ? BOOK_MELODIES[fallbackKey]?.[name] : undefined;
-    if (fallback?.length) return { melodies: KEY_MELODIES[name] ? [KEY_MELODIES[name], ...fallback] : fallback, name };
+    const bookMelodies = own?.length ? own : fallback ?? [];
+    const keyMelody = KEY_MELODIES[name];
+    if (keyMelody && keyMelody.bookKey === fallbackKey) return { melodies: [keyMelody, ...bookMelodies], name };
+    if (bookMelodies.length) return { melodies: bookMelodies, name };
   }
   for (const name of names) if (MELODIES[name]?.length) return { melodies: MELODIES[name] };
   return { melodies: [] };

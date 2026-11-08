@@ -29,6 +29,7 @@ type LessonRelation = {
   provenance?: boolean;
   extended?: boolean;
   confidence?: number;
+  bookKeys?: string[];
   sourcePage?: number | null;
   sources?: Array<{ bookKey: string; pdfPage?: number | null }>;
 };
@@ -38,7 +39,8 @@ const printedPage = (pdf?: number | null, bookKey?: string) => {
   return pdf != null && pdf > offset ? pdf - offset : null;
 };
 const sourcePageFor = (relation: LessonRelation, bookKey?: string) =>
-  relation.sources?.find((source) => source.bookKey === bookKey)?.pdfPage ?? relation.sourcePage;
+  relation.sources?.find((source) => source.bookKey === bookKey)?.pdfPage
+  ?? (!bookKey || !relation.bookKeys || (relation.bookKeys.length === 1 && relation.bookKeys[0] === bookKey) ? relation.sourcePage : null);
 const layerOf = (relation: LessonRelation) =>
   relation.extended ? { key: "extended", label: "拓展" }
     : (relation.confidence ?? 1) < 0.95 ? { key: "derived", label: "归纳" }
@@ -113,9 +115,6 @@ export function LessonPage({
   const valueOf = useCallback((relation: LessonRelation) => relation.literal ?? entityMap.get(relation.objectId ?? "")?.name ?? "", [entityMap]);
 
   const lesson = useMemo(() => {
-    const allOwn = relationships.filter((relation) => relation.subject === workId && !relation.provenance);
-    const learningMode = allOwn.find((relation) => relation.predicate === "学习方式");
-    const own = allOwn.filter((relation) => !HIDDEN.test(relation.predicate));
     const unitLinks = relationships.filter((relation) => relation.predicate === "包含作品" && relation.objectId === workId);
     const bookKeysOf = (candidate: LessonRelation) => {
       const candidateBook = relationships.find((relation) => relation.predicate === "包含单元" && relation.objectId === candidate.subject);
@@ -134,6 +133,10 @@ export function LessonPage({
     const lessonBookKey = requestedBookKey && book?.bookKeys?.includes(requestedBookKey)
       ? requestedBookKey
       : book?.bookKeys?.find(hasMelody) ?? book?.bookKeys?.[0];
+    const allOwn = relationships.filter((relation) => relation.subject === workId && !relation.provenance
+      && (relation.extended || !lessonBookKey || !relation.bookKeys?.length || relation.bookKeys.includes(lessonBookKey)));
+    const learningMode = allOwn.find((relation) => relation.predicate === "学习方式");
+    const own = allOwn.filter((relation) => !HIDDEN.test(relation.predicate));
     const pageOf = (entity?: LessonEntity) => (entity ? entity.firstPageByBook?.[lessonBookKey ?? ""] ?? entity.firstPage ?? 0 : 0);
     const unitWorks = unitRelations
       .filter((relation) => relation.predicate === "包含作品" && relation.objectId)
@@ -151,7 +154,7 @@ export function LessonPage({
     // 上课模式封面用本单元插图；没有单元插图的单元用本册封面。
     const unitOrder = Number(unitRelations.find((relation) => relation.predicate === "单元顺序")?.literal);
     const artPath = lessonBookKey ? (Number.isInteger(unitOrder) ? unitArtPath(lessonBookKey, unitOrder) : null) ?? `art/${lessonBookKey}.webp` : null;
-    return { own, unit, book, bookKey: lessonBookKey, artPath, learningMode, workPage: printedPage(pageOf(work), lessonBookKey), unitWorks, tasks, goals, groups: groups.filter((group) => group.facts.length), extended };
+    return { own, unit, book, bookKey: lessonBookKey, artPath, learningMode, starred: isStarredWork(allOwn), workPage: printedPage(pageOf(work), lessonBookKey), unitWorks, tasks, goals, groups: groups.filter((group) => group.facts.length), extended };
   }, [entityMap, relationships, requestedBookKey, valueOf, work, work?.name, workId]);
 
   const questions = useMemo<Question[]>(() => {
@@ -190,11 +193,10 @@ export function LessonPage({
   const melodyBookKey = lesson.bookKey && EDITION.notation === "staff" ? `wx-${lesson.bookKey}` : lesson.bookKey;
   const bookMelodies = melodiesFor(melodyBookKey, work.name);
   const melody = bookMelodies.length ? bookMelodies : undefined;
-  const starred = isStarredWork(relationships.filter((relation) => relation.subject === workId));
   const creators = mergeCreators(lesson.own
     .filter((relation) => /^(作词|作曲|词曲作者|填词|改词|编词|译配|译词|配歌|配曲|编曲|编配|改编|整理|整理改编|记谱|记谱配词|记录|传谱|编合唱|配合唱)$/.test(relation.predicate))
     .map((relation) => ({ id: relation.id, label: relation.predicate, value: valueOf(relation) })));
-  const scoreMedia = getScoreMedia(work.media);
+  const scoreMedia = getScoreMedia(work.media).filter((asset) => !lesson.bookKey || !/\/scores\/[^/]+\//.test(asset.url) || asset.url.includes(`/scores/${lesson.bookKey}/`));
   const scorePage = getPrintedPage(scoreMedia);
   // 栏目名、没有谱例的活动（我爱大自然、音乐万花筒……）和目录外只在节目单里提到的曲名不是一课：目录和翻页都不列。
   // 规则与 build-units 的单元作品列表一致：有栏目、有旋律、有谱例或是朗诵作品才算一课。
@@ -221,7 +223,7 @@ export function LessonPage({
             <h1 id="lesson-title" data-grade={lesson.book?.name.match(/([七八九])年级/)?.[1] ?? ""}>{work.name}</h1>
             <p className="lesson-meta">
               <span className="lesson-type">{work.type}</span>
-              {starred && <span className="lesson-star" title="教材标注的重点学习曲目">☆ 重点曲目</span>}
+              {lesson.starred && <span className="lesson-star" title="教材标注的重点学习曲目">☆ 重点曲目</span>}
               {creators.map((item) => <span key={item.id}><small>{item.label}</small>{item.value}</span>)}
               {lesson.learningMode && <span><small>教材栏目</small>{valueOf(lesson.learningMode)}</span>}
               {lesson.workPage && lesson.workPage !== scorePage && <span><small>教材</small>第 {lesson.workPage} 页</span>}
