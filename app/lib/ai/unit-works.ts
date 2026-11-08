@@ -1,4 +1,5 @@
 import { normalize, type AnswerResult, type Citation, type RagGraph } from "./graph-rag";
+import { matchesVolume, requestedVolumes } from "./book-volume";
 
 /** The fields needed from the same units.json used by the course directory. */
 export type UnitCatalog = {
@@ -9,7 +10,6 @@ export type UnitCatalog = {
   works: { id: string; name: string; page?: number | null; pdfPage?: number | null; summary?: string | null }[];
 };
 
-const GRADES = "一二三四五六七八九";
 const UNIT_NUMBER = /^第[一二三四五六七八九十\d]+(?:单元|课)/;
 const unitKey = (value: string) => normalize(value.normalize("NFKC")).replace(/[「」『』,.!?;:]/g, "");
 
@@ -29,15 +29,8 @@ function answerFromDirectory(answer: string, evidence: Citation[] = [], suggeste
 export function unitWorksAnswer(question: string, units: UnitCatalog[], books: RagGraph["books"]): AnswerResult | null {
   if (!isUnitWorksQuestion(question)) return null;
   const term = unitKey(question);
-  const references = [...term.matchAll(/([一二三四五六七八九1-9])(?:(?:年级)?([上下])(?:册|学期)?|年级)/g)];
-  const hasSemester = references.some((reference) => reference[2]);
-  const scopes = references
-    .filter((reference) => !hasSemester || reference[2])
-    .map(([, grade, semester]) => `g${Number(grade) || GRADES.indexOf(grade) + 1}s${semester ? (semester === "上" ? 1 : 2) : ""}`);
-  const scopedUnits = scopes.length ? units.filter((unit) => {
-    const volume = unit.bookKey.match(/g[1-9]s[12]$/)?.[0] ?? "";
-    return scopes.some((scope) => volume.startsWith(scope));
-  }) : units;
+  const volumes = requestedVolumes(question);
+  const scopedUnits = units.filter((unit) => matchesVolume(unit.bookKey, volumes));
   const matched = scopedUnits.map((unit) => {
     const names = [unit.title, unit.name].map(unitKey);
     const score = Math.max(0, ...names.filter((name) => name && term.includes(name)).map((name) => name.length));
@@ -50,7 +43,7 @@ export function unitWorksAnswer(question: string, units: UnitCatalog[], books: R
         const ordinal = unitKey(unit.name).match(UNIT_NUMBER)?.[0];
         return ordinal && term.includes(ordinal);
       });
-  if (!candidates.length) return scopes.length
+  if (!candidates.length) return volumes.length
     ? answerFromDirectory("当前教材目录里找不到你指定的单元。请核对年级、上下册和单元名。")
     : null;
 

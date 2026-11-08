@@ -30,7 +30,7 @@ const SAMPLE_QUESTIONS = new Function("EDITION", `return ${match[1]}`)(EDITION);
 // --- 内存 CommonJS 注册表：graph-rag 的依赖闭包（无第三方运行时依赖） ---
 const sources = new Map();
 const loaded = new Map();
-for (const rel of ["app/lib/ai/graph-rag.ts", "app/lib/ai/unit-works.ts", "app/graph-runtime.ts", "app/lib/graph/graph-algorithms.ts", "app/lib/graph/types.ts"]) {
+for (const rel of ["app/lib/ai/graph-rag.ts", "app/lib/ai/book-volume.ts", "app/lib/ai/textbook-facts.ts", "app/lib/ai/unit-works.ts", "app/graph-runtime.ts", "app/lib/graph/graph-algorithms.ts", "app/lib/graph/types.ts"]) {
   const source = readFileSync(path.join(root, rel), "utf8");
   sources.set(rel.replace(/\\/g, "/"), ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },

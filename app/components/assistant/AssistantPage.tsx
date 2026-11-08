@@ -1,7 +1,8 @@
 "use client";
-import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
+import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent } from "react";
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
 import { isUnitWorksQuestion, unitWorksAnswer, type UnitCatalog } from "../../lib/ai/unit-works";
+import { textbookQuestion } from "../../lib/ai/textbook-facts";
 import { PendingKnowledge } from "./PendingKnowledge";
 import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
 import { fetchWithRetry } from "../../lib/app/fetch-retry";
@@ -116,7 +117,7 @@ export function AssistantPage({
         const retrieval = await enrichGraph(graph, q, [], loadEvidence);
         const base = graphAnswer(retrieval, q);
         // The model only rewrites answers built from retrieval. Any failure keeps the local answer.
-        result = (await askModel(q)) ?? base;
+        result = textbookQuestion(q) ? base : (await askModel(q)) ?? base;
       }
       if (alive.current) {
         setCurrentMessage({ question: q, result });
@@ -151,18 +152,6 @@ export function AssistantPage({
     setHighlightedFootnoteId(null);
     setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleFnClick = (e: MouseEvent, fnId: string) => {
-    e.preventDefault();
-    setFootnotesExpanded(true);
-    setHighlightedFootnoteId(fnId);
-    setTimeout(() => {
-      const element = document.getElementById(fnId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
-    }, 50);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -251,7 +240,7 @@ export function AssistantPage({
           <header className="ask-hero-head">
             <span className="seal-mark" aria-hidden="true">问</span>
             <h1 className="ask-hero-title">问问教材</h1>
-            <p className="ask-hero-lead">回答只来自{PUBLISHED_BOOK_COUNT_LABEL}教材，每一句都标出页码。</p>
+            <p className="ask-hero-lead">根据{PUBLISHED_BOOK_COUNT_LABEL}教材资料作答，并列出可查的教材出处。</p>
           </header>
 
           {composer("hero")}
@@ -338,29 +327,12 @@ export function AssistantPage({
                   id="qa-answer-block"
                   onAnimationEnd={() => setInkAnim(false)}
                 >
-                  {paragraphs.map((p, pIdx) => {
-                    const sealNumeral = getFormalNumeral(pIdx);
-                    const ev = currentMessage.result.evidence[pIdx];
-                    const fnId = `fn-${pIdx}`;
-                    const fnLabel = ev ? `${getSimpleNumeral(pIdx)}${ev.bookTitle} · ${citationPageLabel(ev.textbookPage, ev.pdfPage)}` : null;
-                    return (
-                      <p className="qa-paragraph" key={pIdx}>
-                        <span className="mark-seal">{sealNumeral}</span>
-                        {p}
-                        {ev && fnLabel && (
-                          <a
-                            className="fn-ref"
-                            href={`#${fnId}`}
-                            data-fn={fnId}
-                            title="查看教材出处与依据"
-                            onClick={e => handleFnClick(e, fnId)}
-                          >
-                            {fnLabel}
-                          </a>
-                        )}
-                      </p>
-                    );
-                  })}
+                  {paragraphs.map((p, pIdx) => (
+                    <p className="qa-paragraph" key={pIdx}>
+                      <span className="mark-seal">{getFormalNumeral(pIdx)}</span>
+                      {p}
+                    </p>
+                  ))}
                 </div>
 
                 {/* 关联知识联系标签 */}
