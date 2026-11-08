@@ -7,6 +7,32 @@ const compile = async entry => {
   return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 };
 const { enrichGraph, graphAnswer, recognizeIntent, linkEntities } = await compile("app/lib/ai/graph-rag.ts");
+const { unitWorksAnswer } = await compile("app/lib/ai/unit-works.ts");
+const unitName = "华夏之声·文化根脉";
+const directoryBooks = [
+  { key: "xy-g7s1", title: "湘艺版七年级上册" },
+  { key: "xy-g8s2", title: "湘艺版八年级下册" },
+];
+const catalog = [
+  { bookKey: "xy-g7s1", id: "first", name: unitName, title: unitName, works: [{ id: "7", name: "《黄河船夫曲》", pdfPage: 24 }] },
+  { bookKey: "xy-g8s2", id: "second", name: unitName, title: unitName, works: [{ id: "8", name: "《久久不见久久见》", page: 19, pdfPage: 25 }, { id: "9", name: "《下四川》" }] },
+];
+for (const volume of ["八年级下册", "八下", "８ 年级 下册"]) {
+  const answer = unitWorksAnswer(`湘艺版${volume}的「${unitName}」单元有哪些作品？`, catalog, directoryBooks);
+  assert.match(answer.answer, /湘艺版八年级下册.*《久久不见久久见》.*《下四川》/);
+  assert.doesNotMatch(answer.answer, /七年级上册|黄河船夫曲/);
+  assert.deepEqual(answer.evidence.map((item) => item.bookKey), ["xy-g8s2", "xy-g8s2"]);
+  assert.equal(answer.evidence[0].textbookPage, "19");
+}
+const ambiguousUnit = unitWorksAnswer(`${unitName}单元有哪些作品？`, catalog, directoryBooks);
+assert.equal(ambiguousUnit.evidence.length, 0);
+assert.equal(ambiguousUnit.suggestedQuestions.length, 2);
+assert.match(unitWorksAnswer(ambiguousUnit.suggestedQuestions[1], catalog, directoryBooks).answer, /久久不见久久见/);
+const missingUnit = unitWorksAnswer(`八上${unitName}单元有哪些作品？`, catalog, directoryBooks);
+assert.match(missingUnit.answer, /找不到你指定的单元/);
+assert.equal(missingUnit.evidence.length, 0);
+assert.equal(unitWorksAnswer("哪些作品用了 2/4 拍？", catalog, directoryBooks), null);
+
 const index = JSON.parse(await readFile("public/data/graph-index.json", "utf8"));
 const graph = index.canonicalGraph;
 const load = async key => JSON.parse(await readFile(`public/data/evidence/${key}.json`, "utf8"));
