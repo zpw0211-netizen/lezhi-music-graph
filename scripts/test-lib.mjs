@@ -387,6 +387,8 @@ const ROUND_TRIP = [
   { name: "records（册与作品）", route: { view: "records", book: "g7s1", work: "歌唱祖国" } },
   { name: "lesson+作品", route: { view: "lesson", work: "歌唱祖国" } },
   { name: "work+作品", route: { view: "work", work: "义勇军进行曲" } },
+  { name: "湘艺课页保留册别", route: { view: "lesson", book: "xy-g8s1", work: "大海啊，故乡" } },
+  { name: "湘艺作品页保留册别", route: { view: "work", book: "xy-g7s1", work: "大海啊故乡" } },
   { name: "timeline", route: { view: "timeline" } },
 ];
 
