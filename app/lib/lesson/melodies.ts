@@ -70,6 +70,7 @@ import XY_G5S1 from "./melodies-xy-g5s1";
 import XY_G7S1 from "./melodies-xy-g7s1";
 import XY_G7S2 from "./melodies-xy-g7s2";
 import XY_G8S1 from "./melodies-xy-g8s1";
+import XY_G8S2 from "./melodies-xy-g8s2";
 import { DRAFT_MELODIES } from "./melodies-draft";
 import { STAFF_KEYS } from "./staff-key-data";
 import { STAFF_PLACEMENT } from "./staff-placement-data";
@@ -102,7 +103,7 @@ const WX_PEP_BOOKS: Array<[string, Record<string, Melody[]>]> = ([
   ["wx-pep-g8s1", WX_PEP_G8S1], ["wx-pep-g8s2", WX_PEP_G8S2], ["wx-pep-g9s1", WX_PEP_G9S1],
 ] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
 // 湘艺版各册自己的转写，同样按版本分开存放，键去掉《》。
-const XY_BOOKS: Array<[string, Record<string, Melody[]>]> = ([["xy-g1s1", XY_G1S1], ["xy-g1s2", XY_G1S2], ["xy-g2s1", XY_G2S1], ["xy-g2s2", XY_G2S2], ["xy-g3s1", XY_G3S1], ["xy-g3s2", XY_G3S2], ["xy-g4s1", XY_G4S1], ["xy-g5s1", XY_G5S1], ["xy-g7s1", XY_G7S1], ["xy-g7s2", XY_G7S2], ["xy-g8s1", XY_G8S1]] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
+const XY_BOOKS: Array<[string, Record<string, Melody[]>]> = ([["xy-g1s1", XY_G1S1], ["xy-g1s2", XY_G1S2], ["xy-g2s1", XY_G2S1], ["xy-g2s2", XY_G2S2], ["xy-g3s1", XY_G3S1], ["xy-g3s2", XY_G3S2], ["xy-g4s1", XY_G4S1], ["xy-g5s1", XY_G5S1], ["xy-g7s1", XY_G7S1], ["xy-g7s2", XY_G7S2], ["xy-g8s1", XY_G8S1], ["xy-g8s2", XY_G8S2]] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
 const GRADE_LABELS: Record<string, string> = { "1": "一年级", "2": "二年级", "3": "三年级", "4": "四年级", "5": "五年级", "6": "六年级", "7": "七年级", "8": "八年级", "9": "九年级" };
 export const PEP_MELODY_BOOKS = PEP_BOOKS.map(([key]) => {
   const match = key.match(/^pep-g(\d+)s([12])$/);

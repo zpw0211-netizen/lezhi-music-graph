@@ -295,10 +295,11 @@ for (const bookKey of BOOK_KEYS) {
   const workByName = new Map(book.entities
     .filter((entity) => isWorkType(entity.type))
     .map((entity) => [entity.name, entity]));
-  const sourceUnits = book.entities
-    .filter((entity) => entity.type === "单元")
-    // 湘艺版只按课排：新年联欢会、我的音乐天地等课外栏目不单列成课，其作品仍在图谱和搜索里。
-    .filter((entity) => EDITION.key !== "xiangyi" || /^第[一二三四五六七八九十]+课/.test(entity.name))
+  const bookUnits = book.entities.filter((entity) => entity.type === "单元");
+  // 湘艺版小学按课排：新年联欢会、我的音乐天地等课外栏目不单列成课，其作品仍在图谱和搜索里。
+  // 初中各册按主题单元编排（没有“第×课”），单元全部保留。
+  const lessonUnits = bookUnits.filter((entity) => /^第[一二三四五六七八九十]+课/.test(entity.name));
+  const sourceUnits = (EDITION.key === "xiangyi" && lessonUnits.length ? lessonUnits : bookUnits)
     .sort((a, b) => (a.firstPage ?? 0) - (b.firstPage ?? 0) || a.name.localeCompare(b.name, "zh"));
   units.push(...sourceUnits.map((unit, index) => buildUnit(unit, index, bookKey, entityById, triplesBySubject, workByName)));
 }

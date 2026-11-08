@@ -162,9 +162,9 @@ def lang_of(ph):
 def english(notes):
     """English lyrics come one syllable per note ("pave ment"): rejoin fragments into dictionary words,
     then split each word's phonemes back over its notes (one vowel group per written syllable)."""
-    frags = [(i, re.sub(r"[^A-Za-z']", "", n["lyric"]).lower()) for i, n in enumerate(notes)
+    frags = [(i, re.sub(r"[^A-Za-z']", "", n["lyric"].replace("ü", "v")).lower()) for i, n in enumerate(notes)
              if n["midi"] is not None and not n["slur"] and not n["tie"] and n["lyric"] and re.search(r"[A-Za-z]", n["lyric"])
-             and re.sub(r"[^A-Za-z]", "", n["lyric"]).lower() not in SOLFEGE]
+             and re.sub(r"[^A-Za-z]", "", n["lyric"].replace("ü", "v")).lower() not in SOLFEGE]
     per_note = {}
     # Vocables written in pinyin (Yi ya lei mei…): when every Latin syllable of the song is pinyin, sing it as Chinese.
     if frags and all(f in V.dict for _, f in frags):
