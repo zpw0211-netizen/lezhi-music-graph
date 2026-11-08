@@ -533,8 +533,8 @@ export default function Home() {
               const work = entityById(id);
               if (work) navigate({ view: "work", ...(route.book ? { book: route.book } : {}), work: bareWorkName(work.name) });
             }}
-            onPlan={() => {
-              const bookKey = route.book ?? routeWork.bookKeys?.[0];
+            onPlan={(lessonBookKey) => {
+              const bookKey = lessonBookKey ?? route.book ?? routeWork.bookKeys?.[0];
               navigate({ view: "plan", ...(bookKey ? { book: bookKey, work: bareWorkName(routeWork.name) } : {}) });
             }}
             />

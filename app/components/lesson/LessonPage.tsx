@@ -5,7 +5,7 @@ import { VocalDemo } from "./VocalDemo";
 import { MelodySet } from "./MelodyPlayer";
 import { ReflectivePresent } from "./ReflectivePresent";
 import { WorkbenchIcon } from "../WorkbenchIcon";
-import { getPrintedPage, getScoreMedia, isStarredWork, parseUnitTask } from "../../lib/app/unit-data";
+import { getPrintedPage, getScoreMedia, isStarredWork, matchesBookScope, parseUnitTask } from "../../lib/app/unit-data";
 import { SCORE_SIZES } from "../../lib/lesson/score-sizes";
 import { BOOK_BY_KEY, EDITION } from "../../lib/app/books";
 import { unitArtPath } from "../../lib/app/unit-art";
@@ -108,7 +108,7 @@ export function LessonPage({
   onOpenLesson: (id: string) => void;
   onWorkGraph: (id: string) => void;
   /** 打开智能备课，课题已选好。 */
-  onPlan?: () => void;
+  onPlan?: (bookKey?: string) => void;
 }) {
   const entityMap = useMemo(() => new Map(entities.map((entity) => [entity.id, entity])), [entities]);
   const work = entityMap.get(workId);
@@ -134,7 +134,7 @@ export function LessonPage({
       ? requestedBookKey
       : book?.bookKeys?.find(hasMelody) ?? book?.bookKeys?.[0];
     const allOwn = relationships.filter((relation) => relation.subject === workId && !relation.provenance
-      && (relation.extended || !lessonBookKey || !relation.bookKeys?.length || relation.bookKeys.includes(lessonBookKey)));
+      && (relation.extended || matchesBookScope(lessonBookKey, relation.bookKeys)));
     const learningMode = allOwn.find((relation) => relation.predicate === "学习方式");
     const own = allOwn.filter((relation) => !HIDDEN.test(relation.predicate));
     const pageOf = (entity?: LessonEntity) => (entity ? entity.firstPageByBook?.[lessonBookKey ?? ""] ?? entity.firstPage ?? 0 : 0);
@@ -155,7 +155,7 @@ export function LessonPage({
     const unitOrder = Number(unitRelations.find((relation) => relation.predicate === "单元顺序")?.literal);
     const artPath = lessonBookKey ? (Number.isInteger(unitOrder) ? unitArtPath(lessonBookKey, unitOrder) : null) ?? `art/${lessonBookKey}.webp` : null;
     return { own, unit, book, bookKey: lessonBookKey, artPath, learningMode, starred: isStarredWork(allOwn), workPage: printedPage(pageOf(work), lessonBookKey), unitWorks, tasks, goals, groups: groups.filter((group) => group.facts.length), extended };
-  }, [entityMap, relationships, requestedBookKey, valueOf, work, work?.name, workId]);
+  }, [entityMap, relationships, requestedBookKey, valueOf, work, workId]);
 
   const questions = useMemo<Question[]>(() => {
     if (!work) return [];
@@ -196,7 +196,7 @@ export function LessonPage({
   const creators = mergeCreators(lesson.own
     .filter((relation) => /^(作词|作曲|词曲作者|填词|改词|编词|译配|译词|配歌|配曲|编曲|编配|改编|整理|整理改编|记谱|记谱配词|记录|传谱|编合唱|配合唱)$/.test(relation.predicate))
     .map((relation) => ({ id: relation.id, label: relation.predicate, value: valueOf(relation) })));
-  const scoreMedia = getScoreMedia(work.media).filter((asset) => !lesson.bookKey || !/\/scores\/[^/]+\//.test(asset.url) || asset.url.includes(`/scores/${lesson.bookKey}/`));
+  const scoreMedia = getScoreMedia(work.media, lesson.bookKey);
   const scorePage = getPrintedPage(scoreMedia);
   // 栏目名、没有谱例的活动（我爱大自然、音乐万花筒……）和目录外只在节目单里提到的曲名不是一课：目录和翻页都不列。
   // 规则与 build-units 的单元作品列表一致：有栏目、有旋律、有谱例或是朗诵作品才算一课。
@@ -232,7 +232,7 @@ export function LessonPage({
           </div>
           <div className="lesson-hero-actions">
             <button ref={presentButtonRef} type="button" className="lesson-present" onClick={() => setPresenting(true)}><WorkbenchIcon name="expand" />上课模式</button>
-            {onPlan && <button type="button" onClick={onPlan}><WorkbenchIcon name="spark" />智能备课</button>}
+            {onPlan && <button type="button" onClick={() => onPlan(lesson.bookKey)}><WorkbenchIcon name="spark" />智能备课</button>}
             <button type="button" onClick={() => onWorkGraph(workId)}><WorkbenchIcon name="graph" />作品图谱</button>
           </div>
         </header>
@@ -314,6 +314,7 @@ export function LessonPage({
 
     {presenting && <ReflectivePresent
       workId={workId}
+      bookKey={lesson.bookKey}
       workName={work.name}
       workType={work.type}
       mode={lesson.learningMode ? valueOf(lesson.learningMode) : undefined}
