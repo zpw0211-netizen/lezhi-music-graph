@@ -41,9 +41,7 @@ const SOURCES = {
   routing: path.join(repoRoot, "app", "lib", "app", "routing.ts"),
   unitData: path.join(repoRoot, "app", "lib", "app", "unit-data.ts"),
   books: path.join(repoRoot, "app", "lib", "app", "books.ts"),
-  timelineModel: path.join(repoRoot, "app", "components", "timeline", "timelineModel.ts"),
   assets: path.join(repoRoot, "app", "lib", "app", "assets.ts"),
-  peopleSupplement: path.join(repoRoot, "app", "lib", "timeline", "peopleSupplement.ts"),
   labScales: path.join(repoRoot, "app", "components", "lab", "heptatonic.ts"),
   lupanModel: path.join(repoRoot, "app", "components", "lab", "lupan-model.ts"),
 };
@@ -100,11 +98,11 @@ const MUTATIONS = [
   },
   {
     id: "g",
-    label: "(g) timeline 不再注册为可用路由",
+    label: "(g) ear 不再注册为可用路由",
     file: "routing",
-    from: '  "timeline",',
-    to: '  "disabled-timeline",',
-    expectedFailure: "往返：timeline",
+    from: '  "ear",',
+    to: '  "disabled-ear",',
+    expectedFailure: "往返：ear",
   },
   {
     id: "h",
@@ -188,13 +186,8 @@ function mutationFromArgv() {
 const loaded = await loadModules(mutationFromArgv());
 const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, matchesBookScope, parseUnitTask } = await loaded.unitData;
-const { eraForYear, filterWorks, groupTimelineWorks, personDates, personYearSource, workHref, withSupplementalPeople, withSupplementalYears } = await loaded.timelineModel;
-const { isPublicPeopleLifetime, loadPeopleSupplement } = await loaded.peopleSupplement;
 const { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, heptatonicPhrase, transposePitchClass } = await loaded.labScales;
 const { makeLupanPhrase, normalizePitchClass, transposeTonicFromDrag } = await loaded.lupanModel;
-const timelineData = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "timeline.json"), "utf8"));
-const recordUnits = JSON.parse(readFileSync(path.join(repoRoot, "public", "data", "units.json"), "utf8"));
-const recordWorks = new Map(recordUnits.flatMap((unit) => unit.works.map((work) => [`${unit.bookKey}:${work.id}`, work])));
 
 // ---- 测试登记（顶层 test()；node:test 在进程退出前执行，失败置非零退出码） ----
 
@@ -389,7 +382,8 @@ const ROUND_TRIP = [
   { name: "work+作品", route: { view: "work", work: "义勇军进行曲" } },
   { name: "湘艺课页保留册别", route: { view: "lesson", book: "xy-g8s1", work: "大海啊，故乡" } },
   { name: "湘艺作品页保留册别", route: { view: "work", book: "xy-g7s1", work: "大海啊故乡" } },
-  { name: "timeline", route: { view: "timeline" } },
+  { name: "compose", route: { view: "compose" } },
+  { name: "ear", route: { view: "ear" } },
 ];
 
 for (const { name, route } of ROUND_TRIP) {
@@ -536,8 +530,11 @@ t("旧链接兼容：?view=graph&node=CAN_x", () => {
   assert.deepEqual(parseRoute("", "?view=graph&node=CAN_x"), { view: "graph", node: "CAN_x" });
 });
 
-t("旧链接兼容：?view=timeline", () => {
-  assert.deepEqual(parseRoute("", "?view=timeline"), { view: "timeline" });
+t("旧链接兼容：音乐地图、音乐时光机进入取代它们的工具", () => {
+  assert.deepEqual(parseRoute("#/atlas"), { view: "compose" });
+  assert.deepEqual(parseRoute("#/timeline/extra"), { view: "ear" });
+  assert.deepEqual(parseRoute("", "?view=timeline"), { view: "ear" });
+  assert.deepEqual(parseRoute("", "?view=atlas"), { view: "compose" });
 });
 
 t("旧链接兼容：旧 work 参数同样会被剥书名号", () => {
@@ -586,36 +583,6 @@ t("容错：#/lesson 不带作品回退 records", () => {
 
 t("容错：井号里的多余段会拼回详情（现行行为）", () => {
   assert.deepEqual(parseRoute("#/graph/CAN_x/extra"), { view: "graph", node: "CAN_x/extra" });
-});
-
-t("容错：timeline 忽略不使用的多余路径段", () => {
-  assert.deepEqual(parseRoute("#/timeline/extra"), { view: "timeline" });
-});
-
-t("年表作品链接：全量 664 条只链接 records 中可解析的 470 条", () => {
-  assert.equal(timelineData.works.length, 664);
-  let linked = 0;
-  let plainText = 0;
-  for (const work of timelineData.works) {
-    const href = workHref(work);
-    const target = recordWorks.get(`${work.bookKey}:${work.id}`);
-    assert.equal(Boolean(work.unit), Boolean(target), `单元归属与 records 目录不一致：${work.id}`);
-    if (!target) {
-      plainText += 1;
-      assert.equal(href, null, `单元外作品应为纯文字：${work.id}`);
-      continue;
-    }
-    linked += 1;
-    assert.equal(target.name, work.name, `records 目录作品名称不符：${work.id}`);
-    assert.equal(typeof href, "string", `目录内作品缺少年表链接：${work.id}`);
-    assert.deepEqual(parseRoute(href), {
-      view: "records",
-      book: work.bookKey,
-      work: work.name.replace(/^《|》$/g, ""),
-    }, `作品链接未解析到正确册别与作品：${work.id}`);
-  }
-  assert.equal(linked, 470);
-  assert.equal(plainText, 194);
 });
 
 t("records 默认册改为七上且不改图谱使用的全局默认册", () => {
@@ -825,7 +792,7 @@ const YEAR_SUPPLEMENT_RESULTS = [
 
 function hashTextbookData() {
   const dataRoot = path.join(repoRoot, "public", "data");
-  const protectedPaths = ["books", "details", "evidence", "timeline.json"];
+  const protectedPaths = ["books", "details", "evidence"];
   const files = [];
   const visit = (absolutePath) => {
     for (const entry of readdirSync(absolutePath, { withFileTypes: true })) {
@@ -1008,192 +975,6 @@ t("人物补充：写入源数据与发布数据不改教材数据且字节稳�
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
-});
-
-t("人物补充：只对外提供 found/partial 且 high/medium 的条目", () => {
-  const records = peopleLifetimeFixture();
-  const visible = records.filter(isPublicPeopleLifetime).map((person) => person.id);
-  assert.deepEqual(visible, ["TEST_PEOPLE_FOUND", "TEST_PEOPLE_PARTIAL"]);
-});
-
-t("人物补充：加载接口按需 fetch 且 low/not_found 不外露", async () => {
-  const records = peopleLifetimeFixture();
-  let requestedUrl = "";
-  const fetcher = async (url) => {
-    requestedUrl = String(url);
-    return {
-      ok: true,
-      json: async () => records,
-    };
-  };
-  const loaded2 = await loadPeopleSupplement(fetcher);
-  assert.deepEqual(loaded2.map((person) => person.id), ["TEST_PEOPLE_FOUND", "TEST_PEOPLE_PARTIAL"]);
-  // publicAssetUrl 恒带前导斜杠（basePath 行为归 assets 模块）
-  assert.equal(requestedUrl, "/data/supplement/people-lifetime.json");
-  const failing = async () => ({ ok: false, status: 404 });
-  await assert.rejects(() => loadPeopleSupplement(failing), /HTTP 404/);
-});
-
-// --- timeline long-roll model -------------------------------------------------
-
-function timelineWorkFixture(overrides = {}) {
-  return {
-    id: "T034_TEST_WORK",
-    name: "《测试作品》",
-    year: null,
-    yearRange: null,
-    yearText: null,
-    yearEvidence: null,
-    bookKey: "g7s1",
-    unit: "第一单元 测试",
-    ...overrides,
-  };
-}
-
-function timelinePersonFixture(overrides = {}) {
-  return {
-    id: "TEST_TIMELINE_PERSON",
-    name: "测试人物",
-    born: null,
-    bornRange: null,
-    died: null,
-    diedRange: null,
-    lifetimeText: [],
-    lifetimeEvidence: [],
-    sourceEntities: [],
-    works: [],
-    ...overrides,
-  };
-}
-
-t("年表人物：只展示 found/partial 且 high/medium 的补充，并保留 partial 原文", () => {
-  const base = peopleLifetimeFixture();
-  const partialWithoutDate = {
-    ...base.find(person => person.id === "TEST_PEOPLE_PARTIAL"),
-    id: "TEST_PEOPLE_NO_DATE",
-    status: "partial",
-    lifetimeText: null,
-  };
-  const diedOnly = {
-    ...base.find(person => person.id === "TEST_PEOPLE_PARTIAL"),
-    id: "TEST_PEOPLE_DIED_ONLY",
-    born: null,
-    died: 1930,
-    lifetimeText: "—1930",
-  };
-  const people = [
-    timelinePersonFixture({ id: "TEST_PEOPLE_FOUND" }),
-    timelinePersonFixture({ id: "TEST_PEOPLE_PARTIAL" }),
-    timelinePersonFixture({ id: "TEST_PEOPLE_DIED_ONLY" }),
-    timelinePersonFixture({ id: "TEST_PEOPLE_LOW" }),
-    timelinePersonFixture({ id: "TEST_PEOPLE_NOT_FOUND" }),
-    timelinePersonFixture({ id: "TEST_PEOPLE_NOT_PERSON" }),
-    timelinePersonFixture({ id: "TEST_PEOPLE_NO_DATE" }),
-  ];
-  const result = withSupplementalPeople({ works: [], people }, [...base, partialWithoutDate, diedOnly]);
-  const byId = new Map(result.people.map(person => [person.id, person]));
-  assert.equal(personYearSource(byId.get("TEST_PEOPLE_FOUND")), "supplement");
-  assert.equal(personDates(byId.get("TEST_PEOPLE_FOUND")), "1905—1945");
-  assert.equal(personYearSource(byId.get("TEST_PEOPLE_PARTIAL")), "supplement");
-  assert.equal(personDates(byId.get("TEST_PEOPLE_PARTIAL")), "1938—");
-  assert.equal(personYearSource(byId.get("TEST_PEOPLE_DIED_ONLY")), "supplement");
-  assert.equal(personDates(byId.get("TEST_PEOPLE_DIED_ONLY")), "—1930");
-  for (const id of ["TEST_PEOPLE_LOW", "TEST_PEOPLE_NOT_FOUND", "TEST_PEOPLE_NOT_PERSON", "TEST_PEOPLE_NO_DATE"]) {
-    assert.equal(byId.get(id).supplement, undefined, `${id} 不应展示人物补充`);
-    assert.equal(personYearSource(byId.get(id)), null);
-    assert.equal(personDates(byId.get(id)), "教材未标注年代");
-  }
-});
-
-t("年表人物：教材原文优先，不被同编号补充覆盖", () => {
-  const textbookPerson = timelinePersonFixture({
-    id: "TEST_PEOPLE_BOOK",
-    born: 1948,
-    bornRange: [1948, 1948],
-    lifetimeText: ["1948年"],
-    lifetimeEvidence: [{ bookKey: "g9s2", tripleId: "G9S2_T_TEST", kind: "birth", text: "1948年" }],
-  });
-  const conflictingSupplement = {
-    ...peopleLifetimeFixture()[0],
-    id: textbookPerson.id,
-    lifetimeText: "1905—1945",
-  };
-  const result = withSupplementalPeople({ works: [], people: [textbookPerson] }, [conflictingSupplement]).people[0];
-  assert.equal(result.supplement, undefined);
-  assert.equal(personYearSource(result), "textbook");
-  assert.equal(personDates(result), "1948年");
-  assert.deepEqual(result.lifetimeEvidence, textbookPerson.lifetimeEvidence);
-});
-
-t("年表：只把 found 且 high/medium 的补充年代放上长卷", () => {
-  const base = { works: [
-    timelineWorkFixture({ id: "high" }),
-    timelineWorkFixture({ id: "medium", name: "《中可信作品》" }),
-    timelineWorkFixture({ id: "low", name: "《低可信作品》" }),
-    timelineWorkFixture({ id: "traditional", name: "《传统曲目》" }),
-    timelineWorkFixture({ id: "not-found", name: "《未找到作品》" }),
-    timelineWorkFixture({ id: "missing-range", name: "《缺少年代范围》" }),
-  ], people: [] };
-  const result = withSupplementalYears(base, [
-    { id: "high", status: "found", confidence: "high", yearText: "1951年", yearRange: [1951, 1951] },
-    { id: "medium", status: "found", confidence: "medium", yearText: "20世纪50年代", yearRange: [1950, 1959] },
-    { id: "low", status: "found", confidence: "low", yearText: "1952年", yearRange: [1952, 1952] },
-    { id: "traditional", status: "traditional", confidence: "medium", yearText: "傳統曲目", yearRange: null },
-    { id: "not-found", status: "not_found", confidence: "high", yearText: null, yearRange: null },
-    { id: "missing-range", status: "found", confidence: "high", yearText: "年代待考", yearRange: null },
-  ]);
-  assert.deepEqual(result.works.filter(work => work.yearRange).map(work => work.id), ["high", "medium"]);
-  assert.deepEqual(result.works.filter(work => work.yearSource === "supplement").map(work => work.id), ["high", "medium"]);
-  assert.equal(result.works.find(work => work.id === "low").yearSource, undefined);
-});
-
-t("年表：教材原文年代优先，保留原始证据", () => {
-  const source = timelineWorkFixture({
-    id: "textbook",
-    yearRange: [1935, 1935],
-    yearText: "1935年",
-    yearEvidence: { tripleId: "T034_TRIPLE", relation: "创作年代" },
-  });
-  const result = withSupplementalYears({ works: [source], people: [] }, [
-    { id: "textbook", status: "found", confidence: "high", yearText: "1940年", yearRange: [1940, 1940] },
-  ]).works[0];
-  assert.equal(result.yearSource, "textbook");
-  assert.equal(result.yearText, "1935年");
-  assert.deepEqual(result.yearEvidence, source.yearEvidence);
-});
-
-t("年表：同年代同名作品合并册别，跨年代与未标注作品分别保留", () => {
-  const groups = groupTimelineWorks([
-    timelineWorkFixture({ id: "a", bookKey: "g7s1", yearRange: [1951, 1951], yearText: "1951年", yearSource: "textbook" }),
-    timelineWorkFixture({ id: "b", bookKey: "g8s1", yearRange: [1958, 1958], yearText: "1958年", yearSource: "supplement" }),
-    timelineWorkFixture({ id: "c", bookKey: "g9s1", yearRange: [1961, 1961], yearText: "1961年", yearSource: "textbook" }),
-    timelineWorkFixture({ id: "d", bookKey: "g9s2" }),
-  ]);
-  assert.equal(groups.length, 3);
-  const fifties = groups.find(group => group.from === 1950);
-  assert.equal(fifties.works.length, 1);
-  assert.deepEqual(fifties.works[0].bookKeys, ["g7s1", "g8s1"]);
-  assert.equal(fifties.works[0].records.length, 2);
-  assert.equal(fifties.works[0].hasTextbookYear, true);
-  assert.equal(fifties.works[0].hasSupplementYear, true);
-  assert.equal(groups.at(-1).undated, true);
-  assert.equal(groups.at(-1).works[0].yearText, "教材未标注年代");
-});
-
-t("年表：历史分段边界与已发布册筛选/书名检索", () => {
-  assert.equal(eraForYear(1699).id, "era-ancient");
-  assert.equal(eraForYear(1700).id, "era-1700");
-  assert.equal(eraForYear(1899).id, "era-1850");
-  assert.equal(eraForYear(1900).id, "era-1900");
-  assert.equal(eraForYear(1929).id, "era-1900");
-  assert.equal(eraForYear(1930).id, "era-1930");
-  const works = [
-    timelineWorkFixture({ id: "a", name: "《歌唱祖国》", bookKey: "g7s1" }),
-    timelineWorkFixture({ id: "b", name: "《歌唱祖国》", bookKey: "g8s1" }),
-  ];
-  assert.equal(filterWorks({ works, people: [] }, "g7s1", "歌唱祖国").length, 1);
-  assert.equal(filterWorks({ works, people: [] }, "", "《歌唱祖国》").length, 2);
-  assert.notEqual(workHref(works[0]), workHref(works[1]));
 });
 
 // ---- 变异检查（父进程）：仅完整测试运行中预期用例失败才算捕获 ----

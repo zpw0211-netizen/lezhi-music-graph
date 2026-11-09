@@ -4,11 +4,11 @@ import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { publicAssetUrl } from "../../lib/app/assets";
 import type { AppView } from "../../lib/app/routing";
 
-type ExplorationView = Extract<AppView, "atlas" | "timeline" | "lab" | "rhythm">;
+type ExplorationView = Extract<AppView, "compose" | "ear" | "lab" | "rhythm">;
 
 const tabs: Array<{ view: ExplorationView; label: string; caption: string }> = [
-  { view: "atlas", label: "音乐地图", caption: "循着地域寻找作品" },
-  { view: "timeline", label: "音乐时光机", caption: "听旋律、猜年代、找作品" },
+  { view: "compose", label: "旋律创编", caption: "用几个音写一段自己的旋律" },
+  { view: "ear", label: "听音训练", caption: "听高低、听唱名、听音程、旋律听写" },
   { view: "lab", label: "五声律坊", caption: "转动律盘，听见五声与调式" },
   { view: "rhythm", label: "节奏训练", caption: "随机出题或自己编排节奏" },
 ];
@@ -28,10 +28,10 @@ export function ExplorationPage({
   // every request to the host costs a long round trip, so a tab fetched on click keeps the class waiting.
   useEffect(() => {
     const preload = () => {
-      void import("../timeline/TimelinePage").then((module) => module.preloadTimeline()).catch(() => undefined);
+      void import("../ear/EarPage").catch(() => undefined);
       void import("../lab/LabPage").catch(() => undefined);
       void import("../rhythm/RhythmPage").catch(() => undefined);
-      void import("../atlas/AtlasPage").catch(() => undefined);
+      void import("../compose/ComposePage").catch(() => undefined);
       new Image().src = publicAssetUrl("art/rhythm/drum.webp");
     };
     const idle = window.requestIdleCallback?.(preload, { timeout: 2500 });
@@ -64,7 +64,7 @@ export function ExplorationPage({
         <div className="exploration-intro">
           <p className="exploration-kicker">芽谱 · 探索空间</p>
           <h1 id="exploration-title">音乐探索与创造</h1>
-          <p>从一段旋律开始，再去地图、年代、五声和节奏里发现音乐。</p>
+          <p>写一段自己的旋律，再练耳朵、转律盘、打节奏。</p>
         </div>
         <div
           className="exploration-tabs"

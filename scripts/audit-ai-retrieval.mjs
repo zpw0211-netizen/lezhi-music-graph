@@ -7,6 +7,37 @@ const compile = async entry => {
   return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 };
 const { enrichGraph, graphAnswer, recognizeIntent, linkEntities } = await compile("app/lib/ai/graph-rag.ts");
+const { questionEdition } = await compile("app/lib/ai/edition-scope.ts");
+assert.deepEqual(questionEdition("人教版四年级上册有哪些作品用了 2/4 拍？", "renyin"),
+  { kind: "switch", key: "renjiao", label: "人教版", path: "/renjiao/" });
+assert.deepEqual(questionEdition("人教四上有哪些 2/4 拍的作品？", "renjiao"), { kind: "current", explicit: true });
+assert.deepEqual(questionEdition("人民教育出版社的教材有哪些合唱曲目？", "renyin"),
+  { kind: "switch", key: "renjiao", label: "人教版", path: "/renjiao/" });
+assert.deepEqual(questionEdition("湘艺版八下有哪些 2/4 拍的作品？", "renyin"),
+  { kind: "switch", key: "xiangyi", label: "湘艺版", path: "/xiangyi/" });
+assert.deepEqual(questionEdition("人音版（五线谱）七上有哪些作品？", "renyin"),
+  { kind: "switch", key: "renyin-staff", label: "人音版五线谱", path: "/renyin-staff/" });
+assert.deepEqual(questionEdition("人音版七上有哪些作品？", "renyin-staff"), { kind: "current", explicit: true });
+assert.equal(questionEdition("人音版简谱七上有哪些作品？", "renyin-staff").key, "renyin");
+assert.equal(questionEdition("比较人音版和人教版四上有哪些作品？", "renyin").kind, "clarify");
+assert.equal(questionEdition("湘艺版五线谱八上有哪些作品？", "xiangyi").kind, "clarify");
+assert.deepEqual(questionEdition("别人教我怎么看五线谱？", "renyin"), { kind: "current", explicit: false });
+
+const { meterAnswerFromScores } = await compile("app/lib/ai/textbook-facts.ts");
+const scoreCatalog = [
+  { bookKey: "pep-g4s1", id: "unit1", name: "第一单元", title: "第一单元",
+    works: [{ id: "one", name: "《对花》" }, { id: "draft", name: "《草稿》" }, { id: "foreign", name: "《错版谱例》" }] },
+  { bookKey: "pep-g7s1", id: "unit2", name: "第一单元", title: "第一单元", works: [{ id: "seven", name: "《其他册作品》" }] },
+];
+const scoreBooks = [{ key: "pep-g4s1", title: "人教版四年级上册" }, { key: "pep-g7s1", title: "人教版七年级上册" }];
+const scoreAnswer = meterAnswerFromScores("人教版四上有哪些作品用了 2/4 拍？", scoreCatalog, scoreBooks,
+  (book, work) => [{ meter: "2/4", quality: work === "《草稿》" ? "draft" : undefined,
+    source: `据${work === "《错版谱例》" ? "人音版四年级上册" : scoreBooks.find((entry) => entry.key === book).title}第 5 页谱例转写` }]);
+assert.match(scoreAnswer.text, /《对花》.*2\/4 拍/);
+assert.equal(scoreAnswer.evidence.length, 1);
+assert.equal(scoreAnswer.evidence[0].bookKey, "pep-g4s1");
+assert.equal(scoreAnswer.evidence[0].textbookPage, "5");
+
 const { unitWorksAnswer } = await compile("app/lib/ai/unit-works.ts");
 const { resolvePlanRequest } = await compile("app/lib/lesson/plan.ts");
 const planBooks = ["g7s1", "g4s1"];

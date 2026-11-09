@@ -264,17 +264,10 @@ async function main() {
     if (!answer) fail("问答区域出现，但回答内容为空");
   });
 
-  await step("桌面：打开 #/atlas 并绘制地图或显示降级说明", async () => {
-    await page.goto(routeUrl("#/atlas", "desktop-atlas"), { waitUntil: "domcontentloaded", timeout: 60_000 });
+  await step("桌面：旧的 #/atlas 链接进入旋律创编", async () => {
+    await page.goto(routeUrl("#/atlas", "desktop-compose"), { waitUntil: "domcontentloaded", timeout: 60_000 });
     await waitForApp(page);
-    await page.locator(".atlas-page").waitFor({ state: "visible", timeout: 90_000 });
-    await page.waitForFunction(() => {
-      const fallback = [...document.querySelectorAll(".atlas-fallback")].some((element) => {
-        const style = getComputedStyle(element);
-        return style.display !== "none" && style.visibility !== "hidden";
-      });
-      return fallback || document.querySelector("canvas.atlas-map-canvas")?.dataset.rendered === "true";
-    }, null, { timeout: 60_000 });
+    await page.locator(".compose-lab").waitFor({ state: "visible", timeout: 60_000 });
   });
 
   const routes = [
@@ -285,8 +278,8 @@ async function main() {
     ["知识图谱", "#/graph", ".neo-canvas"],
     ["智能问答", "#/assistant", ".assistant-page"],
     ["研究分析", "#/research", ".research-analysis"],
-    ["音乐地图", "#/atlas", ".atlas-page"],
-    ["作品年表", "#/timeline", ".timeline-page"],
+    ["旋律创编", "#/compose", ".compose-lab"],
+    ["听音训练", "#/ear", ".ear-lab"],
   ];
   let mobileCase = 0;
   for (const width of [375, 768]) {

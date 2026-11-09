@@ -4,7 +4,7 @@
 // 明细按「选择器 + 文字 + 字号 / 尺寸」等分组合并计数，避免同一种元素刷爆报告。
 //
 // 用法：
-//   node scripts/audit-layout.mjs --base http://localhost:4321/lezhi-music-graph/ --out <报告.md> [--routes "#/atlas,#/lab"] [--strict]
+//   node scripts/audit-layout.mjs --base http://localhost:4321/lezhi-music-graph/ --out <报告.md> [--routes "#/compose,#/lab"] [--strict]
 //
 // 依赖环境变量（不安装任何包）：
 //   PLAYWRIGHT_MODULE                 Playwright 模块路径或其 package.json 路径

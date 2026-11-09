@@ -110,9 +110,6 @@
 .exploration-panel { display: flow-root; min-width: 0; }
 .exploration-panel:focus { outline: none; }
 
-.route-view-exploration > .exploration-shell .timeline-page {
-  --timeline-nav-height: 208px;
-}
 .route-view-exploration .lupan-stage {
   min-height: min(620px, calc(100dvh - 210px));
 }
@@ -129,7 +126,6 @@
   .exploration-tab-number { width: 26px; height: 26px; }
   .exploration-tab-copy > span { font-size: 13px; }
   .exploration-tab-copy small { font-size: 10px; }
-  .route-view-exploration > .exploration-shell .timeline-page { --timeline-nav-height: 284px; }
 }
 
 @media (max-width: 520px) {
@@ -143,7 +139,6 @@
   .exploration-tab-copy { text-align: center; }
   .exploration-tab-copy > span { font-size: 12px; }
   .exploration-tab-copy small { max-width: 100%; font-size: 9px; }
-  .route-view-exploration > .exploration-shell .timeline-page { --timeline-nav-height: 278px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

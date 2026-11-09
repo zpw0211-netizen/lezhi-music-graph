@@ -1,0 +1,137 @@
+/* 听音训练：关卡卡片、听题按钮、作答按钮与成绩。配色与旋律创编一致。 */
+.ear-lab {
+  --e-ink: #17221C;
+  --e-ink-2: #44544B;
+  --e-ink-3: #7A877F;
+  --e-pine: #276344;
+  --e-pine-soft: #EAF3ED;
+  --e-seal: #AF4236;
+  --e-seal-soft: #F8E9E6;
+  --e-gold: #D9A12B;
+  --e-line: #E1E8E3;
+  --e-paper: #FBFCFA;
+  width: min(1240px, 100%);
+  margin-inline: auto;
+  padding: 4px clamp(16px, 2.8vw, 40px) 56px;
+  color: var(--e-ink);
+  font-family: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  line-height: 1.7;
+}
+.ear-lab button { font: inherit; color: inherit; cursor: pointer; }
+.ear-lab button:disabled { cursor: default; }
+.ear-lab :is(button, input):focus-visible { outline: 3px solid rgb(39 99 68 / 28%); outline-offset: 2px; }
+
+.ear-intro { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; padding: 14px 0; }
+.ear-kicker { margin: 0; color: var(--e-seal); font: 12px/1.6 var(--serif, "Songti SC", serif); letter-spacing: .3em; }
+.ear-intro h2 { margin: 0; font: 400 clamp(22px, 2.3vw, 28px)/1.3 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .06em; }
+.ear-intro-tip { margin: 0; color: var(--e-ink-3); font-size: 12px; }
+
+/* 关卡卡片 */
+.ear-levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ear-level { display: grid; gap: 2px; align-content: start; padding: 14px 16px 12px; border: 1px solid var(--e-line); border-radius: 16px; background: #fff; text-align: left; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.ear-level:hover { border-color: #C3D3C8; transform: translateY(-1px); }
+.ear-level.is-active { border-color: var(--e-pine); box-shadow: inset 0 0 0 1px var(--e-pine); background: var(--e-pine-soft); }
+.ear-level-number { color: var(--e-seal); font: 12px/1.4 var(--serif, "Songti SC", serif); letter-spacing: .12em; }
+.ear-level strong { font: 400 20px/1.35 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .04em; }
+.ear-lab .ear-level small { color: var(--e-ink-3); font-size: 12px; line-height: 1.5; }
+.ear-level-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
+.ear-level-foot em { color: var(--e-ink-3); font-size: 11px; font-style: normal; }
+
+.ear-stars { display: inline-flex; gap: 1px; color: #D8DED9; letter-spacing: 0; }
+.ear-stars .is-on { color: var(--e-gold); }
+.ear-stars.is-md { font-size: 14px; }
+.ear-stars.is-lg { gap: 6px; font-size: 44px; line-height: 1; }
+
+/* 设置 */
+.ear-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 16px 0 0; }
+.ear-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ear-field-label { color: var(--e-ink-3); font-size: 12px; letter-spacing: .08em; white-space: nowrap; }
+.ear-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.ear-chips button { display: inline-flex; align-items: baseline; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--e-line); border-radius: 9px; background: #fff; color: var(--e-ink-2); font-size: 13px; white-space: nowrap; }
+.ear-chips button small { color: var(--e-ink-3); font-size: 11px; }
+.ear-chips button.is-active { border-color: var(--e-pine); background: var(--e-pine); color: #fff; font-weight: 600; }
+.ear-chips button.is-active small { color: rgb(255 255 255 / 75%); }
+
+/* 练习台 */
+.ear-stage { display: grid; min-height: 360px; margin-top: 16px; padding: clamp(18px, 3vw, 36px); border: 1px solid var(--e-line); border-radius: 20px; background: var(--e-paper); }
+.ear-start, .ear-result { display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; }
+.ear-start-title { margin: 0; font: 400 30px/1.3 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .1em; }
+.ear-start-tip { max-width: 34em; margin: 0; color: var(--e-ink-2); font-size: 14px; }
+.ear-start-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px; }
+.ear-primary { min-height: 42px; padding: 0 24px; border: 0; border-radius: 12px; background: var(--e-pine); color: #fff !important; font-size: 15px; font-weight: 600; box-shadow: 0 3px 0 #1B4A32; transition: transform .08s ease, box-shadow .08s ease, opacity .15s ease; }
+.ear-primary:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #1B4A32; }
+.ear-primary:disabled { opacity: .4; box-shadow: none; }
+.ear-ghost { min-height: 42px; padding: 0 18px; border: 1px solid var(--e-line); border-radius: 12px; background: #fff; color: var(--e-ink-2); font-size: 14px; }
+.ear-ghost.is-small { min-height: 30px; padding: 0 12px; border-radius: 9px; font-size: 12px; }
+.ear-ghost:disabled { opacity: .4; }
+.ear-result-score { margin: 4px 0 0; color: var(--e-ink-3); font-size: 18px; }
+.ear-result-score b { color: var(--e-ink); font: 600 44px/1 var(--serif, "Songti SC", serif); }
+.ear-result-praise { margin: 0; color: var(--e-pine); font-size: 15px; }
+
+.ear-play { display: grid; gap: 22px; align-content: start; }
+.ear-progress { display: flex; gap: 6px; }
+.ear-progress span { flex: 1; height: 6px; border-radius: 3px; background: #E6ECE8; transition: background .2s ease; }
+.ear-progress .is-current { background: #B9CEC0; }
+.ear-progress .is-right { background: var(--e-pine); }
+.ear-progress .is-wrong { background: var(--e-seal); }
+
+.ear-listen { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 26px; }
+.ear-replay { display: grid; place-items: center; align-content: center; width: 104px; height: 104px; border: 0; border-radius: 50%; background: var(--e-pine); color: #fff !important; box-shadow: 0 0 0 8px var(--e-pine-soft), 0 4px 0 #1B4A32; transition: transform .1s ease; }
+.ear-replay:active { transform: scale(.96); }
+.ear-replay span { font-size: 36px; line-height: 1; }
+.ear-lab .ear-replay small { color: #fff; font-size: 12px; opacity: .92; }
+.ear-question { display: grid; gap: 4px; justify-items: start; }
+.ear-question-number { margin: 0; color: var(--e-ink-3); font-size: 12px; letter-spacing: .1em; }
+.ear-question-text { margin: 0; font: 400 clamp(20px, 2.2vw, 26px)/1.4 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+
+/* 作答按钮 */
+.ear-answers { display: flex; flex-wrap: wrap; gap: 10px; }
+.ear-answer { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-width: 120px; min-height: 64px; padding: 0 22px; border: 1px solid var(--e-line); border-radius: 16px; background: #fff; font-size: 18px; font-weight: 600; box-shadow: 0 3px 0 #E1E8E3; transition: border-color .15s ease, background .15s ease, opacity .15s ease, transform .08s ease; }
+.ear-answer:hover:not(:disabled) { border-color: var(--e-pine); }
+.ear-answer:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+.ear-answer-icon { font-size: 24px; line-height: 1; }
+.ear-answers.is-interval .ear-answer { min-width: 96px; font: 400 22px/1 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+.ear-answer.is-right, .ear-block.is-right { border-color: var(--e-pine); background: var(--e-pine-soft); color: var(--e-pine); box-shadow: inset 0 0 0 2px var(--e-pine); }
+.ear-answer.is-wrong { border-color: var(--e-seal); background: var(--e-seal-soft); color: var(--e-seal); }
+.ear-answer.is-dim, .ear-block.is-dim { opacity: .35; }
+
+.ear-blocks { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+.ear-block { --block: #3E8E5A; display: grid; flex: 0 1 80px; justify-items: center; align-content: end; min-width: 56px; padding: calc(8px + var(--step, 0) * 30px) 0 8px; border: 0; border-radius: 14px; background: var(--block); color: #fff !important; box-shadow: 0 3px 0 rgb(0 0 0 / 16%); transition: transform .08s ease, opacity .15s ease, box-shadow .15s ease; }
+.ear-block:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 rgb(0 0 0 / 16%); }
+.ear-block.is-right { color: #fff !important; background: var(--block); box-shadow: 0 0 0 4px var(--e-pine), 0 0 0 7px var(--e-pine-soft); }
+.ear-block.is-wrong { box-shadow: 0 0 0 4px var(--e-seal); }
+.ear-block-digit { position: relative; font: 600 28px/1.15 var(--serif, "Songti SC", serif); }
+.ear-block-name { font-size: 12px; letter-spacing: .04em; opacity: .92; }
+.ear-dot { position: absolute; top: -3px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: currentColor; }
+.ear-dot.is-light { background: #fff; }
+
+/* 旋律听写的格子 */
+.ear-dictation { display: flex; flex-wrap: wrap; gap: 8px; }
+.ear-slot { position: relative; display: grid; justify-items: center; align-content: center; width: 64px; height: 76px; border: 1.5px dashed #C7D6CC; border-radius: 14px; background: #fff; }
+.ear-slot b { position: relative; font: 600 32px/1 var(--serif, "Songti SC", serif); }
+.ear-slot-empty { color: #C7D6CC; }
+.ear-slot.is-filled { border-style: solid; border-color: var(--e-line); }
+.ear-slot.is-cursor { border-color: var(--e-pine); box-shadow: 0 0 0 3px var(--e-pine-soft); }
+.ear-slot.is-right { border: 2px solid var(--e-pine); background: var(--e-pine-soft); }
+.ear-slot.is-wrong { border: 2px solid var(--e-seal); background: var(--e-seal-soft); }
+.ear-lab .ear-slot small { position: absolute; bottom: -22px; color: var(--e-seal); font-size: 11px; white-space: nowrap; }
+.ear-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+
+.ear-feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; min-height: 44px; }
+.ear-feedback p { margin: 0; font-size: 16px; font-weight: 600; }
+.ear-feedback .is-right { color: var(--e-pine); }
+.ear-feedback .is-wrong { color: var(--e-seal); }
+.ear-keys { margin: 12px 0 0; color: var(--e-ink-3); font-size: 12px; text-align: right; }
+
+@media (max-width: 900px) {
+  .ear-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ear-keys { display: none; }
+}
+@media (max-width: 520px) {
+  .ear-levels { gap: 8px; }
+  .ear-level { padding: 12px; }
+  .ear-replay { width: 84px; height: 84px; }
+  .ear-answer { flex: 1 1 90px; min-width: 0; padding: 0 12px; }
+  .ear-block { flex: 1 1 52px; }
+  .ear-slot { width: 52px; height: 66px; }
+}

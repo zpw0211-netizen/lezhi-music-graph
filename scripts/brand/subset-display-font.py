@@ -47,9 +47,7 @@ def collect_text() -> str:
     public_data = ROOT / "public" / "data"
     display_data = [
         public_data / "graph-index.json",
-        public_data / "timeline.json",
         public_data / "units.json",
-        *sorted((public_data / "atlas").glob("*.json")),
     ]
     for data_path in display_data:
         if data_path.is_file():

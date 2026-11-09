@@ -1,8 +1,9 @@
 "use client";
 import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent } from "react";
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
+import { questionEdition, saveEditionQuestion, takeEditionQuestion } from "../../lib/ai/edition-scope";
 import { isUnitWorksQuestion, unitWorksAnswer, type UnitCatalog } from "../../lib/ai/unit-works";
-import { textbookQuestion } from "../../lib/ai/textbook-facts";
+import { meterAnswerFromScores, textbookQuestion } from "../../lib/ai/textbook-facts";
 import { PendingKnowledge } from "./PendingKnowledge";
 import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
 import { fetchWithRetry } from "../../lib/app/fetch-retry";
@@ -61,6 +62,7 @@ export function AssistantPage({
   const [question, setQuestion] = useState("");
   const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
   const [busy, setBusy] = useState(false);
+  const [switchingEdition, setSwitchingEdition] = useState("");
   const [error, setError] = useState("");
   const [inkAnim, setInkAnim] = useState(false);
   const [footnotesExpanded, setFootnotesExpanded] = useState(true);
@@ -108,16 +110,47 @@ export function AssistantPage({
   const submit = async (rawQuestion?: string) => {
     const q = (rawQuestion ?? question).trim();
     if (!q || busy) return;
+    const scope = questionEdition(q, EDITION.key);
     setBusy(true);
+    setSwitchingEdition(scope.kind === "switch" ? scope.label : "");
     setError("");
     setHighlightedFootnoteId(null);
+    let navigating = false;
     try {
+      if (scope.kind === "clarify") {
+        setQuestion(q);
+        setError(scope.message);
+        return;
+      }
+      if (scope.kind === "switch") {
+        const response = await fetchWithRetry(`${scope.path}data/graph-books.json`, { signal: AbortSignal.timeout(8000) });
+        if (!response.ok) throw new Error("教材版本暂不可用");
+        const directory = await response.json() as { dataset?: { books?: unknown[] } } | null;
+        if (!directory?.dataset?.books?.length) throw new Error("教材版本目录为空");
+        if (alive.current) {
+          saveEditionQuestion(scope.key, q);
+          window.location.assign(`${scope.path}#/assistant`);
+          navigating = true;
+        }
+        return;
+      }
       let result = isUnitWorksQuestion(q) ? unitWorksAnswer(q, await loadUnits(), graph.books) : null;
       if (!result) {
         const retrieval = await enrichGraph(graph, q, [], loadEvidence);
         const base = graphAnswer(retrieval, q);
+        const kind = textbookQuestion(q);
+        if (kind === "meter-works" && !base.evidence.length) {
+          const { BOOK_MELODIES } = await import("../../lib/lesson/melodies");
+          const scores = meterAnswerFromScores(q, await loadUnits(), graph.books, (bookKey, name) => {
+            // The general playback lookup can borrow excerpts. Citations must use this exact edition and volume.
+            const book = BOOK_MELODIES[EDITION.notation === "staff" ? `wx-${bookKey}` : bookKey];
+            return book?.[name] ?? book?.[name.replace(/^《|》$/g, "")] ?? [];
+          });
+          if (scores) result = { ...base, answer: scores.text, shortAnswer: scores.text, evidence: scores.evidence,
+            confidence: "supported", missingKnowledge: [] };
+        }
         // The model only rewrites answers built from retrieval. Any failure keeps the local answer.
-        result = textbookQuestion(q) ? base : (await askModel(q)) ?? base;
+        result ??= scope.explicit || kind ? base : (await askModel(q)) ?? base;
       }
       if (alive.current) {
         setCurrentMessage({ question: q, result });
@@ -127,11 +160,13 @@ export function AssistantPage({
       }
     } catch {
       if (alive.current) {
-        setError("教材内容加载失败，请稍后重试。没有教材依据时，不会把回答当作教材原文。");
+        setError(scope.kind === "switch"
+          ? `暂时无法打开${scope.label}问答，原问题已保留，请稍后重试。`
+          : "教材内容加载失败，请稍后重试。没有教材依据时，不会把回答当作教材原文。");
         setQuestion(q);
       }
     } finally {
-      if (alive.current) setBusy(false);
+      if (alive.current && !navigating) setBusy(false);
     }
   };
 
@@ -140,10 +175,11 @@ export function AssistantPage({
 
   const initialSubmitted = useRef(false);
   useEffect(() => {
-    if (initialQuestion && !initialSubmitted.current) {
-      initialSubmitted.current = true;
-      void submitRef.current(initialQuestion);
-    }
+    if (initialSubmitted.current) return;
+    const openingQuestion = initialQuestion || takeEditionQuestion(EDITION.key);
+    if (!openingQuestion) return;
+    initialSubmitted.current = true;
+    void submitRef.current(openingQuestion);
   }, [initialQuestion]);
 
   const handleReset = () => {
@@ -245,7 +281,7 @@ export function AssistantPage({
 
           {composer("hero")}
 
-          {busy && <p className="assistant-busy ask-hero-status" aria-live="polite">正在翻查{PUBLISHED_BOOK_COUNT_LABEL}教材……</p>}
+          {busy && <p className="assistant-busy ask-hero-status" aria-live="polite">{switchingEdition ? `正在打开${switchingEdition}问答……` : `正在翻查${PUBLISHED_BOOK_COUNT_LABEL}教材……`}</p>}
           {error && <p className="assistant-error" role="alert">{error}</p>}
 
           <div className="ask-bubbles" role="list" aria-label="示例问题">
@@ -298,7 +334,7 @@ export function AssistantPage({
             {/* 查询中 */}
             {busy && (
               <div className="assistant-busy-box" aria-live="polite">
-                <p className="assistant-busy">正在查找{PUBLISHED_BOOK_COUNT_LABEL}教材内容，研墨题写中…</p>
+                <p className="assistant-busy">{switchingEdition ? `正在打开${switchingEdition}问答……` : `正在查找${PUBLISHED_BOOK_COUNT_LABEL}教材内容，研墨题写中…`}</p>
               </div>
             )}
 

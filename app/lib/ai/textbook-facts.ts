@@ -1,5 +1,7 @@
 import { matchesVolume, requestedVolumes } from "./book-volume";
-import type { Citation, Retrieval, RetrievedFact } from "./graph-rag";
+import type { Citation, RagGraph, Retrieval, RetrievedFact } from "./graph-rag";
+import type { UnitCatalog } from "./unit-works";
+import type { Melody } from "../lesson/jianpu";
 
 const METER_NAMES: Record<string, string> = {
   "2/2": "二二拍", "2/4": "四二拍", "3/4": "四三拍", "4/4": "四四拍",
@@ -40,6 +42,41 @@ export function textbookQuestion(question: string): TextbookQuestion | undefined
 type FocusedAnswer = { text: string; evidence: Citation[] };
 const creatorRoles = /^(作词|作曲|词曲作者)$/;
 const isDefinition = /^(是|指|定义为|含义)$/;
+
+/** Use only same-volume score transcriptions that carry a printed textbook page. */
+export function meterAnswerFromScores(
+  question: string, units: UnitCatalog[], books: RagGraph["books"],
+  scoresOf: (bookKey: string, work: string) => readonly Pick<Melody, "source" | "meter" | "quality">[],
+): FocusedAnswer | null {
+  const meter = meterOf(question);
+  if (!meter) return null;
+  const volumes = requestedVolumes(question);
+  const bookTitles = new Map(books.map((book) => [book.key, book.title]));
+  const works = new Set<string>();
+  const evidence: Citation[] = [];
+  for (const unit of units) {
+    const bookTitle = bookTitles.get(unit.bookKey);
+    if (!bookTitle || !matchesVolume(unit.bookKey, volumes)) continue;
+    const sourcePrefix = `据${bookTitle.replace(/[（(](?:简谱|五线谱)[）)]$/, "")}第`;
+    for (const work of unit.works) {
+      if (works.has(work.name) || works.size >= 12) continue;
+      const pages = scoresOf(unit.bookKey, work.name)
+        .filter((score) => score.quality !== "draft" && matchesMeter(score.meter, meter) && score.source.startsWith(sourcePrefix))
+        .map((score) => score.source.slice(sourcePrefix.length).match(/^\s*(\d+(?:\s*[-–—]\s*\d+)?)\s*页谱例转写/)?.[1]);
+      const page = pages.find(Boolean);
+      if (!page) continue;
+      works.add(work.name);
+      evidence.push({
+        id: `score-meter:${unit.bookKey}:${work.id}:${page}`,
+        bookKey: unit.bookKey, bookTitle, textbookPage: page, pdfPage: null,
+        summary: `${work.name}的谱例片段标有 ${meter} 拍。`, sourceType: "textbook_explicit",
+      });
+    }
+  }
+  return works.size
+    ? { text: `已核对的教材谱例中，${[...works].join("、")}的片段标有 ${meter} 拍。`, evidence }
+    : null;
+}
 
 /** Answer common factual prompts with the cited relationships used in the displayed answer. */
 export function answerTextbookFacts(retrieval: Retrieval, question: string, kind: TextbookQuestion): FocusedAnswer {
