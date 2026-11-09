@@ -5,19 +5,29 @@ import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import {
-  LEVELS, PITCH_SETS, QUESTIONS, RHYTHM_CARDS, barBeats, beatsOf, colorOf, composeHints, durationsFor, formatBeats, inspireBar, noteShape,
-  loadWorks, midiOfNote, stepOf, storeWorks, toMelody, unitOf,
+  LEVELS, PITCH_SETS, RHYTHM_CARDS, barBeats, beatsOf, colorOf, composeHints, durationsFor, formatBeats, inspireBar, noteShape,
+  loadWorks, midiOfNote, questionsFor, setupOf, stepOf, storeWorks, toMelody, unitOf,
   type ComposeMode, type ComposeNote, type Level, type Meter, type PitchSet, type SavedWork,
 } from "./compose-model";
 
 const emptyBars = (count: number) => Array.from({ length: count }, () => [] as ComposeNote[]);
 
+let previewOut: GainNode | null = null;
+/** 试听一个音；连点时先收掉上一个音，只听清这一次。 */
 async function soundNote(note: Pick<ComposeNote, "d" | "o">) {
   try {
     const ctx = getPianoAudioContext();
     await ctx.resume();
     const sampler = await loadInstrumentSampler(ctx, "piano");
-    playInstrumentSample(ctx, "piano", sampler, midiOfNote(note), ctx.currentTime + 0.01, 0.7, ctx.destination, 0.9);
+    if (previewOut) {
+      const old = previewOut;
+      old.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
+      window.setTimeout(() => old.disconnect(), 120);
+    }
+    const out = ctx.createGain();
+    out.connect(ctx.destination);
+    previewOut = out;
+    playInstrumentSample(ctx, "piano", sampler, midiOfNote(note), ctx.currentTime + 0.01, 0.7, out, 0.9);
   } catch {
     // 没有声音也不妨碍继续写。
   }
@@ -70,19 +80,20 @@ export function ComposePage() {
 
   const levelInfo = LEVELS[level];
   const beats = beatsOf(meter);
-  const question = mode === "answer" ? QUESTIONS[meter][Math.min(questionIndex, QUESTIONS[meter].length - 1)] : null;
+  const questions = questionsFor(meter, pitchSet);
+  const question = mode === "answer" ? questions[Math.min(questionIndex, questions.length - 1)] : null;
   const lockedBars = question ? question.bars.length : 0;
   const blocks = PITCH_SETS[pitchSet].blocks;
   const cursorBar = bars.findIndex((bar, i) => i >= lockedBars && barBeats(bar) < beats - 1e-6);
 
   /** Start over whenever the setup changes; in 接龙 the question fills the opening bars. */
-  const reset = (setup: { mode?: ComposeMode; meter?: Meter; question?: number; count?: number } = {}) => {
+  const reset = (setup: { mode?: ComposeMode; meter?: Meter; question?: number; count?: number; pitchSet?: PitchSet } = {}) => {
     const nextMode = setup.mode ?? mode;
     const nextMeter = setup.meter ?? meter;
     const count = nextMode === "answer" ? 4 : setup.count ?? barCount;
     const fresh = emptyBars(count);
     if (nextMode === "answer") {
-      const list = QUESTIONS[nextMeter];
+      const list = questionsFor(nextMeter, setup.pitchSet ?? pitchSet);
       list[Math.min(setup.question ?? questionIndex, list.length - 1)].bars.forEach((bar, i) => { fresh[i] = bar.map((note) => ({ ...note })); });
     }
     setBarCount(count);
@@ -91,7 +102,12 @@ export function ComposePage() {
     setMessage("");
   };
 
+  /** 学生自己写过的音（接龙的问句不算）。改设置要清空它们时先问一声。 */
+  const hasOwnNotes = bars.slice(lockedBars).some((bar) => bar.length);
+  const mayDiscard = (what: string) => !hasOwnNotes || window.confirm(`${what}会清空已经写好的旋律，确定吗？`);
+
   const chooseLevel = (next: Level) => {
+    if (next === level || !mayDiscard("换年级")) return;
     const info = LEVELS[next];
     setLevel(next);
     setPitchSet(info.pitchSets[0]);
@@ -100,7 +116,54 @@ export function ComposePage() {
     setCard(null);
     if (!info.accompaniment) setAccompaniment(false);
     setQuestionIndex(0);
-    reset({ meter: info.meters[0], question: 0, count: info.barCounts[0] });
+    reset({ meter: info.meters[0], question: 0, count: info.barCounts[0], pitchSet: info.pitchSets[0] });
+  };
+
+  const chooseMode = (next: ComposeMode) => {
+    if (next === mode || !mayDiscard(next === "answer" ? "换成旋律接龙" : "换成自由创编")) return;
+    setMode(next);
+    setQuestionIndex(0);
+    reset({ mode: next, question: 0 });
+  };
+
+  const choosePitchSet = (next: PitchSet) => {
+    if (next === pitchSet) return;
+    // 接龙的问句跟着音块换，所以要重新开始；自由创编时写好的音都留着。
+    if (mode === "answer") {
+      if (!mayDiscard("换一组音")) return;
+      setQuestionIndex(0);
+      reset({ question: 0, pitchSet: next });
+    }
+    setPitchSet(next);
+  };
+
+  const chooseMeter = (next: Meter) => {
+    if (next === meter || !mayDiscard("换拍号")) return;
+    setMeter(next);
+    setDuration(durationsFor(next)[0].b);
+    setQuestionIndex(0);
+    setCard(null);
+    reset({ meter: next, question: 0 });
+  };
+
+  /** 改长度：加小节时原来的旋律都留着；减小节时，被去掉的小节里有音才问。 */
+  const chooseCount = (count: number) => {
+    if (count === bars.length) return;
+    if (count > bars.length) {
+      setBars((current) => [...current, ...emptyBars(count - current.length)]);
+      setBarCount(count);
+      return;
+    }
+    if (bars.slice(count).some((bar) => bar.length) && !window.confirm(`改成 ${count} 小节会去掉后面几个小节写好的音，确定吗？`)) return;
+    setBars((current) => current.slice(0, count));
+    setBarCount(count);
+    setSelected(null);
+  };
+
+  const chooseQuestion = (next: number) => {
+    if (next === questionIndex || !mayDiscard("换问句")) return;
+    setQuestionIndex(next);
+    reset({ mode: "answer", question: next });
   };
 
   /** Duration of the next note: from the rhythm card when one is chosen, otherwise the duration chip. */
@@ -115,9 +178,9 @@ export function ComposePage() {
   };
 
   const addNote = (d: number, o: number) => {
-    if (d) void soundNote({ d, o });
     // 选中了一个音：换成新的音高（时值不变）。
     if (selected) {
+      if (d) void soundNote({ d, o });
       setBars((current) => current.map((bar, i) => i !== selected.bar ? bar : bar.map((note, k) => k === selected.index ? { ...note, d, o } : note)));
       setMessage("");
       return;
@@ -129,6 +192,7 @@ export function ComposePage() {
       setMessage(`第 ${cursorBar + 1} 小节只剩 ${formatBeats(room, meter)}，换一个短一点的音符吧。`);
       return;
     }
+    if (d) void soundNote({ d, o });
     setBars((current) => current.map((bar, i) => i === cursorBar ? [...bar, { d, o, b }] : bar));
     setMessage("");
   };
@@ -200,25 +264,32 @@ export function ComposePage() {
   const melody = useMemo(() => toMelody(bars, meter, lyrics, title, accompaniment), [bars, meter, lyrics, title, accompaniment]);
   const hasNotes = bars.some((bar) => bar.length);
   const playerKey = useMemo(() => JSON.stringify([bars, meter, lyrics, title, notation, accompaniment]), [bars, meter, lyrics, title, notation, accompaniment]);
-  const hints = useMemo(() => composeHints(bars, meter, mode, lyrics, lockedBars, pitchSet), [bars, meter, mode, lyrics, lockedBars, pitchSet]);
+  const hints = composeHints(bars, meter, mode, lyrics, lockedBars, pitchSet);
   const complete = cursorBar < 0;
 
   const save = () => {
-    const work: SavedWork = { id: String(Date.now()), title: title.trim() || "我的旋律", author: author.trim(), meter, bars, lyrics, savedAt: Date.now(), accompaniment };
+    const work: SavedWork = { id: String(Date.now()), title: title.trim() || "我的旋律", author: author.trim(), meter, bars, lyrics, savedAt: Date.now(), accompaniment, level, pitchSet };
     const next = [work, ...works];
     setWorks(next);
     setMessage(storeWorks(next) ? `《${work.title}》已保存在这台电脑上。` : "这台电脑不允许保存，请截图留存作品。");
   };
 
   const open = (work: SavedWork) => {
+    if (hasOwnNotes && !window.confirm(`打开《${work.title}》会替换现在正在写的旋律，确定吗？`)) return;
+    const setup = setupOf(work);
+    setLevel(setup.level);
+    setPitchSet(setup.pitchSet);
     setMode("free");
+    setQuestionIndex(0);
+    setCard(null);
+    setDuration(durationsFor(work.meter)[0].b);
     setMeter(work.meter);
     setBarCount(work.bars.length);
     setBars(work.bars.map((bar) => bar.map((note) => ({ ...note }))));
     setLyrics(work.lyrics);
     setTitle(work.title);
     setAuthor(work.author);
-    setAccompaniment(Boolean(work.accompaniment));
+    setAccompaniment(Boolean(work.accompaniment) && LEVELS[setup.level].accompaniment);
     setSelected(null);
     setMessage(`已打开《${work.title}》。`);
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -255,14 +326,14 @@ export function ComposePage() {
         <div className="compose-chips">
           {([["free", "自由创编"], ["answer", "旋律接龙"]] as const).map(([value, label]) =>
             <button key={value} type="button" aria-pressed={mode === value} className={mode === value ? "is-active" : ""}
-              onClick={() => { setMode(value); reset({ mode: value }); }}>{label}</button>)}
+              onClick={() => chooseMode(value)}>{label}</button>)}
         </div>
       </div>
       {levelInfo.pitchSets.length > 1 && <div className="compose-field">
         <span className="compose-field-label">用哪些音</span>
         <div className="compose-chips">
           {levelInfo.pitchSets.map((key) =>
-            <button key={key} type="button" className={pitchSet === key ? "is-active" : ""} aria-pressed={pitchSet === key} onClick={() => setPitchSet(key)}>
+            <button key={key} type="button" className={pitchSet === key ? "is-active" : ""} aria-pressed={pitchSet === key} onClick={() => choosePitchSet(key)}>
               {PITCH_SETS[key].label}<small>{PITCH_SETS[key].caption}</small>
             </button>)}
         </div>
@@ -272,7 +343,7 @@ export function ComposePage() {
         <div className="compose-chips">
           {levelInfo.meters.map((value) =>
             <button key={value} type="button" className={meter === value ? "is-active" : ""} aria-pressed={meter === value}
-              onClick={() => { setMeter(value); setDuration(durationsFor(value)[0].b); setQuestionIndex(0); setCard(null); reset({ meter: value, question: 0 }); }}>{value}</button>)}
+              onClick={() => chooseMeter(value)}>{value}</button>)}
         </div>
       </div>}
       {levelInfo.barCounts.length > 1 && mode === "free" && <div className="compose-field">
@@ -280,15 +351,15 @@ export function ComposePage() {
         <div className="compose-chips">
           {levelInfo.barCounts.map((count) =>
             <button key={count} type="button" className={barCount === count ? "is-active" : ""} aria-pressed={barCount === count}
-              onClick={() => reset({ count })}>{count} 小节</button>)}
+              onClick={() => chooseCount(count)}>{count} 小节</button>)}
         </div>
       </div>}
       {mode === "answer" && <div className="compose-field">
         <span className="compose-field-label">问句</span>
         <div className="compose-chips">
-          {QUESTIONS[meter].map((q, i) =>
+          {questions.map((q, i) =>
             <button key={q.label} type="button" className={questionIndex === i ? "is-active" : ""} aria-pressed={questionIndex === i}
-              onClick={() => { setQuestionIndex(i); reset({ mode: "answer", question: i }); }}>{q.label}</button>)}
+              onClick={() => chooseQuestion(i)}>{q.label}</button>)}
         </div>
       </div>}
     </div>
@@ -341,6 +412,11 @@ export function ComposePage() {
           </div>
         </div>
         {card && <p className="compose-card-tip">节奏卡已选好，接下来只要点音高。再点一次节奏卡可以取消。</p>}
+        <p className="compose-now" aria-live="polite">
+          {selected ? <>正在改第 <b>{selected.bar + 1}</b> 小节的一个音</>
+            : cursorBar < 0 ? <>{bars.length} 小节都写满了</>
+            : <>正在写第 <b>{cursorBar + 1}</b> 小节 · 还剩 <b>{formatBeats(beats - barBeats(bars[cursorBar]), meter)}</b></>}
+        </p>
         <div className="compose-palette" aria-label="音块">
           {blocks.map((block, index) =>
             <button key={`${block.d}${block.o}`} type="button" className="compose-block"

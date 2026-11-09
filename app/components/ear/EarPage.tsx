@@ -10,6 +10,11 @@ import {
 } from "./ear-model";
 
 let currentOut: GainNode | null = null;
+/** 停掉正在响的题目（换关、换设置、离开本页时）。 */
+function stopSound() {
+  currentOut?.disconnect();
+  currentOut = null;
+}
 /** Plays [midi, start beat, beats][] on the piano; a new call silences the previous one. */
 async function playSequence(notes: Array<[number, number, number]>, bpm = 90) {
   try {
@@ -63,10 +68,11 @@ export function EarPage() {
   const levelInfo = EAR_LEVELS.find((item) => item.id === level)!;
   const blocks = PITCH_SETS[options.pitchSet].blocks;
 
-  useEffect(() => () => window.clearTimeout(advanceTimer.current), []);
+  useEffect(() => () => { window.clearTimeout(advanceTimer.current); stopSound(); }, []);
 
   const reset = () => {
     window.clearTimeout(advanceTimer.current);
+    stopSound();
     setStarted(false);
     setIndex(0);
     setQuestion(null);
@@ -75,11 +81,18 @@ export function EarPage() {
     setTyped([]);
   };
 
+  /** 一轮做到一半时，换关或换设置要重新出题，先问一声。 */
+  const inRound = started && !finished && (results.length > 0 || typed.length > 0 || answer !== null);
+  const mayRestart = (what: string) => !inRound || window.confirm(results.length ? `${what}会重新开始这一轮，已经做的 ${results.length} 题不再计分，确定吗？` : `${what}会重新开始这一轮，确定吗？`);
+
   const chooseLevel = (next: EarLevel) => {
+    if (next === level || !mayRestart("换关")) return;
     setLevel(next);
     reset();
   };
   const changeOptions = (patch: Partial<Options>) => {
+    if ((Object.keys(patch) as Array<keyof Options>).every((key) => options[key] === patch[key])) return;
+    if (!mayRestart("换设置")) return;
     setOptions((current) => ({ ...current, ...patch }));
     reset();
   };
@@ -246,7 +259,7 @@ export function EarPage() {
     <section className="ear-stage" aria-label={`${levelInfo.name}练习`}>
       {!started && <div className="ear-start">
         <p className="ear-start-title">{levelInfo.name}</p>
-        <p className="ear-start-tip">{startTip(level)}</p>
+        <p className="ear-start-tip">{startTip(level, options.pitchSet)}</p>
         <div className="ear-start-actions">
           <button type="button" className="ear-primary" onClick={start}>开始一轮</button>
           {level !== "updown" && <button type="button" className="ear-ghost" onClick={reference}>先听标准音 la（440Hz）</button>}
@@ -337,12 +350,12 @@ export function EarPage() {
   </div>;
 }
 
-function startTip(level: EarLevel) {
+function startTip(level: EarLevel, pitchSet: PitchSet) {
   switch (level) {
     case "updown": return "先后弹两个音，听一听第二个音比第一个音更高、更低，还是一样高。";
     case "solfege": return "先听标准音 la（440 赫兹），记住它的位置，再听题目里的音是哪一个唱名。";
     case "interval": return "两个音之间相隔几度？从 do 到 re 是二度，do 到 mi 是三度，do 到高音 do 是八度。";
-    case "dictation": return "听一小段从 do 开始的旋律，按顺序点音块写下来，可以多听几遍。";
+    case "dictation": return `听一小段旋律，题目会告诉你第一个音，最后一个音落在 ${pitchSet === "three" ? "la" : "do"} 上。按顺序点音块写下来，可以多听几遍。`;
   }
 }
 
@@ -351,7 +364,7 @@ function questionText(question: Question) {
     case "updown": return "第二个音比第一个音……";
     case "solfege": return "这个音是哪个唱名？";
     case "interval": return question.harmonic ? "两个音同时响，相隔几度？" : "两个音先后响，相隔几度？";
-    case "dictation": return `旋律有 ${question.tones.length} 个音，第一个音是 do（三个音时从 la 开始）。`;
+    case "dictation": return `旋律有 ${question.tones.length} 个音，第一个音是 ${toneName(question.tones[0])}。`;
   }
 }
 

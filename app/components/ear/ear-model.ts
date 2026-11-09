@@ -54,20 +54,30 @@ export function makeQuestion(level: EarLevel, index: number, options: { pitchSet
     const lowDegree = Math.floor(random() * 7);
     return { kind: "interval", low: degreeMidi(lowDegree), high: degreeMidi(lowDegree + steps), steps, harmonic: options.harmonic };
   }
-  // 旋律听写：从 do 出发，以级进为主，最后回到 do。
+  // 旋律听写：从 do 以外的音里任选一个开始（和上一题错开），以级进和小跳为主（不超过五度），最后落到最近的 do（三个音时落在 la）。
+  // 这样一轮下来，音块里的每个音都会听到。
   const pitched = PITCH_SETS[options.pitchSet].blocks;
-  const homes = pitched.flatMap((block, i) => (block.d === 1 && block.o === 0 ? [i] : []));
-  const home = homes[0] ?? pitched.length - 1;
-  let at = home;
-  const tones: Tone[] = [];
-  for (let k = 0; k < options.length; k += 1) {
+  const midiAt = (i: number) => midiOfNote(pitched[i]);
+  const homesAt = pitched.flatMap((block, i) => (block.d === 1 ? [i] : []));
+  const homes = homesAt.length ? homesAt : [pitched.length - 1];
+  const homeDistance = (i: number) => Math.min(...homes.map((h) => Math.abs(h - i)));
+  const previousStart = previous?.kind === "dictation" ? previous.tones[0] : null;
+  // 结尾总是 do，开头就不再从 do 起，把机会留给其他音。
+  const starts = pitched.map((_, i) => i).filter((i) => !homes.includes(i) && (!previousStart || pitched[i].d !== previousStart.d || pitched[i].o !== previousStart.o));
+  let at = pick(starts.length ? starts : pitched.map((_, i) => i), random);
+  const tones: Tone[] = [{ d: pitched[at].d, o: pitched[at].o }];
+  for (let k = 1; k < options.length; k += 1) {
     const left = options.length - 1 - k;
-    if (k > 0) {
-      let next = Math.min(pitched.length - 1, Math.max(0, at + pick([-2, -1, -1, 1, 1, 2], random)));
-      if (Math.abs(home - next) > left) next = at + Math.sign(home - at) * Math.min(2, Math.max(0, Math.abs(home - at) - left));
-      if (left === 0) next = home;
-      at = next;
+    let next: number;
+    if (left === 0) {
+      next = homes.reduce((best, h) => (Math.abs(h - at) < Math.abs(best - at) ? h : best));
+    } else {
+      const moves = [-3, -2, -1, -1, 1, 1, 2, 3, 0];
+      const choices = moves.map((move) => at + move).filter((i) => i >= 0 && i < pitched.length
+        && Math.abs(midiAt(i) - midiAt(at)) <= 7 && homeDistance(i) <= left * 2);
+      next = choices.length ? pick(choices, random) : at + Math.sign(homes.reduce((best, h) => (Math.abs(h - at) < Math.abs(best - at) ? h : best)) - at);
     }
+    at = next;
     tones.push({ d: pitched[at].d, o: pitched[at].o });
   }
   return { kind: "dictation", tones };

@@ -27,7 +27,7 @@ Avoid: gradients, glow, neon, 3D, photorealism, glossy surfaces, clip art, emoji
 
 - 自检结论（目视）：山脉、长河、草原和马头琴清楚；主体从中部以下展开，顶部约三成留白；木刻线条、暖纸纹和套色与单元插画一致；无文字、伪文字、地图轮廓或边界线。
 
-## timeline.webp — 作品年表
+## timeline.webp — 作品年表（2026-11-09 随音乐时光机下线删除，记录留档）
 
 - 原图：`T032-raw/timeline.png`（793×1983 PNG）
 - 成品：720×1800 WebP，quality 78，131760 B

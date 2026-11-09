@@ -88,7 +88,7 @@ Negative prompt: single flute, single pipe, one bamboo tube, five pipes, seven p
 A Tibetan dranyen lute beside prayer flags in wind, an opera house balcony, a clapper-talk bamboo clapper (kuaiban). Chinese woodblock print and screen-print style, hand-carved lines, visible paper grain and slight ink misregistration, limited palette of 4 spot colors only: pine green #1F5C47, sprout green #3E9B4F, vermilion #D2462C, amber #E9A83A, printed on warm off-white paper #F7F3EA. Flat shapes, no gradients, no glow, no neon, no 3D render, no photorealism, no text, no letters, no watermark, no logo. Calm, editorial composition with generous empty space for layout. Landscape composition, target aspect ratio 8:5 (1200×750). Negative prompt: glowing nodes, network lines, sci-fi, holographic, neon, bokeh, lens flare, 3D, CGI, glossy, gradient mesh, generic ink-wash mountains, clip art, emoji, cartoon mascot, text, watermark.
 ```
 
-## 首页收尾 `hero.webp`
+## 首页收尾 `hero.webp`（已不用，2026-11-09 删除，记录留档）
 
 - 生成日期：2026-09-29
 - 工具：由 OpenAI Codex 内置图像生成工具生成（`image_gen`）

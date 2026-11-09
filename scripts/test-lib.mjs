@@ -1,4 +1,4 @@
-// test-lib.mjs — 共享应用模型、年表模型与五声实验室调式数据的测试。
+// test-lib.mjs — 共享应用模型、补充数据生成器与五声实验室调式数据的测试。
 // 用法：node scripts/test-lib.mjs                   跑全部测试
 //       node scripts/test-lib.mjs --mutation-check  变异自证：所有故意 bug 都必须被测试抓到
 //       node scripts/test-lib.mjs --run-mutation <id>（内部用，子进程跑单个变异）
