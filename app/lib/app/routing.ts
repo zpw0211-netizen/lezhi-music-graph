@@ -14,7 +14,7 @@ export type AppView =
   | "lesson"
   | "work"
   | "import"
-  | "atlas"
+  | "compose"
   | "lab"
   | "timeline"
   | "rhythm"
@@ -40,7 +40,7 @@ const VIEWS = new Set<AppView>([
   "lesson",
   "work",
   "import",
-  "atlas",
+  "compose",
   "lab",
   "timeline",
   "rhythm",
@@ -63,6 +63,8 @@ export function parseRoute(hash: string, search = ""): AppRoute {
   if (hash.startsWith("#/")) {
     const [rawView, ...rest] = hash.slice(2).split("/");
     const view = decodeURIComponent(rawView) as AppView;
+    // 音乐地图已由旋律创编取代，旧链接直接进入旋律创编。
+    if (rawView === "atlas") return { view: "compose" };
     if (!VIEWS.has(view)) return HOME_ROUTE;
     // 智能备课：#/plan/g8s1/菊花台，分册和课题都可以省略。
     if (view === "records" || view === "plan") {

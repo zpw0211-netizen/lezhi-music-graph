@@ -1,0 +1,174 @@
+/* 旋律创编：音块、小节格、实时乐谱与作品集。配色沿用节奏训练，留白多、线条轻。 */
+.compose-lab {
+  --c-ink: #17221C;
+  --c-ink-2: #44544B;
+  --c-ink-3: #7A877F;
+  --c-pine: #276344;
+  --c-pine-soft: #EAF3ED;
+  --c-seal: #AF4236;
+  --c-line: #E1E8E3;
+  --c-paper: #FBFCFA;
+  width: min(1240px, 100%);
+  margin-inline: auto;
+  padding: 4px clamp(16px, 2.8vw, 40px) 56px;
+  color: var(--c-ink);
+  font-family: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  line-height: 1.7;
+}
+.compose-lab button { font: inherit; color: inherit; cursor: pointer; }
+.compose-lab button:disabled { cursor: not-allowed; opacity: .4; }
+.compose-lab :is(button, input):focus-visible { outline: 3px solid rgb(39 99 68 / 28%); outline-offset: 2px; }
+
+/* 标题与年级 */
+.compose-intro { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; padding: 14px 0; }
+.compose-kicker { margin: 0; color: var(--c-seal); font: 12px/1.6 var(--serif, "Songti SC", serif); letter-spacing: .3em; }
+.compose-intro h2 { margin: 0; font: 400 clamp(22px, 2.3vw, 28px)/1.3 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .06em; }
+.compose-levels { display: inline-flex; gap: 2px; padding: 3px; border-radius: 14px; background: #EEF2EF; }
+.compose-levels button { display: grid; justify-items: center; padding: 5px 16px; border: 0; border-radius: 11px; background: transparent; color: var(--c-ink-2); line-height: 1.3; white-space: nowrap; transition: background .2s ease, color .2s ease, box-shadow .2s ease; }
+.compose-levels button span { font-size: 14px; font-weight: 600; }
+.compose-levels button small { color: var(--c-ink-3); font-size: 11px; }
+.compose-levels button.is-active { background: #fff; color: var(--c-pine); box-shadow: 0 1px 3px rgb(23 34 28 / 12%); }
+
+/* 设置：一行分段按钮 */
+.compose-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 4px 0 16px; }
+.compose-field { display: flex; align-items: center; gap: 8px; }
+.compose-field-label { color: var(--c-ink-3); font-size: 12px; letter-spacing: .08em; white-space: nowrap; }
+.compose-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.compose-chips button { display: inline-flex; align-items: baseline; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--c-line); border-radius: 9px; background: #fff; color: var(--c-ink-2); font-size: 13px; white-space: nowrap; transition: border-color .15s ease, background .15s ease; }
+.compose-chips button small { color: var(--c-ink-3); font-size: 11px; }
+.compose-chips button:hover { border-color: #C3D3C8; }
+.compose-chips button.is-active { border-color: var(--c-pine); background: var(--c-pine); color: #fff; font-weight: 600; }
+.compose-chips button.is-active small { color: rgb(255 255 255 / 75%); }
+
+/* 写旋律：小节格 */
+.compose-editor { display: grid; gap: 16px; padding: clamp(16px, 2.4vw, 28px); border: 1px solid var(--c-line); border-radius: 20px; background: var(--c-paper); }
+.compose-score-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.compose-key { color: var(--c-ink-2); font: 15px/1.4 var(--serif, "Songti SC", serif); white-space: nowrap; }
+.compose-key b { margin-left: 6px; font-weight: 600; }
+.compose-key-tip { color: var(--c-ink-3); font-size: 12px; }
+.compose-bars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 12px; }
+.compose-bar { position: relative; display: grid; grid-template-rows: auto 1fr; min-width: 0; border-right: 1.5px solid var(--c-ink-2); }
+.compose-bar:nth-child(4n + 1) { box-shadow: -1.5px 0 0 var(--c-ink-2); }
+/* 4/4、6/8 一小节音多，一行放两小节。 */
+.compose-bars.is-wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.compose-bars.is-wide .compose-bar:nth-child(4n + 1) { box-shadow: none; }
+.compose-bars.is-wide .compose-bar:nth-child(2n + 1) { box-shadow: -1.5px 0 0 var(--c-ink-2); }
+.compose-bar.is-final { border-right: 4px double var(--c-ink); }
+.compose-bar-label { padding: 0 10px 2px; color: var(--c-ink-3); font-size: 11px; letter-spacing: .06em; white-space: nowrap; }
+.compose-bar.is-locked .compose-bar-label { color: var(--c-seal); }
+.compose-bar.is-cursor .compose-bar-label { color: var(--c-pine); font-weight: 600; }
+.compose-bar-notes { display: flex; align-items: stretch; gap: 2px; min-height: 112px; padding: 0 6px; background-image: repeating-linear-gradient(to top, transparent 0 21px, rgb(39 99 68 / 6%) 21px 22px); }
+.compose-bar.is-locked .compose-bar-notes { background-color: rgb(175 66 54 / 4%); }
+.compose-bar.is-cursor .compose-bar-notes { background-color: rgb(39 99 68 / 6%); }
+.compose-note { display: flex; flex-basis: 0; align-items: center; justify-content: center; min-width: 0; padding: 0; border: 2px solid transparent; border-radius: 12px; background: transparent; transition: background .15s ease, border-color .15s ease; }
+.compose-note:not(:disabled):hover { background: rgb(255 255 255 / 85%); }
+.compose-lab .compose-note:disabled { opacity: 1; cursor: default; }
+.compose-note.is-selected { border-color: var(--c-seal); background: #fff; }
+.compose-room { display: flex; flex-basis: 0; align-items: center; justify-content: center; min-width: 0; color: #A9C7B4; font-size: 20px; }
+
+.compose-figure { display: inline-flex; align-items: center; justify-content: space-around; gap: 10px; width: 100%; }
+.compose-note .compose-figure { transform: translateY(calc((0.5 - var(--step, 0.5)) * 60px)); transition: transform .2s ease; }
+.compose-digit { position: relative; display: inline-block; padding: 8px 2px 6px; font: 600 clamp(24px, 2.8vw, 34px)/1 var(--serif, "Songti SC", serif); }
+.compose-digit.is-eighth::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: 0; border-bottom: 2.5px solid var(--c-ink); }
+.compose-dot-high { position: absolute; top: -2px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: currentColor; }
+.compose-aug { position: absolute; right: -9px; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--c-ink); }
+.compose-dash { color: var(--c-ink); font: 600 26px/1 var(--serif, "Songti SC", serif); }
+
+/* 节奏：时值与节奏卡在同一排 */
+.compose-tools { display: grid; gap: 14px; }
+.compose-rhythm-row { display: flex; align-items: center; gap: 12px; }
+.compose-durations { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.compose-divider { width: 1px; height: 26px; margin: 0 6px; background: var(--c-line); }
+.compose-duration, .compose-card { display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--c-line); border-radius: 11px; background: #fff; color: var(--c-ink-2); font-size: 13px; transition: border-color .15s ease, background .15s ease; }
+.compose-duration .compose-figure { width: auto; gap: 4px; }
+.compose-duration .compose-digit { padding: 4px 1px; font-size: 19px; color: var(--c-ink-2); }
+.compose-duration .compose-dash { font-size: 17px; }
+.compose-duration .compose-aug { right: -7px; width: 4px; height: 4px; }
+.compose-duration .compose-digit:has(.compose-aug) { margin-right: 9px; }
+.compose-card { border-style: dashed; border-color: #C7D6CC; }
+.compose-duration:hover, .compose-card:hover { border-color: #B5CBBC; }
+.compose-duration.is-active, .compose-card.is-active { border-style: solid; border-color: var(--c-pine); background: var(--c-pine-soft); color: var(--c-pine); box-shadow: inset 0 0 0 1px var(--c-pine); }
+.compose-rhythm-glyph { display: inline-flex; gap: 7px; font: 600 16px/1 var(--serif, "Songti SC", serif); }
+.compose-rhythm-unit { position: relative; padding-bottom: 5px; white-space: nowrap; }
+.compose-rhythm-unit.is-eighth::after { content: ""; position: absolute; left: -1px; right: -1px; bottom: 0; border-bottom: 2px solid currentColor; }
+.compose-rhythm-unit i { font-style: normal; }
+.compose-card-tip { margin: -6px 0 0; color: var(--c-pine); font-size: 12px; }
+
+/* 音块：从低到高排成台阶 */
+.compose-palette { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+.compose-block { --block: #3E8E5A; display: grid; flex: 0 1 76px; justify-items: center; align-content: end; gap: 0; min-width: 56px; padding: calc(8px + var(--step, 0) * 30px) 0 8px; border: 0; border-radius: 14px; background: var(--block); color: #fff !important; box-shadow: 0 3px 0 rgb(0 0 0 / 16%); transition: transform .08s ease, box-shadow .08s ease, filter .15s ease; }
+.compose-block:hover { filter: brightness(1.06); }
+.compose-block:active { transform: translateY(2px); box-shadow: 0 1px 0 rgb(0 0 0 / 16%); }
+.compose-block.is-rest { --block: #8A968F; --step: 0; margin-left: 10px; }
+.compose-block-digit { position: relative; font: 600 28px/1.15 var(--serif, "Songti SC", serif); }
+.compose-block-digit .compose-dot-high { top: -4px; background: #fff; }
+.compose-block-name { font-size: 12px; letter-spacing: .04em; opacity: .92; }
+
+/* 操作：轻量文字按钮 */
+.compose-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.compose-actions button { min-height: 34px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: var(--c-ink-2); font-size: 13px; }
+.compose-actions button:hover:not(:disabled) { background: #EEF2EF; }
+.compose-lab .compose-inspire { background: #FBF3E4; color: #8A5A12; font-weight: 600; }
+.compose-lab .compose-inspire:hover:not(:disabled) { background: #F6E8CC; }
+.compose-selected-tip { color: var(--c-seal); font-size: 12px; }
+.compose-keys { margin-left: auto; color: var(--c-ink-3); font-size: 12px; }
+.compose-message { min-height: 1.6em; margin: -6px 0 0; color: var(--c-seal); font-size: 13px; }
+
+/* 作品卡：名字、歌词、实时乐谱、提示与保存 */
+.compose-stage { display: grid; gap: 14px; margin-top: 20px; padding: clamp(16px, 2.4vw, 28px); border: 1px solid var(--c-line); border-radius: 20px; background: #fff; }
+.compose-stage:fullscreen { overflow: auto; padding: 4vw; }
+.compose-card-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; }
+.compose-card-head input, .compose-lyrics input { border: 0; border-bottom: 1px solid var(--c-line); border-radius: 0; background: transparent; color: var(--c-ink); transition: border-color .15s ease; }
+.compose-card-head input:focus, .compose-lyrics input:focus { border-bottom-color: var(--c-pine); outline: none; }
+.compose-title { flex: 1 1 240px; min-width: 0; padding: 2px 0; font: 400 clamp(22px, 2.3vw, 28px)/1.4 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+.compose-author { width: 140px; padding: 2px 0; font-size: 14px; }
+.compose-lyrics { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; color: var(--c-ink-3); font-size: 12px; }
+.compose-lyrics input { flex: 1 1 260px; min-width: 0; min-height: 34px; font-size: 15px; }
+.compose-preview-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; }
+.compose-switch { display: inline-flex; align-items: center; gap: 8px; color: var(--c-ink-2); font-size: 13px; cursor: pointer; }
+.compose-switch input { width: 17px; height: 17px; accent-color: var(--c-pine); }
+.compose-player { min-width: 0; }
+.compose-empty { margin: 0; padding: 28px 16px; border: 1px dashed var(--c-line); border-radius: 14px; color: var(--c-ink-3); font-size: 14px; text-align: center; }
+
+.compose-hints { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.compose-hints li { position: relative; padding: 7px 12px 7px 32px; border-radius: 10px; font-size: 13px; }
+.compose-hints li::before { position: absolute; left: 12px; top: 7px; font-weight: 700; }
+.compose-hints .is-good { background: var(--c-pine-soft); color: var(--c-pine); }
+.compose-hints .is-good::before { content: "✓"; }
+.compose-hints .is-tip { background: #FBF3E4; color: #8A5A12; }
+.compose-hints .is-tip::before { content: "♪"; }
+.compose-hints .is-todo { background: #F3F6F4; color: var(--c-ink-2); }
+.compose-hints .is-todo::before { content: "→"; }
+
+.compose-save { display: flex; flex-wrap: wrap; gap: 8px; }
+.compose-save button, .compose-gallery-actions button { min-height: 38px; padding: 0 18px; border: 1px solid var(--c-line); border-radius: 10px; background: #fff; color: var(--c-ink-2); font-size: 14px; }
+.compose-lab .compose-primary { border-color: var(--c-pine); background: var(--c-pine); color: #fff; }
+
+.compose-gallery { margin-top: 24px; }
+.compose-gallery h3 { margin: 0 0 10px; font: 400 20px/1.4 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+.compose-gallery h3 small { margin-left: 8px; color: var(--c-ink-3); font: 12px var(--ui, sans-serif); }
+.compose-gallery ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.compose-gallery li { display: grid; gap: 8px; padding: 14px 16px; border: 1px solid var(--c-line); border-radius: 14px; background: #fff; }
+.compose-gallery li > div:first-child { display: grid; gap: 2px; min-width: 0; }
+.compose-gallery li span { color: var(--c-ink-3); font-size: 12px; }
+.compose-gallery-notes { overflow-wrap: anywhere; font-family: var(--serif, serif); }
+.compose-gallery-actions { display: flex; gap: 8px; }
+.compose-gallery-actions button { min-height: 32px; padding: 0 14px; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .compose-keys { display: none; }
+  .compose-rhythm-row { align-items: flex-start; flex-direction: column; gap: 6px; }
+}
+@media (max-width: 640px) {
+  .compose-bars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .compose-bars.is-wide { grid-template-columns: minmax(0, 1fr); }
+  .compose-bars.is-wide .compose-bar { box-shadow: -1.5px 0 0 var(--c-ink-2) !important; }
+  .compose-bar:nth-child(4n + 1) { box-shadow: none; }
+  .compose-bar:nth-child(2n + 1) { box-shadow: -1.5px 0 0 var(--c-ink-2); }
+  .compose-levels { width: 100%; }
+  .compose-levels button { flex: 1; padding: 5px 6px; }
+  .compose-field { flex-wrap: wrap; }
+  .compose-block { flex: 1 1 52px; }
+  .compose-block.is-rest { margin-left: 0; }
+  .compose-divider { display: none; }
+}

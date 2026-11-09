@@ -10,7 +10,6 @@ import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AppTopNav, type NavView } from "./components/AppTopNav";
 import { StageBookPicker } from "./components/StageBookPicker";
 import type { AssistantPage as AssistantPageComponent } from "./components/assistant/AssistantPage";
-import type { AtlasPage as AtlasPageComponent } from "./components/atlas/AtlasPage";
 import type { LabPage as LabPageComponent } from "./components/lab/LabPage";
 import type {
   ExplorerSidebar as ExplorerSidebarComponent,
@@ -155,8 +154,8 @@ const AssistantPage = nextDynamic<PropsOf<typeof AssistantPageComponent>>(
   () => import("./components/assistant/AssistantPage").then((module) => module.AssistantPage),
   { loading: viewLoading },
 );
-const AtlasPage = nextDynamic<PropsOf<typeof AtlasPageComponent>>(
-  () => import("./components/atlas/AtlasPage").then((module) => module.AtlasPage),
+const ComposePage = nextDynamic(
+  () => import("./components/compose/ComposePage").then((module) => module.ComposePage),
   { loading: viewLoading },
 );
 const LabPage = nextDynamic<PropsOf<typeof LabPageComponent>>(
@@ -193,7 +192,7 @@ const EMPTY_BOOKS: BookDirectory[] = [];
 const SITE_TITLE = SITE_NAME;
 const VIEW_TITLES: Record<AppView, string> = {
   home: "",
-  atlas: "音乐探索与创造 · 音乐地图",
+  compose: "音乐探索与创造 · 旋律创编",
   lab: "音乐探索与创造 · 五声律坊",
   timeline: "音乐探索与创造 · 音乐时光机",
   rhythm: "音乐探索与创造 · 节奏训练",
@@ -379,7 +378,7 @@ export default function Home() {
     if (entity) navigate({ view: "graph", node: entity.id });
   };
 
-  const needsData = view !== "home" && view !== "import" && view !== "atlas" && view !== "timeline" && view !== "rhythm";
+  const needsData = view !== "home" && view !== "import" && view !== "compose" && view !== "timeline" && view !== "rhythm";
   // The 律坊 waits for data inside the exploration panel, so the shared heading never jumps when the data lands.
   const labLoading = view === "lab" && !canonicalGraph;
   const dataStatus =
@@ -420,8 +419,8 @@ export default function Home() {
                 ? "records"
                 : view === "import"
                   ? null
-                  : view === "atlas" || view === "lab" || view === "timeline" || view === "rhythm"
-                    ? "atlas"
+                  : view === "compose" || view === "lab" || view === "timeline" || view === "rhythm"
+                    ? "compose"
                   : view
             }
             onNavigate={goTo}
@@ -451,7 +450,7 @@ export default function Home() {
             }}
           />
         )}
-        <div className={`route-view${view === "atlas" || view === "lab" || view === "timeline" || view === "rhythm" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
+        <div className={`route-view${view === "compose" || view === "lab" || view === "timeline" || view === "rhythm" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
           {/* 按课学习 needs only the book directory, which arrives well before the full graph. */}
@@ -572,15 +571,11 @@ export default function Home() {
             />
           )}
           {view === "import" && <ImportView />}
-          {(view === "atlas" || view === "lab" || view === "timeline" || view === "rhythm") && <ExplorationPage
+          {(view === "compose" || view === "lab" || view === "timeline" || view === "rhythm") && <ExplorationPage
             activeView={view}
             onViewChange={nextView => navigate({ view: nextView })}
           >
-            {view === "atlas" && <AtlasPage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={(work, bookKey) => {
-              const entity = worksByTitleAndBook.get(`${bookKey}\u0000${work}`) ?? worksByTitle.get(work);
-              if (entity) openLessonPage(entity, bookKey);
-              else navigate({ view: "lesson", ...(bookKey ? { book: bookKey } : {}), work });
-            }} />}
+            {view === "compose" && <ComposePage />}
             {labLoading && <div className="app-view-status exploration-loading" role="status" aria-live="polite">{index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在准备律盘…"}</div>}
             {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => {
               const entity = worksByTitle.get(work);

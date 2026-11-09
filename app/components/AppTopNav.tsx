@@ -8,7 +8,7 @@ import type { AccountView } from "./account/AccountPanel";
 import { useAccount } from "./account/AccountProvider";
 // The account SDK is large and only needed once someone opens the dialog.
 const AccountDialog = dynamic(() => import("./account/AccountDialog").then(module => module.AccountDialog));
-export type NavView = "home" | "records" | "plan" | "graph" | "assistant" | "research" | "lab" | "atlas";
+export type NavView = "home" | "records" | "plan" | "graph" | "assistant" | "research" | "lab" | "compose";
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
 type NavItem = { label: string; view: NavView; href?: string } | { label: string; view: "timeline"; href: string };
 
@@ -37,13 +37,13 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
     { label: "按课学习", view: "records" },
     { label: "智能备课", view: "plan" },
     { label: "知识图谱", view: "graph" },
-    { label: "音乐探索与创造", view: "atlas", href: "#/atlas" },
+    { label: "音乐探索与创造", view: "compose", href: "#/compose" },
     { label: "智能问答", view: "assistant" },
   ];
   const routeToken = locationHash.startsWith("#/") ? locationHash.slice(2).split("/")[0] : "";
   const hashView = locationHash.startsWith("#/")
     ? items.find(item => item.view === routeToken)?.view
-      ?? (["lab", "timeline", "rhythm"].includes(routeToken) ? "atlas" : undefined)
+      ?? (["lab", "timeline", "rhythm", "atlas"].includes(routeToken) ? "compose" : undefined)
     : undefined;
   const currentView = hashView ?? active;
   return <><nav className="home-nav" aria-label="主导航">
@@ -57,7 +57,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
           {items.map(item => {
             const current = item.view === currentView;
             if (item.href) return <a key={item.label} className={current ? "is-active" : ""} href={item.href} aria-current={current ? "page" : undefined} onClick={event => {
-              if (item.view === "atlas" || item.view === "lab") {
+              if (item.view === "compose" || item.view === "lab") {
                 event.preventDefault();
                 onNavigate(item.view);
               }
