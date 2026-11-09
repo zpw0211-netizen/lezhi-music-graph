@@ -8,6 +8,22 @@ const compile = async entry => {
 };
 const { enrichGraph, graphAnswer, recognizeIntent, linkEntities } = await compile("app/lib/ai/graph-rag.ts");
 const { unitWorksAnswer } = await compile("app/lib/ai/unit-works.ts");
+const { resolvePlanRequest } = await compile("app/lib/lesson/plan.ts");
+const planBooks = ["g7s1", "g4s1"];
+const planWorks = (key) => key === "g7s1" ? ["《歌唱祖国》", "《领航》"] : ["《歌唱祖国》"];
+for (const volume of ["四年级上册", "四上", "４年级（上册）"]) {
+  const target = resolvePlanRequest(`请为人音版${volume}的《歌唱祖国》生成一节 40 分钟的教案。`, "g7s1", planBooks, planWorks);
+  assert.equal(target.bookKey, "g4s1");
+  assert.equal(target.request.work, "《歌唱祖国》");
+  assert.equal(target.request.minutes, 40);
+}
+assert.equal(resolvePlanRequest("给七年级（3）班备《歌唱祖国》", "g4s1", planBooks, planWorks).bookKey, "g4s1");
+assert.equal(resolvePlanRequest("下周一给四年级上《歌唱祖国》", "g7s1", planBooks, planWorks).bookKey, "g7s1");
+assert.equal(resolvePlanRequest("备初一下册的《歌唱祖国》", "g7s1", ["g7s1", "g7s2"], () => ["《歌唱祖国》"]).bookKey, "g7s2");
+assert.match(resolvePlanRequest("备四上《领航》", "g7s1", planBooks, planWorks).message, /指定分册里没有找到/);
+assert.match(resolvePlanRequest("备四下《歌唱祖国》", "g7s1", planBooks, planWorks).message, /没有你指定的分册/);
+assert.match(resolvePlanRequest("备四上和七上的《歌唱祖国》", "g7s1", planBooks, planWorks).message, /请指定一册/);
+
 const unitName = "华夏之声·文化根脉";
 const directoryBooks = [
   { key: "xy-g7s1", title: "湘艺版七年级上册" },

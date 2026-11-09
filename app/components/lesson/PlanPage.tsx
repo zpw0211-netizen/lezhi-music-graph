@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, type FormEvent } from "react";
 import { melodiesFor } from "../../lib/lesson/melodies";
-import { buildPlan, checkPlan, fitMinutes, parseRequest, planText, type LessonPlan, type PlanIssue, type PlanResource } from "../../lib/lesson/plan";
+import { buildPlan, checkPlan, fitMinutes, planText, resolvePlanRequest, type LessonPlan, type PlanIssue, type PlanResource } from "../../lib/lesson/plan";
 import { LESSON_KINDS, lessonKindOf, type LessonFact, type LessonKind } from "../../lib/lesson/reflective";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { getScoreMedia, matchesBookScope } from "../../lib/app/unit-data";
@@ -88,15 +88,10 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
     event.preventDefault();
     const text = request.trim();
     if (!text) return;
-    // 先在本册找课题，找不到再看其他分册。
-    let parsed = parseRequest(text, lessons.map((entity) => entity.name));
-    let targetBook = bookKey;
-    for (const book of books) {
-      if (parsed.work) break;
-      const found = parseRequest(text, lessonsOf(book.key).map((entity) => entity.name));
-      if (found.work) { parsed = found; targetBook = book.key; }
-    }
-    if (!parsed.work) { setMessage("没有在教材里找到这句话提到的课题，请在下面选择课题。"); return; }
+    const target = resolvePlanRequest(text, bookKey, books.map((book) => book.key),
+      (key) => (key === bookKey ? lessons : lessonsOf(key)).map((entity) => entity.name));
+    if ("message" in target) { setMessage(target.message); return; }
+    const { request: parsed, bookKey: targetBook } = target;
     setMessage("");
     setAsked((current) => ({ token: current.token + 1, options: { kind: parsed.kind, minutes: parsed.minutes, className: parsed.className ?? "", note: parsed.note ?? "" } }));
     onRoute(targetBook, bareWorkName(parsed.work));
