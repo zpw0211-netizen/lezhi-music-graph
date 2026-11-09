@@ -182,7 +182,7 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
   if (bookKey?.startsWith("pep-") || bookKey?.startsWith("wx-pep-")) {
     const fallbackKey = bookKey.startsWith("wx-pep-") ? bookKey.slice(3) : bookKey;
     if (!PEP_REVIEWED_BOOKS.has(bookKey) && !PEP_REVIEWED_BOOKS.has(fallbackKey)) return { melodies: [] };
-    // 人教版的键不带《》；年表、地图等处传进来的是带《》的作品名，两种都要能查到。
+    // 人教版的键不带《》；曲库等处传进来的可能是带《》的作品名，两种都要能查到。
     for (const name of names) {
       const own = BOOK_MELODIES[bookKey]?.[name.replace(/^《|》$/g, "")];
       if (own?.length) return { melodies: own, name };

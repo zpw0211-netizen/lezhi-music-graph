@@ -1,8 +1,8 @@
 // 把「人物生卒年补充」复核结果做成确定性的正式数据文件（与 build-year-supplement 同套路）。
 // 输入：glm3 复核后的最终结果（91 条，见 T005）
 // 输出：data/supplement/people-lifetime.json（源数据）与
-//       public/data/supplement/people-lifetime.json（站点按需加载）
-// 绝不修改教材数据（public/data/books、timeline.json 等不由本脚本触碰）。
+//       public/data/supplement/people-lifetime.json（复核档案，目前没有页面读取）
+// 绝不修改教材数据（public/data/books 等不由本脚本触碰）。
 //
 // 用法：
 //   node scripts/build-people-supplement.mjs [--input <结果.json>] [--source-output <文件>] [--public-output <文件>]

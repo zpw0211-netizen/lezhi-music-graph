@@ -95,6 +95,9 @@
 .compose-card-tip { margin: -6px 0 0; color: var(--c-pine); font-size: 12px; }
 
 /* 音块：从低到高排成台阶 */
+.compose-now { margin: 0; color: var(--c-ink-2); font-size: 13px; }
+.compose-now b { color: var(--c-pine); font-weight: 600; }
+.compose-lab .melody-player .melody-play { color: #fff; }
 .compose-palette { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
 .compose-block { --block: #3E8E5A; display: grid; flex: 0 1 76px; justify-items: center; align-content: end; gap: 0; min-width: 56px; padding: calc(8px + var(--step, 0) * 30px) 0 8px; border: 0; border-radius: 14px; background: var(--block); color: #fff !important; box-shadow: 0 3px 0 rgb(0 0 0 / 16%); transition: transform .08s ease, box-shadow .08s ease, filter .15s ease; }
 .compose-block:hover { filter: brightness(1.06); }

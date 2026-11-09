@@ -79,6 +79,13 @@ export const QUESTIONS: Record<Meter, Array<{ label: string; bars: ComposeNote[]
   ],
 };
 
+/** 问句只用当前音块里有的音（三个音时不出现 do、re）。 */
+export function questionsFor(meter: Meter, pitchSet: PitchSet) {
+  const blocks = PITCH_SETS[pitchSet].blocks;
+  const fits = QUESTIONS[meter].filter((q) => q.bars.flat().every((note) => !note.d || blocks.some((block) => block.d === note.d && block.o === note.o)));
+  return fits.length ? fits : QUESTIONS[meter];
+}
+
 function n(d: number, b = 1, o = 0): ComposeNote {
   return { d, o, b };
 }
@@ -131,15 +138,80 @@ export function lyricSyllables(text: string) {
   return [...text.replace(/[\s，。、！？；：,.!?;:“”"'‘’（）()《》—-]/g, "")];
 }
 
-/** 自动低音：每小节按旋律落在哪个和弦里（I、IV、V）选一个长音，最后一小节回到主音。 */
-export function bassLine(bars: ComposeNote[][]): MelodyNote[][] {
-  const chords = [{ root: 1, tones: [1, 3, 5] }, { root: 4, tones: [4, 6, 1] }, { root: 5, tones: [5, 7, 2] }];
+/** 伴奏和弦：主、下属、属三和弦为主，再加 vi、ii 两个副三和弦，让低音更有变化。 */
+const CHORDS = [
+  { root: 1, tones: [1, 3, 5], bias: 0.3 },
+  { root: 4, tones: [4, 6, 1], bias: 0.15 },
+  { root: 5, tones: [5, 7, 2], bias: 0.15 },
+  { root: 6, tones: [6, 1, 3], bias: 0 },
+  { root: 2, tones: [2, 4, 6], bias: -0.05 },
+] as const;
+type Chord = (typeof CHORDS)[number];
+
+/** A bass note counted in scale steps from the chord root (0 root, 2 third, 4 fifth, 7 octave). Roots sit in C3–E3 or F2–A2. */
+function bassNote(root: number, steps: number, b: number): MelodyNote {
+  const n = root - (root <= 3 ? 7 : 14) + steps;
+  const d = ((n - 1) % 7 + 7) % 7 + 1;
+  const o = Math.floor((n - 1) / 7);
+  return o ? { d, o, b } : { d, b };
+}
+
+/** How well a chord fits the melody between two beats: time on chord tones, plus the note on the strong beat. */
+function fitOf(chord: Chord, bar: ComposeNote[], from: number, to: number) {
+  let at = 0;
+  let score = chord.bias;
+  for (const note of bar) {
+    const start = at;
+    at += note.b;
+    if (!note.d) continue;
+    const overlap = Math.min(at, to) - Math.max(start, from);
+    if (overlap <= 1e-6) continue;
+    const fits = (chord.tones as readonly number[]).includes(note.d);
+    score += fits ? overlap : 0;
+    if (Math.abs(start - from) < 1e-6) score += fits ? 0.5 : -0.5;
+  }
+  return score;
+}
+
+function pickChord(bar: ComposeNote[], from: number, to: number, prefer?: Chord, slack = 0) {
+  const ranked = CHORDS.map((chord) => ({ chord, score: fitOf(chord, bar, from, to) })).sort((a, b) => b.score - a.score);
+  if (prefer && ranked.find((item) => item.chord === prefer)!.score >= ranked[0].score - slack) return prefer;
+  return ranked[0].chord;
+}
+
+/** 自动低音：按旋律给每小节（4/4、6/8 每半小节）配一个和弦，用分解和弦的低音走起来；开头配主和弦，倒数第二小节尽量用属和弦，最后回到主音。 */
+export function bassLine(bars: ComposeNote[][], meter: Meter = "2/4"): MelodyNote[][] {
+  const beats = beatsOf(meter);
+  const halves = meter === "4/4" || meter === "6/8";
+  const [tonic, , dominant] = CHORDS;
   return bars.map((bar, index) => {
-    const beats = barBeats(bar);
+    const filled = barBeats(bar);
+    const full = Math.abs(filled - beats) < 1e-6;
     const isFinal = index === bars.length - 1;
-    const score = (tones: number[]) => bar.reduce((sum, note) => sum + (tones.includes(note.d) ? note.b : 0), 0);
-    const best = isFinal ? chords[0] : chords.reduce((top, chord) => (score(chord.tones) > score(top.tones) + 1e-6 ? chord : top), chords[0]);
-    return [{ d: best.root, o: -1, b: beats }];
+    const isPenultimate = index === bars.length - 2;
+    if (!full) return [bassNote(pickChord(bar, 0, filled).root, 0, filled)];
+    if (isFinal) return [bassNote(tonic.root, 0, beats)];
+    const half = beats / 2;
+    const segments: Array<[number, number]> = halves ? [[0, half], [half, beats]] : [[0, beats]];
+    const chords = segments.map(([from, to], k) => {
+      if (index === 0 && k === 0) return pickChord(bar, from, to, tonic, 1);
+      if (isPenultimate && k === segments.length - 1) return pickChord(bar, from, to, dominant, 0.8);
+      return pickChord(bar, from, to);
+    });
+    const r0 = chords[0].root;
+    switch (meter) {
+      case "2/4": return [bassNote(r0, 0, 1), bassNote(r0, 4, 1)];
+      case "3/4": return [bassNote(r0, 0, 1), bassNote(r0, 4, 1), bassNote(r0, 7, 1)];
+      case "3/8": return [bassNote(r0, 0, 1), bassNote(r0, 4, 0.5)];
+      case "4/4": {
+        const r1 = chords[1].root;
+        return [bassNote(r0, 0, 1), bassNote(r0, 4, 1), ...(r1 === r0 ? [bassNote(r0, 7, 1), bassNote(r0, 4, 1)] : [bassNote(r1, 0, 1), bassNote(r1, 4, 1)])];
+      }
+      case "6/8": {
+        const r1 = chords[1].root;
+        return [bassNote(r0, 0, 1), bassNote(r0, 4, 0.5), ...(r1 === r0 ? [bassNote(r0, 2, 1), bassNote(r0, 4, 0.5)] : [bassNote(r1, 0, 1), bassNote(r1, 4, 0.5)])];
+      }
+    }
   });
 }
 
@@ -164,7 +236,7 @@ export function toMelody(bars: ComposeNote[][], meter: Meter, lyrics: string, ti
     bars: melodyBars,
     ...(accompaniment && written.length ? {
       label: "旋律",
-      voices: [{ label: "低音伴奏", bars: bassLine(written) }],
+      voices: [{ label: "低音伴奏", bars: bassLine(written, meter) }],
       staff: [undefined, { clef: "bass" as const }],
     } : {}),
   };
@@ -188,7 +260,7 @@ export function composeHints(bars: ComposeNote[][], meter: Meter, mode: ComposeM
   if (remaining === 0 && last) {
     if (last.d === 1) hints.push({ tone: "good", text: mode === "answer" ? "答句回到了 do，一问一答很完整。" : "结尾落在 do 上，听起来很安稳。" });
     else if (pitchSet === "three" && last.d === 6) hints.push({ tone: "good", text: "结尾落在 la 上，像童谣一样亲切。" });
-    else if (last.d === 5) hints.push({ tone: "tip", text: "结尾停在 sol，像一句还没说完的问句。想结束的话，试试让最后一个音落在 do。" });
+    else if (last.d === 5) hints.push({ tone: "tip", text: pitchSet === "three" ? "结尾停在 sol，像一句还没说完的问句。想结束的话，试试让最后一个音落在 la。" : "结尾停在 sol，像一句还没说完的问句。想结束的话，试试让最后一个音落在 do。" });
     else hints.push({ tone: "tip", text: pitchSet === "three" ? "试试让最后一个音落在 la 或 sol，听听哪个更像“说完了”。" : "试试让最后一个音落在 do，旋律会更像“说完了”。" });
     const finalNote = bars.at(-1)?.at(-1);
     if (finalNote && finalNote.d && finalNote.b < Math.min(1, beats)) hints.push({ tone: "tip", text: "最后一个音可以拉长一点（一拍或两拍），结束感会更强。" });
@@ -241,7 +313,26 @@ export function noteShape(b: number) {
   return { eighth: b < 1, dotted: Math.abs(b - 1.5) < 1e-6 || Math.abs(b - 0.75) < 1e-6, dashes: b >= 2 ? Math.round(b) - 1 : 0 };
 }
 
-export type SavedWork = { id: string; title: string; author: string; meter: Meter; bars: ComposeNote[][]; lyrics: string; savedAt: number; accompaniment?: boolean };
+export type SavedWork = { id: string; title: string; author: string; meter: Meter; bars: ComposeNote[][]; lyrics: string; savedAt: number; accompaniment?: boolean; level?: Level; pitchSet?: PitchSet };
+
+/** 打开作品时要恢复的编辑设置。旧作品没存年级和音块，就按作品里用到的音和拍号推断。 */
+export function setupOf(work: SavedWork): { level: Level; pitchSet: PitchSet } {
+  const used = work.bars.flat().filter((note) => note.d);
+  const needs: PitchSet = used.some((note) => note.d === 4 || note.d === 7) ? "seven"
+    : used.some((note) => !PITCH_SETS.three.blocks.some((block) => block.d === note.d && block.o === note.o)) ? "five" : "three";
+  const fits = (level: Level, pitchSet: PitchSet) => LEVELS[level].pitchSets.includes(pitchSet) && LEVELS[level].meters.includes(work.meter) && LEVELS[level].barCounts.includes(work.bars.length);
+  const covers = (pitchSet: PitchSet) => used.every((note) => PITCH_SETS[pitchSet].blocks.some((block) => block.d === note.d && block.o === note.o));
+  if (work.level && work.pitchSet && fits(work.level, work.pitchSet) && covers(work.pitchSet)) return { level: work.level, pitchSet: work.pitchSet };
+  const order: PitchSet[] = needs === "three" ? ["three", "five", "seven"] : needs === "five" ? ["five", "seven"] : ["seven"];
+  for (const pitchSet of order) {
+    for (const level of ["low", "mid", "high"] as Level[]) if (fits(level, pitchSet)) return { level, pitchSet };
+  }
+  // 小节数对不上任何年级时，只按音和拍号挑。
+  for (const pitchSet of order) {
+    for (const level of ["low", "mid", "high"] as Level[]) if (LEVELS[level].pitchSets.includes(pitchSet) && LEVELS[level].meters.includes(work.meter)) return { level, pitchSet };
+  }
+  return { level: "high", pitchSet: "seven" };
+}
 const STORE = "yapu-compose-works";
 
 export function loadWorks(): SavedWork[] {
