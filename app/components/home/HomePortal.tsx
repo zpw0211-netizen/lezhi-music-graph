@@ -37,7 +37,7 @@ const HOT_SEARCHES = EDITION.hotSearches ?? [];
 const HOME_LAST_READ_BOOK_KEY = "yapu-home-last-book";
 const HOME_LAST_READ_CHANGE_EVENT = "yapu:home-last-book-change";
 const BOOKMARKS = [
-  { label: "音乐探索与创造", lines: ["音乐探索", "与创造"], description: "写一段自己的旋律，再在年表、律盘与节奏里探索音乐。", file: "art/bookmarks/map.webp", href: "#/compose" },
+  { label: "音乐探索与创造", lines: ["音乐探索", "与创造"], description: "写一段自己的旋律，再练听音、转律盘、打节奏。", file: "art/bookmarks/map.webp", href: "#/compose" },
   { label: "知识图谱", lines: ["知识", "图谱"], description: "从一个知识点查看它和作品的联系。", file: "art/bookmarks/graph.webp", href: null },
 ] as const;
 const PENTATONIC = [
@@ -262,7 +262,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       <section className="home-lab" aria-labelledby="home-lab-title">
         <div className="home-lab-heading" data-reveal>
           <p className="home-section-overline">音乐探索与创造</p><h2 id="home-lab-title">听见宫、商、角、徵、羽</h2>
-          <p>用几个音写一段自己的旋律，沿着年表读作品，再转动律盘，听见一首旋律里的五声与七声。</p>
+          <p>用几个音写一段自己的旋律，练练听音的耳朵，再转动律盘，听见一首旋律里的五声与七声。</p>
           <button type="button" className="home-lab-phrase" onClick={() => playSample(5)} data-playing={activeNote === "phrase"} aria-pressed={activeNote === "phrase"}>▶ 上行再下行</button>
           <p className="home-lab-hint">按 1、2、3、5、6，也能依次弹奏五个音。</p>
           <a href="#/lab" className="home-lab-enter">进入音乐探索与创造 <WorkbenchIcon name="right" /></a>
@@ -279,7 +279,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       <section className="home-bookmarks" aria-labelledby="home-bookmark-title">
         <header className="home-bookmark-heading" data-reveal>
           <h2 id="home-bookmark-title">接着探索</h2>
-          <p>旋律创编、年表和律盘共享一个探索空间；知识图谱还原作品之间的联系。</p>
+          <p>旋律创编、听音训练和律盘共享一个探索空间；知识图谱还原作品之间的联系。</p>
         </header>
         <div className="home-bookmark-list">
           {BOOKMARKS.map(bookmark => {

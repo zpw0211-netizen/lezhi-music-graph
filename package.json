@@ -7,9 +7,8 @@
   },
   "scripts": {
     "dev": "vinext dev",
-    "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && node scripts/build-units.mjs && node scripts/build-atlas.mjs && node scripts/brand/build-display-font.mjs && vinext build",
+    "build": "node scripts/build-graph-index.mjs && node scripts/build-entity-details.mjs && node scripts/build-units.mjs && node scripts/brand/build-display-font.mjs && vinext build",
     "build:units": "node scripts/build-units.mjs",
-    "build:atlas": "node scripts/build-atlas.mjs",
     "build:year-supplement": "node scripts/build-year-supplement.mjs",
     "build:people-supplement": "node scripts/build-people-supplement.mjs",
     "start": "vinext start",
@@ -42,8 +41,7 @@
     "audit:contrast": "node scripts/audit-contrast.mjs",
     "test:lib": "node scripts/test-lib.mjs",
     "audit:palette": "node scripts/audit-palette-usage.mjs",
-    "build:font": "node scripts/brand/build-display-font.mjs",
-    "quality:timeline": "node scripts/audit-timeline.mjs"
+    "build:font": "node scripts/brand/build-display-font.mjs"
   },
   "dependencies": {
     "@react-sigma/core": "^5.0.6",

@@ -279,7 +279,7 @@ async function main() {
     ["智能问答", "#/assistant", ".assistant-page"],
     ["研究分析", "#/research", ".research-analysis"],
     ["旋律创编", "#/compose", ".compose-lab"],
-    ["作品年表", "#/timeline", ".timeline-page"],
+    ["听音训练", "#/ear", ".ear-lab"],
   ];
   let mobileCase = 0;
   for (const width of [375, 768]) {

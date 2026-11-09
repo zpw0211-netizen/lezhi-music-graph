@@ -10,7 +10,7 @@ import { useAccount } from "./account/AccountProvider";
 const AccountDialog = dynamic(() => import("./account/AccountDialog").then(module => module.AccountDialog));
 export type NavView = "home" | "records" | "plan" | "graph" | "assistant" | "research" | "lab" | "compose";
 type SearchHit = { key: string; title: string; meta: string; onPick: () => void };
-type NavItem = { label: string; view: NavView; href?: string } | { label: string; view: "timeline"; href: string };
+type NavItem = { label: string; view: NavView; href?: string };
 
 function subscribeToLocation(onChange: () => void) {
   window.addEventListener("hashchange", onChange);
@@ -43,7 +43,7 @@ export function AppTopNav({ active, onNavigate, search, trailing, centerSlot, on
   const routeToken = locationHash.startsWith("#/") ? locationHash.slice(2).split("/")[0] : "";
   const hashView = locationHash.startsWith("#/")
     ? items.find(item => item.view === routeToken)?.view
-      ?? (["lab", "timeline", "rhythm", "atlas"].includes(routeToken) ? "compose" : undefined)
+      ?? (["lab", "ear", "rhythm", "atlas", "timeline"].includes(routeToken) ? "compose" : undefined)
     : undefined;
   const currentView = hashView ?? active;
   return <><nav className="home-nav" aria-label="主导航">

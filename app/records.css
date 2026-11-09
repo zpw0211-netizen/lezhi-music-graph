@@ -119,9 +119,6 @@
 .stage-book-picker--top .stage-book-picker__stages button { min-height: 28px; padding: 3px 8px; font-size: 12px; }
 .stage-book-picker--top .records-top-book-picker { flex: 1 1 auto; width: auto; }
 .stage-book-picker--top .records-top-book-picker > button { flex-basis: 38px; width: 38px; min-height: 30px; padding-inline: 0; font-size: 12px; }
-.stage-book-picker--timeline { flex: 0 1 auto; }
-.stage-book-picker--timeline .stage-book-picker__desktop { gap: 10px; }
-.stage-book-picker--timeline .stage-book-picker__books button { padding-inline: 9px; }
 .stage-book-picker--graph { width: 100%; }
 .stage-book-picker--graph .stage-book-picker__desktop { width: 100%; gap: 10px; }
 .stage-book-picker--graph .stage-book-picker__books { overflow-x: auto; scrollbar-width: none; }
@@ -140,8 +137,6 @@
   .stage-book-picker__mobile label { display: grid; min-width: 0; gap: 3px; color: var(--ink-3, #62675B); font: 11px/1.3 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
   .stage-book-picker__mobile select { width: 100%; min-height: 36px; padding: 5px 8px; border: 1px solid var(--line, #CFC4AC); border-radius: 2px; background: var(--sheet, #FBF8F0); color: var(--ink, #1B2622); font: 14px/1.4 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
   .stage-book-picker--top .stage-book-picker__mobile { max-width: 540px; margin: 0 auto; }
-  .stage-book-picker--timeline { flex: 1 0 100%; width: 100%; }
-  .stage-book-picker--timeline .stage-book-picker__mobile { margin-bottom: 2px; }
   .stage-book-picker--graph { margin: 0 0 10px; }
   .stage-book-picker--page { margin-bottom: 16px; }
 }

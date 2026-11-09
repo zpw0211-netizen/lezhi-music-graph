@@ -162,9 +162,9 @@ const LabPage = nextDynamic<PropsOf<typeof LabPageComponent>>(
   () => import("./components/lab/LabPage").then((module) => module.LabPage),
   { loading: viewLoading },
 );
-const TimelinePage = nextDynamic(
-  () => import("./components/timeline/TimelinePage").then((module) => module.TimelinePage),
-  { loading: () => <div className="timeline-loading" role="status">正在载入年表…</div> },
+const EarPage = nextDynamic(
+  () => import("./components/ear/EarPage").then((module) => module.EarPage),
+  { loading: viewLoading },
 );
 const RhythmPage = nextDynamic(
   () => import("./components/rhythm/RhythmPage").then((module) => module.RhythmPage),
@@ -194,7 +194,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   home: "",
   compose: "音乐探索与创造 · 旋律创编",
   lab: "音乐探索与创造 · 五声律坊",
-  timeline: "音乐探索与创造 · 音乐时光机",
+  ear: "音乐探索与创造 · 听音训练",
   rhythm: "音乐探索与创造 · 节奏训练",
   graph: "知识图谱",
   assistant: "智能问答",
@@ -378,7 +378,7 @@ export default function Home() {
     if (entity) navigate({ view: "graph", node: entity.id });
   };
 
-  const needsData = view !== "home" && view !== "import" && view !== "compose" && view !== "timeline" && view !== "rhythm";
+  const needsData = view !== "home" && view !== "import" && view !== "compose" && view !== "ear" && view !== "rhythm";
   // The 律坊 waits for data inside the exploration panel, so the shared heading never jumps when the data lands.
   const labLoading = view === "lab" && !canonicalGraph;
   const dataStatus =
@@ -419,7 +419,7 @@ export default function Home() {
                 ? "records"
                 : view === "import"
                   ? null
-                  : view === "compose" || view === "lab" || view === "timeline" || view === "rhythm"
+                  : view === "compose" || view === "lab" || view === "ear" || view === "rhythm"
                     ? "compose"
                   : view
             }
@@ -450,7 +450,7 @@ export default function Home() {
             }}
           />
         )}
-        <div className={`route-view${view === "compose" || view === "lab" || view === "timeline" || view === "rhythm" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
+        <div className={`route-view${view === "compose" || view === "lab" || view === "ear" || view === "rhythm" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
           {dataStatus}
           {missingWork}
           {/* 按课学习 needs only the book directory, which arrives well before the full graph. */}
@@ -572,7 +572,7 @@ export default function Home() {
             />
           )}
           {view === "import" && <ImportView />}
-          {(view === "compose" || view === "lab" || view === "timeline" || view === "rhythm") && <ExplorationPage
+          {(view === "compose" || view === "lab" || view === "ear" || view === "rhythm") && <ExplorationPage
             activeView={view}
             onViewChange={nextView => navigate({ view: nextView })}
           >
@@ -583,7 +583,7 @@ export default function Home() {
               if (entity) openLessonPage(entity);
               else navigate({ view: "lesson", work });
             }} />}
-            {view === "timeline" && <TimelinePage books={books} stage={activeBookStage} onStageChange={persistBookStage} onOpenWork={destination => navigate(destination)} />}
+            {view === "ear" && <EarPage />}
             {view === "rhythm" && <RhythmPage />}
           </ExplorationPage>}
         </div>

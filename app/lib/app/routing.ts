@@ -16,7 +16,7 @@ export type AppView =
   | "import"
   | "compose"
   | "lab"
-  | "timeline"
+  | "ear"
   | "rhythm"
   | "plan";
 
@@ -42,12 +42,15 @@ const VIEWS = new Set<AppView>([
   "import",
   "compose",
   "lab",
-  "timeline",
+  "ear",
   "rhythm",
   "plan",
 ]);
 
 export const HOME_ROUTE: AppRoute = { view: "home" };
+
+/** Retired pages and the tools that took their place: 音乐地图 → 旋律创编, 音乐时光机 → 听音训练. */
+const RENAMED: Record<string, AppView> = { atlas: "compose", timeline: "ear" };
 
 const bare = (title: string) => title.replace(/^《|》$/g, "");
 
@@ -63,8 +66,7 @@ export function parseRoute(hash: string, search = ""): AppRoute {
   if (hash.startsWith("#/")) {
     const [rawView, ...rest] = hash.slice(2).split("/");
     const view = decodeURIComponent(rawView) as AppView;
-    // 音乐地图已由旋律创编取代，旧链接直接进入旋律创编。
-    if (rawView === "atlas") return { view: "compose" };
+    if (RENAMED[rawView]) return { view: RENAMED[rawView] };
     if (!VIEWS.has(view)) return HOME_ROUTE;
     // 智能备课：#/plan/g8s1/菊花台，分册和课题都可以省略。
     if (view === "records" || view === "plan") {
@@ -82,7 +84,9 @@ export function parseRoute(hash: string, search = ""): AppRoute {
     return buildRoute(view, detail || undefined);
   }
   const params = new URLSearchParams(search);
-  const view = params.get("view") as AppView | null;
+  const rawView = params.get("view");
+  if (rawView && RENAMED[rawView]) return { view: RENAMED[rawView] };
+  const view = rawView as AppView | null;
   if (!view || !VIEWS.has(view)) return HOME_ROUTE;
   if (view === "lesson" || view === "work") {
     const detail = params.get("work");
