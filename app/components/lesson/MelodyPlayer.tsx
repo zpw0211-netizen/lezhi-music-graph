@@ -13,7 +13,7 @@ import { StaffNotation, type MelodyLineData } from "./StaffNotation";
 import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
 import { findVocal, vocalCredit, type Vocal } from "../../lib/lesson/vocal";
 import { loadPercussionStrokes, percussionKind, playPercussion } from "../../lib/lesson/percussion";
-import { publicAssetUrl } from "../../lib/app/assets";
+import { sharedAssetUrl } from "../../lib/app/assets";
 
 type Line = { label: string; bars: MelodyNote[][] };
 type BeamRun = { start: number; end: number; level: number };
@@ -302,7 +302,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         await ctx.resume();
         voices = await Promise.all(vocals.map((part) => {
           if (!part) return null;
-          const url = publicAssetUrl(part.file);
+          const url = sharedAssetUrl(part.file);
           sharedVocals[url] ??= fetch(url).then((response) => {
             if (!response.ok) throw new Error(String(response.status));
             return response.arrayBuffer();

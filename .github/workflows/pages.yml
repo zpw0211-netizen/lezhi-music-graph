@@ -124,7 +124,12 @@ jobs:
           path: dist/client
           merge-multiple: true
       - name: List the sites
-        run: ls -la dist/client && du -sh dist/client/*/ | sort -h
+        run: |
+          ls -la dist/client && du -sh dist/client/*/ | sort -h
+          total=$(du -sb dist/client | cut -f1)
+          echo "Total: $((total / 1048576)) MB"
+          # GitHub Pages sites should stay under 1 GB; bigger artifacts make the deploy slow or time out.
+          if [ "$total" -gt 1000000000 ]; then echo "::warning::Site is $((total / 1048576)) MB, over GitHub Pages' 1 GB limit"; fi
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

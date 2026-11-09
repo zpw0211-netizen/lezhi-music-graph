@@ -15,6 +15,11 @@ const excludedGraphFiles = new Set([
   "data/music-graph.json",
 ]);
 const ROOT_ICONS = ["favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
+// Large files every edition uses (the sung-vocal audio, ~260 MB) are published once at the domain
+// root (yapu.studio/audio/vocal/…) instead of inside every edition; the app reads them with
+// sharedAssetUrl. Five copies would push the site past GitHub Pages' 1 GB limit.
+const SHARED_DIRS = ["audio/vocal"];
+const isShared = (relative) => SHARED_DIRS.some((dir) => relative === dir || relative.startsWith(`${dir}/`));
 
 await mkdir(siteRoot, { recursive: true });
 await writeFile(path.join(root, ".nojekyll"), "");
@@ -38,14 +43,16 @@ if (basePath) {
   if (await exists(root404)) await copyFile(root404, path.join(siteRoot, "404.html"));
 }
 
-// Preserve runtime public assets while omitting build-time graph inputs.
+// Preserve runtime public assets while omitting build-time graph inputs (and, under a base path,
+// the shared files that live at the domain root).
 await cp(publicRoot, siteRoot, {
   recursive: true,
-  filter: (source) =>
-    !excludedGraphFiles.has(
-      path.relative(publicRoot, source).split(path.sep).join("/"),
-    ),
+  filter: (source) => {
+    const relative = path.relative(publicRoot, source).split(path.sep).join("/");
+    return !excludedGraphFiles.has(relative) && !(basePath && isShared(relative));
+  },
 });
+if (basePath) for (const dir of SHARED_DIRS) await rm(path.join(siteRoot, dir), { recursive: true, force: true });
 
 // Remove exact stale copies if this script is rerun over an older artifact.
 for (const relativePath of excludedGraphFiles) {
@@ -76,6 +83,10 @@ if (basePath && process.env.PAGES_ENTRY !== "0" && (await exists(portalRoot))) {
   for (const icon of ROOT_ICONS) await copyFile(path.join(publicRoot, icon), path.join(root, icon));
   // Unknown paths show the entry page; its script forwards old #/ links to the 人音版 site.
   await copyFile(path.join(root, "index.html"), path.join(root, "404.html"));
+  // The one copy of the shared files, used by every edition.
+  for (const dir of SHARED_DIRS) {
+    if (await exists(path.join(publicRoot, dir))) await cp(path.join(publicRoot, dir), path.join(root, dir), { recursive: true });
+  }
 }
 
 console.log(`GitHub Pages artifact prepared: ${siteRoot}${basePath ? ` (entry page at ${root})` : ""}`);
