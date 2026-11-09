@@ -9,6 +9,8 @@ import type { CSSProperties, ReactNode } from "react";
 import { MelodySet } from "./MelodyPlayer";
 import type { Melody } from "../../lib/lesson/melodies";
 import { WorkbenchIcon } from "../WorkbenchIcon";
+import { ExplorationPage } from "../exploration/ExplorationPage";
+import { useExplorationTools, type ExplorationView } from "../exploration/exploration-tools";
 import {
   LESSON_KINDS, STAGES, cultureFacts, elementFacts, lessonKindOf, reflectiveScript,
   type LessonFact, type LessonKind, type StageKey,
@@ -353,11 +355,31 @@ export function ReflectivePresent({
 
   const closeRef = useRef(onClose);
   useEffect(() => { closeRef.current = onClose; }, [onClose]);
+  // 课堂工具：右下角圆钮打开“音乐探索与创造”，盖在课件上；关上后回到原来那一页。
+  const renderTool = useExplorationTools();
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [toolView, setToolView] = useState<ExplorationView>("compose");
+  const toolsOpenRef = useRef(false);
+  useEffect(() => { toolsOpenRef.current = toolsOpen; }, [toolsOpen]);
+  const toolsButtonRef = useRef<HTMLButtonElement | null>(null);
+  const toolsCloseRef = useRef<HTMLButtonElement | null>(null);
+  const closeTools = useCallback(() => setToolsOpen(false), []);
+  const toolsWereOpen = useRef(false);
+  useEffect(() => {
+    if (toolsOpen) toolsCloseRef.current?.focus();
+    else if (toolsWereOpen.current) toolsButtonRef.current?.focus();
+    toolsWereOpen.current = toolsOpen;
+  }, [toolsOpen]);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const togglePlayback = useCallback(() => { stageRef.current?.querySelector<HTMLButtonElement>(".melody-play")?.click(); }, []);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
+      // While a tool is open its own keys (1–5, space…) belong to it; Esc only closes the tool panel.
+      if (toolsOpenRef.current) {
+        if (event.key === "Escape" && !target?.closest("textarea, input, [contenteditable=true]")) { event.preventDefault(); closeTools(); }
+        return;
+      }
       if (target?.closest("textarea, input, [contenteditable=true]")) { if (event.key === "Escape") target.blur(); return; }
       const onWidget = Boolean(target?.closest("button, select, a, summary"));
       if (event.key === "Escape") { event.preventDefault(); closeRef.current(); }
@@ -367,7 +389,7 @@ export function ReflectivePresent({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [back, forward, togglePlayback]);
+  }, [back, forward, togglePlayback, closeTools]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const canFullscreen = typeof document !== "undefined" && document.fullscreenEnabled;
@@ -502,6 +524,19 @@ export function ReflectivePresent({
         <button type="button" onClick={onClose}>退出</button>
       </div>
     </footer>
+    {renderTool && !toolsOpen && <button ref={toolsButtonRef} type="button" className="present-tools-fab" onClick={() => setToolsOpen(true)}
+      aria-label="打开课堂工具：音乐探索与创造" title="音乐探索与创造">
+      <WorkbenchIcon name="spark" aria-hidden="true" /><span>工具</span>
+    </button>}
+    {renderTool && toolsOpen && <div className="present-tools" role="region" aria-label="课堂工具 · 音乐探索与创造">
+      <div className="present-tools-bar">
+        <span>课堂工具 · {work}</span>
+        <button ref={toolsCloseRef} type="button" onClick={closeTools}><WorkbenchIcon name="left" aria-hidden="true" />回到课件</button>
+      </div>
+      <div className="present-tools-body route-view-exploration">
+        <ExplorationPage activeView={toolView} onViewChange={setToolView}>{renderTool(toolView)}</ExplorationPage>
+      </div>
+    </div>}
   </div>;
 }
 
