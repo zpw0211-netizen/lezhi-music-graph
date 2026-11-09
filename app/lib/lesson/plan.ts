@@ -4,6 +4,7 @@ import type { Melody } from "./jianpu";
 import { LESSON_KINDS, type LessonFact, type LessonKind, type StageKey } from "./reflective";
 import { LITERACIES, REGULAR_STAGES, regularScript, type Literacy } from "./regular";
 import { BAND_NAMES, OBSERVABLE_VERBS, STANDARD, bandOf } from "./curriculum";
+import { matchesVolume, requestedVolumes } from "../ai/book-volume";
 
 /** 教案里能点开的资源：都指向本课已有的数据。 */
 export type PlanResource =
@@ -56,6 +57,29 @@ export function parseRequest(text: string, works: string[]): PlanRequest {
     .filter((clause) => clause.length >= 2)
     .join("；");
   return { work, kind, minutes: minutes && minutes >= 10 && minutes <= 90 ? minutes : undefined, className, note: note || undefined };
+}
+
+/** An explicit textbook volume takes precedence over the open book. */
+export function resolvePlanRequest(
+  text: string, currentBook: string, bookKeys: readonly string[], worksOf: (bookKey: string) => string[],
+): { bookKey: string; request: PlanRequest & { work: string } } | { message: string } {
+  // Keep lesson titles, weekdays and phrases like 给四年级上课 out of volume matching.
+  const scopeText = text.normalize("NFKC")
+    .replace(/《[^》]*》|(?:星期|礼拜|周)[一二三四五六日天1-7]/g, " ")
+    .replace(/初(?:中)?([一二三123])/g, (_, grade: string) => String(6 + (Number(grade) || "一二三".indexOf(grade) + 1)))
+    .replace(/年级\s*[上下](?!\s*\(?(?:册|学期))/g, "年级");
+  const volumes = [...new Set(requestedVolumes(scopeText).filter((volume) => !volume.endsWith("s")))];
+  if (volumes.length > 1) return { message: "请指定一册教材，再生成这节课的教案。" };
+  const candidates = bookKeys.filter((key) => matchesVolume(key, volumes));
+  if (volumes.length && !candidates.length) return { message: "当前教材版本没有你指定的分册，请核对年级和上下册。" };
+  const ordered = candidates.includes(currentBook) ? [currentBook, ...candidates.filter((key) => key !== currentBook)] : candidates;
+  for (const bookKey of ordered) {
+    const request = parseRequest(text, worksOf(bookKey));
+    if (request.work) return { bookKey, request: { ...request, work: request.work } };
+  }
+  return { message: volumes.length
+    ? "指定分册里没有找到这个课题，请核对册别和课题名。"
+    : "没有在教材里找到这句话提到的课题，请在下面选择课题。" };
 }
 
 /** 按班级情况补充的做法：只给能落到本课资源上的建议。 */

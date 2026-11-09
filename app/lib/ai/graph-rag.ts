@@ -1,5 +1,7 @@
 import { graphRuntimeFor } from "../../graph-runtime";
 import { shortestPaths, buildGraphIndexes } from "../graph/graph-algorithms";
+import { matchesVolume, requestedVolumes } from "./book-volume";
+import { answerTextbookFacts, matchesMeter, meterName, meterOf, textbookQuestion } from "./textbook-facts";
 
 export type Intent = "fact" | "explain" | "compare" | "path" | "progression" | "teaching" | "recommend-related" | "graph-analysis";
 export type SourceType = "textbook_explicit" | "external_verified" | "graph_inferred" | "ai_suggested";
@@ -28,7 +30,8 @@ export function recognizeIntent(q: string): Intent {
   return "fact";
 }
 export function linkEntities(graph: RagGraph, q: string, history: Turn[] = []) {
-  const term = normalize(q);
+  const meter = /拍/.test(q) ? meterOf(q) : undefined;
+  const term = normalize(meter ? `${q} ${meter} ${meterName(meter)}` : q);
   if (/^(它|这首|这个|该作品|他们|还有|那么)/.test(q.trim()) && history.length) {
     const byId = new Map(graph.entities.map(entity => [entity.id, entity]));
     const resolved = history.at(-1)!.resolvedEntities.map(id => byId.get(id)).filter((entity): entity is RagEntity => !!entity);
@@ -44,7 +47,11 @@ export function linkEntities(graph: RagGraph, q: string, history: Turn[] = []) {
   const limit = recognizeIntent(q) === "compare" || recognizeIntent(q) === "path" ? 2 : 3;
   const named = scored.filter(item => ["work", "person"].includes(item.entity.category ?? ""));
   const specific = scored.filter(item => !["音乐", "音乐知识", "知识", "作品", "作曲家", "教材"].includes(item.entity.name));
-  const candidates = named.length ? named : specific.length ? specific : scored;
+  const concepts = textbookQuestion(q) === "definition"
+    ? specific.filter(item => !["work", "person"].includes(item.entity.category ?? ""))
+    : [];
+  const conceptFirst = concepts.length && concepts[0].score >= (named[0]?.score ?? 0);
+  const candidates = conceptFirst ? concepts : named.length ? named : specific.length ? specific : scored;
   const roots = candidates.filter(item => item.score >= (candidates[0]?.score ?? 0) * .8).slice(0, limit).map(item => item.entity);
   if (!roots.length && /它|这首|这个|他们|还有|那/.test(q)) {
     const ids = history.at(-1)?.resolvedEntities ?? [];
@@ -71,6 +78,25 @@ export function retrieveGraph(graph: RagGraph, question: string, history: Turn[]
   const predicate = preferredPredicates(question);
   let frontier = centers.map(entity => entity.id);
   const maxDepth = intent === "graph-analysis" || /同类|关联作品|相关作品/.test(question) ? 2 : 1;
+  const kind = textbookQuestion(question);
+  const meter = /拍/.test(question) ? meterOf(question) : undefined;
+  if (kind === "definition" && meter) {
+    const alias = centers.find((entity) => entity.name === meterName(meter))?.id;
+    if (alias) frontier = [alias, ...frontier.filter((id) => id !== alias)];
+  }
+  if (kind === "meter-works" && meter) {
+    const volumes = requestedVolumes(question);
+    const exact = graph.relationships.filter((edge) => edge.predicate === "拍号"
+      && runtime.entityMap.get(edge.subject)?.category === "work"
+      && (!volumes.length || edge.bookKeys?.some((key) => matchesVolume(key, volumes)))
+      && matchesMeter(edge.literal ?? runtime.entityMap.get(edge.objectId ?? "")?.name ?? "", meter));
+    for (const edge of exact.slice(0, 120)) {
+      selectedEdges.set(edge.id, edge);
+      depths.set(edge.subject, 1);
+      if (edge.objectId && !depths.has(edge.objectId)) depths.set(edge.objectId, 1);
+    }
+    frontier = [];
+  }
   for (let depth = 1; depth <= maxDepth; depth++) {
     const next: string[] = [];
     for (const id of frontier) {
@@ -138,6 +164,22 @@ export async function enrichGraph(graph: RagGraph, question: string, history: Tu
 }
 export function graphAnswer(retrieval: Retrieval, question: string): AnswerResult {
   const { centers, intent, facts, evidence } = retrieval;
+  const answerContext = {
+    relatedEntities: retrieval.relatedEntities,
+    relatedRelationships: retrieval.relationships.map(edge => ({ id: edge.id, subject: edge.subject, objectId: edge.objectId, predicate: edge.label ?? edge.predicate })),
+    graphFocus: { nodeIds: retrieval.relatedEntities.map(entity => entity.id), relationshipIds: retrieval.relationships.map(edge => edge.id) },
+    suggestedQuestions: centers.length ? [`${centers[0].name}出现在哪些教材里？`, `${centers[0].name}与哪些作品相关？`] : ["什么是节奏？"],
+    candidateKnowledge: [] as never[], poweredBy: "graph" as const, intent,
+  };
+  const kind = textbookQuestion(question);
+  if (kind) {
+    const focused = answerTextbookFacts(retrieval, question, kind);
+    return {
+      ...answerContext, answer: focused.text, shortAnswer: focused.text, evidence: focused.evidence,
+      confidence: focused.evidence.length ? "supported" : "insufficient",
+      missingKnowledge: focused.evidence.length ? [] : [focused.text], auxiliaryExplanation: "",
+    };
+  }
   const missingKnowledge = [...retrieval.missingKnowledge];
   const names = centers.map(entity => entity.name).join("、");
   const direct = facts.filter(fact => centers.some(entity => entity.name === fact.subject || entity.name === fact.object));
@@ -150,10 +192,6 @@ export function graphAnswer(retrieval: Retrieval, question: string): AnswerResul
   const knowledge = direct.filter(fact => !/教材收录|收录作品|包含作品|包含单元|教材归属|学习方式|作曲|作词|词曲作者|改编|记谱配词/.test(fact.predicate));
   const authorQuestion = /谁|作曲家|创作|作者/.test(question);
   const locationQuestion = /哪里|出现在哪|出现.*哪里|在哪.*教材/.test(question);
-  const definitionQuestion = /什么是/.test(question);
-  const definition = definitionQuestion
-    ? direct.find(f => centers.some(entity => entity.name === f.subject) && /^(是|指|定义为)$/.test(f.predicate))
-    : undefined;
   let shortAnswer = !centers.length ? "目前没有找到足够的相关教材内容。" : knowledge.length ? `和${names}直接相关的知识联系包括${knowledge.slice(0, 8).map(fact => `${fact.predicate}：${fact.subject === centers[0].name ? fact.object : fact.subject}`).join("；")}。这些联系不一定都是教材原文直接说明的内容。` : `${names}目前能找到的主要是教材出处和创作者；暂时没有足够的音乐内容回答这个问题。`;
   if (authorQuestion && creator.length) shortAnswer = creator.map(fact => {
     const label = fact.predicate === "词曲作者" ? "词曲作者" : fact.predicate === "作曲" ? "曲作者" : fact.predicate === "作词" ? "词作者" : `${fact.predicate}者`;
@@ -171,21 +209,12 @@ export function graphAnswer(retrieval: Retrieval, question: string): AnswerResul
   if (intent === "path") shortAnswer = retrieval.relationships.length ? `${names}之间最少经过 ${retrieval.relationships.length} 步可以连起来，目前找到的最短联系是：${facts.map(f => `${f.subject}通过“${f.predicate}”和${f.object}相关`).join("；")}。这只表示内容之间有联系，不代表学习先后，也不代表因果关系。` : `${names}之间暂时没有找到可展示的联系。`;
   const featureFacts = direct.filter(f => /速度特点|节拍|旋律特点|音乐风格|表现|力度/.test(f.predicate) && f.sourceType === "textbook_explicit");
   if (intent === "explain") shortAnswer = featureFacts.length ? `${names}有教材明确依据的特点包括${featureFacts.map(f => `${f.predicate}：${f.object}`).join("；")}。` : `${names}有关的内容包括${direct.filter(f => /分析维度|音乐体裁/.test(f.predicate)).slice(0, 6).map(f => f.object).join("、") || "相关音乐知识"}。教材中暂时没有足够信息说明它听起来有什么特点，不能把分析角度当作作品实际具有的特点。`;
-  if (definitionQuestion) {
-    if (definition) shortAnswer = `${definition.subject}${definition.predicate}${definition.object}（${definition.sourceType === "textbook_explicit" ? "教材明确记载" : "根据教材内容归纳"}）。`;
-    else {
-      shortAnswer = `${names}的完整定义尚未在当前可引用的教材资料中找到。`;
-      missingKnowledge.push("相关教材的完整释义尚未整理，不能用相关作品代替概念解释。");
-    }
-  }
   if (intent === "explain" && /为什么|为何/.test(question)) missingKnowledge.push("目前找到的教材内容说明了音乐特点，但不足以证明这种听感产生的原因。");
   const details = creator.length && !authorQuestion ? `创作者：${creator.map(f => `${f.object}（${f.subject}的${f.predicate === "词曲作者" ? "词曲作者" : `${f.predicate}者`}）`).join("；")}。` : "";
   const auxiliaryExplanation = intent === "teaching" ? "补充教学建议（不是教材内容）：先聆听相关作品，请学生拍击稳定节拍、比较音的长短和强弱，再用学过的概念联系作品开展讨论。具体学习目标请回到对应教材单元核对。" : "";
   const supportingFacts = authorQuestion
     ? creator
-    : definitionQuestion
-      ? (definition ? [definition] : [])
-      : intent === "explain"
+    : intent === "explain"
         ? featureFacts.length ? featureFacts : direct.filter(f => /分析维度|音乐体裁/.test(f.predicate))
         : intent === "path"
           ? facts.filter(f => retrieval.relationships.some(edge => edge.id === f.id))
@@ -209,5 +238,5 @@ export function graphAnswer(retrieval: Retrieval, question: string): AnswerResul
     : missingKnowledge.length || !answerEvidence.some(item => item.sourceType === "textbook_explicit")
       ? "limited"
       : "supported";
-  return { answer: [shortAnswer, details, ...retrieval.graphInferences, ...missingKnowledge].filter(Boolean).join("\n\n"), shortAnswer, evidence: answerEvidence, relatedEntities: retrieval.relatedEntities, relatedRelationships: retrieval.relationships.map(edge => ({ id: edge.id, subject: edge.subject, objectId: edge.objectId, predicate: edge.label ?? edge.predicate })), graphFocus: { nodeIds: retrieval.relatedEntities.map(entity => entity.id), relationshipIds: retrieval.relationships.map(edge => edge.id) }, suggestedQuestions: centers.length ? [`${centers[0].name}出现在哪些教材里？`, `${centers[0].name}与哪些作品相关？`] : ["什么是节奏？"], missingKnowledge, candidateKnowledge: [], confidence, poweredBy: "graph", intent, auxiliaryExplanation };
+  return { ...answerContext, answer: [shortAnswer, details, ...retrieval.graphInferences, ...missingKnowledge].filter(Boolean).join("\n\n"), shortAnswer, evidence: answerEvidence, missingKnowledge, confidence, auxiliaryExplanation };
 }

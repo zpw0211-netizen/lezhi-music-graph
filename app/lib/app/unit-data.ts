@@ -23,8 +23,12 @@ export const hasMelody = (
   melodies: Readonly<Record<string, readonly unknown[] | undefined>>,
 ) => Boolean(melodies[name]?.length);
 
-export const getScoreMedia = (media?: readonly WorkMediaAsset[]) =>
-  (media ?? []).filter((asset) => asset.kind === "score");
+export const matchesBookScope = (bookKey: string | undefined, bookKeys?: readonly string[]) =>
+  !bookKey || !bookKeys?.length || bookKeys.includes(bookKey);
+
+export const getScoreMedia = (media?: readonly WorkMediaAsset[], bookKey?: string) =>
+  (media ?? []).filter((asset) => asset.kind === "score"
+    && (!bookKey || (asset.url.match(/(?:^|\/)scores\/([^/]+)\//)?.[1] ?? bookKey) === bookKey));
 
 export const getPrintedPage = (media?: readonly Pick<WorkMediaAsset, "title">[]) => {
   const match = media?.map((asset) => asset.title?.match(/教材第(\d+)页/)?.[1]).find(Boolean);

@@ -283,8 +283,8 @@ export default function Home() {
   const searchResults = useKnowledgeSearch(canonicalGraph, query);
 
   // Lesson and work pages are addressed by the bare work title (?work=歌唱祖国). Full- and half-width brackets match
-  // each other: the graph spells 《c小调第五(命运)交响曲》, the table of contents links it as （命运）.
-  const titleKey = (title: string) => title.replace(/（/g, "(").replace(/）/g, ")");
+  // each other. The graph can also omit a comma printed in a book's title.
+  const titleKey = (title: string) => title.replace(/（/g, "(").replace(/）/g, ")").replace(/[,，]/g, "");
   const { worksByTitle, worksByTitleAndBook } = useMemo(() => {
     const byTitle = new Map<string, Entity>();
     const byTitleAndBook = new Map<string, Entity>();
@@ -508,7 +508,8 @@ export default function Home() {
               onClose={() => back({ view: "records", book: selectedRecordsKey })}
               onLearn={(workId) => {
                 const work = recordsBookData.book?.entities.find((entity) => entity.id === workId);
-                if (work && isWorkType(work.type)) openLessonPage(work, selectedRecordsKey);
+                // This entity comes from the selected book and has no canonical bookKeys.
+                if (work && isWorkType(work.type)) navigate({ view: "lesson", book: selectedRecordsKey, work: bareWorkName(work.name) });
               }}
               onKnowledge={openRecordsKnowledge}
               onOpenBook={(key) => openRecordsBook(key)}
@@ -516,7 +517,7 @@ export default function Home() {
           )}
           {view === "lesson" && canonicalGraph && routeWork && (
             <LessonPage
-            key={routeWork.id}
+            key={`${routeWork.id}:${route.book ?? ""}`}
             bookKey={route.book}
             workId={routeWork.id}
             entities={canonicalGraph.entities}
@@ -531,8 +532,8 @@ export default function Home() {
               const work = entityById(id);
               if (work) navigate({ view: "work", ...(route.book ? { book: route.book } : {}), work: bareWorkName(work.name) });
             }}
-            onPlan={() => {
-              const bookKey = route.book ?? routeWork.bookKeys?.[0];
+            onPlan={(lessonBookKey) => {
+              const bookKey = lessonBookKey ?? route.book ?? routeWork.bookKeys?.[0];
               navigate({ view: "plan", ...(bookKey ? { book: bookKey, work: bareWorkName(routeWork.name) } : {}) });
             }}
             />

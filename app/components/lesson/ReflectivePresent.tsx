@@ -15,6 +15,7 @@ import {
 } from "../../lib/lesson/reflective";
 import { REGULAR_STAGES, regularScript } from "../../lib/lesson/regular";
 import { STANDARD } from "../../lib/lesson/curriculum";
+import { EDITION } from "../../lib/app/books";
 
 type ScoreAsset = { url: string; title?: string };
 type Question = { id: string; prompt: string; options: string[]; answer: string };
@@ -30,11 +31,11 @@ const MODEL_KEY = "yapu-lesson-model";
 const readModel = (): Model => {
   try { return window.localStorage.getItem(MODEL_KEY) === "regular" ? "regular" : "reflective"; } catch { return "reflective"; }
 };
-const readSaved = (workId: string): Saved => {
-  try { return JSON.parse(window.localStorage.getItem(STORAGE_PREFIX + workId) ?? "{}") as Saved; } catch { return {}; }
+const readSaved = (key: string): Saved | null => {
+  try { return JSON.parse(window.localStorage.getItem(key) ?? "null") as Saved | null; } catch { return null; }
 };
-const writeSaved = (workId: string, saved: Saved) => {
-  try { window.localStorage.setItem(STORAGE_PREFIX + workId, JSON.stringify(saved)); } catch { /* 私密窗口等情况下不保存，课件照常可用 */ }
+const writeSaved = (key: string, saved: Saved) => {
+  try { window.localStorage.setItem(key, JSON.stringify(saved)); } catch { /* 私密窗口等情况下不保存，课件照常可用 */ }
 };
 const clock = (seconds: number) => `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 const STAGE_ORDINALS = ["第一阶段", "第二阶段", "第三阶段", "第四阶段", "全流程"];
@@ -74,20 +75,25 @@ const DESIGN_NOTES: Record<string, string> = {
 };
 
 export function ReflectivePresent({
-  workId, workName, workType, mode, grade, bookName, unitName, scorePage, creators, facts, melody, scores, tasks, questions, artUrl, assetUrl, notationStyle = "jianpu", onClose,
+  workId, bookKey, workName, workType, mode, grade, bookName, unitName, scorePage, creators, facts, melody, scores, tasks, questions, artUrl, assetUrl, notationStyle = "jianpu", onClose,
 }: {
-  workId: string; workName: string; workType: string; mode?: string; grade?: number; bookName?: string; unitName: string;
+  workId: string; bookKey?: string; workName: string; workType: string; mode?: string; grade?: number; bookName?: string; unitName: string;
   scorePage: number | null; creators: Array<{ id: string; label: string; value: string }>; facts: LessonFact[];
   melody?: Melody[]; scores: ScoreAsset[]; tasks: Array<{ text: string; focus: string[] }>; questions: Question[];
   artUrl?: string; assetUrl: (path: string) => string; notationStyle?: "jianpu" | "staff"; onClose: () => void;
 }) {
   // 只在点开上课模式后渲染（浏览器端），可以直接读本机保存的备课设置。
-  const [saved, setSaved] = useState<Saved>(() => readSaved(workId));
-  const update = useCallback((patch: Partial<Saved>) => setSaved((current) => {
-    const next = { ...current, ...patch };
-    writeSaved(workId, next);
-    return next;
-  }), [workId]);
+  const storageKey = `${STORAGE_PREFIX}v2:${EDITION.key}:${bookKey ?? "unscoped"}:${workId}`;
+  const [{ saved, legacy }, setSettings] = useState(() => {
+    const saved = readSaved(storageKey);
+    // 旧设置只保存作品编号，同名作品在哪册改过要由老师确认。
+    return { saved: saved ?? {}, legacy: saved ? null : readSaved(STORAGE_PREFIX + workId) };
+  });
+  const update = useCallback((patch: Partial<Saved>) => setSettings(({ saved }) => {
+    const next = { ...saved, ...patch };
+    writeSaved(storageKey, next);
+    return { saved: next, legacy: null };
+  }), [storageKey]);
   const [preparing, setPreparing] = useState(false);
   const [model, setModelState] = useState<Model>(readModel);
   const kind = saved.kind ?? lessonKindOf(mode, workType, workName);
@@ -331,7 +337,8 @@ export function ReflectivePresent({
 
   const allSlides = model === "regular" ? regularSlides : reflectiveSlides;
   const hidden = useMemo(() => new Set(saved.hidden ?? []), [saved.hidden]);
-  const slides = preparing ? allSlides : allSlides.filter((slide) => !hidden.has(slide.key));
+  const visibleSlides = allSlides.filter((slide) => !hidden.has(slide.key));
+  const slides = preparing || !visibleSlides.length ? allSlides : visibleSlides;
   const [position, setPosition] = useState({ slide: 0, step: 0 });
   const countsKey = slides.map((item) => `${item.key}:${item.steps}`).join(",");
   const counts = useMemo(() => countsKey.split(",").map((item) => Number(item.split(":")[1])), [countsKey]);
@@ -431,7 +438,15 @@ export function ReflectivePresent({
   }, [slideKey]);
 
   const isHidden = hidden.has(slide.key);
+  const canToggleHidden = isHidden || visibleSlides.length > 1;
   const toggleHidden = () => update({ hidden: isHidden ? [...hidden].filter((key) => key !== slide.key) : [...hidden, slide.key] });
+  const togglePreparing = () => {
+    const next = !preparing;
+    const nextSlides = next || !visibleSlides.length ? allSlides : visibleSlides;
+    const index = nextSlides.findIndex((item) => item.key === slide.key);
+    setPosition({ slide: index >= 0 ? index : Math.min(current, nextSlides.length - 1), step: index >= 0 ? position.step : 0 });
+    setPreparing(next);
+  };
 
   return <div ref={dialogRef} className="present reflect" data-stage={slide.stage} data-slide={slide.key} role="dialog" aria-modal="true" aria-label={`上课模式 · ${MODELS[model]}`} tabIndex={-1}
     style={artUrl ? { "--art": `url("${artUrl}")` } as CSSProperties : undefined}>
@@ -448,7 +463,10 @@ export function ReflectivePresent({
             {(Object.keys(LESSON_KINDS) as LessonKind[]).map((key) => <option key={key} value={key}>{LESSON_KINDS[key]}</option>)}
           </select>
         </label>
-        <button type="button" aria-pressed={isHidden} onClick={toggleHidden}>{isHidden ? "上课时显示这一页" : "上课时隐藏这一页"}</button>
+        <button type="button" aria-pressed={isHidden} disabled={!canToggleHidden} onClick={toggleHidden}>{isHidden ? "上课时显示这一页" : "上课时隐藏这一页"}</button>
+        {!canToggleHidden && <span>上课至少保留一页。</span>}
+        {!visibleSlides.length && <span>旧设置隐藏了全部页面，上课时会恢复显示。</span>}
+        {legacy && <button type="button" onClick={() => update(legacy)}>将旧投屏设置导入本册</button>}
         {saved.edits && Object.keys(saved.edits).length > 0 && <button type="button" onClick={() => update({ edits: {} })}>恢复默认文字</button>}
         <span>虚线框里的文字可以直接改写，只保存在这台电脑上。</span>
       </div>
@@ -477,7 +495,7 @@ export function ReflectivePresent({
         className={`${index === current ? "active" : ""}${hidden.has(item.key) ? " is-hidden" : ""}`} aria-label={`第 ${index + 1} 页 ${item.title}`} aria-current={index === current ? "step" : undefined}
         style={{ "--i": index } as CSSProperties} onClick={() => goTo(index)} />)}</nav>
       <div className="present-nav">
-        <button type="button" aria-pressed={preparing} onClick={() => setPreparing((value) => !value)}>{preparing ? "完成备课" : "备课"}</button>
+        <button type="button" aria-pressed={preparing} onClick={togglePreparing}>{preparing ? "完成备课" : "备课"}</button>
         {canFullscreen && <button type="button" onClick={toggleFullscreen} aria-label={isFullscreen ? "退出全屏" : "进入全屏"}>{isFullscreen ? "取消全屏" : "全屏"}</button>}
         <button type="button" onClick={back} aria-label="上一段"><WorkbenchIcon name="left" /><span>上一段</span></button>
         <button type="button" onClick={forward} aria-label="下一段"><WorkbenchIcon name="right" /><span>下一段</span></button>

@@ -7,9 +7,111 @@ const compile = async entry => {
   return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].text).toString("base64")}`);
 };
 const { enrichGraph, graphAnswer, recognizeIntent, linkEntities } = await compile("app/lib/ai/graph-rag.ts");
+const { questionEdition } = await compile("app/lib/ai/edition-scope.ts");
+assert.deepEqual(questionEdition("人教版四年级上册有哪些作品用了 2/4 拍？", "renyin"),
+  { kind: "switch", key: "renjiao", label: "人教版", path: "/renjiao/" });
+assert.deepEqual(questionEdition("人教四上有哪些 2/4 拍的作品？", "renjiao"), { kind: "current", explicit: true });
+assert.deepEqual(questionEdition("人民教育出版社的教材有哪些合唱曲目？", "renyin"),
+  { kind: "switch", key: "renjiao", label: "人教版", path: "/renjiao/" });
+assert.deepEqual(questionEdition("湘艺版八下有哪些 2/4 拍的作品？", "renyin"),
+  { kind: "switch", key: "xiangyi", label: "湘艺版", path: "/xiangyi/" });
+assert.deepEqual(questionEdition("人音版（五线谱）七上有哪些作品？", "renyin"),
+  { kind: "switch", key: "renyin-staff", label: "人音版五线谱", path: "/renyin-staff/" });
+assert.deepEqual(questionEdition("人音版七上有哪些作品？", "renyin-staff"), { kind: "current", explicit: true });
+assert.equal(questionEdition("人音版简谱七上有哪些作品？", "renyin-staff").key, "renyin");
+assert.equal(questionEdition("比较人音版和人教版四上有哪些作品？", "renyin").kind, "clarify");
+assert.equal(questionEdition("湘艺版五线谱八上有哪些作品？", "xiangyi").kind, "clarify");
+assert.deepEqual(questionEdition("别人教我怎么看五线谱？", "renyin"), { kind: "current", explicit: false });
+
+const { meterAnswerFromScores } = await compile("app/lib/ai/textbook-facts.ts");
+const scoreCatalog = [
+  { bookKey: "pep-g4s1", id: "unit1", name: "第一单元", title: "第一单元",
+    works: [{ id: "one", name: "《对花》" }, { id: "draft", name: "《草稿》" }, { id: "foreign", name: "《错版谱例》" }] },
+  { bookKey: "pep-g7s1", id: "unit2", name: "第一单元", title: "第一单元", works: [{ id: "seven", name: "《其他册作品》" }] },
+];
+const scoreBooks = [{ key: "pep-g4s1", title: "人教版四年级上册" }, { key: "pep-g7s1", title: "人教版七年级上册" }];
+const scoreAnswer = meterAnswerFromScores("人教版四上有哪些作品用了 2/4 拍？", scoreCatalog, scoreBooks,
+  (book, work) => [{ meter: "2/4", quality: work === "《草稿》" ? "draft" : undefined,
+    source: `据${work === "《错版谱例》" ? "人音版四年级上册" : scoreBooks.find((entry) => entry.key === book).title}第 5 页谱例转写` }]);
+assert.match(scoreAnswer.text, /《对花》.*2\/4 拍/);
+assert.equal(scoreAnswer.evidence.length, 1);
+assert.equal(scoreAnswer.evidence[0].bookKey, "pep-g4s1");
+assert.equal(scoreAnswer.evidence[0].textbookPage, "5");
+
+const { unitWorksAnswer } = await compile("app/lib/ai/unit-works.ts");
+const { resolvePlanRequest } = await compile("app/lib/lesson/plan.ts");
+const planBooks = ["g7s1", "g4s1"];
+const planWorks = (key) => key === "g7s1" ? ["《歌唱祖国》", "《领航》"] : ["《歌唱祖国》"];
+for (const volume of ["四年级上册", "四上", "４年级（上册）"]) {
+  const target = resolvePlanRequest(`请为人音版${volume}的《歌唱祖国》生成一节 40 分钟的教案。`, "g7s1", planBooks, planWorks);
+  assert.equal(target.bookKey, "g4s1");
+  assert.equal(target.request.work, "《歌唱祖国》");
+  assert.equal(target.request.minutes, 40);
+}
+assert.equal(resolvePlanRequest("给七年级（3）班备《歌唱祖国》", "g4s1", planBooks, planWorks).bookKey, "g4s1");
+assert.equal(resolvePlanRequest("下周一给四年级上《歌唱祖国》", "g7s1", planBooks, planWorks).bookKey, "g7s1");
+assert.equal(resolvePlanRequest("备初一下册的《歌唱祖国》", "g7s1", ["g7s1", "g7s2"], () => ["《歌唱祖国》"]).bookKey, "g7s2");
+assert.match(resolvePlanRequest("备四上《领航》", "g7s1", planBooks, planWorks).message, /指定分册里没有找到/);
+assert.match(resolvePlanRequest("备四下《歌唱祖国》", "g7s1", planBooks, planWorks).message, /没有你指定的分册/);
+assert.match(resolvePlanRequest("备四上和七上的《歌唱祖国》", "g7s1", planBooks, planWorks).message, /请指定一册/);
+
+const unitName = "华夏之声·文化根脉";
+const directoryBooks = [
+  { key: "xy-g7s1", title: "湘艺版七年级上册" },
+  { key: "xy-g8s2", title: "湘艺版八年级下册" },
+];
+const catalog = [
+  { bookKey: "xy-g7s1", id: "first", name: unitName, title: unitName, works: [{ id: "7", name: "《黄河船夫曲》", pdfPage: 24 }] },
+  { bookKey: "xy-g8s2", id: "second", name: unitName, title: unitName, works: [{ id: "8", name: "《久久不见久久见》", page: 19, pdfPage: 25 }, { id: "9", name: "《下四川》" }] },
+];
+for (const volume of ["八年级下册", "八下", "８ 年级 下册", "八年级（下册）"]) {
+  const answer = unitWorksAnswer(`湘艺版${volume}的「${unitName}」单元有哪些作品？`, catalog, directoryBooks);
+  assert.match(answer.answer, /湘艺版八年级下册.*《久久不见久久见》.*《下四川》/);
+  assert.doesNotMatch(answer.answer, /七年级上册|黄河船夫曲/);
+  assert.deepEqual(answer.evidence.map((item) => item.bookKey), ["xy-g8s2", "xy-g8s2"]);
+  assert.equal(answer.evidence[0].textbookPage, "19");
+}
+const ambiguousUnit = unitWorksAnswer(`${unitName}单元有哪些作品？`, catalog, directoryBooks);
+assert.equal(ambiguousUnit.evidence.length, 0);
+assert.equal(ambiguousUnit.suggestedQuestions.length, 2);
+assert.match(unitWorksAnswer(ambiguousUnit.suggestedQuestions[1], catalog, directoryBooks).answer, /久久不见久久见/);
+const missingUnit = unitWorksAnswer(`八上${unitName}单元有哪些作品？`, catalog, directoryBooks);
+assert.match(missingUnit.answer, /找不到你指定的单元/);
+assert.equal(missingUnit.evidence.length, 0);
+assert.equal(unitWorksAnswer("哪些作品用了 2/4 拍？", catalog, directoryBooks), null);
+
 const index = JSON.parse(await readFile("public/data/graph-index.json", "utf8"));
 const graph = index.canonicalGraph;
 const load = async key => JSON.parse(await readFile(`public/data/evidence/${key}.json`, "utf8"));
+const textbookAnswer = async question => graphAnswer(await enrichGraph(graph, question, [], load), question);
+for (const wording of ["2/4 拍", "２／４拍", "四二拍"]) {
+  const answer = await textbookAnswer(`哪些作品用了 ${wording}？`);
+  assert.equal(answer.confidence, "supported");
+  assert.match(answer.shortAnswer, /2\/4 拍.*《歌唱祖国》/);
+  assert(answer.evidence.some(item => item.summary.includes("《歌唱祖国》")));
+  assert(answer.evidence.every(item => item.summary.includes("拍号") && item.sourceType === "textbook_explicit"));
+}
+const scopedMeter = await textbookAnswer("人音版四上有哪些作品用了 2/4 拍？");
+assert.match(scopedMeter.shortAnswer, /《歌唱祖国》/);
+assert(scopedMeter.evidence.every(item => item.bookKey === "g4s1"));
+const fourTwo = await textbookAnswer("什么是 2/4 拍？");
+assert.match(fourTwo.shortAnswer, /四分音符.*每小节有两拍/);
+const pentatonic = await textbookAnswer("什么是五声调式？");
+assert.match(pentatonic.shortAnswer, /宫.*商.*角.*徵.*羽.*主音/);
+assert(pentatonic.evidence.every(item => item.summary.startsWith("五声调式")));
+const chinesePentatonic = await textbookAnswer("什么是中国民族五声调式？");
+assert.match(chinesePentatonic.shortAnswer, /中国民族五声调式.*宫、商、角、徵、羽/);
+const pipa = await textbookAnswer("琵琶属于哪类乐器？");
+assert.equal(pipa.shortAnswer, "琵琶属于民族弹拨乐器。");
+assert(pipa.evidence.every(item => item.summary.includes("乐器类别")));
+const author = await textbookAnswer("《歌唱祖国》是谁写的？");
+assert.equal(author.shortAnswer, "《歌唱祖国》的词曲作者是王莘。");
+const lyrics = await textbookAnswer("《歌唱祖国》的作词是谁？");
+assert.equal(lyrics.shortAnswer, "《歌唱祖国》的词作者是王莘。");
+assert(lyrics.evidence.every(item => /作词|词曲作者/.test(item.summary)));
+const workMeter = await textbookAnswer("《歌唱祖国》是什么拍号？");
+assert.equal(workMeter.shortAnswer, "《歌唱祖国》的拍号标为 2/4。");
+
 const questions = ["《游击队歌》的音乐特点是什么？", "《游击队歌》为什么给人轻快机智的感觉？", "《保卫黄河》的作曲家是谁？", "《保卫黄河》和哪些音乐知识点相关？", "七至九年级关于节奏的知识如何递进？", "比较《保卫黄河》和《游击队歌》。", "教材里有哪些蒙古族音乐作品？", `贝多芬在${PUBLISHED_BOOK_COUNT_LABEL}教材中出现在哪里？`, "什么是进行曲？教材有哪些相关作品？", "如果我是音乐教师，怎样用图谱讲“节奏”？"];
 const results = [], original = JSON.stringify(graph);
 for (const question of questions) {

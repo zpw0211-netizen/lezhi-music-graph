@@ -11,12 +11,12 @@
 // graph-algorithms）在内存里转成 CommonJS 后直接调用同一条链路，不启服务、
 // 不发网络请求。问题清单直接从 app/components/assistant/AssistantPage.tsx
 // 的 SAMPLE_QUESTIONS 常量提取，页面与本脚本不会各自维护一份；单元完整回答
-// 的纯函数 unitWorksAnswer 同样从该文件源码提取（页面提交链路与本脚本共用
-// 同一份实现）。
+// 的纯函数 unitWorksAnswer 与页面共用同一份实现。
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { EDITION } from "../data/books.mjs";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pageFile = path.join(root, "app/components/assistant/AssistantPage.tsx");
@@ -25,12 +25,12 @@ const pageFile = path.join(root, "app/components/assistant/AssistantPage.tsx");
 const pageSource = readFileSync(pageFile, "utf8");
 const match = pageSource.match(/export const SAMPLE_QUESTIONS = (\{[\s\S]*?\}) as const;/);
 if (!match) throw new Error("AssistantPage.tsx 中找不到 SAMPLE_QUESTIONS 常量（结构变更请同步本脚本）");
-const SAMPLE_QUESTIONS = new Function(`return ${match[1]}`)();
+const SAMPLE_QUESTIONS = new Function("EDITION", `return ${match[1]}`)(EDITION);
 
 // --- 内存 CommonJS 注册表：graph-rag 的依赖闭包（无第三方运行时依赖） ---
 const sources = new Map();
 const loaded = new Map();
-for (const rel of ["app/lib/ai/graph-rag.ts", "app/graph-runtime.ts", "app/lib/graph/graph-algorithms.ts", "app/lib/graph/types.ts"]) {
+for (const rel of ["app/lib/ai/graph-rag.ts", "app/lib/ai/book-volume.ts", "app/lib/ai/textbook-facts.ts", "app/lib/ai/unit-works.ts", "app/graph-runtime.ts", "app/lib/graph/graph-algorithms.ts", "app/lib/graph/types.ts"]) {
   const source = readFileSync(path.join(root, rel), "utf8");
   sources.set(rel.replace(/\\/g, "/"), ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
@@ -55,18 +55,11 @@ const loadTs = (rel) => {
   return module_.exports;
 };
 const { enrichGraph, graphAnswer } = loadTs("app/lib/ai/graph-rag.ts");
+const { unitWorksAnswer } = loadTs("app/lib/ai/unit-works.ts");
 
 const graph = JSON.parse(readFileSync(path.join(root, "public/data/graph-index.json"), "utf8")).canonicalGraph;
 const units = JSON.parse(readFileSync(path.join(root, "public/data/units.json"), "utf8"));
 
-// --- 提取页面的 unitWorksAnswer 纯函数（与提交链路同一份实现，见页面注释） ---
-const fnMatch = pageSource.match(/export const unitWorksAnswer = \([\s\S]*?\n\};/);
-if (!fnMatch) throw new Error("AssistantPage.tsx 中找不到 unitWorksAnswer 纯函数（结构变更请同步本脚本）");
-const fnSandbox = {};
-new Function("exports", ts.transpileModule(fnMatch[0], {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText)(fnSandbox);
-const { unitWorksAnswer } = fnSandbox;
 const evidenceCache = new Map();
 const load = async (key) => {
   if (!evidenceCache.has(key)) {
@@ -84,9 +77,8 @@ for (const [group, items] of Object.entries(SAMPLE_QUESTIONS)) {
     total += 1;
     let line;
     try {
-      const retrieval = await enrichGraph(graph, q, [], load);
-      const base = graphAnswer(retrieval, q);
-      const result = unitWorksAnswer(q, units, graph.books, base) ?? base;
+      const unit = unitWorksAnswer(q, units, graph.books);
+      const result = unit ?? graphAnswer(await enrichGraph(graph, q, [], load), q);
       const answerEmpty = !result.answer.trim() || !result.shortAnswer.trim();
       const noEvidence = !Array.isArray(result.evidence) || result.evidence.length === 0;
       if (answerEmpty || noEvidence || result.confidence === "insufficient") {
@@ -97,9 +89,8 @@ for (const [group, items] of Object.entries(SAMPLE_QUESTIONS)) {
       }
       // T010：单元类问题必须按 units.json 完整列出作品并标注册别。
       if (!failures || line.startsWith("PASS")) {
-        const unit = unitWorksAnswer(q, units, graph.books, { evidence: [], missingKnowledge: [], answer: "", shortAnswer: "" });
         if (unit) {
-          const expected = units.find(item => unit.answer.includes(item.name));
+          const expected = units.find(item => item.bookKey === unit.evidence[0]?.bookKey && unit.answer.includes(item.name));
           const works = expected?.works ?? [];
           const missing = works.filter(work => !unit.answer.includes(work.name));
           const bookTitle = graph.books.find(book => book.key === expected?.bookKey)?.title ?? "";

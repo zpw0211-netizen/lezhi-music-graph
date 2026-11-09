@@ -8,8 +8,9 @@ const sharp = (d: number, b: number, lyric = "", o: -1 | 0 | 1 = 0): MelodyNote 
 const l = (d: number, b: number, lyric = "") => n(d, b, lyric, -1);
 const h = (d: number, b: number, lyric = "") => n(d, b, lyric, 1);
 
-export const KEY_MELODIES: Record<string, Melody> = {
+export const KEY_MELODIES: Record<string, Melody & { bookKey: string }> = {
   "《歌唱祖国》": {
+    bookKey: "g7s1",
     key: "1=F",
     tonic: "F",
     tonicMidi: 65,
@@ -45,6 +46,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ],
   },
   "《中国人民志愿军战歌》": {
+    bookKey: "g7s1",
     key: "1=E", tonic: "E", tonicMidi: 64, meter: "2/4", bpm: 112,
     source: "据人音版七年级上册第 24 页谱例转写（第二结尾）",
     bars: [
@@ -73,6 +75,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ],
   },
   "《鸿雁》": {
+    bookKey: "g7s1",
     key: "1=G", tonic: "G", tonicMidi: 67, meter: "4/4", bpm: 66,
     source: "据人音版七年级上册第 38 页谱例转写（第一段歌词）",
     bars: [
@@ -87,6 +90,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ],
   },
   "《月之故乡》": {
+    bookKey: "g7s1",
     key: "1=♭E", tonic: "♭E", tonicMidi: 63, meter: "4/4", bpm: 76,
     source: "据人音版七年级上册第 50 页谱例转写（前两个乐段）",
     bars: [
@@ -109,6 +113,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ],
   },
   "《乘着歌声的翅膀》": {
+    bookKey: "g7s2",
     key: "1=G", tonic: "G", tonicMidi: 67, meter: "6/8", bpm: 96,
     source: "据人音版七年级下册第 26 页谱例转写（第一段歌词，第一结尾）",
     bars: jianpu(
@@ -121,6 +126,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《友谊地久天长》": {
+    bookKey: "g7s2",
     key: "1=F", tonic: "F", tonicMidi: 65, meter: "2/4", bpm: 72,
     source: "据人音版七年级下册第 38 页谱例转写（第一段歌词及副歌）",
     bars: jianpu(
@@ -131,6 +137,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《青春舞曲》": {
+    bookKey: "g7s2",
     key: "1=G", tonic: "G", tonicMidi: 67, meter: "4/4", bpm: 108,
     source: "据人音版七年级下册第 44 页谱例转写（开头两个乐句片段）",
     bars: jianpu(
@@ -141,6 +148,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《天边有颗闪亮的星》": {
+    bookKey: "g8s1",
     key: "1=C", tonic: "C", tonicMidi: 60, meter: "2/4", bpm: 66,
     source: "据人音版八年级上册第 2 页谱例主旋律转写（开头片段）",
     bars: jianpu(
@@ -151,6 +159,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《映山红》": {
+    bookKey: "g8s1",
     key: "1=F", tonic: "F", tonicMidi: 53, meter: "2/4", bpm: 58,
     source: "据人音版八年级上册第 12 页谱例转写（教材为高八度记谱，此处按实际音高低八度演奏）",
     bars: jianpu(
@@ -165,6 +174,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《阳关三叠》": {
+    bookKey: "g8s1",
     key: "1=F", tonic: "F", tonicMidi: 65, meter: "2/4、4/4", bpm: 72,
     source: "据人音版八年级上册第 48 页谱例转写（第一叠，间奏以休止代替）",
     bars: jianpu(
@@ -175,6 +185,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《游击队歌》": {
+    bookKey: "g8s2",
     key: "1=G", tonic: "G", tonicMidi: 67, meter: "4/4", bpm: 112,
     source: "据人音版八年级下册第 4 页谱例转写",
     bars: jianpu(
@@ -189,6 +200,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《在太行山上》": {
+    bookKey: "g8s2",
     key: "1=G", tonic: "G", tonicMidi: 67, meter: "2/4", bpm: 104,
     source: "据人音版八年级下册第 51—53 页谱例第一声部转写（取第二结尾）",
     bars: jianpu(
@@ -205,6 +217,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《英雄赞歌》": {
+    bookKey: "g9s1",
     key: "1=C", tonic: "C", tonicMidi: 60, meter: "4/4、2/4", bpm: 60,
     source: "据人音版九年级上册第 3 页谱例转写（第一段歌词）",
     bars: jianpu(
@@ -219,6 +232,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《小河淌水》": {
+    bookKey: "g9s1",
     key: "1=♭B", tonic: "♭B", tonicMidi: 58, meter: "3/4、2/4、4/4", bpm: 56,
     source: "据人音版九年级上册第 32 页谱例转写（第一段歌词）",
     bars: jianpu(
@@ -231,6 +245,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《对花》": {
+    bookKey: "g9s1",
     key: "1=♭E", tonic: "♭E", tonicMidi: 63, meter: "2/4", bpm: 96,
     source: "据人音版九年级上册第 38 页谱例转写（锣鼓过门以休止代替，唱词按教材方言用字）",
     bars: jianpu(
@@ -246,6 +261,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《无锡景》": {
+    bookKey: "g9s2",
     key: "1=♭B", tonic: "♭B", tonicMidi: 58, meter: "2/4", bpm: 66,
     source: "据人音版九年级下册第 10 页谱例转写（第一段歌词）",
     bars: jianpu(
@@ -258,6 +274,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《长城谣》": {
+    bookKey: "g9s1",
     key: "1=C", tonic: "C", tonicMidi: 60, meter: "4/4", bpm: 66,
     source: "据人音版九年级上册第 22 页谱例第一声部转写（第一段歌词）",
     bars: jianpu(
@@ -268,6 +285,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《不忘初心》": {
+    bookKey: "g9s2",
     key: "1=♭E", tonic: "♭E", tonicMidi: 63, meter: "4/4", bpm: 76,
     source: "据人音版九年级下册第 4 页谱例转写（第一段歌词及副歌结束句）",
     bars: jianpu(
@@ -282,6 +300,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《绣红旗》": {
+    bookKey: "g9s2",
     key: "1=A", tonic: "A", tonicMidi: 57, meter: "4/4", bpm: 72,
     source: "据人音版九年级下册第 18 页谱例转写（第一段歌词）",
     bars: jianpu(
@@ -295,6 +314,7 @@ export const KEY_MELODIES: Record<string, Melody> = {
     ),
   },
   "《天路》": {
+    bookKey: "g9s2",
     key: "1=♭E", tonic: "♭E", tonicMidi: 63, meter: "2/4", bpm: 68,
     source: "据人音版九年级下册第 30—33 页谱例主旋律转写（第一段歌词）",
     bars: jianpu(

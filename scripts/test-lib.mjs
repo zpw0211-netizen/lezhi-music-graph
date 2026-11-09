@@ -187,7 +187,7 @@ function mutationFromArgv() {
 // 顶层 await：动态 import 返回 promise，等被测模块都就位再注册测试。
 const loaded = await loadModules(mutationFromArgv());
 const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
-const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, parseUnitTask } = await loaded.unitData;
+const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, matchesBookScope, parseUnitTask } = await loaded.unitData;
 const { eraForYear, filterWorks, groupTimelineWorks, personDates, personYearSource, workHref, withSupplementalPeople, withSupplementalYears } = await loaded.timelineModel;
 const { isPublicPeopleLifetime, loadPeopleSupplement } = await loaded.peopleSupplement;
 const { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, heptatonicPhrase, transposePitchClass } = await loaded.labScales;
@@ -387,6 +387,8 @@ const ROUND_TRIP = [
   { name: "records（册与作品）", route: { view: "records", book: "g7s1", work: "歌唱祖国" } },
   { name: "lesson+作品", route: { view: "lesson", work: "歌唱祖国" } },
   { name: "work+作品", route: { view: "work", work: "义勇军进行曲" } },
+  { name: "湘艺课页保留册别", route: { view: "lesson", book: "xy-g8s1", work: "大海啊，故乡" } },
+  { name: "湘艺作品页保留册别", route: { view: "work", book: "xy-g7s1", work: "大海啊故乡" } },
   { name: "timeline", route: { view: "timeline" } },
 ];
 
@@ -672,6 +674,17 @@ t("谱例：getScoreMedia 只保留 score 且保持原顺序", () => {
   );
   assert.deepEqual(getScoreMedia([{ kind: "audio", url: "a.mp3" }]), []);
   assert.deepEqual(getScoreMedia(), []);
+});
+
+t("备课册别：只取本册的谱例和事实，保留通用资料", () => {
+  const seven = { kind: "score", url: "media/scores/g7s1/song.webp" };
+  const four = { kind: "score", url: "media/scores/g4s1/song.webp" };
+  const shared = { kind: "score", url: "media/shared/song.webp" };
+  assert.deepEqual(getScoreMedia([seven, four, shared], "g4s1"), [four, shared]);
+  assert.deepEqual(getScoreMedia([seven, four, shared], "g7s1"), [seven, shared]);
+  assert.equal(matchesBookScope("g4s1", ["g7s1"]), false);
+  assert.equal(matchesBookScope("g4s1", ["g7s1", "g4s1"]), true);
+  assert.equal(matchesBookScope("g4s1", undefined), true);
 });
 
 t("重点曲目：有「教材标注」谓语 → true", () => {

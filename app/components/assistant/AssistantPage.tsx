@@ -1,6 +1,9 @@
 "use client";
-import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
+import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent } from "react";
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
+import { questionEdition, saveEditionQuestion, takeEditionQuestion } from "../../lib/ai/edition-scope";
+import { isUnitWorksQuestion, unitWorksAnswer, type UnitCatalog } from "../../lib/ai/unit-works";
+import { meterAnswerFromScores, textbookQuestion } from "../../lib/ai/textbook-facts";
 import { PendingKnowledge } from "./PendingKnowledge";
 import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
 import { fetchWithRetry } from "../../lib/app/fetch-retry";
@@ -45,28 +48,6 @@ const NUMERALS_SIMPLE = [
 const getFormalNumeral = (index: number) => NUMERALS_FORMAL[index] || `〔${index + 1}〕`;
 const getSimpleNumeral = (index: number) => NUMERALS_SIMPLE[index] || `〔${index + 1}〕`;
 
-// 教材单元目录（public/data/units.json，与按课学习页同一数据源）的最小类型。
-type UnitCatalog = { bookKey: string; id: string; name: string; title: string; works: { id: string; name: string; pdfPage?: number | null; summary?: string | null }[] };
-
-// 「某单元有哪些作品」必须按正式单元目录完整列出（T010）：图谱检索沿知识关系
-// 边走，只答出有联系的作品，会误导教师以为单元只有这几首。此函数为纯函数，
-// scripts/test-sample-questions.mjs 会从本文件提取它，断言"回答作品数 =
-// 单元目录作品数"；修改签名或内部依赖时必须同步该脚本的提取逻辑。
-export const unitWorksAnswer = (question: string, units: UnitCatalog[], books: { key: string; title: string }[], base: AnswerResult): AnswerResult | null => {
-  const key = (value: string) => String(value ?? "").toLowerCase().replace(/[《》“”"'s，。！？、：；·（）()]/g, "");
-  if (!/单元/.test(question) || !/作品|曲目|歌曲/.test(question) || !Array.isArray(units) || !units.length) return null;
-  const term = key(question);
-  const matched = units
-    .filter(unit => (unit.title && term.includes(key(unit.title))) || (unit.name && term.includes(key(unit.name))))
-    .sort((a, b) => key(b.title).length - key(a.title).length)[0];
-  const works = matched?.works ?? [];
-  if (!matched || !works.length) return null;
-  const bookTitle = books.find(book => book.key === matched.bookKey)?.title ?? matched.bookKey;
-  const shortAnswer = `${matched.name}（${bookTitle}）按教材单元目录共收录 ${works.length} 首作品：${works.map((work, index) => `${index + 1}.${work.name}`).join("；")}。`;
-  const unitEvidence = works.map(work => ({ id: `unit:${matched.id}:${work.id}`, bookKey: matched.bookKey, bookTitle, pdfPage: work.pdfPage ?? null, textbookPage: "", summary: work.summary ?? "", sourceType: "textbook_explicit" as const }));
-  return { ...base, answer: shortAnswer, shortAnswer, evidence: [...unitEvidence, ...base.evidence.filter(item => !unitEvidence.some(unit => unit.id === item.id))], confidence: "supported", missingKnowledge: base.missingKnowledge.filter(item => !/没有找到足够的相关教材内容|没有找到教材明确说明/.test(item)) };
-};
-
 export function AssistantPage({
   graph,
   assetUrl,
@@ -81,20 +62,22 @@ export function AssistantPage({
   const [question, setQuestion] = useState("");
   const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
   const [busy, setBusy] = useState(false);
+  const [switchingEdition, setSwitchingEdition] = useState("");
   const [error, setError] = useState("");
   const [inkAnim, setInkAnim] = useState(false);
   const [footnotesExpanded, setFootnotesExpanded] = useState(true);
   const [highlightedFootnoteId, setHighlightedFootnoteId] = useState<string | null>(null);
 
-  const [units, setUnits] = useState<UnitCatalog[]>([]);
-  useEffect(() => {
-    let active = true;
-    fetchWithRetry(assetUrl("data/units.json"))
-      .then(response => response.json())
-      .then(data => { if (active && Array.isArray(data)) setUnits(data as UnitCatalog[]); })
-      .catch(() => {});
-    return () => { active = false; };
-  }, [assetUrl]);
+  const units = useRef<UnitCatalog[] | null>(null);
+  const loadUnits = async () => {
+    if (units.current) return units.current;
+    const response = await fetchWithRetry(assetUrl("data/units.json"));
+    if (!response.ok) throw new Error("教材单元目录读取失败");
+    const data: unknown = await response.json();
+    if (!Array.isArray(data) || !data.length) throw new Error("教材单元目录为空");
+    units.current = data as UnitCatalog[];
+    return units.current;
+  };
 
   const cache = useRef(new Map<string, Promise<EvidencePayload>>());
   const alive = useRef(true);
@@ -127,15 +110,48 @@ export function AssistantPage({
   const submit = async (rawQuestion?: string) => {
     const q = (rawQuestion ?? question).trim();
     if (!q || busy) return;
+    const scope = questionEdition(q, EDITION.key);
     setBusy(true);
+    setSwitchingEdition(scope.kind === "switch" ? scope.label : "");
     setError("");
     setHighlightedFootnoteId(null);
+    let navigating = false;
     try {
-      const retrieval = await enrichGraph(graph, q, [], loadEvidence);
-      const base = graphAnswer(retrieval, q);
-      const local = unitWorksAnswer(q, units, graph.books, base);
-      // The model only rewrites answers built from retrieval; unit lists stay local. Any failure keeps the local answer.
-      const result = local ?? (await askModel(q)) ?? base;
+      if (scope.kind === "clarify") {
+        setQuestion(q);
+        setError(scope.message);
+        return;
+      }
+      if (scope.kind === "switch") {
+        const response = await fetchWithRetry(`${scope.path}data/graph-books.json`, { signal: AbortSignal.timeout(8000) });
+        if (!response.ok) throw new Error("教材版本暂不可用");
+        const directory = await response.json() as { dataset?: { books?: unknown[] } } | null;
+        if (!directory?.dataset?.books?.length) throw new Error("教材版本目录为空");
+        if (alive.current) {
+          saveEditionQuestion(scope.key, q);
+          window.location.assign(`${scope.path}#/assistant`);
+          navigating = true;
+        }
+        return;
+      }
+      let result = isUnitWorksQuestion(q) ? unitWorksAnswer(q, await loadUnits(), graph.books) : null;
+      if (!result) {
+        const retrieval = await enrichGraph(graph, q, [], loadEvidence);
+        const base = graphAnswer(retrieval, q);
+        const kind = textbookQuestion(q);
+        if (kind === "meter-works" && !base.evidence.length) {
+          const { BOOK_MELODIES } = await import("../../lib/lesson/melodies");
+          const scores = meterAnswerFromScores(q, await loadUnits(), graph.books, (bookKey, name) => {
+            // The general playback lookup can borrow excerpts. Citations must use this exact edition and volume.
+            const book = BOOK_MELODIES[EDITION.notation === "staff" ? `wx-${bookKey}` : bookKey];
+            return book?.[name] ?? book?.[name.replace(/^《|》$/g, "")] ?? [];
+          });
+          if (scores) result = { ...base, answer: scores.text, shortAnswer: scores.text, evidence: scores.evidence,
+            confidence: "supported", missingKnowledge: [] };
+        }
+        // The model only rewrites answers built from retrieval. Any failure keeps the local answer.
+        result ??= scope.explicit || kind ? base : (await askModel(q)) ?? base;
+      }
       if (alive.current) {
         setCurrentMessage({ question: q, result });
         setQuestion("");
@@ -144,11 +160,13 @@ export function AssistantPage({
       }
     } catch {
       if (alive.current) {
-        setError("教材内容加载失败，请稍后重试。没有教材依据时，不会把回答当作教材原文。");
+        setError(scope.kind === "switch"
+          ? `暂时无法打开${scope.label}问答，原问题已保留，请稍后重试。`
+          : "教材内容加载失败，请稍后重试。没有教材依据时，不会把回答当作教材原文。");
         setQuestion(q);
       }
     } finally {
-      if (alive.current) setBusy(false);
+      if (alive.current && !navigating) setBusy(false);
     }
   };
 
@@ -157,10 +175,11 @@ export function AssistantPage({
 
   const initialSubmitted = useRef(false);
   useEffect(() => {
-    if (initialQuestion && !initialSubmitted.current) {
-      initialSubmitted.current = true;
-      void submitRef.current(initialQuestion);
-    }
+    if (initialSubmitted.current) return;
+    const openingQuestion = initialQuestion || takeEditionQuestion(EDITION.key);
+    if (!openingQuestion) return;
+    initialSubmitted.current = true;
+    void submitRef.current(openingQuestion);
   }, [initialQuestion]);
 
   const handleReset = () => {
@@ -169,18 +188,6 @@ export function AssistantPage({
     setHighlightedFootnoteId(null);
     setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleFnClick = (e: MouseEvent, fnId: string) => {
-    e.preventDefault();
-    setFootnotesExpanded(true);
-    setHighlightedFootnoteId(fnId);
-    setTimeout(() => {
-      const element = document.getElementById(fnId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
-    }, 50);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -269,12 +276,12 @@ export function AssistantPage({
           <header className="ask-hero-head">
             <span className="seal-mark" aria-hidden="true">问</span>
             <h1 className="ask-hero-title">问问教材</h1>
-            <p className="ask-hero-lead">回答只来自{PUBLISHED_BOOK_COUNT_LABEL}教材，每一句都标出页码。</p>
+            <p className="ask-hero-lead">根据{PUBLISHED_BOOK_COUNT_LABEL}教材资料作答，并列出可查的教材出处。</p>
           </header>
 
           {composer("hero")}
 
-          {busy && <p className="assistant-busy ask-hero-status" aria-live="polite">正在翻查{PUBLISHED_BOOK_COUNT_LABEL}教材……</p>}
+          {busy && <p className="assistant-busy ask-hero-status" aria-live="polite">{switchingEdition ? `正在打开${switchingEdition}问答……` : `正在翻查${PUBLISHED_BOOK_COUNT_LABEL}教材……`}</p>}
           {error && <p className="assistant-error" role="alert">{error}</p>}
 
           <div className="ask-bubbles" role="list" aria-label="示例问题">
@@ -327,7 +334,7 @@ export function AssistantPage({
             {/* 查询中 */}
             {busy && (
               <div className="assistant-busy-box" aria-live="polite">
-                <p className="assistant-busy">正在查找{PUBLISHED_BOOK_COUNT_LABEL}教材内容，研墨题写中…</p>
+                <p className="assistant-busy">{switchingEdition ? `正在打开${switchingEdition}问答……` : `正在查找${PUBLISHED_BOOK_COUNT_LABEL}教材内容，研墨题写中…`}</p>
               </div>
             )}
 
@@ -356,29 +363,12 @@ export function AssistantPage({
                   id="qa-answer-block"
                   onAnimationEnd={() => setInkAnim(false)}
                 >
-                  {paragraphs.map((p, pIdx) => {
-                    const sealNumeral = getFormalNumeral(pIdx);
-                    const ev = currentMessage.result.evidence[pIdx];
-                    const fnId = `fn-${pIdx}`;
-                    const fnLabel = ev ? `${getSimpleNumeral(pIdx)}${ev.bookTitle} · ${citationPageLabel(ev.textbookPage, ev.pdfPage)}` : null;
-                    return (
-                      <p className="qa-paragraph" key={pIdx}>
-                        <span className="mark-seal">{sealNumeral}</span>
-                        {p}
-                        {ev && fnLabel && (
-                          <a
-                            className="fn-ref"
-                            href={`#${fnId}`}
-                            data-fn={fnId}
-                            title="查看教材出处与依据"
-                            onClick={e => handleFnClick(e, fnId)}
-                          >
-                            {fnLabel}
-                          </a>
-                        )}
-                      </p>
-                    );
-                  })}
+                  {paragraphs.map((p, pIdx) => (
+                    <p className="qa-paragraph" key={pIdx}>
+                      <span className="mark-seal">{getFormalNumeral(pIdx)}</span>
+                      {p}
+                    </p>
+                  ))}
                 </div>
 
                 {/* 关联知识联系标签 */}

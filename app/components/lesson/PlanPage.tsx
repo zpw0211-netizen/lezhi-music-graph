@@ -1,25 +1,28 @@
 "use client";
 import { useMemo, useState, type FormEvent } from "react";
 import { melodiesFor } from "../../lib/lesson/melodies";
-import { buildPlan, checkPlan, fitMinutes, parseRequest, planText, type LessonPlan, type PlanIssue, type PlanResource } from "../../lib/lesson/plan";
+import { buildPlan, checkPlan, fitMinutes, planText, resolvePlanRequest, type LessonPlan, type PlanIssue, type PlanResource } from "../../lib/lesson/plan";
 import { LESSON_KINDS, lessonKindOf, type LessonFact, type LessonKind } from "../../lib/lesson/reflective";
 import type { Melody } from "../../lib/lesson/jianpu";
-import { getScoreMedia } from "../../lib/app/unit-data";
+import { getScoreMedia, matchesBookScope } from "../../lib/app/unit-data";
 import { EDITION } from "../../lib/app/books";
 import { bareWorkName, type BookDirectory, type CanonicalGraph, type Entity } from "../../lib/app/types";
 import { STANDARD } from "../../lib/lesson/curriculum";
 import { MelodySet } from "./MelodyPlayer";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 
-type Relation = { id: string; subject: string; predicate: string; label?: string; objectId?: string | null; literal?: string | null; provenance?: boolean; extended?: boolean };
+type Relation = { id: string; subject: string; predicate: string; label?: string; objectId?: string | null; literal?: string | null; provenance?: boolean; extended?: boolean; bookKeys?: string[] };
 type Options = { kind?: LessonKind; minutes?: number; className?: string; note?: string };
 type Context = { workName: string; facts: LessonFact[]; melodies: Melody[]; scoreUrls: string[]; related: string[]; defaultKind: LessonKind; grade?: number };
 const KINDS = Object.keys(LESSON_KINDS) as LessonKind[];
 const MINUTES = [20, 30, 40, 45];
 const EXAMPLE = "明天给八（3）班上《菊花台》，歌唱课，40 分钟。班里男生多在变声期，重点让他们敢开口。";
-const storageKey = (book: string, work: string) => `yapu-plan:${book}:${work}`;
+const storageKey = (book: string, work: string) => `yapu-plan:${EDITION.key}:${book}:${work}`;
 const readPlan = (book: string, work: string): LessonPlan | null => {
-  try { const raw = window.localStorage.getItem(storageKey(book, work)); return raw ? JSON.parse(raw) as LessonPlan : null; } catch { return null; }
+  try {
+    const raw = window.localStorage.getItem(storageKey(book, work)) ?? window.localStorage.getItem(`yapu-plan:${book}:${work}`);
+    return raw ? JSON.parse(raw) as LessonPlan : null;
+  } catch { return null; }
 };
 const writePlan = (book: string, plan: LessonPlan) => {
   try { window.localStorage.setItem(storageKey(book, bareWorkName(plan.workName)), JSON.stringify(plan)); } catch { /* storage may be unavailable */ }
@@ -42,10 +45,13 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
   const bookKey = books.some((book) => book.key === routeBook) ? routeBook! : books.find((book) => /(^|-)g8s1$/.test(book.key))?.key ?? books[0]?.key ?? "g8s1";
 
   // 本册能备课的作品：目录里列出的课（有教材栏目），或有旋律数据的作品。
-  const listed = useMemo(() => new Set(relations.filter((relation) => relation.predicate === "学习方式").map((relation) => relation.subject)), [relations]);
-  const lessonsOf = (key: string) => graph.entities
-    .filter((entity) => entity.name.startsWith("《") && entity.bookKeys?.includes(key) && (listed.has(entity.id) || melodiesFor(melodyBook(key), entity.name).length > 0))
-    .sort((a, b) => (a.firstPageByBook?.[key] ?? 999) - (b.firstPageByBook?.[key] ?? 999));
+  const learningModes = useMemo(() => relations.filter((relation) => relation.predicate === "学习方式"), [relations]);
+  const lessonsOf = (key: string) => {
+    const listed = new Set(learningModes.filter((relation) => matchesBookScope(key, relation.bookKeys)).map((relation) => relation.subject));
+    return graph.entities
+      .filter((entity) => entity.name.startsWith("《") && entity.bookKeys?.includes(key) && (listed.has(entity.id) || melodiesFor(melodyBook(key), entity.name).length > 0))
+      .sort((a, b) => (a.firstPageByBook?.[key] ?? 999) - (b.firstPageByBook?.[key] ?? 999));
+  };
   const lessons = lessonsOf(bookKey);
   const work: Entity | undefined = lessons.find((entity) => bareWorkName(entity.name) === routeWork);
 
@@ -57,7 +63,8 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
   const context = useMemo<Context | null>(() => {
     if (!work) return null;
     const valueOf = (relation: Relation) => relation.literal ?? entityMap.get(relation.objectId ?? "")?.name ?? "";
-    const own = relations.filter((relation) => relation.subject === work.id && !relation.provenance && !relation.extended);
+    const own = relations.filter((relation) => relation.subject === work.id && !relation.provenance && !relation.extended
+      && matchesBookScope(bookKey, relation.bookKeys));
     const mode = own.find((relation) => relation.predicate === "学习方式");
     // 相关作品：与本课共享作曲家、体裁、民族、风格等知识点的其他课。
     const linked = new Set(own.filter((relation) => relation.objectId && !entityMap.get(relation.objectId)?.name.startsWith("《")).map((relation) => relation.objectId!));
@@ -70,7 +77,7 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
       workName: work.name,
       facts: own.map((relation) => ({ label: relation.label ?? relation.predicate, value: valueOf(relation) })),
       melodies: melodiesFor(melodyBook(bookKey), work.name),
-      scoreUrls: getScoreMedia(work.media).map((asset) => asset.url),
+      scoreUrls: getScoreMedia(work.media, bookKey).map((asset) => asset.url),
       related,
       defaultKind: lessonKindOf(mode ? valueOf(mode) : undefined, work.type, work.name),
       grade: Number(bookKey.match(/g(\d)s\d/)?.[1]) || undefined,
@@ -81,15 +88,10 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
     event.preventDefault();
     const text = request.trim();
     if (!text) return;
-    // 先在本册找课题，找不到再看其他分册。
-    let parsed = parseRequest(text, lessons.map((entity) => entity.name));
-    let targetBook = bookKey;
-    for (const book of books) {
-      if (parsed.work) break;
-      const found = parseRequest(text, lessonsOf(book.key).map((entity) => entity.name));
-      if (found.work) { parsed = found; targetBook = book.key; }
-    }
-    if (!parsed.work) { setMessage("没有在教材里找到这句话提到的课题，请在下面选择课题。"); return; }
+    const target = resolvePlanRequest(text, bookKey, books.map((book) => book.key),
+      (key) => (key === bookKey ? lessons : lessonsOf(key)).map((entity) => entity.name));
+    if ("message" in target) { setMessage(target.message); return; }
+    const { request: parsed, bookKey: targetBook } = target;
     setMessage("");
     setAsked((current) => ({ token: current.token + 1, options: { kind: parsed.kind, minutes: parsed.minutes, className: parsed.className ?? "", note: parsed.note ?? "" } }));
     onRoute(targetBook, bareWorkName(parsed.work));
@@ -155,7 +157,15 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
 
   const update = (next: LessonPlan) => { setPlan(next); writePlan(bookKey, next); };
   const generate = () => { update(make(options)); setOpen(null); };
-  const issues = useMemo(() => (plan ? checkPlan(plan) : []), [plan]);
+  const issues = useMemo(() => {
+    if (!plan) return [];
+    const result = checkPlan(plan);
+    const staleScore = plan.stages.some((stage) => stage.activities.some((activity) => activity.resources.some(
+      (resource) => resource.kind === "score" && !context.scoreUrls.includes(resource.url),
+    )));
+    if (staleScore) result.push({ level: "fix", where: { plan: true }, text: "保存的教案引用了当前册之外的谱例。请核对课型和教学活动，再按选项重新生成。" });
+    return result;
+  }, [context.scoreUrls, plan]);
   const goalIssues = (index: number) => issues.filter((issue) => "goal" in issue.where && issue.where.goal === index);
   const stageIssues = (key: string) => issues.filter((issue) => "stage" in issue.where && issue.where.stage === key);
   const fixes = issues.filter((issue) => issue.level === "fix").length;
@@ -167,7 +177,10 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
   };
 
   const resource = (res: PlanResource, key: string) => {
-    if (res.kind === "score") return <a key={key} className="plan-chip" href={assetUrl(res.url)} target="_blank" rel="noreferrer"><WorkbenchIcon name="expand" />{res.label}</a>;
+    if (res.kind === "score") {
+      const url = context.scoreUrls.includes(res.url) ? res.url : context.scoreUrls[0];
+      return url ? <a key={key} className="plan-chip" href={assetUrl(url)} target="_blank" rel="noreferrer"><WorkbenchIcon name="expand" />{res.label}</a> : null;
+    }
     if (res.kind === "rhythm") return <a key={key} className="plan-chip" href="#/rhythm"><WorkbenchIcon name="right" />{res.label}</a>;
     if (res.kind === "work") {
       const book = books.find((item) => graph.entities.some((entity) => entity.name === res.work && entity.bookKeys?.includes(item.key)))?.key ?? bookKey;
