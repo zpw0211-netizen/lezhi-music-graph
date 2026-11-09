@@ -48,3 +48,20 @@ export function keyIndicesFor(notes: number[], tonic: number) {
     return index < 0 ? [] : [index];
   }))];
 }
+
+export type PentatonicMelodyMatch = { name: string; bookKey: string; evidence: string[] };
+const PENTATONIC_DEGREES = new Set([1, 2, 3, 5, 6]);
+const DEGREE_TONE: Record<number, string> = { 1: "宫", 2: "商", 3: "角", 5: "徵", 6: "羽" };
+/**
+ * Works whose transcribed main line uses only 1 2 3 5 6 (no accidentals), read from the jianpu itself.
+ * It reports what the notes show (five tones, final tone) and does not claim a textbook mode label.
+ */
+export function pentatonicMelodyMatch(
+  bars: ReadonlyArray<ReadonlyArray<{ d: number; a?: number }>>,
+): string[] | null {
+  const notes = bars.flat().filter((note) => note.d > 0);
+  if (notes.length < 8) return null;
+  if (notes.some((note) => note.a || !PENTATONIC_DEGREES.has(note.d))) return null;
+  if (new Set(notes.map((note) => note.d)).size < 4) return null;
+  return ["只用五声", `结束在${DEGREE_TONE[notes[notes.length - 1].d]}音`];
+}

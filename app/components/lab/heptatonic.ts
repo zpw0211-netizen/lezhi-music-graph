@@ -27,7 +27,7 @@ export const HEPTATONIC_MODES: Record<HeptatonicModeId, HeptatonicMode> = {
   qingyue: {
     id: "qingyue",
     name: "清乐",
-    alias: "下徵调式 · 新音阶",
+    alias: "下徵音阶 · 新音阶",
     description: "在五正声间加入清角、变宫。",
     notes: [
       { name: "宫", solfege: "do", degree: "1", semitone: 0, altered: false },
@@ -42,7 +42,7 @@ export const HEPTATONIC_MODES: Record<HeptatonicModeId, HeptatonicMode> = {
   yayue: {
     id: "yayue",
     name: "雅乐",
-    alias: "正声调式 · 古音阶",
+    alias: "正声音阶 · 古音阶",
     description: "在五正声间加入变徵、变宫。",
     notes: [
       { name: "宫", solfege: "do", degree: "1", semitone: 0, altered: false },
@@ -57,7 +57,7 @@ export const HEPTATONIC_MODES: Record<HeptatonicModeId, HeptatonicMode> = {
   yanyue: {
     id: "yanyue",
     name: "燕乐",
-    alias: "清商调式",
+    alias: "清商音阶 · 俗乐音阶",
     description: "在五正声间加入清角、闰。",
     notes: [
       { name: "宫", solfege: "do", degree: "1", semitone: 0, altered: false },

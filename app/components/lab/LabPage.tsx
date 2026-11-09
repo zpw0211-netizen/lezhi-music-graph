@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { bareWorkName, type BookDirectory, type CanonicalGraph } from "../../lib/app/types";
 import { StageBookPicker } from "../StageBookPicker";
 import { PUBLISHED_BOOK_SHORT_NAMES, availableBookStages, booksForStage, type BookStage } from "../../lib/app/books";
-import { MELODIES, melodiesFor, type Melody } from "../../lib/lesson/melodies";
+import { BOOK_MELODIES, MELODIES, melodiesFor, type Melody } from "../../lib/lesson/melodies";
 
 /** 湘艺版只用本册录的旋律，不借别的版本同名歌的谱。 */
 const labMelodies = (name: string, bookKey?: string): Melody[] => (bookKey && /^(wx-)?xy-/.test(bookKey) ? melodiesFor(bookKey, name) : MELODIES[name] ?? []);
@@ -11,7 +11,7 @@ import { getPianoAudioContext, loadPianoSampler, playPianoSample, type PianoSamp
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, type HeptatonicModeId } from "./heptatonic";
-import { findPentatonicWorks, PENTATONIC } from "./pentatonic";
+import { findPentatonicWorks, PENTATONIC, pentatonicMelodyMatch } from "./pentatonic";
 import { makeLupanPhrase, normalizePitchClass, transposeTonicFromDrag, type LupanPitch } from "./lupan-model";
 import { DIAL_NOTE_INFO, PITCH_NAME_READING } from "./lab-glossary";
 
@@ -22,7 +22,7 @@ type Inspect = { kind: "note"; name: string } | { kind: "pitch"; pitchClass: num
 type Question = { answer: number; round: number; score: number; chosen: number | null; total: 3 | 5 };
 type LearningProgress = { heard: boolean; played: boolean; challenged: boolean; explored: boolean };
 type Voice = ReturnType<typeof playPianoSample>;
-type ScaleNote = LupanPitch & { altered: boolean; solfege: string };
+type ScaleNote = LupanPitch & { altered: boolean; solfege: string; /** Sits below 宫 when a mode starts on another tone (6̣ in 羽调式). */ low?: boolean };
 type PhraseNote = ScaleNote & { midi: number; noteIndex: number; octave: boolean };
 type PlaybackNote = { midi: number; index: number | null; scoreIndex?: number };
 type PlayOptions = { kind: "single" | "phrase" | "question"; title?: string };
@@ -88,26 +88,14 @@ const MODES: Array<{ id: LabScale; title: string; subtitle: string; legend: stri
   { id: "yanyue", title: "燕乐", subtitle: "在五正声间加入清角、闰。", legend: "清角 · 闰" },
 ];
 const TONE_ROOTS: ToneRoot[] = ["宫", "商", "角", "徵", "羽"];
-const SCALE_DEGREES: Record<number, string> = {
-  0: "1", 1: "♭2", 2: "2", 3: "♭3", 4: "3", 5: "4",
-  6: "♯4", 7: "5", 8: "♭6", 9: "6", 10: "♭7", 11: "7",
-};
-const MOVABLE_SOLFEGE: Record<number, string> = {
-  0: "do", 1: "ra", 2: "re", 3: "me", 4: "mi", 5: "fa",
-  6: "fi", 7: "sol", 8: "le", 9: "la", 10: "te", 11: "ti",
-};
 
 function rotateScaleToRoot(notes: readonly ScaleNote[], root: ToneRoot): ScaleNote[] {
   const rootNote = notes.find((note) => note.name === root);
   if (!rootNote) return [...notes];
   return notes.map((note) => {
     const semitone = normalizePitchClass(note.semitone - rootNote.semitone);
-    return {
-      ...note,
-      semitone,
-      degree: SCALE_DEGREES[semitone],
-      solfege: MOVABLE_SOLFEGE[semitone],
-    };
+    // 首调简谱: 宫 stays 1 (do) and 羽 stays 6 (la) in every mode; only the starting tone changes.
+    return { ...note, semitone, low: rootNote.semitone > 0 && note.semitone >= rootNote.semitone };
   }).sort((left, right) => left.semitone - right.semitone);
 }
 
@@ -183,7 +171,9 @@ function LupanWheel({
   };
   const dragRef = useRef<DragState | null>(null);
   const modeTitle = `${MODES.find((mode) => mode.id === scale)?.title ?? "五声"} · ${modeRoot}调式`;
-  const currentKey = CHROMATIC_PITCH_NAMES[tonicPitchClass];
+  const tonicKey = CHROMATIC_PITCH_NAMES[tonicPitchClass];
+  /** 简谱 1= names 宫 (do), not the mode's tonic. */
+  const currentKey = CHROMATIC_PITCH_NAMES[normalizePitchClass(tonicPitchClass + (notes.find((note) => note.name === "宫")?.semitone ?? 0))];
   const positions = notes.map((note) => pointOnDial(note.semitone, 151));
   const fullPath = positions.length
     ? `${positions.map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(" ")} Z`
@@ -289,7 +279,7 @@ function LupanWheel({
         viewBox="0 0 600 600"
         role="group"
         tabIndex={-1}
-        aria-label={`律盘，${modeTitle}，当前调式主音 1=${currentKey}`}
+        aria-label={`律盘，${modeTitle}，主音 ${tonicKey}，1=${currentKey}`}
       >
         <defs>
           <radialGradient id="lupan-stud" cx="36%" cy="30%" r="78%">
@@ -375,7 +365,7 @@ function LupanWheel({
           role="button"
           data-motion-ignore=""
           tabIndex={0}
-          aria-label={`盘心：${modeRoot}调式，主音 1=${currentKey}，查看说明`}
+          aria-label={`盘心：${tonicKey}${modeRoot}调式，1=${currentKey}，查看说明`}
           aria-pressed={inspect?.kind === "hub"}
           onClick={onInspectHub}
           onKeyDown={(event) => activate(event, onInspectHub)}
@@ -386,7 +376,7 @@ function LupanWheel({
           <circle className="lupan-hub-inner" cx="300" cy="300" r="49" />
           <text className="lupan-hub-main" x="300" y="286">{modeRoot}</text>
           <text className="lupan-hub-key" x="300" y="311">1={currentKey}</text>
-          <text className="lupan-hub-sub" x="300" y="331">{modeRoot}调式</text>
+          <text className="lupan-hub-sub" x="300" y="331">{tonicKey} {modeRoot}调式</text>
         </g>
 
         <g className="lupan-scale-notes">
@@ -449,7 +439,7 @@ function LupanWheel({
           role="button"
           data-motion-ignore=""
           tabIndex={0}
-          aria-label={`律盘外圈，当前${modeRoot}调式主音 1=${currentKey}；拖动或按方向键移调`}
+          aria-label={`律盘外圈，当前${tonicKey}${modeRoot}调式，1=${currentKey}；拖动或按方向键移调`}
           onPointerDown={beginDrag}
           onPointerMove={moveDrag}
           onPointerUp={endDrag}
@@ -491,7 +481,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
   const [activePitchClasses, setActivePitchClasses] = useState<number[]>([]);
   const [scorePosition, setScorePosition] = useState(-1);
   const [pulse, setPulse] = useState(0);
-  const [message, setMessage] = useState("点一个徽位，听听它的声音。");
+  const [message, setMessage] = useState("点律盘上的一个音，听听它的声音。");
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState<Question | null>(null);
   const [learningProgress, setLearningProgress] = useState<LearningProgress>({ heard: false, played: false, challenged: false, explored: false });
@@ -514,10 +504,27 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
 
   const stageBooks = useMemo(() => booksForStage(books, stage), [books, stage]);
   const stageBookKeys = useMemo(() => new Set(stageBooks.map((book) => book.key)), [stageBooks]);
-  const works = useMemo(() => findPentatonicWorks(graph)
-    .filter(({ work }) => (work.bookKeys ?? []).some((key) => stageBookKeys.has(key))
-      && (!selectedBookKey || work.bookKeys?.includes(selectedBookKey)))
-    .slice(0, 8), [graph, selectedBookKey, stageBookKeys]);
+  const works = useMemo(() => {
+    const labelled = findPentatonicWorks(graph)
+      .filter(({ work }) => (work.bookKeys ?? []).some((key) => stageBookKeys.has(key))
+        && (!selectedBookKey || work.bookKeys?.includes(selectedBookKey)))
+      .map(({ work, evidence }) => {
+        const bookKey = selectedBookKey || work.bookKeys?.find((key) => stageBookKeys.has(key)) || work.bookKeys?.[0] || "";
+        return { name: bareWorkName(work.name), bookKey, evidence: [...new Set(evidence.map((item) => item.value))] };
+      });
+    const seen = new Set(labelled.map((item) => item.name));
+    const fromScores: typeof labelled = [];
+    for (const book of stageBooks) {
+      if (selectedBookKey && book.key !== selectedBookKey) continue;
+      for (const [name, melodies] of Object.entries(BOOK_MELODIES[book.key] ?? {})) {
+        const evidence = melodies[0] && pentatonicMelodyMatch(melodies[0].bars);
+        if (!evidence || seen.has(name)) continue;
+        seen.add(name);
+        fromScores.push({ name, bookKey: book.key, evidence });
+      }
+    }
+    return [...labelled, ...fromScores].slice(0, 8);
+  }, [graph, selectedBookKey, stageBookKeys, stageBooks]);
   const selectedMelodies = useMemo(() => (selected ? labMelodies(selected.name, selected.bookKey) : []), [selected]);
   const selectedMelody: Melody | undefined = selectedMelodies[selected?.index ?? 0];
   const selectedMode = MODES.find((mode) => mode.id === scale) ?? MODES[0];
@@ -530,7 +537,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
   const tonicMidi = 60 + modeTonicPitchClass;
   const keyName = CHROMATIC_PITCH_NAMES[modeTonicPitchClass];
   const gongKeyName = CHROMATIC_PITCH_NAMES[tonicPitchClass];
-  const displayKey = workPlaying && selectedMelody ? selectedMelody.key : `1=${keyName}`;
+  const displayKey = workPlaying && selectedMelody ? selectedMelody.key : `1=${gongKeyName}`;
   const learningSteps = [
     { id: "played", label: "按一按", complete: learningProgress.played },
     { id: "heard", label: "听一听", complete: learningProgress.heard },
@@ -844,10 +851,11 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
     if (inspect.kind === "hub") {
       return <div className="lupan-card" key={`hub-${tonicPitchClass}`}>
         <p className="lupan-card-kicker">盘心</p>
-        <h2 className="lupan-card-title">{modeRoot}调式 <span>1={keyName}</span></h2>
-        <p className="lupan-card-text">调式主音是 {keyName}。现在是{modeRoot}调式；这一组音的宫音在 {gongKeyName}，转动律盘会把整组音一起移调。</p>
+        <h2 className="lupan-card-title">{keyName} {modeRoot}调式 <span>1={gongKeyName}</span></h2>
+        <p className="lupan-card-text">主音是{modeRoot}音，落在 {keyName}；这一组音的宫音在 {gongKeyName}。转动律盘会把整组音一起移调。</p>
         <dl className="lupan-card-facts">
-          <div><dt>调式主音</dt><dd>{modeRoot}音为主音，记作 1={keyName}。</dd></div>
+          <div><dt>调式主音</dt><dd>{modeRoot}音（{keyName}）是主音，旋律常在它上面结束。</dd></div>
+          <div><dt>简谱 1=</dt><dd>“1=”标的是宫音（do）的音高，所以写作 1={gongKeyName}，不随调式主音改变。</dd></div>
           <div><dt>当前音阶</dt><dd>{scaleTitle}，共 {scaleNotes.length} 个音；键盘、示范和听音挑战使用同一组音。</dd></div>
         </dl>
       </div>;
@@ -882,8 +890,8 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       </dl>
       {!info.extension && works.length > 0 && <div className="lupan-card-works">
         <p>教材里的五声作品</p>
-        <ul>{works.slice(0, 3).map(({ work }) => <li key={work.id}>
-          <button type="button" onClick={() => onOpenWork(bareWorkName(work.name), selectedBookKey || work.bookKeys?.[0])}>《{bareWorkName(work.name)}》</button>
+        <ul>{works.slice(0, 3).map((work) => <li key={`${work.bookKey}:${work.name}`}>
+          <button type="button" onClick={() => onOpenWork(work.name, work.bookKey)}>《{work.name}》</button>
         </li>)}</ul>
       </div>}
     </div>;
@@ -909,7 +917,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
     <header className="lupan-intro">
       <p className="lupan-kicker">五声律坊</p>
       <h2 id="lupan-title">律盘</h2>
-      <div className="lupan-current-key" aria-live="polite"><span>当前{modeRoot}调式主音</span><b>{keyName}</b></div>
+      <div className="lupan-current-key" aria-live="polite"><span>当前调式 · 1={gongKeyName}</span><b>{keyName} {modeRoot}</b></div>
     </header>
 
     <section className="lupan-stage" aria-label="律盘练习">
@@ -919,7 +927,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
         <div className="lupan-current-scale-card">
           <b>{scaleTitle}</b>
           <span>{selectedMode.subtitle}</span>
-          <small>{modeRoot}调式 · 主音 {keyName}</small>
+          <small>{keyName} {modeRoot}调式 · 1={gongKeyName}</small>
         </div>
         <p className="lupan-bamboo-legend"><b>转动律盘</b><span>把当前调式整体移到新的音高。</span></p>
       </aside>
@@ -966,7 +974,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       </ol>
     </section>
 
-    <section className="lupan-sound-panel" aria-label="按键练习和听音挑战">
+    <section className="lupan-sound-panel" aria-label="按键练习">
       <div className="lupan-keys-and-actions">
         <div className="lupan-step-heading">
           <span className="lupan-step-number">01</span>
@@ -1025,79 +1033,81 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
         </div>
       </div>
 
-      <aside className="lupan-quiz" aria-labelledby="lupan-quiz-title">
-        <div className="lupan-step-heading lupan-quiz-heading">
-          <span className="lupan-step-number">03</span>
-          <div><p className="lupan-step-caption">第三步 · 挑战一下</p>
-        <h3 id="lupan-quiz-title">听音找键</h3>
-          </div>
-          {learningProgress.challenged && <span className="lupan-step-done">完成</span>}
-        </div>
-        <p aria-live="polite" className="lupan-quiz-message">{question
-          ? question.chosen === null
-            ? `第 ${question.round} / ${question.total} 题。听一遍，再按左边对应的${scaleTitle}键。`
-            : question.chosen === -1
-              ? `挑战完成，答对 ${question.score} / ${question.total} 题。`
-              : question.chosen === question.answer
-                ? `答对了，是${scaleNotes[question.answer].name}。`
-                : `正确答案是${scaleNotes[question.answer].name}（简谱 ${scaleNotes[question.answer].degree}）。`
-          : `听一个音，再点上方对应的按键。挑战范围：${scaleTitle} · ${modeRoot}调式。`}</p>
-        <div className="lupan-quiz-actions">
-          {!question && <>
-            <button type="button" disabled={loading} onClick={() => startQuiz(3)}>开始三题挑战</button>
-            <button type="button" className="is-secondary" disabled={loading} onClick={() => startQuiz(5)}>进阶五题</button>
-          </>}
-          {question?.chosen === null && <>
-            <button type="button" disabled={loading} onClick={() => void playSequence([{ index: question.answer, midi: tonicMidi + scaleNotes[question.answer].semitone }], { kind: "question" })}>再听一次</button>
-            <button type="button" className="is-secondary" onClick={clearQuestion}>结束挑战</button>
-          </>}
-          {question && question.chosen !== null && question.chosen !== -1 && <button type="button" disabled={loading} onClick={finishOrRepeatQuiz}>
-            {question.round === question.total ? "看看结果" : "下一题"}
-          </button>}
-          {question?.chosen === -1 && <>
-            <button type="button" disabled={loading} onClick={finishOrRepeatQuiz}>再玩一次</button>
-            <button type="button" className="is-secondary" onClick={clearQuestion}>自由试弹</button>
-          </>}
-        </div>
-      </aside>
       <p className="lupan-live-message" role="status" aria-live="polite">{message}</p>
     </section>
 
-    <section className="lupan-tape-row lupan-lesson-step" aria-labelledby="lupan-listen-title">
-      <div className="lupan-step-heading">
-        <span className="lupan-step-number">02</span>
-        <div><p className="lupan-step-caption">第二步 · 听一听</p><h3 id="lupan-listen-title">听见{scaleTitle}的顺序</h3><p>看简谱和律盘同步亮起，听听音高怎样一步步变化。</p></div>
-        {learningProgress.heard && <span className="lupan-step-done">完成</span>}
-      </div>
-        <section className="lupan-score-tape" aria-label="自编简谱示例">
-          <div className="lupan-score-head"><span>跟着音符看律盘</span><strong>{scaleTitle} · {modeRoot}调式上行</strong></div>
-          <div className="lupan-score-view" ref={scoreWindowRef}>
-            <span className="lupan-score-playhead" aria-hidden="true" />
-            <ol
-              ref={scoreTrackRef}
-              className={`lupan-score-track${scorePosition >= 0 ? " is-following" : ""}`}
-              aria-label={`${scaleTitle}上行简谱示范`}
-            >
-              {demoNotes.map((note, index) => <li
-                key={`${index}-${note.name}`}
-                className={`lupan-score-note${note.altered ? " is-altered" : ""}${scorePosition === index ? " is-current" : ""}`}
-                aria-current={scorePosition === index ? "step" : undefined}
-                aria-label={`${note.name}，简谱 ${note.degree}${note.octave ? "，高八度" : ""}${note.altered ? "，偏音，拓展知识" : ""}`}
+    <div className="lupan-practice-row">
+      <section className="lupan-tape-row lupan-lesson-step" aria-labelledby="lupan-listen-title">
+        <div className="lupan-step-heading">
+          <span className="lupan-step-number">02</span>
+          <div><p className="lupan-step-caption">第二步 · 听一听</p><h3 id="lupan-listen-title">听见{scaleTitle}的顺序</h3><p>看简谱和律盘同步亮起，听听音高怎样一步步变化。</p></div>
+          {learningProgress.heard && <span className="lupan-step-done">完成</span>}
+        </div>
+          <section className="lupan-score-tape" aria-label="自编简谱示例">
+            <div className="lupan-score-head"><span>跟着音符看律盘</span><strong>{scaleTitle} · {modeRoot}调式上行</strong></div>
+            <div className="lupan-score-view" ref={scoreWindowRef}>
+              <span className="lupan-score-playhead" aria-hidden="true" />
+              <ol
+                ref={scoreTrackRef}
+                className={`lupan-score-track${scorePosition >= 0 ? " is-following" : ""}`}
+                aria-label={`${scaleTitle}上行简谱示范`}
               >
-                <span className="lupan-score-degree">{note.degree}{note.octave && <sup aria-label="高八度">·</sup>}</span>
-                {!note.altered && <span className="lupan-score-name">{note.name}</span>}
-                {note.altered && <span className="lupan-score-bias"><i aria-hidden="true" /><b>{note.name}</b></span>}
-              </li>)}
-            </ol>
+                {demoNotes.map((note, index) => <li
+                  key={`${index}-${note.name}`}
+                  className={`lupan-score-note${note.altered ? " is-altered" : ""}${scorePosition === index ? " is-current" : ""}`}
+                  aria-current={scorePosition === index ? "step" : undefined}
+                  aria-label={`${note.name}，简谱 ${note.degree}${note.octave && !note.low ? "，高八度" : ""}${!note.octave && note.low ? "，低八度" : ""}${note.altered ? "，偏音，拓展知识" : ""}`}
+                >
+                  <span className="lupan-score-degree">{note.degree}{note.octave && !note.low && <sup aria-label="高八度">·</sup>}{!note.octave && note.low && <sub aria-label="低八度">·</sub>}</span>
+                  {!note.altered && <span className="lupan-score-name">{note.name}</span>}
+                  {note.altered && <span className="lupan-score-bias"><i aria-hidden="true" /><b>{note.name}</b></span>}
+                </li>)}
+              </ol>
+            </div>
+            <div className="lupan-score-actions">
+              <button type="button" disabled={loading} onClick={playPhrase}>听一遍</button>
+              <span>{demoNotes.length} 个音依次亮起</span>
+              <button type="button" className="is-stop" onClick={() => { stopLab(); window.dispatchEvent(new Event(VOCAL_PLAYBACK_STARTED)); setMessage("已停止。"); }}>停止</button>
+            </div>
+          </section>
+          <details className="lupan-extension-note"><summary>进阶知识</summary><p>外圈十二个音位按十二平均律排列，是便于听辨的教学模型；古代清乐、雅乐、燕乐实际使用的律高与平均律并不完全相同。</p></details>
+      </section>
+        <aside className="lupan-quiz" aria-labelledby="lupan-quiz-title">
+          <div className="lupan-step-heading lupan-quiz-heading">
+            <span className="lupan-step-number">03</span>
+            <div><p className="lupan-step-caption">第三步 · 挑战一下</p>
+          <h3 id="lupan-quiz-title">听音找键</h3>
+            </div>
+            {learningProgress.challenged && <span className="lupan-step-done">完成</span>}
           </div>
-          <div className="lupan-score-actions">
-            <button type="button" disabled={loading} onClick={playPhrase}>听一遍</button>
-            <span>{demoNotes.length} 个音依次亮起</span>
-            <button type="button" className="is-stop" onClick={() => { stopLab(); window.dispatchEvent(new Event(VOCAL_PLAYBACK_STARTED)); setMessage("已停止。"); }}>停止</button>
+          <p aria-live="polite" className="lupan-quiz-message">{question
+            ? question.chosen === null
+              ? `第 ${question.round} / ${question.total} 题。听一遍，再按上方对应的${scaleTitle}键。`
+              : question.chosen === -1
+                ? `挑战完成，答对 ${question.score} / ${question.total} 题。`
+                : question.chosen === question.answer
+                  ? `答对了，是${scaleNotes[question.answer].name}。`
+                  : `正确答案是${scaleNotes[question.answer].name}（简谱 ${scaleNotes[question.answer].degree}）。`
+            : `听一个音，再点上方对应的按键。挑战范围：${scaleTitle} · ${modeRoot}调式。`}</p>
+          <div className="lupan-quiz-actions">
+            {!question && <>
+              <button type="button" disabled={loading} onClick={() => startQuiz(3)}>开始三题挑战</button>
+              <button type="button" className="is-secondary" disabled={loading} onClick={() => startQuiz(5)}>进阶五题</button>
+            </>}
+            {question?.chosen === null && <>
+              <button type="button" disabled={loading} onClick={() => void playSequence([{ index: question.answer, midi: tonicMidi + scaleNotes[question.answer].semitone }], { kind: "question" })}>再听一次</button>
+              <button type="button" className="is-secondary" onClick={clearQuestion}>结束挑战</button>
+            </>}
+            {question && question.chosen !== null && question.chosen !== -1 && <button type="button" disabled={loading} onClick={finishOrRepeatQuiz}>
+              {question.round === question.total ? "看看结果" : "下一题"}
+            </button>}
+            {question?.chosen === -1 && <>
+              <button type="button" disabled={loading} onClick={finishOrRepeatQuiz}>再玩一次</button>
+              <button type="button" className="is-secondary" onClick={clearQuestion}>自由试弹</button>
+            </>}
           </div>
-        </section>
-        <details className="lupan-extension-note"><summary>进阶知识</summary><p>外圈十二个音位按平均律排列；清乐、雅乐和燕乐中的七声音阶可继续拓展探索。</p></details>
-    </section>
+        </aside>
+    </div>
 
     {selected && selectedMelody && <section className="lupan-work-player" ref={playerRef} aria-label={`${selected.name}旋律示范`}>
       <div className="lupan-player-heading">
@@ -1122,7 +1132,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
           <div><p className="lupan-step-caption">第四步 · 去作品里找</p><h2 id="lupan-works-title">熟悉的歌里也藏着五声</h2><p>听一段旋律，看看律盘上哪些音会亮起来。</p></div>
           {learningProgress.explored && <span className="lupan-step-done">完成</span>}
         </div>
-        <p>可以按教材册别筛选，找到课上听过的作品。</p>
+        <p>按册别筛选，找到课上学过的作品；标签说明它只用了哪几个音、结束在哪个音上。</p>
       </div>
       {availableBookStages(books).length > 1 && <StageBookPicker
         allOption={{ key: "", label: "本学段全部" }}
@@ -1135,13 +1145,13 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
         stage={stage}
       />}
       <div className="lupan-works-grid">
-        {works.map(({ work, evidence }) => {
-          const melodies = labMelodies(work.name, work.bookKeys?.[0]);
-          const book = PUBLISHED_BOOK_SHORT_NAMES[work.bookKeys?.[0] ?? ""] ?? "教材";
-          return <article className="lupan-work-slip" key={work.id}>
+        {works.map((work) => {
+          const melodies = labMelodies(work.name, work.bookKey);
+          const book = PUBLISHED_BOOK_SHORT_NAMES[work.bookKey] ?? "教材";
+          return <article className="lupan-work-slip" key={`${work.bookKey}:${work.name}`}>
             <span className="lupan-work-book">{book}</span>
-            <h3 title={bareWorkName(work.name)}>{bareWorkName(work.name)}</h3>
-            <span className="lupan-work-evidence">{[...new Set(evidence.map((item) => item.value))].join("、")}</span>
+            <h3 title={work.name}>{work.name}</h3>
+            <span className="lupan-work-evidence">{work.evidence.join(" · ")}</span>
             <div className="lupan-work-actions">
               {melodies?.length > 0 && <button
                 type="button"
@@ -1150,16 +1160,16 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
                   stopLab();
                   setQuestion(null);
                   revealPlayerAfterRender.current = true;
-                  setSelected({ name: work.name, index: 0, bookKey: work.bookKeys?.[0] });
+                  setSelected({ name: work.name, index: 0, bookKey: work.bookKey });
                   setMessage(`已选择${work.name}，点击「播放旋律」。`);
                 }}
                 aria-label={`听${work.name}旋律`}
               >▷ 听一听</button>}
-              <button type="button" className="lupan-work-open" onClick={() => { setLearningProgress((progress) => ({ ...progress, explored: true })); onOpenWork(bareWorkName(work.name), selectedBookKey || work.bookKeys?.[0]); }} aria-label={`在按课学习中打开《${bareWorkName(work.name)}》`}>去学习 →</button>
+              <button type="button" className="lupan-work-open" onClick={() => { setLearningProgress((progress) => ({ ...progress, explored: true })); onOpenWork(work.name, work.bookKey); }} aria-label={`在按课学习中打开《${work.name}》`}>去学习 →</button>
             </div>
           </article>;
         })}
-        {!works.length && <p className="lupan-works-empty">教材数据中暂未找到五声调式标注。</p>}
+        {!works.length && <p className="lupan-works-empty">这一册里暂时没有找到只用五声写成的旋律，换一册看看。</p>}
       </div>
       <p className="lupan-works-foot"><span>点开一首试听，观察宫、商、角、徵、羽怎样出现在旋律里。</span><span>{works.length ? `${works.length} 首` : ""}</span></p>
     </section>

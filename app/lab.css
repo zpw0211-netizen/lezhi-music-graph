@@ -831,3 +831,30 @@
   .lupan-five-key strong { font-size: clamp(18px, 5.6vw, 25px); }
   .lupan-five-key small { font-size: clamp(7px, 2vw, 8px); }
 }
+
+/* 01 按一按 spans the row; 02 听一听 and 03 听音找键 sit side by side, in reading order. */
+.lupan-sound-panel { grid-template-columns: minmax(0, 1fr); }
+.lupan-practice-row { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(250px, .8fr); gap: clamp(14px, 2vw, 24px); align-items: stretch; margin: 0 0 16px; }
+.lupan-practice-row > .lupan-lesson-step { margin: 0; }
+.lupan-practice-row > .lupan-quiz { padding: 22px clamp(16px, 2vw, 24px); border-radius: 18px; box-shadow: 0 12px 34px -30px rgba(25, 54, 39, .34); }
+@media (min-width: 761px) {
+  .lupan-score-track:not(.is-following) { right: 0; justify-content: center; }
+  .lupan-score-track.is-following { right: auto; }
+  .lupan-score-view:not(:has(.is-following)) .lupan-score-playhead { opacity: 0; }
+}
+@media (max-width: 900px) {
+  .lupan-practice-row { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+}
+.lupan-sound-panel .lupan-five-keys { grid-template-columns: none; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; max-width: 880px; }
+.lupan-score-degree sub { color: var(--lupan-seal); font-size: 9px; }
+/* Octave dots sit above or below the digit, as in printed jianpu (a dot after it would read as a dotted note). */
+.lupan-score-degree { position: relative; display: inline-block; }
+.lupan-score-degree :is(sup, sub) { position: absolute; left: 50%; line-height: 1; transform: translateX(-50%); }
+.lupan-score-degree sup { top: -.42em; }
+.lupan-score-degree sub { bottom: -.5em; }
+.lupan-score-degree:has(sub) { margin-bottom: 5px; }
+.lupan-score-view:not(:has(.is-following)) .lupan-score-playhead { opacity: 0; }
+@media (max-width: 760px) {
+  .lupan-works-heading { flex-direction: column; align-items: stretch; gap: 8px; }
+  .lupan-works-heading > p { max-width: none; margin: 0 0 0 44px; text-align: left; }
+}
