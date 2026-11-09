@@ -23,6 +23,7 @@ import type { WorkGraph as WorkGraphComponent } from "./components/records/WorkG
 import type { WorkLibrary as WorkLibraryComponent } from "./components/records/WorkLibrary";
 import type { ResearchAnalysis as ResearchAnalysisComponent } from "./components/ResearchAnalysis";
 import { ExplorationPage } from "./components/exploration/ExplorationPage";
+import { ExplorationToolsContext, type ExplorationView } from "./components/exploration/exploration-tools";
 import { ResearchInfo } from "./components/ResearchInfo";
 import { useAppRoute } from "./hooks/useAppRoute";
 import { useBookData, useGraphIndex } from "./hooks/useGraphIndex";
@@ -379,8 +380,6 @@ export default function Home() {
   };
 
   const needsData = view !== "home" && view !== "import" && view !== "compose" && view !== "ear" && view !== "rhythm";
-  // The 律坊 waits for data inside the exploration panel, so the shared heading never jumps when the data lands.
-  const labLoading = view === "lab" && !canonicalGraph;
   const dataStatus =
     needsData && view !== "records" && view !== "lab" && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
@@ -397,6 +396,19 @@ export default function Home() {
       </div>
     ) : null;
 
+  // The 律坊 waits for data inside the exploration panel, so the shared heading never jumps when the data lands.
+  const renderExplorationTool = (tool: ExplorationView) => <>
+    {tool === "compose" && <ComposePage />}
+    {tool === "lab" && !canonicalGraph && <div className="app-view-status exploration-loading" role="status" aria-live="polite">{index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在准备律盘…"}</div>}
+    {tool === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => {
+      const entity = worksByTitle.get(work);
+      if (entity) openLessonPage(entity);
+      else navigate({ view: "lesson", work });
+    }} />}
+    {tool === "ear" && <EarPage />}
+    {tool === "rhythm" && <RhythmPage />}
+  </>;
+
   if (!hydrated)
     return (
       <div className="app-loading" aria-busy="true">
@@ -404,6 +416,7 @@ export default function Home() {
       </div>
     );
   return (
+    <ExplorationToolsContext.Provider value={renderExplorationTool}>
     <main
       className={`app-shell theme-light ${explorer.knowledgeDetailOpen && view === "graph" ? "detail-open" : ""} ${explorer.inspectorOpen ? "inspector-open" : "inspector-closed"} schema-open ${view === "assistant" ? "assistant-mode" : ""} ${view === "home" ? "home-mode" : ""} ${view === "graph" || view === "research" ? "graph-first" : ""} ${view === "graph" ? "network-mode" : "nav-mode"} ink-app`}
       style={{ ...designTokenCssVariables, ...semanticPaletteCssVariables } as CSSProperties}
@@ -576,15 +589,7 @@ export default function Home() {
             activeView={view}
             onViewChange={nextView => navigate({ view: nextView })}
           >
-            {view === "compose" && <ComposePage />}
-            {labLoading && <div className="app-view-status exploration-loading" role="status" aria-live="polite">{index.status === "error" ? "教材数据加载失败，请检查网络后刷新页面。" : "正在准备律盘…"}</div>}
-            {view === "lab" && canonicalGraph && <LabPage books={books} stage={activeBookStage} onStageChange={persistBookStage} graph={canonicalGraph} onOpenWork={(work) => {
-              const entity = worksByTitle.get(work);
-              if (entity) openLessonPage(entity);
-              else navigate({ view: "lesson", work });
-            }} />}
-            {view === "ear" && <EarPage />}
-            {view === "rhythm" && <RhythmPage />}
+            {renderExplorationTool(view)}
           </ExplorationPage>}
         </div>
       </section>
@@ -595,5 +600,6 @@ export default function Home() {
         onClose={() => setResearchInfoOpen(false)}
       />
     </main>
+    </ExplorationToolsContext.Provider>
   );
 }

@@ -396,3 +396,25 @@
 .staff-note.is-active { color:var(--amber, #D9892B); }
 .staff-lyric.is-active { fill:var(--amber, #D9892B); }
 .staff-measure.is-dim { opacity:.28; transition:opacity .18s ease; }
+
+/* 课堂工具：上课模式右下角的圆钮，点开“音乐探索与创造”，盖在课件上，不离开上课模式。 */
+.present-tools-fab { position:absolute; right:24px; bottom:92px; z-index:6; display:grid; place-items:center; align-content:center; gap:2px; width:64px; height:64px; padding:0; border:0; border-radius:50%; background:#1E7A4A; color:#FFFFFF; font:600 13px/1.2 var(--lupan-ui, "Microsoft YaHei", sans-serif); letter-spacing:.08em; box-shadow:0 10px 26px -10px rgba(16, 52, 33, .55), 0 0 0 6px rgba(30, 122, 74, .12); cursor:pointer; transition:transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.present-tools-fab svg { width:22px; height:22px; }
+.present-tools-fab:hover { background:#17643C; transform:translateY(-2px); box-shadow:0 14px 30px -12px rgba(16, 52, 33, .6), 0 0 0 8px rgba(30, 122, 74, .14); }
+.present-tools-fab:focus-visible { outline:3px solid #F2C14E; outline-offset:3px; }
+.present-tools { position:absolute; inset:0; z-index:8; display:flex; flex-direction:column; background:#F7F9F8; animation:present-tools-in .22s ease-out; }
+.present-tools-bar { display:flex; flex:0 0 auto; align-items:center; justify-content:space-between; gap:16px; min-height:56px; box-sizing:border-box; padding:8px 20px; border-bottom:1px solid #DDE7E1; background:#FFFFFF; color:#3D463F; font-size:14px; }
+.present-tools-bar button { display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:0 18px; border:1px solid #1E7A4A; border-radius:999px; background:#1E7A4A; color:#FFFFFF; font:600 14px/1.2 var(--lupan-ui, "Microsoft YaHei", sans-serif); cursor:pointer; }
+.present-tools-bar button svg { width:16px; height:16px; }
+.present-tools-bar button:hover { background:#17643C; }
+.present-tools-body { flex:1 1 auto; min-height:0; overflow:auto; overscroll-behavior:contain; }
+.present-tools-body.route-view-exploration { min-height:0; }
+@keyframes present-tools-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+@media (max-width: 760px) {
+  .present-tools-fab { right:14px; bottom:78px; width:54px; height:54px; font-size:11px; }
+  .present-tools-fab svg { width:18px; height:18px; }
+  .present-tools-bar { min-height:50px; padding:6px 12px; font-size:12px; }
+  .present-tools-bar span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .present-tools-bar button { flex:0 0 auto; min-height:36px; padding:0 14px; font-size:13px; }
+}
+@media (prefers-reduced-motion: reduce) { .present-tools { animation:none; } .present-tools-fab { transition:none; } }
