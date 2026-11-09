@@ -10,16 +10,24 @@ permissions:
   pages: write
   id-token: write
 
+# A push that lands while a deploy is running waits for it instead of cancelling it, so two
+# sessions pushing close together no longer throw each other's deploy away. (GitHub keeps only the
+# newest waiting run; main is linear, so that run already contains every earlier commit.)
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
+
+env:
+  NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
+  NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+  NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
+  NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
 
 jobs:
-  build:
+  # Quality checks run on their own machine, side by side with the site builds.
+  checks:
     runs-on: ubuntu-latest
-    env:
-      # yapu.studio/ is the entry page (portal/); the 人音版 site is this app under /renyin/.
-      NEXT_PUBLIC_BASE_PATH: "/renyin"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,62 +52,79 @@ jobs:
           npm run quality:ai-candidate
           node scripts/check-melodies.mjs
           node scripts/check-staff.mjs
-      - name: Build static export
-        run: npm run build
+
+  # Every site is built on its own machine at the same time, so a deploy takes about as long as the
+  # slowest single site instead of all of them one after another.
+  #   人音版 (/renyin/) and the entry page (yapu.studio/) come from the main app.
+  #   The other editions are built from editions/<name> on top of the same code (scripts/build-edition.mjs).
+  #   Repository variables take editions off the site: PUBLISH_RENJIAO (人教版 and 人教版五线谱),
+  #   PUBLISH_STAFF (both 五线谱 editions), PUBLISH_XIANGYI (湘艺版) set to "false".
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - site: renyin
+            enabled: "true"
+          - site: renjiao
+            enabled: ${{ vars.PUBLISH_RENJIAO != 'false' }}
+          - site: renyin-staff
+            enabled: ${{ vars.PUBLISH_STAFF != 'false' }}
+          - site: renjiao-staff
+            enabled: ${{ vars.PUBLISH_STAFF != 'false' && vars.PUBLISH_RENJIAO != 'false' }}
+          - site: xiangyi
+            enabled: ${{ vars.PUBLISH_XIANGYI != 'false' }}
+    steps:
+      - name: Checkout
+        if: ${{ format('{0}', matrix.enabled) == 'true' }}
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        if: ${{ format('{0}', matrix.enabled) == 'true' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        if: ${{ format('{0}', matrix.enabled) == 'true' }}
+        run: npm ci
+      - name: Build 人音版 and entry page
+        if: ${{ matrix.site == 'renyin' }}
+        run: |
+          npm run build
+          node scripts/prepare-github-pages.mjs
+          npm run quality:pages
         env:
+          NEXT_PUBLIC_BASE_PATH: "/renyin"
           GITHUB_PAGES: "true"
           NEXT_PUBLIC_STATIC_EXPORT: "1"
-          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
-          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
-      - name: Prepare Pages artifact
-        run: node scripts/prepare-github-pages.mjs
-      - name: Audit Pages artifact
-        run: npm run quality:pages
-      # 人教版 (/renjiao/) is built from editions/renjiao on top of the same code; setting the
-      # repository variable PUBLISH_RENJIAO to "false" takes it off the site.
-      - name: Build 人教版 edition
-        if: ${{ vars.PUBLISH_RENJIAO != 'false' }}
-        run: node scripts/build-edition.mjs renjiao
-        env:
-          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
-          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
-      # The 五线谱 editions reuse each publisher's lessons and melodies and draw them on a staff;
-      # PUBLISH_STAFF set to "false" takes both off the site.
-      - name: Build 人音版五线谱 edition
-        if: ${{ vars.PUBLISH_STAFF != 'false' }}
-        run: node scripts/build-edition.mjs renyin-staff
-        env:
-          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
-          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
-      - name: Build 人教版五线谱 edition
-        if: ${{ vars.PUBLISH_STAFF != 'false' && vars.PUBLISH_RENJIAO != 'false' }}
-        run: node scripts/build-edition.mjs renjiao-staff
-        env:
-          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
-          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
-      # 湘艺版 (/xiangyi/) publishes only the books marked published in editions/xiangyi/data/books.json;
-      # PUBLISH_XIANGYI set to "false" takes it off the site.
-      - name: Build 湘艺版 edition
-        if: ${{ vars.PUBLISH_XIANGYI != 'false' }}
-        run: node scripts/build-edition.mjs xiangyi
-        env:
-          NEXT_PUBLIC_AI_API_URL: ${{ vars.NEXT_PUBLIC_AI_API_URL }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
-          NEXT_PUBLIC_ACCOUNTS_ENABLED: ${{ vars.NEXT_PUBLIC_ACCOUNTS_ENABLED }}
-          NEXT_PUBLIC_PHONE_AUTH_ENABLED: ${{ vars.NEXT_PUBLIC_PHONE_AUTH_ENABLED }}
+      - name: Build ${{ matrix.site }} edition
+        if: ${{ matrix.site != 'renyin' && format('{0}', matrix.enabled) == 'true' }}
+        run: node scripts/build-edition.mjs ${{ matrix.site }}
+      - name: Keep the built site for the deploy
+        if: ${{ format('{0}', matrix.enabled) == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-${{ matrix.site }}
+          path: dist/client
+          retention-days: 1
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+
+  # Put the sites side by side (yapu.studio/, /renyin/, /renjiao/, …) and hand them to Pages.
+  assemble:
+    runs-on: ubuntu-latest
+    needs: [checks, build]
+    steps:
+      - name: Collect the built sites
+        uses: actions/download-artifact@v4
+        with:
+          pattern: site-*
+          path: dist/client
+          merge-multiple: true
+      - name: List the sites
+        run: ls -la dist/client && du -sh dist/client/*/ | sort -h
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
@@ -112,7 +137,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: assemble
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
