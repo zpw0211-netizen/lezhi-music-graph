@@ -7,8 +7,9 @@
 
 .plan-request { display:grid; gap:8px; margin-top:26px; }
 .plan-request > label { font-family:var(--serif); font-size:14px; letter-spacing:.08em; color:var(--ink-2); }
-.plan-request-row { display:flex; gap:12px; align-items:stretch; }
-.plan-request textarea { flex:1; min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--sheet); color:var(--ink); font:inherit; font-size:16px; line-height:1.6; resize:vertical; }
+.plan-request-row { display:flex; gap:12px; align-items:center; }
+.plan .plan-request textarea { flex:1; min-width:0; padding:12px 14px; border:1px solid #CBD8D0; border-radius:10px; background:#fff; color:var(--ink); font:inherit; font-size:16px; line-height:1.6; resize:vertical; box-shadow:inset 0 1px 2px rgb(23 34 28 / 4%); transition:border-color .2s, box-shadow .2s; }
+.plan .plan-request textarea:hover { border-color:#A9C0B3; }
 .plan-request textarea:focus, .plan-options :is(input,select):focus, .plan textarea:focus { outline:2px solid var(--pine); outline-offset:1px; border-color:transparent; }
 .plan-primary { flex:none; padding:0 22px; min-height:44px; border:1px solid var(--pine); border-radius:999px; background:var(--pine); color:var(--sheet); font-family:var(--serif); font-size:15px; letter-spacing:.06em; cursor:pointer; transition:background .2s, transform .18s; }
 .plan-primary:hover { background:var(--pine-deep, #194D35); }
@@ -40,7 +41,7 @@
 .plan-goals li { display:grid; grid-template-columns:6em minmax(0,1fr); gap:4px 14px; align-items:start; }
 .plan-goals li > b { padding-top:8px; color:var(--pine); font-size:14px; letter-spacing:.06em; }
 .plan-goals li > .plan-issues { grid-column:2; }
-.plan textarea { field-sizing:content; width:100%; min-width:0; padding:7px 10px; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--ink); font:inherit; font-size:15px; line-height:1.7; resize:vertical; transition:border-color .2s, background .2s; }
+.plan textarea { field-sizing:content; width:100%; min-width:0; padding:7px 10px; border:1px solid transparent; border-radius:6px; background:transparent; color:var(--ink); font:inherit; font-size:15px; line-height:1.7; resize:none; transition:border-color .2s, background .2s; }
 .plan textarea:hover { border-color:var(--line); background:var(--paper-2); }
 .plan-focus { display:grid; gap:6px; margin:16px 0 0; padding:12px 14px; border-left:3px solid var(--seal); background:var(--paper-2); }
 .plan-focus div { display:grid; grid-template-columns:5em minmax(0,1fr); gap:10px; }

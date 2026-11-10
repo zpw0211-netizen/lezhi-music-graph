@@ -8,7 +8,7 @@
   --rhythm-seal: #AF4236;
   --rhythm-amber: #C98A22;
   --rhythm-line: #DCE5DF;
-  width: min(1450px, 100%);
+  width: 100%;
   margin-inline: auto;
   padding: 8px clamp(18px, 2.8vw, 42px) 48px;
   color: var(--rhythm-ink);

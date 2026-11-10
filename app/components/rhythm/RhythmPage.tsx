@@ -589,7 +589,7 @@ export function RhythmPage() {
                         onClick={() => toggleAllowed(pattern.id)}
                       >
                         <span className="rhythm-check" aria-hidden="true">{on ? "✓" : ""}</span>
-                        <PatternGlyph pattern={pattern} />
+                        <PatternGlyph pattern={pattern} fit />
                         <span className="rhythm-card-name">{pattern.name}</span>
                         <small>{Math.round(pattern.beats / meter.unit)} 拍</small>
                       </button>
@@ -602,7 +602,7 @@ export function RhythmPage() {
                         onClick={() => insert(pattern)}
                       >
                         <span className="rhythm-check is-add" aria-hidden="true">＋</span>
-                        <PatternGlyph pattern={pattern} />
+                        <PatternGlyph pattern={pattern} fit />
                         <span className="rhythm-card-name">{pattern.name}</span>
                         <small>{Math.round(pattern.beats / meter.unit)} 拍</small>
                       </button>

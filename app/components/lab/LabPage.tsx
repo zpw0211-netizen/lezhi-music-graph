@@ -374,9 +374,9 @@ function LupanWheel({
           <circle className="lupan-hub-shadow" cx="300" cy="303" r="58" />
           <circle className="lupan-hub" cx="300" cy="300" r="57" />
           <circle className="lupan-hub-inner" cx="300" cy="300" r="49" />
-          <text className="lupan-hub-main" x="300" y="286">{modeRoot}</text>
-          <text className="lupan-hub-key" x="300" y="311">1={currentKey}</text>
-          <text className="lupan-hub-sub" x="300" y="331">{tonicKey} {modeRoot}调式</text>
+          <text className="lupan-hub-main" x="300" y="279">{modeRoot}</text>
+          <text className="lupan-hub-key" x="300" y="314">1={currentKey}</text>
+          <text className="lupan-hub-sub" x="300" y="333">{tonicKey} {modeRoot}调式</text>
         </g>
 
         <g className="lupan-scale-notes">
@@ -415,9 +415,9 @@ function LupanWheel({
                     <text className="lupan-bias-label" y="1">{note.name}</text>
                   </>
                   : <>
-                    <text className="lupan-note-degree" y="-12">{note.degree}</text>
-                    <text className="lupan-note-name" y="7">{note.name}</text>
-                    <text className="lupan-note-solfege" y="21">{note.solfege}</text>
+                    <text className="lupan-note-degree" y="-13">{note.degree}</text>
+                    <text className="lupan-note-name" y="3">{note.name}</text>
+                    <text className="lupan-note-solfege" y="20">{note.solfege}</text>
                   </>}
               </g>
               <circle

@@ -36,8 +36,10 @@ function figures(pattern: RhythmPattern): Figure[] {
   return list;
 }
 
-export function PatternGlyph({ pattern, activeKey, marks, groupIndex }: {
+export function PatternGlyph({ pattern, activeKey, marks, groupIndex, fit }: {
   pattern: RhythmPattern;
+  /** Crop to the drawn notes (pattern cards), instead of the width the pattern takes in a bar. */
+  fit?: boolean;
   activeKey?: string | null;
   marks?: Map<string, Verdict>;
   groupIndex?: number;
@@ -76,10 +78,15 @@ export function PatternGlyph({ pattern, activeKey, marks, groupIndex }: {
       return shapes;
     });
   });
+  const first = notes[0];
+  const last = notes[notes.length - 1];
+  const left = fit && first ? first.x - 8 : 0;
+  const right = fit && last ? last.x + 8 + (!last.rest && flagCount(last.base) > 0 && !beamed.has(last) ? 7 : 0) + last.dots * 6 : width;
+  const span = right - left;
   return (
     <span className={`rhythm-group${pattern.triplet ? " is-triplet" : ""}`}>
       {pattern.triplet && <span className="rhythm-triplet-mark" aria-hidden="true">3</span>}
-      <svg className="rhythm-figures" viewBox={`0 0 ${width} 42`} style={{ width: `${width / EM}em`, height: `${42 / EM}em`, maxWidth: "100%" }} role="img" aria-label={pattern.name}>
+      <svg className="rhythm-figures" viewBox={`${left} 0 ${span} 42`} style={{ width: `${span / EM}em`, height: `${42 / EM}em`, maxWidth: "100%" }} role="img" aria-label={pattern.name}>
         {notes.map((note, n) => {
           const keys = groupIndex === undefined ? [] : note.tokens.map((token) => tokenKey(groupIndex, token));
           const active = !!activeKey && keys.includes(activeKey);

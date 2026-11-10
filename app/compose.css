@@ -8,9 +8,9 @@
   --c-seal: #AF4236;
   --c-line: #E1E8E3;
   --c-paper: #FBFCFA;
-  width: min(1240px, 100%);
+  width: 100%;
   margin-inline: auto;
-  padding: 4px clamp(16px, 2.8vw, 40px) 56px;
+  padding: 4px clamp(18px, 2.8vw, 42px) 56px;
   color: var(--c-ink);
   font-family: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
   line-height: 1.7;
@@ -34,7 +34,7 @@
 .compose-field { display: flex; align-items: center; gap: 8px; }
 .compose-field-label { color: var(--c-ink-3); font-size: 12px; letter-spacing: .08em; white-space: nowrap; }
 .compose-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.compose-chips button { display: inline-flex; align-items: baseline; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--c-line); border-radius: 9px; background: #fff; color: var(--c-ink-2); font-size: 13px; white-space: nowrap; transition: border-color .15s ease, background .15s ease; }
+.compose-chips button { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--c-line); border-radius: 9px; background: #fff; color: var(--c-ink-2); font-size: 13px; white-space: nowrap; transition: border-color .15s ease, background .15s ease; }
 .compose-chips button small { color: var(--c-ink-3); font-size: 11px; }
 .compose-chips button:hover { border-color: #C3D3C8; }
 .compose-chips button.is-active { border-color: var(--c-pine); background: var(--c-pine); color: #fff; font-weight: 600; }

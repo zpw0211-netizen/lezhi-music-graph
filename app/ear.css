@@ -10,9 +10,9 @@
   --e-gold: #D9A12B;
   --e-line: #E1E8E3;
   --e-paper: #FBFCFA;
-  width: min(1240px, 100%);
+  width: 100%;
   margin-inline: auto;
-  padding: 4px clamp(16px, 2.8vw, 40px) 56px;
+  padding: 4px clamp(18px, 2.8vw, 42px) 56px;
   color: var(--e-ink);
   font-family: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
   line-height: 1.7;
@@ -33,9 +33,9 @@
 .ear-level.is-active { border-color: var(--e-pine); box-shadow: inset 0 0 0 1px var(--e-pine); background: var(--e-pine-soft); }
 .ear-level-number { color: var(--e-seal); font: 12px/1.4 var(--serif, "Songti SC", serif); letter-spacing: .12em; }
 .ear-level strong { font: 400 20px/1.35 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .04em; }
-.ear-lab .ear-level small { color: var(--e-ink-3); font-size: 12px; line-height: 1.5; }
+.ear-lab .ear-level small { color: var(--e-ink-3); font-size: 12px; line-height: 1.5; text-wrap: balance; }
 .ear-level-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; }
-.ear-level-foot em { color: var(--e-ink-3); font-size: 11px; font-style: normal; }
+.ear-level-foot em { color: var(--e-ink-3); font-size: 11px; font-style: normal; white-space: nowrap; }
 
 .ear-stars { display: inline-flex; gap: 1px; color: #D8DED9; letter-spacing: 0; }
 .ear-stars .is-on { color: var(--e-gold); }
@@ -47,7 +47,7 @@
 .ear-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .ear-field-label { color: var(--e-ink-3); font-size: 12px; letter-spacing: .08em; white-space: nowrap; }
 .ear-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.ear-chips button { display: inline-flex; align-items: baseline; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--e-line); border-radius: 9px; background: #fff; color: var(--e-ink-2); font-size: 13px; white-space: nowrap; }
+.ear-chips button { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--e-line); border-radius: 9px; background: #fff; color: var(--e-ink-2); font-size: 13px; white-space: nowrap; }
 .ear-chips button small { color: var(--e-ink-3); font-size: 11px; }
 .ear-chips button.is-active { border-color: var(--e-pine); background: var(--e-pine); color: #fff; font-weight: 600; }
 .ear-chips button.is-active small { color: rgb(255 255 255 / 75%); }

@@ -627,7 +627,7 @@
 .records-leaf-head h3 { margin: 0; color: var(--records-ink); font: 20px/1.4 var(--records-serif); }
 
 .records-leaf-tabs { display: inline-flex; padding: 3px; border: 1px solid var(--records-line); border-radius: 999px; background: var(--records-paper-2); }
-.records-leaf-tabs button { display: inline-flex; min-height: 34px; align-items: baseline; gap: 5px; padding: 6px 16px; border: 0; border-radius: 999px; background: transparent; color: var(--records-ink-2); font: 15px/1.4 var(--records-serif); cursor: pointer; transition: background 200ms, color 200ms; }
+.records-leaf-tabs button { display: inline-flex; min-height: 34px; align-items: center; gap: 5px; padding: 6px 16px; border: 0; border-radius: 999px; background: transparent; color: var(--records-ink-2); font: 15px/1.4 var(--records-serif); cursor: pointer; transition: background 200ms, color 200ms; }
 .records-leaf-tabs button small { color: inherit; font: 11px/1 var(--records-ui); opacity: .72; }
 .records-leaf-tabs button[aria-pressed="true"] { background: var(--records-pine); color: var(--records-sheet); }
 .records-leaf-tabs button:focus-visible { outline: 2px solid var(--records-seal); outline-offset: 2px; }
@@ -1051,21 +1051,23 @@
   top: -60px;
   display: block;
   margin: -60px 0 48px auto;
-  padding: 9px 13px;
+  padding: 8px 16px;
   border: 1px solid var(--line, #CFC4AC);
-  background: var(--paper, #F4EEE1);
+  border-radius: 999px;
+  background: var(--sheet, #fff);
+  transition: color .2s, border-color .2s;
   color: var(--ink-2, #44504A);
   font: 13px/1.4 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
   cursor: pointer;
 }
 
 .records-detail-close span { font-size: 18px; vertical-align: -1px; }
-.records-detail-close:hover { color: var(--seal, #B8392A); }
+.records-detail-close:hover { border-color: var(--seal, #B8392A); color: var(--seal, #B8392A); }
 .records-detail-close:focus-visible,
 .records-detail-lesson:focus-visible { outline: 2px solid var(--seal, #B8392A); outline-offset: 3px; }
 
 .records-detail-unit { margin: 0 0 14px; color: var(--seal, #B8392A); font: 13px/1.5 var(--serif, "Songti SC", "STSong", serif); letter-spacing: .12em; }
-.ink-app.theme-light .records-detail .records-detail-title { margin: 0; color: var(--ink, #1B2622); font: 600 clamp(36px, 4.2vw, 58px)/1.28 var(--font-display); letter-spacing: .035em; }
+.ink-app.theme-light .records-detail .records-detail-title { margin: 0; color: var(--ink, #1B2622); font: 600 clamp(36px, 4.2vw, 58px)/1.28 var(--font-display); letter-spacing: .035em; text-indent: -.42em; text-wrap: balance; }
 .records-detail-credits { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 14px 0 0; color: var(--ink-2, #44504A); font: 13px/1.7 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); }
 .records-detail-page { margin: 8px 0 0; color: var(--ink-3, #7A7F72); font: 12px/1.5 var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif); font-variant-numeric: lining-nums tabular-nums; }
 

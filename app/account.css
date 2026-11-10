@@ -26,6 +26,9 @@
 .account-code-row button { height:44px; padding:0 12px; border:1px solid var(--account-line); border-radius:8px; color:var(--account-green); background:#fffdf8; font-size:14px; }
 .account-primary { display:block; width:100%; min-height:46px; margin-top:20px; padding:10px 16px; border:0; border-radius:9px; color:#fffdf8; background:var(--account-green); font-size:16px; }
 .account-panel button:disabled { cursor:default; opacity:.55; }
+.account-panel .account-primary { color:#fffdf8; font-weight:500; letter-spacing:.08em; transition:background .2s; }
+.account-panel .account-primary:hover:not(:disabled) { background:#1c5140; }
+.account-panel .account-primary:disabled { opacity:1; background:#a9c0b5; color:#fffdf8; }
 .account-panel button:focus-visible,.account-nav-button:focus-visible { outline:2px solid #24624c; outline-offset:3px; }
 .account-link { padding:4px 0; border:0; color:var(--account-green); background:transparent; text-decoration:underline; text-underline-offset:3px; font-size:14px; }
 .account-field + .account-link { display:block; margin:10px 0 0 auto; }

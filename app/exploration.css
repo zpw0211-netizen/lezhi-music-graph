@@ -76,9 +76,9 @@
   color: var(--exploration-green);
 }
 .exploration-tabs button.is-active {
-  border-color: #B8CEBF;
+  border-color: var(--exploration-green);
   background: #F0F6F2;
-  box-shadow: inset 0 0 0 1px rgb(39 99 68 / 8%);
+  box-shadow: inset 0 0 0 1px var(--exploration-green);
   color: var(--exploration-green);
 }
 .exploration-tabs button:focus-visible {
@@ -94,16 +94,17 @@
   border-radius: 50%;
   background: #F2F5F3;
   color: #748078;
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .is-active .exploration-tab-number {
-  background: #DFECE3;
-  color: var(--exploration-green);
+  background: var(--exploration-green);
+  color: #fff;
 }
 .exploration-tab-copy { display: grid; gap: 3px; min-width: 0; }
 .exploration-tab-copy > span { color: var(--ink, #17221C); font-size: 14px; font-weight: 600; white-space: nowrap; }
-.exploration-tab-copy small { overflow: hidden; color: var(--ink-3, #68766E); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.exploration-tab-copy small { color: var(--ink-3, #68766E); font-size: 12px; white-space: nowrap; }
 .exploration-tab-arrow { margin-left: auto; color: #98A69D; font-size: 14px; }
 .is-active .exploration-tab-arrow { color: var(--exploration-green); }
 /* flow-root: a loading box margin (pages-v5 gives it 72px) must not collapse through and move the panel. */
@@ -125,7 +126,7 @@
   .exploration-tabs button { min-height: 58px; gap: 7px; padding: 8px; }
   .exploration-tab-number { width: 26px; height: 26px; }
   .exploration-tab-copy > span { font-size: 13px; }
-  .exploration-tab-copy small { font-size: 10px; }
+  .exploration-tab-copy small { font-size: 11px; }
 }
 
 @media (max-width: 520px) {
@@ -138,7 +139,7 @@
   .exploration-tab-number, .exploration-tab-arrow { display: none; }
   .exploration-tab-copy { text-align: center; }
   .exploration-tab-copy > span { font-size: 12px; }
-  .exploration-tab-copy small { max-width: 100%; font-size: 9px; }
+  .exploration-tab-copy small { max-width: 100%; font-size: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -147,3 +148,9 @@
 
 /* 页面分块与律坊数据载入时的占位，留在面板里，标题与标签不再被推动。 */
 .exploration-panel > .app-view-status { display: grid; min-height: min(640px, calc(100dvh - 240px)); place-items: center; max-width: none; margin: 0; border: 0; background: transparent; color: var(--ink-2, #44544B); }
+
+/* 手机上探索页两侧不再留双层边距。 */
+@media (max-width: 520px) {
+  .ink-app .workspace .exploration-shell { padding-left: 6px !important; padding-right: 6px !important; }
+  .exploration-panel > .lupan-lab { width: calc(100% + 12px); margin-left: -6px; }
+}

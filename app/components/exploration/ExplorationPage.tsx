@@ -7,10 +7,10 @@ import type { AppView } from "../../lib/app/routing";
 type ExplorationView = Extract<AppView, "compose" | "ear" | "lab" | "rhythm">;
 
 const tabs: Array<{ view: ExplorationView; label: string; caption: string }> = [
-  { view: "compose", label: "旋律创编", caption: "用几个音写一段自己的旋律" },
-  { view: "ear", label: "听音训练", caption: "听高低、听唱名、听音程、旋律听写" },
-  { view: "lab", label: "五声律坊", caption: "转动律盘，听见五声与调式" },
-  { view: "rhythm", label: "节奏训练", caption: "随机出题或自己编排节奏" },
+  { view: "compose", label: "旋律创编", caption: "写一段旋律" },
+  { view: "ear", label: "听音训练", caption: "练练小耳朵" },
+  { view: "lab", label: "五声律坊", caption: "转一转律盘" },
+  { view: "rhythm", label: "节奏训练", caption: "拍一拍节奏" },
 ];
 
 export function ExplorationPage({
@@ -93,7 +93,6 @@ export function ExplorationPage({
                   <span>{tab.label}</span>
                   <small>{tab.caption}</small>
                 </span>
-                <span className="exploration-tab-arrow" aria-hidden="true">↗</span>
               </button>
             );
           })}

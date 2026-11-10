@@ -30,9 +30,9 @@
   --lupan-ease: cubic-bezier(.16, 1, .3, 1);
   position: relative;
   isolation: isolate;
-  width: min(1450px, calc(100% + 64px));
+  width: 100%;
   margin-inline: auto;
-  padding: 8px clamp(22px, 4vw, 58px) 42px;
+  padding: 8px clamp(18px, 2.8vw, 42px) 42px;
   color: var(--lupan-ink);
   font-family: var(--ui, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
   line-height: 1.7;
@@ -270,7 +270,7 @@
 .lupan-scale-note.is-sounding .lupan-note-halo { opacity: .72; transform: scale(1.8); }
 .lupan-note-degree { fill: #4A3417; font: 600 10px/1 var(--serif, "Songti SC", "STSong", serif); text-anchor: middle; }
 .lupan-note-degree-altered { fill: var(--lupan-seal); font-size: 9px; }
-.lupan-note-name { fill: #24180A; font: 400 20px/1 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); text-anchor: middle; dominant-baseline: central; }
+.lupan-note-name { fill: #24180A; font: 400 17px/1 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); text-anchor: middle; dominant-baseline: central; }
 .lupan-note-solfege { fill: #5A4220; font: 9px/1 var(--serif, "Songti SC", "STSong", serif); text-anchor: middle; }
 .lupan-bias-stamp { fill: rgba(255,240,214,.5); stroke: var(--lupan-seal); stroke-width: 1.7; }
 .lupan-bias-label { fill: var(--lupan-seal); font: 400 15px/1 var(--kai, "LXGW WenKai", "STKaiti", "KaiTi", serif); text-anchor: middle; dominant-baseline: central; }
@@ -463,10 +463,10 @@
 .lupan-credit { margin: 12px 0 0; color: var(--lupan-ink-3); font: 10px/1.6 var(--serif, "Songti SC", "STSong", serif); }
 .lupan-credit a { text-underline-offset: 3px; }
 @media (max-width: 1450px) {
-  .lupan-lab { margin-left: -32px; }
+  .lupan-lab { margin-left: 0; }
 }
 @media (max-width: 1100px) {
-  .lupan-lab { width: calc(100% + 40px); margin-left: -20px; }
+  .lupan-lab { width: 100%; margin-left: 0; }
   .lupan-stage { grid-template-columns: minmax(140px, 170px) minmax(0, 1fr) min(290px, 34vw); min-height: 0; }
   .lupan-bamboo small { font-size: 8px; }
 }
@@ -857,4 +857,21 @@
 @media (max-width: 760px) {
   .lupan-works-heading { flex-direction: column; align-items: stretch; gap: 8px; }
   .lupan-works-heading > p { max-width: none; margin: 0 0 0 44px; text-align: left; }
+}
+
+/* 质感修订：桌面端小字不小于 12px；作品筛选一行排开。 */
+@media (min-width: 761px) {
+  .lupan-lab :is(.lupan-credit, .lupan-credit a, .lupan-root-options > p, .lupan-current-scale-card small, .lupan-root-option span, .lupan-progress-state, .lupan-extension-note p, .lupan-extension-note summary, .lupan-live-message, .lupan-step-caption, .lupan-turn-controls span, .lupan-works-foot span, .lupan-work-book, .lupan-work-evidence, .lupan-progress-number) { font-size: 12px; }
+  .lupan-lab .lupan-scale-option small { font-size: 11px; }
+  .lupan-lab .lupan-quiz-actions button,
+  .lupan-lab :is(.lupan-work-listen, .lupan-work-open) { font-size: 13px; }
+  .lupan-lab .stage-book-picker--page .stage-book-picker__desktop { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .lupan-lab .stage-book-picker--page .stage-book-picker__books { display: flex; flex-wrap: wrap; }
+}
+@media (max-width: 760px) {
+  .lupan-lab :is(.lupan-scale-option small, .lupan-root-option span) { font-size: 10px; }
+  .lupan-lab .lupan-quiz-actions button,
+  .lupan-lab :is(.lupan-score-actions, .lupan-sound-row-actions) button,
+  .lupan-lab :is(.lupan-work-listen, .lupan-work-open) { font-size: 12px; }
+  .lupan-lab :is(.lupan-stage-label, .lupan-current-scale-card span, .lupan-current-scale-card small, .lupan-score-head span, .lupan-sound-row-actions span, .lupan-choice-label, .lupan-progress-state, .lupan-credit, .lupan-credit a, .lupan-root-options > p, .lupan-kicker, .lupan-current-key span, .lupan-score-actions span, .lupan-turn-controls span, .lupan-works-foot span, .lupan-work-book, .lupan-work-evidence) { font-size: 11px; }
 }

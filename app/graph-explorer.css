@@ -395,3 +395,9 @@
 .ink-app.network-mode .cross-book-inspector-summary li { color: var(--ink-2, #44504A); border-color: #D8CDB4; }
 .ink-app.network-mode .cross-book-inspector-summary li span { color: var(--ink-3, #62675B); }
 .ink-app.network-mode .cross-book-inspector-summary > p { color: var(--ink-3, #62675B) !important; }
+
+/* 质感修订：筛选栏可滚动时底部渐隐，不再把一行字切掉一半；数据说明两行均衡。 */
+@media (min-width: 1001px) {
+  .explorer-sidebar .explorer-controls { padding-bottom: 30px; -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 30px), transparent); mask-image: linear-gradient(180deg, #000 calc(100% - 30px), transparent); }
+}
+.ink-app.network-mode .explorer-dataset-summary p { text-wrap: balance; }
