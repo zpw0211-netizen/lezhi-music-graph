@@ -55,9 +55,10 @@ const GROUPS: Array<{ key: string; title: string; test: RegExp }> = [
 ];
 const HIDDEN = /^(学习方式|教材标注|包含作品|对比作品)$/;
 
-const QUIZ: Array<{ test: RegExp; family: RegExp; ask: (work: string) => string }> = [
-  { test: /^拍号$/, family: /^拍号$/, ask: (w) => `${w}是几拍子的歌曲？` },
-  { test: /^调号$/, family: /^调号$/, ask: (w) => `${w}的调号是？` },
+/** shape：答案是这种写法时，干扰项也只取同样写法的（拍号题不出现「六个主题均为2/4」这类别的作品的说明）。 */
+const QUIZ: Array<{ test: RegExp; family: RegExp; shape?: RegExp; ask: (work: string) => string }> = [
+  { test: /^拍号$/, family: /^拍号$/, shape: /^\d+\/\d+$/, ask: (w) => `${w}是几拍子的歌曲？` },
+  { test: /^调号$/, family: /^调号$/, shape: /^1\s*=\s*[♭♯b#]?[A-G]$/, ask: (w) => `${w}的调号是？` },
   { test: /^(词曲作者|作曲)$/, family: /^(词曲作者|作曲)$/, ask: (w) => `${w}的曲作者是谁？` },
   { test: /^曲式结构$/, family: /^曲式结构$/, ask: (w) => `${w}是什么曲式结构？` },
   { test: /^(风格特点|音乐风格)$/, family: /^(风格特点|音乐风格)$/, ask: (w) => `${w}具有哪种音乐风格？` },
@@ -168,7 +169,8 @@ export function LessonPage({
       const pool = [...new Set(relationships
         .filter((relation) => spec.family.test(relation.predicate) && relation.subject !== workId && entityMap.get(relation.subject)?.name.startsWith("《"))
         .map(valueOf))]
-        .filter((value) => value && value !== answer && value.length <= 16 && !/[、，]/.test(value));
+        .filter((value) => value && value !== answer && value.length <= 16 && !/[、，]/.test(value))
+        .filter((value) => !spec.shape || !spec.shape.test(answer) || spec.shape.test(value));
       if (pool.length < 2) continue;
       const distractors = pool.sort((a, b) => hash(workId + a) - hash(workId + b)).slice(0, 3);
       const options = [answer, ...distractors].sort((a, b) => hash(work.name + a) - hash(work.name + b));

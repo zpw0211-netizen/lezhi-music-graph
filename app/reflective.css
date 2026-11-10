@@ -263,3 +263,77 @@
 .present-model button { padding: 6px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--text-secondary); font: inherit; font-size: 13px; cursor: pointer; }
 .present-model button.is-active { background: #fff; color: var(--brand-ink); font-weight: 650; box-shadow: 0 2px 6px -3px rgba(48, 40, 24, .4); }
 .reflect-roadmap.is-regular small { white-space: nowrap; }
+
+/* ── 质感修订（2026-11）────────────────────────────────────────────── */
+/* 进入上课模式时容器取得焦点，不再在左边缘画一条深色线 */
+.present.reflect:focus, .present.reflect:focus-visible { outline: none; }
+
+/* 断行：卡片和提示语按行均衡，不再把一两个字甩到下一行 */
+.reflect-questions li, .reflect-chain li, .reflect-roles li, .reflect-tiers li, .reflect-starters li, .reflect-lead, .reflect-wide > p, .reflect-scene-copy > p, .reflect-wonder > p, .reflect-stars.is-literacy li > span:first-child { text-wrap: balance; }
+
+/* 播放条：所有页面的“播放旋律”都留在页面里（原来难点突破页的按钮被底栏盖住），控件在投影上看得清 */
+.present.reflect .melody-player.is-large .melody-play { position: static; height: 56px; padding: 0 28px 0 22px; border-radius: 999px; box-shadow: 0 14px 26px -16px rgba(30, 60, 40, .7); font-size: clamp(17px, 1.4vw, 23px); }
+.present.reflect .melody-player.is-large .melody-controls { gap: 12px 20px; }
+.present.reflect .melody-key { font-size: clamp(15px, 1.2vw, 20px); }
+.present.reflect .melody-instrument, .present.reflect .melody-tempo { font-size: clamp(14px, 1.1vw, 18px); }
+.present.reflect .melody-instrument select { height: 40px; min-width: 112px; padding: 0 28px 0 14px; font-size: clamp(14px, 1.1vw, 18px); }
+.present.reflect .melody-tempo { margin-left: 0; }
+.present.reflect .melody-tempo input { width: clamp(120px, 10vw, 180px); height: 24px; }
+.present.reflect .melody-tempo b { min-width: 3.6em; font-size: 1.05em; }
+.present.reflect .melody-tabs button, .present.reflect .melody-view button { font-size: clamp(14px, 1.05vw, 17px); }
+
+/* 插画页：卡片不透出底下的插画，文字栏不压到人物 */
+.reflect .has-art :is(.reflect-questions li, .reflect-chain li, .reflect-roles li, .reflect-tiers li, .reflect-stars.is-literacy li) { background: #fff; }
+.reflect-art { -webkit-mask-image: linear-gradient(90deg, transparent 34%, #000 58%); mask-image: linear-gradient(90deg, transparent 34%, #000 58%); }
+.reflect .present-stage.has-art .present-fit { width: min(58vw, 1100px); }
+.reflect .has-art .reflect-tiers { gap: 1.2vw; }
+.reflect .has-art .reflect-tiers li { padding: 2.8vh 1.3vw; font-size: clamp(17px, 1.42vw, 25px); }
+.reflect .has-art .reflect-roles b { font-size: clamp(22px, 1.9vw, 34px); line-height: 1.5; }
+
+/* 共识板：横线对齐文字，四块板子铺开，提示语一行放得下 */
+.reflect-boards { width: min(1180px, 84vw); }
+.reflect-boards textarea { min-height: 22vh; background-origin: content-box; background-clip: padding-box; resize: none; }
+.reflect-boards textarea::placeholder { color: #9AA39C; font-size: .82em; }
+
+/* 封面：阶段卡给右下角的“工具”钮让出位置 */
+.reflect-roadmap:not(.is-done) { padding-right: max(6vw, 112px); }
+
+/* 底栏：课名靠左，按钮圆角，“下一段”是主按钮 */
+.present.reflect .present-bar { padding: 10px 24px; min-height: 68px; }
+.reflect .present-nav { gap: 8px; }
+.reflect .present-nav button { height: 42px; padding: 0 16px; border-radius: 999px; background: #fff; transition: border-color .2s, color .2s, background .2s, transform .15s; }
+.reflect .present-nav button:hover { border-color: var(--stage); color: var(--stage); }
+.reflect .present-nav button.is-next { border-color: var(--stage); background: var(--stage); color: #fff; }
+.reflect .present-nav button.is-next:hover { color: #fff; filter: brightness(.94); }
+
+/* 第二轮：词不拆开断行（.reflect-word 由 phrased() 按词包起来）；挑战任务有插图时一行一档；记录框横线只画在文字区。 */
+.reflect-word { white-space: nowrap; }
+.reflect .has-art .reflect-tiers { grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 1.6vh; }
+.reflect .has-art .reflect-tiers li,
+.reflect .has-art .reflect-tiers li[data-level] { grid-template-columns: auto minmax(0, 1fr); align-items: center; align-content: center; gap: 1.4vw; min-height: 0; padding: 2.4vh 1.6vw; font-size: clamp(18px, 1.5vw, 26px); }
+.reflect-roles li { align-content: start; }
+.reflect-boards textarea { background: repeating-linear-gradient(transparent 0 2.2em, color-mix(in srgb, var(--stage) 14%, transparent) 2.2em calc(2.2em + 1px)) content-box, linear-gradient(#fff, #fff) padding-box; }
+
+/* 双栏页在宽屏居中；常规课“复听分析”右栏有提问时两栏对半、要素横排，不再整页被缩小。 */
+.reflect-two { margin-inline: auto; }
+.reflect-two.is-score:has(.reflect-questions) { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 3vw; width: min(1720px, 100%); }
+.reflect-two.is-score:has(.reflect-questions) .reflect-facts.is-elements { grid-template-columns: repeat(auto-fit, minmax(7.5em, 1fr)); gap: 0 2vw; }
+.reflect-two.is-score:has(.reflect-questions) .reflect-facts.is-elements div { flex-direction: column; gap: 2px; }
+.reflect-stars.is-literacy li { align-items: center; }
+.reflect-stars.is-literacy li > span:first-child { flex-basis: 14em; }
+
+/* 第三轮：投影上给学生看的字再大一档；引号、书名号里的关键词用阶段色标出来，一眼看到要做什么。 */
+.reflect-lead, .reflect-wide > p, .reflect-scene-copy > p, .reflect-wonder > p { font-size: clamp(22px, 2.15vw, 36px); }
+.reflect-starters li { padding: 1.7vh 1.5vw; font-size: clamp(20px, 1.8vw, 30px); }
+.reflect-roles small { font-size: clamp(17px, 1.4vw, 24px); color: #45524B; }
+.reflect .has-art .reflect-notes li { font-size: clamp(19px, 1.6vw, 30px); }
+.reflect-quiz p { font-size: clamp(20px, 1.75vw, 29px); }
+.reflect-quiz span { padding: 1.2vh .9vw; font-size: clamp(18px, 1.55vw, 25px); }
+.reflect-roadmap small { font-size: clamp(14px, 1.1vw, 18px); }
+.reflect-stars li { font-size: clamp(19px, 1.7vw, 28px); }
+.reflect-facts div { font-size: clamp(18px, 1.65vw, 27px); }
+.present.reflect .melody-player.is-large .melody-lyric { font-size: clamp(16px, 2.1vh, 24px); color: #33413A; }
+.reflect-wide.is-practice > h2 { margin-bottom: 1.4vh; }
+.reflect-wide.is-practice > p { margin-bottom: 1.6vh; }
+.reflect-word.is-key { color: color-mix(in srgb, var(--stage) 80%, #1B1B1B); font-weight: 600; }
+.reflect-wide.is-practice .melody-score { max-height: calc(100vh - 352px); }

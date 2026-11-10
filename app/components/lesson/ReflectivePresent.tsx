@@ -26,6 +26,42 @@ type Slide = { key: string; stage: StageKey; step: string; title: string; steps:
 type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string> };
 
 const STORAGE_PREFIX = "yapu-reflective:";
+
+// 按词断行：投影上一个词不拆到两行（“歌/曲”“自/己”），标点跟着前后的词走。浏览器没有 Intl.Segmenter 时原样输出。
+const SEGMENTER = typeof Intl !== "undefined" && "Segmenter" in Intl ? new Intl.Segmenter("zh-CN", { granularity: "word" }) : null;
+const OPENERS = /^[《“‘（(「『【〈]+$/;
+const TRAILERS = /^[\s，。、；：？！》”’）)」』】〉…—·/]+$/;
+// 分词器拆成两个单字的（换/气、拍/腿）两两并回去。
+const HAN = /^\p{Script=Han}$/u;
+const ASCII_END = /[!-~]$/;
+const ASCII_START = /^[!-~]/;
+function phrased(value: string): ReactNode {
+  if (!SEGMENTER) return value;
+  const words: string[] = [];
+  let opener = "";
+  for (const { segment } of SEGMENTER.segment(value)) {
+    if (OPENERS.test(segment)) { opener += segment; continue; }
+    const last = words.length - 1;
+    if (last >= 0 && !opener && (TRAILERS.test(segment) || (ASCII_END.test(words[last]) && ASCII_START.test(segment)) || (HAN.test(words[last]) && HAN.test(segment)))) words[last] += segment;
+    else { words.push(opener + segment); opener = ""; }
+  }
+  if (opener) words.push(opener);
+  // 书名号里的作品名不长时整个不拆：《国旗国旗真美丽》。
+  for (let start = 0; start < words.length; start++) {
+    if (!words[start].includes("《") || words[start].includes("》")) continue;
+    const end = words.findIndex((word, index) => index > start && word.includes("》"));
+    if (end < 0) break;
+    const title = words.slice(start, end + 1).join("");
+    if (title.length <= 14) words.splice(start, end - start + 1, title);
+  }
+  // 引号、书名号里的词是这句话的关键（作品名、要做的动作、要唱的词），用阶段色标出。
+  let quoted = false;
+  return words.map((word, index) => {
+    const key = quoted || /[《“「]/.test(word);
+    for (const char of word) { if (/[《“「]/.test(char)) quoted = true; else if (/[》”」]/.test(char)) quoted = false; }
+    return <span key={index} className={key ? "reflect-word is-key" : "reflect-word"}>{word}</span>;
+  });
+}
 type Model = "reflective" | "regular";
 const MODELS: Record<Model, string> = { reflective: "反思型课堂", regular: "常规课" };
 // 课堂模式是老师的习惯，所有课共用一个设置。
@@ -109,7 +145,7 @@ export function ReflectivePresent({
   const text = useCallback((id: string, fallback: string, as: "span" | "p" | "h2" = "span") => {
     const value = saved.edits?.[id] ?? fallback;
     const Tag = as;
-    if (!preparing) return <Tag>{value}</Tag>;
+    if (!preparing) return <Tag>{phrased(value)}</Tag>;
     return <Tag className="reflect-editable" contentEditable suppressContentEditableWarning spellCheck={false}
       onBlur={(event) => {
         const next = event.currentTarget.textContent?.trim() ?? "";
@@ -204,7 +240,7 @@ export function ReflectivePresent({
     </div> },
     { key: "r-create", stage: "transfer", step: "创意实践", title: regular.create.title, steps: 1, art: "stage-transfer", render: () => <div className="reflect-wide">
       <h2>{regular.create.title}</h2>
-      <p className="reflect-lead">选一个适合自己的任务试一试。</p>
+      <p className="reflect-lead">{phrased("选一个适合自己的任务试一试。")}</p>
       <ol className="reflect-tiers">{regular.create.tasks.map((tier, index) => <li key={tier.level} data-level={index}><b>{tier.level}</b>{text(`r-create-${index}`, tier.task)}</li>)}</ol>
     </div> },
     { key: "r-culture", stage: "transfer", step: "文化理解", title: "走近作品", steps: 1, art: culture.length ? undefined : "wonder-wall", render: () => <div className="reflect-wide">
@@ -251,7 +287,7 @@ export function ReflectivePresent({
     </div> },
     { key: "wonder", stage: "motivate", step: "预习反馈", title: "带着问题来学习", steps: 1, art: "wonder-wall", render: () => <div className="reflect-wonder">
       <h2>带着问题来学习</h2>
-      <p className="reflect-lead">通过预习或刚才的聆听，你最想探究什么？把问题写在便签上，贴到问题墙。</p>
+      <p className="reflect-lead">{phrased("通过预习或刚才的聆听，你最想探究什么？把问题写在便签上，贴到问题墙。")}</p>
       <ul className="reflect-notes">{script.questionStarters.map((starter, index) => <li key={starter} style={{ "--i": index } as CSSProperties}>{text(`starter-${index}`, starter)}</li>)}</ul>
     </div> },
     { key: "perceive", stage: "conflict", step: "核心感知", title: "初听感知表", steps: 1, art: "stage-motivate", render: () => <div className="reflect-wide">
@@ -272,7 +308,7 @@ export function ReflectivePresent({
         <h2>看谱 · 找要素</h2>
         {elements.length > 0
           ? <dl className="reflect-facts is-elements">{elements.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>
-          : <p className="reflect-lead">在谱例中找一找：调号、拍号、速度和最有特点的节奏。</p>}
+          : <p className="reflect-lead">{phrased("在谱例中找一找：调号、拍号、速度和最有特点的节奏。")}</p>}
       </div>
     </div> }] : []),
     { key: "conflict", stage: "conflict", step: "矛盾触发", title: "想一想：为什么？", steps: script.conflicts.length, art: "stage-conflict", render: (step) => <div className="reflect-wide">
@@ -310,7 +346,7 @@ export function ReflectivePresent({
     </div> },
     { key: "transfer", stage: "transfer", step: "实践运用 · 迁移创新", title: "挑战任务", steps: 1, art: "stage-transfer", render: () => <div className="reflect-wide">
       <h2>挑战任务</h2>
-      <p className="reflect-lead">选一个适合自己的挑战，把刚才的反思用起来。</p>
+      <p className="reflect-lead">{phrased("选一个适合自己的挑战，把刚才的反思用起来。")}</p>
       <ol className="reflect-tiers">{script.transfer.map((tier, index) => <li key={tier.level} data-level={index}><b>{tier.level}</b>{text(`transfer-${index}`, tier.task)}</li>)}</ol>
     </div> },
     { key: "showcase", stage: "transfer", step: "成果展示 · 自我反思", title: "展示与自评", steps: 1, render: () => <div className="reflect-two is-even">
@@ -520,7 +556,7 @@ export function ReflectivePresent({
         <button type="button" aria-pressed={preparing} onClick={togglePreparing}>{preparing ? "完成备课" : "备课"}</button>
         {canFullscreen && <button type="button" onClick={toggleFullscreen} aria-label={isFullscreen ? "退出全屏" : "进入全屏"}>{isFullscreen ? "取消全屏" : "全屏"}</button>}
         <button type="button" onClick={back} aria-label="上一段"><WorkbenchIcon name="left" /><span>上一段</span></button>
-        <button type="button" onClick={forward} aria-label="下一段"><WorkbenchIcon name="right" /><span>下一段</span></button>
+        <button type="button" className="is-next" onClick={forward} aria-label="下一段"><span>下一段</span><WorkbenchIcon name="right" /></button>
         <button type="button" onClick={onClose}>退出</button>
       </div>
     </footer>
