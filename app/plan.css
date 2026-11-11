@@ -120,3 +120,10 @@
   .plan-intent { grid-template-columns:minmax(0,1fr); margin-left:0; }
   .plan-intent > span { padding:4px 10px 0; }
 }
+
+/* 带走教案：导出 Word、打印、备课文件 */
+.plan-doc-actions button.is-main { background:var(--pine); color:var(--sheet); }
+.plan-doc-actions button.is-main:hover { background:var(--pine-deep, #194D35); }
+.plan-carry { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 16px; margin-top:14px; color:var(--ink-2); font-size:14px; }
+.plan-carry small { flex:1 1 20em; color:var(--ink-3); font-size:13px; }
+.plan-carry .plan-message { flex:1 1 100%; margin:4px 0 0; color:var(--pine); }

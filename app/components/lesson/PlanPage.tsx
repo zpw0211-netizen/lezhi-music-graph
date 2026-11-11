@@ -1,7 +1,8 @@
 "use client";
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { melodiesFor } from "../../lib/lesson/melodies";
 import { buildPlan, checkPlan, fitMinutes, planText, resolvePlanRequest, type LessonPlan, type PlanIssue, type PlanResource } from "../../lib/lesson/plan";
+import { applyBackup, collectBackup, planDocx, planPrintHtml, readBackup, saveFile } from "../../lib/lesson/plan-export";
 import { LESSON_KINDS, lessonKindOf, type LessonFact, type LessonKind } from "../../lib/lesson/reflective";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { getScoreMedia, matchesBookScope } from "../../lib/app/unit-data";
@@ -97,6 +98,29 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
     onRoute(targetBook, bareWorkName(parsed.work));
   };
 
+  // 备课文件：本机的全部教案和课件修改存成一个文件，到另一台电脑上导入。
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [carry, setCarry] = useState("");
+  const exportBackup = () => {
+    const backup = collectBackup();
+    if (!backup) { setCarry("这台电脑上还没有保存过教案或课件修改。"); return; }
+    const day = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    saveFile(backup.blob, `芽谱备课-${day}.json`);
+    setCarry(`已导出 ${backup.plans} 份教案、${backup.decks} 课的课件修改。把这个文件拷到 U 盘或发到教室电脑，在那边点“导入备课文件”。`);
+  };
+  const importBackup = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.size > 8_000_000) { setCarry("文件太大，不像是芽谱导出的备课文件。"); return; }
+    const result = readBackup(await file.text());
+    if ("error" in result) { setCarry(result.error); return; }
+    if (result.conflicts && !window.confirm(`这台电脑上有 ${result.conflicts} 项同一课的内容和文件里的不一样，导入后会换成文件里的版本。继续导入吗？`)) { setCarry("已取消导入，这台电脑上的内容没有变。"); return; }
+    if (!applyBackup(result.items)) { setCarry("浏览器不允许保存（可能是无痕窗口），没有导入成功。"); return; }
+    setCarry(`已导入 ${result.plans} 份教案、${result.decks} 课的课件修改。`);
+    setAsked((current) => ({ token: current.token + 1, options: null }));
+  };
+
   return <section className="lesson plan" aria-labelledby="plan-title">
     <header className="plan-hero">
       <p className="plan-kicker">教师端 · 样板</p>
@@ -126,6 +150,15 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
           {lessons.map((entity) => <option key={entity.id} value={bareWorkName(entity.name)}>{entity.name}</option>)}
         </select>
       </label>
+    </div>
+
+    <div className="plan-carry">
+      <span>换一台电脑上课？</span>
+      <button type="button" className="plan-link" onClick={exportBackup}>导出备课文件</button>
+      <button type="button" className="plan-link" onClick={() => fileRef.current?.click()}>导入备课文件</button>
+      <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={importBackup} />
+      <small>教案和上课模式里的修改只存在这台电脑的浏览器里，导出成文件就能带走。</small>
+      {carry && <p className="plan-message" role="status">{carry}</p>}
     </div>
 
     {!work && <p className="plan-empty">先在上面说一句要求，或者选一个课题。</p>}
@@ -175,6 +208,25 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
     if (!plan) return;
     try { await navigator.clipboard.writeText(planText(plan)); setMessage("教案已复制，可以粘贴到 Word 或备课本。"); }
     catch { setMessage("浏览器不允许复制，请手动选择教案文字。"); }
+  };
+
+  const exportWord = () => {
+    if (!plan) return;
+    saveFile(planDocx(plan), `${bareWorkName(plan.workName)}教学设计.docx`);
+    setMessage("Word 教案已保存到下载文件夹，可以用 Word 或 WPS 打开继续修改。");
+  };
+  const print = () => {
+    if (!plan) return;
+    const frame = document.createElement("iframe");
+    frame.setAttribute("aria-hidden", "true");
+    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+    frame.srcdoc = planPrintHtml(plan);
+    frame.onload = () => {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.print();
+      window.setTimeout(() => frame.remove(), 60_000);
+    };
+    document.body.appendChild(frame);
   };
 
   const resource = (res: PlanResource, key: string) => {
@@ -227,7 +279,9 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
         </div>
         <div className="plan-doc-actions">
           <span className={`plan-check ${fixes ? "is-fix" : "is-ok"}`}>{fixes ? `教案检查：${fixes} 处需要改` : "教案检查：通过"}</span>
-          <button type="button" onClick={copy}>复制教案</button>
+          <button type="button" className="is-main" onClick={exportWord}>导出 Word</button>
+          <button type="button" onClick={print}>打印</button>
+          <button type="button" onClick={copy}>复制文字</button>
           <button type="button" onClick={() => onOpenLesson(work, bookKey)}>打开这一课 · 上课模式</button>
         </div>
       </div>
