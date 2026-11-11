@@ -337,3 +337,48 @@
 .reflect-wide.is-practice > p { margin-bottom: 1.6vh; }
 .reflect-word.is-key { color: color-mix(in srgb, var(--stage) 80%, #1B1B1B); font-weight: 600; }
 .reflect-wide.is-practice .melody-score { max-height: calc(100vh - 352px); }
+
+/* 第四轮：手机和矮屏。手机上不再整页缩小（改为上下滑动），插画页文字恢复整宽，表格、便签、阶段卡各占一行。 */
+@media (max-width: 640px) {
+  .reflect .present-fit { zoom: 1 !important; }
+  .reflect .present-stage.has-art .present-fit { width: auto; padding-left: 14px; }
+  .reflect-art { height: 38%; opacity: .2; }
+  .reflect h2 { margin-bottom: 18px; padding-bottom: 10px; font-size: 30px; }
+  .reflect-cover-copy { padding: 28px 20px 20px; }
+  .reflect-cover h1 { font-size: min(44px, calc(78vw / var(--len, 6))); }
+  .reflect-roadmap:not(.is-done) { gap: 8px; padding: 0 20px 84px; }
+  .reflect-roadmap li { min-width: 40%; padding: 10px 14px; }
+  .reflect-roadmap small { white-space: nowrap; }
+  .reflect-scene-art img { height: min(46vh, 420px); }
+  .reflect .has-art .reflect-notes { gap: 22px; margin-top: 22px; }
+  .reflect .has-art .reflect-notes li { min-height: 0; padding: 26px 16px 20px; white-space: normal; }
+  .reflect-table, .reflect-table tbody, .reflect-table tr, .reflect-table th { display: block; }
+  .reflect-table tr { margin-bottom: 14px; }
+  .reflect-table th { width: auto; padding: 0 0 6px; }
+  .reflect-table button { min-height: 42px; padding: 0 16px; }
+  .reflect-questions li, .reflect-chain li { gap: 12px; padding: 14px 16px; }
+  .reflect-roles, .reflect .has-art .reflect-roles { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .reflect-two.is-score:has(.reflect-questions) { grid-template-columns: minmax(0, 1fr); }
+  .reflect-roles li { gap: 8px; padding: 20px 14px 16px; }
+  .reflect .has-art .reflect-tiers li, .reflect .has-art .reflect-tiers li[data-level] { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 16px; }
+  .reflect-boards { width: calc(100vw - 28px); }
+  .reflect-boards textarea { min-height: 16vh; }
+  .reflect-panel { padding: 18px 16px; }
+  .reflect-starters li { padding: 12px 14px; }
+  .reflect-quiz li { padding: 14px; }
+  .reflect-quiz span { padding: 10px; }
+  .reflect-wide.is-practice .melody-score { max-height: none; }
+  .present.reflect .melody-player.is-large { --melody-note-size: 34px; }
+  .present.reflect .melody-player.is-large .melody-score:not(.is-staff) { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow-x: visible; }
+  .present.reflect .melody-player.is-large .melody-bar { padding: 0 6px; }
+}
+/* 4:3 投影（1024×768）：情境导入仍然左图右文，插画只取有人物的一侧；难点突破收紧上下留白，四行谱一屏放下。 */
+@media (min-width: 641px) and (max-width: 1100px) {
+  .reflect-scene { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 3vw; }
+  .reflect-scene-art img { object-position: 82% 50%; }
+}
+@media (min-width: 641px) and (max-height: 800px) {
+  .reflect .present-fit:has(.is-practice) { padding-block: 1.2vh; }
+  .reflect-wide.is-practice > h2 { margin-bottom: .8vh; padding-bottom: .8vh; font-size: 30px; }
+  .reflect-wide.is-practice .melody-score { max-height: calc(100vh - 306px); }
+}

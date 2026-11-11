@@ -253,7 +253,9 @@
   .lesson-hero { padding-bottom:22px; }
   .lesson-hero h1 { font-size:clamp(30px,9vw,40px); }
   .lesson-hero-actions { flex-direction:row; }
-  .lesson-hero-actions button { flex:1 1 0; padding:0 10px; height:40px; font-size:14px; }
+  .lesson-hero-actions { gap:8px; }
+  .lesson-hero-actions button { flex:1 1 auto; gap:6px; padding:0 8px; height:40px; font-size:14px; letter-spacing:0; white-space:nowrap; }
+  .lesson-hero-actions svg { flex:none; }
   .lesson-layout { gap:32px; padding-top:24px; }
   .lesson-block { margin-top:32px; padding-top:20px; }
   .lesson-block>h2 { font-size:19px; }
@@ -418,3 +420,5 @@
   .present-tools-bar button { flex:0 0 auto; min-height:36px; padding:0 14px; font-size:13px; }
 }
 @media (prefers-reduced-motion: reduce) { .present-tools { animation:none; } .present-tools-fab { transition:none; } }
+/* 手机上题干和上下课标题按行均衡，不把一两个字甩到下一行 */
+.lesson-quiz legend, .lesson-pager button span { text-wrap:balance; }

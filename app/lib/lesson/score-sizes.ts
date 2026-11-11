@@ -10,7 +10,7 @@ export const SCORE_SIZES: Record<string, readonly [number, number]> = {
   "media/scores/g1s1/1gga5r9-1.webp": [1400, 638],
   "media/scores/g1s1/1hue0k8-1.webp": [1400, 1594],
   "media/scores/g1s1/1jypgw7-1.webp": [1400, 885],
-  "media/scores/g1s1/1jypgw7-2.webp": [1400, 309],
+  "media/scores/g1s1/1jypgw7-2.webp": [1356, 448],
   "media/scores/g1s1/1kp1x2s-1.webp": [1400, 692],
   "media/scores/g1s1/1kp1x2s-2.webp": [841, 277],
   "media/scores/g1s1/1kp1x2s-3.webp": [929, 277],
