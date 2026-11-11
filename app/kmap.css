@@ -103,3 +103,11 @@
   .kmap-legend { position:sticky; left:0; }
 }
 @media (prefers-reduced-motion:reduce) { .kmap-node, .kmap-node circle, .kmap-edges line, .kmap-edges text { transition:none; } }
+
+/* 全套视图：分册点 */
+.kmap-node.is-book rect { fill:var(--sheet); stroke:#7A8580; stroke-width:1.2; }
+.kmap-node.is-book text { font-size:13px; fill:var(--ink-2); stroke:none; }
+.kmap-node.is-book.is-selected rect, .kmap-node.is-book:hover rect { fill:var(--k-ink); stroke:var(--k-ink); }
+.kmap-node.is-book.is-selected text, .kmap-node.is-book:hover text { fill:#fff; }
+.kmap-node.is-book.is-lit rect { stroke:var(--k-brick); stroke-width:1.8; }
+.kmap-legend .square { width:16px; height:11px; margin-left:12px; border:1.2px solid #7A8580; border-radius:3px; }

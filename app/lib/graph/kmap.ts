@@ -24,7 +24,8 @@ export type KDef = { label: string; text: string; page?: number; /** 讲解来�
 export type KNode = {
   id: string;
   name: string;
-  kind: "hub" | "point" | "work";
+  /** book 只在全套视图里出现：一册书一个点，连着这一册用到的知识点。 */
+  kind: "hub" | "point" | "work" | "book";
   group?: KGroup;
   /** 默认显示：教材给了说明，或本册至少两首作品用到，或下面还分出两个以上知识点。 */
   core: boolean;
@@ -37,9 +38,10 @@ export type KNode = {
   /** 连着的作品 id。 */
   works: string[];
 };
+/** source：text 教材明示；score 从乐谱里认出。 */
 export type KEdge = { a: string; b: string; label: string; source: "text" | "score" };
-export type KWork = { id: string; name: string; type: string; unit?: string; unitOrder: number; page: number; mode?: string };
-export type KMap = { nodes: KNode[]; edges: KEdge[]; works: Map<string, KWork> };
+export type KWork = { id: string; /** 图谱实体 id。 */ entity: string; book: string; name: string; type: string; unit?: string; unitOrder: number; page: number; mode?: string };
+export type KMap = { nodes: KNode[]; edges: KEdge[]; works: Map<string, KWork>; /** 全套视图：图上不画作品，改画分册。 */ whole?: boolean };
 
 const KTYPES = new Set(["音乐概念", "节奏型", "拍号", "速度术语", "音乐体裁", "表演形式"]);
 // 教材里同一个知识点的两种写法：作品写 2/4，知识页讲“二拍子”。
@@ -49,7 +51,7 @@ const DEF_PREDICATES = ["定义为", "含义", "特点", "作用", "记法", "�
 // 只是谱面上的字样或太宽泛的总称，不单独成点。
 const SKIP = new Set(["音乐要素", "简谱", "简谱基础知识", "演唱形式", "演奏形式", "音乐体裁", "拍号", "音乐记号", "指挥图示", "二拍子指挥图示", "三拍子指挥图示", "四拍子指挥图示", "音符与唱名", "嗓音保护常识"]);
 // 谱面抄录（“1=F，2/4”“mp、mf”“1 2 3 5 6”）不是知识点。
-const TRANSCRIPT = /^1=|^[\d i]+(?:（|$)|^[a-z]{1,3}、|[：:]/;
+const TRANSCRIPT = /^1=|[♩=]|^[\d i]+(?:（|$)|^[a-z]{1,3}、|[：:]/;
 
 function groupOf(entity: Entity): KGroup | null {
   const name = entity.name;
@@ -128,7 +130,7 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     if (!entity.name.startsWith("《") || !inBook(entity)) continue;
     if (!modes.has(entity.id) && !melodiesOf(entity.name).length) continue;
     const unit = unitOf.get(entity.id);
-    works.set(entity.id, { id: entity.id, name: entity.name, type: entity.type, unit: unit?.name, unitOrder: unit?.order ?? 99, page: entity.firstPageByBook?.[bookKey] ?? 999, mode: modes.get(entity.id) });
+    works.set(entity.id, { id: entity.id, entity: entity.id, book: bookKey, name: entity.name, type: entity.type, unit: unit?.name, unitOrder: unit?.order ?? 99, page: entity.firstPageByBook?.[bookKey] ?? 999, mode: modes.get(entity.id) });
   }
 
   // 知识点：同名写法并到一个点上。
@@ -263,4 +265,70 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     if (used.has(work.id)) list.push({ id: work.id, name: work.name, kind: "work", core: true, aliases: [], defs: [], page: work.page, books: [], works: [] });
   }
   return { nodes: list, edges: [...edges.values()], works };
+}
+
+/** 全套视图：把各册的图合成一张。同名知识点合成一个点；作品不上图，改成“分册”点，线上写这一册有几首作品用到。 */
+export function mergeKMaps(maps: KMap[], books: Array<{ key: string; label: string }>): KMap {
+  const nodes = new Map<string, KNode>();
+  const works = new Map<string, KWork>();
+  const edges = new Map<string, KEdge>();
+  const parents = new Map<string, Set<string>>();
+  for (const map of maps) {
+    const idOf = new Map<string, string>();
+    for (const node of map.nodes) {
+      if (node.kind === "work") {
+        const work = map.works.get(node.id)!;
+        const id = `${work.book}|${work.id}`;
+        idOf.set(node.id, id);
+        works.set(id, { ...work, id });
+        continue;
+      }
+      const id = node.kind === "hub" ? node.id : `kp:${node.name}`;
+      idOf.set(node.id, id);
+      const merged = nodes.get(id);
+      if (!merged) { nodes.set(id, { ...node, id, core: node.kind === "hub", aliases: [...node.aliases], defs: node.defs.filter((def) => !def.book), books: [...node.books], works: [] }); continue; }
+      for (const alias of node.aliases) if (!merged.aliases.includes(alias)) merged.aliases.push(alias);
+      for (const def of node.defs) if (!def.book && merged.defs.length < 4 && !merged.defs.some((item) => item.text === def.text)) merged.defs.push(def);
+      for (const key of node.books) if (!merged.books.includes(key)) merged.books.push(key);
+    }
+    for (const node of map.nodes) {
+      if (node.kind !== "point") continue;
+      const merged = nodes.get(idOf.get(node.id)!)!;
+      for (const work of node.works) merged.works.push(idOf.get(work)!);
+    }
+    for (const edge of map.edges) {
+      const a = idOf.get(edge.a)!;
+      const b = idOf.get(edge.b)!;
+      if (works.has(a) || works.has(b)) continue;
+      const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+      if (!edges.has(key)) edges.set(key, { ...edge, a, b });
+      if (edge.label === "包含" && a.startsWith("kp:") && b.startsWith("kp:")) parents.set(b, (parents.get(b) ?? new Set()).add(a));
+    }
+  }
+  const points = [...nodes.values()].filter((node) => node.kind === "point");
+  // 全套里的核心：教材讲过并且有作品用到，或用到的作品多。数量控制在一屏能看清的范围。
+  const children = new Map<string, number>();
+  for (const set of parents.values()) for (const parent of set) children.set(parent, (children.get(parent) ?? 0) + 1);
+  const weight = (node: KNode) => node.works.length + (node.defs.length ? 4 : 0) + Math.min(6, (children.get(node.id) ?? 0) * 2) + Math.min(4, node.books.length);
+  for (const node of [...points].sort((a, b) => weight(b) - weight(a)).slice(0, 84)) if (weight(node) >= 6) node.core = true;
+  // 核心点的上级不在核心里时，直接挂到要素上。
+  for (const node of points) {
+    if (!node.core) continue;
+    const linked = [...edges.values()].some((edge) => (edge.a === node.id || edge.b === node.id) && edge.source === "text" && (() => { const other = nodes.get(edge.a === node.id ? edge.b : edge.a)!; return other.kind === "hub" || (other.kind === "point" && other.core); })());
+    if (!linked) { const hub = `hub:${node.group}`; edges.set(`${hub}|${node.id}`, { a: hub, b: node.id, label: "包含", source: "text" }); }
+  }
+  // 分册点：核心知识点在这一册有作品用到，就连一条线。
+  for (const book of books) {
+    const id = `book:${book.key}`;
+    let used = false;
+    for (const node of points) {
+      if (!node.core) continue;
+      const count = node.works.filter((work) => works.get(work)!.book === book.key).length;
+      if (!count) continue;
+      edges.set(`${id}|${node.id}`, { a: id, b: node.id, label: `${count} 首`, source: "text" });
+      used = true;
+    }
+    if (used) nodes.set(id, { id, name: book.label, kind: "book", core: true, aliases: [], defs: [], books: [book.key], works: [] });
+  }
+  return { nodes: [...nodes.values()], edges: [...edges.values()], works, whole: true };
 }
