@@ -10,8 +10,11 @@ import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
 
 type Tool = "rhythm" | "ear" | "lab" | "compose";
 type Point = { x: number; y: number };
+// 图是圆的：所有节点都排在一个（略扁的）圆里，要素在中圈，全套视图的分册在内圈。
 const W = 900;
-const H = 660;
+const H = 840;
+const RX = 432;
+const RY = 404;
 const melodyBook = (key: string) => (EDITION.notation === "staff" ? `wx-${key}` : key);
 const notationStyle = EDITION.notation === "staff" ? "staff" : "jianpu";
 const bookLabel = (book: BookDirectory) => PUBLISHED_BOOK_SHORT_NAMES[book.key] ?? `${book.grade}${book.semester.replace(/册$/, "")}`;
@@ -41,14 +44,15 @@ function layout(map: KMap): Map<string, Point> {
   const anchor = new Map<string, Point>();
   groups.forEach((group, index) => {
     const angle = (index / groups.length) * Math.PI * 2 - Math.PI / 2;
-    anchor.set(`hub:${group}`, { x: W / 2 + Math.cos(angle) * 335, y: H / 2 + Math.sin(angle) * 245 });
+    anchor.set(`hub:${group}`, { x: W / 2 + Math.cos(angle) * RX * 0.66, y: H / 2 + Math.sin(angle) * RY * 0.66 });
   });
-  // 全套视图：分册排在中间一行，从低年级到高年级；非核心知识点不参与布局。
+  // 全套视图：分册在圆心围成一圈，从正上方起顺时针由低年级到高年级；非核心知识点不参与布局。
   const placed = map.whole ? map.nodes.filter((node) => node.core) : map.nodes;
   const bookNodes = placed.filter((node) => node.kind === "book");
   bookNodes.forEach((node, index) => {
-    const t = bookNodes.length > 1 ? index / (bookNodes.length - 1) : 0.5;
-    anchor.set(node.id, { x: W / 2 + (t - 0.5) * 520, y: H / 2 + (index % 2 ? 22 : -22) });
+    const angle = (index / bookNodes.length) * Math.PI * 2 - Math.PI / 2;
+    const ring = bookNodes.length > 8 ? 0.3 : 0.2;
+    anchor.set(node.id, { x: W / 2 + Math.cos(angle) * RX * ring, y: H / 2 + Math.sin(angle) * RY * ring });
   });
   const position = new Map<string, Point>();
   const reach = new Map<string, number>();
@@ -103,9 +107,13 @@ function layout(map: KMap): Map<string, Point> {
       delta.x += (W / 2 - at.x) * 0.002; delta.y += (H / 2 - at.y) * 0.003;
       const size = Math.hypot(delta.x, delta.y) || 1;
       const limit = Math.min(size, 3 + 22 * heat);
-      const pad = kind.get(id) === "work" ? 16 : Math.max(56, (labelHalf.get(id) ?? 0) + 8);
-      at.x = Math.min(W - pad, Math.max(pad, at.x + (delta.x / size) * limit));
-      at.y = Math.min(H - 26, Math.max(26, at.y + (delta.y / size) * limit));
+      at.x += (delta.x / size) * limit;
+      at.y += (delta.y / size) * limit;
+      // 出了圆就拉回到圆边上（标签长的点多留一点）。
+      const rx = RX - (kind.get(id) === "work" ? 10 : Math.max(30, (labelHalf.get(id) ?? 0)));
+      const ry = RY - (kind.get(id) === "work" ? 10 : 26);
+      const out = Math.hypot((at.x - W / 2) / rx, (at.y - H / 2) / ry);
+      if (out > 1) { at.x = W / 2 + (at.x - W / 2) / out; at.y = H / 2 + (at.y - H / 2) / out; }
     }
   }
   return position;
@@ -169,7 +177,10 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       count.set(node.group!, index + 1);
       const radius = 46 + 13 * Math.sqrt(index + 1);
       const angle = index * 2.399963;
-      result.set(node.id, { x: Math.min(W - 40, Math.max(40, centre.x + Math.cos(angle) * radius * 1.35)), y: Math.min(H - 24, Math.max(24, centre.y + Math.sin(angle) * radius)) });
+      const x = centre.x + Math.cos(angle) * radius * 1.35;
+      const y = centre.y + Math.sin(angle) * radius;
+      const out = Math.max(1, Math.hypot((x - W / 2) / (RX - 34), (y - H / 2) / (RY - 24)));
+      result.set(node.id, { x: W / 2 + (x - W / 2) / out, y: H / 2 + (y - H / 2) / out });
     }
     return result;
   }, [basePositions, map]);
@@ -371,6 +382,8 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             <marker id="kmap-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L7 4 L0 7 z" fill="#A9B6AF" /></marker>
             <marker id="kmap-arrow-on" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L7 4 L0 7 z" fill="#1E7A4A" /></marker>
           </defs>
+          <ellipse className="kmap-disc" cx={W / 2} cy={H / 2} rx={RX + 10} ry={RY + 10} />
+          <ellipse className="kmap-ring" cx={W / 2} cy={H / 2} rx={RX * 0.66} ry={RY * 0.66} />
           <g className="kmap-edges">{map.edges.filter((edge) => shownIds.has(edge.a) && shownIds.has(edge.b)).map((edge) => {
             const from = nodeById.get(edge.a)!;
             const to = nodeById.get(edge.b)!;

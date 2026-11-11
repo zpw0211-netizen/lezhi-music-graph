@@ -21,6 +21,8 @@
 .kmap-legend .dot.is-work { width:7px; height:7px; margin-left:12px; background:#9AA6A0; }
 .kmap-legend .pill { width:22px; height:11px; margin-left:12px; border-radius:6px; background:var(--k-ink); }
 
+.kmap-disc { fill:color-mix(in srgb, var(--paper-2) 55%, var(--sheet)); stroke:var(--line); stroke-width:1; }
+.kmap-ring { fill:none; stroke:var(--line); stroke-width:1; stroke-dasharray:2 7; }
 .kmap-edges line { stroke:#8FA097; stroke-width:1; opacity:.5; transition:opacity .25s ease, stroke .25s ease; }
 .kmap-edges .to-work line { stroke-width:.7; opacity:.16; }
 .kmap-edges .is-on line { stroke:var(--k-pine); stroke-width:1.5; opacity:.9; }
