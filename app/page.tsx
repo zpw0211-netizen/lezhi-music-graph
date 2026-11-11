@@ -147,6 +147,10 @@ const PlanPage = nextDynamic<PropsOf<typeof PlanPageComponent>>(
   () => import("./components/lesson/PlanPage").then((module) => module.PlanPage),
   { loading: viewLoading },
 );
+const KMapPage = nextDynamic(
+  () => import("./components/kmap/KMapPage").then((module) => module.KMapPage),
+  { loading: viewLoading },
+);
 const WorkGraph = nextDynamic<PropsOf<typeof WorkGraphComponent>>(
   () => import("./components/records/WorkGraph").then((module) => module.WorkGraph),
   { loading: viewLoading },
@@ -202,6 +206,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   research: "研究分析",
   records: "按课学习",
   plan: "智能备课",
+  kmap: "知识图谱 · 核心知识点",
   lesson: "按课学习",
   work: "作品图谱",
   import: "教材数据导入",
@@ -359,7 +364,8 @@ export default function Home() {
     if (top) pickSearchResult(top.entity);
   };
   const goTo = (target: NavView | "graph") => {
-    if (target === "graph") explorer.chooseFullGraph();
+    // 顶栏的“知识图谱”先到核心知识点图；完整图谱从那一页里进。
+    if (target === "graph") navigate({ view: "kmap" });
     else if (target === "assistant") openAssistant();
     else navigate({ view: target });
   };
@@ -434,6 +440,7 @@ export default function Home() {
                   ? null
                   : view === "compose" || view === "lab" || view === "ear" || view === "rhythm"
                     ? "compose"
+                  : view === "kmap" ? "graph"
                   : view
             }
             onNavigate={goTo}
@@ -549,6 +556,10 @@ export default function Home() {
               const bookKey = lessonBookKey ?? route.book ?? routeWork.bookKeys?.[0];
               navigate({ view: "plan", ...(bookKey ? { book: bookKey, work: bareWorkName(routeWork.name) } : {}) });
             }}
+            onKnowledge={(lessonBookKey) => {
+              const bookKey = lessonBookKey ?? route.book ?? routeWork.bookKeys?.[0];
+              if (bookKey) navigate({ view: "kmap", book: bookKey, work: bareWorkName(routeWork.name) });
+            }}
             />
           )}
           {view === "plan" && canonicalGraph && (
@@ -560,6 +571,21 @@ export default function Home() {
             assetUrl={publicAssetUrl}
             onRoute={(bookKey, work) => navigate({ view: "plan", book: bookKey, ...(work ? { work } : {}) }, { replace: true })}
             onOpenLesson={(work, bookKey) => navigate({ view: "lesson", book: bookKey, work })}
+            />
+          )}
+          {view === "kmap" && canonicalGraph && (
+            <KMapPage
+            graph={canonicalGraph}
+            books={books}
+            bookKey={route.book}
+            fallbackBook={selectedRecordsKey}
+            point={route.work}
+            assetUrl={publicAssetUrl}
+            onRoute={(bookKey, point) => navigate({ view: "kmap", book: bookKey, ...(point ? { work: point } : {}) }, { replace: true })}
+            onOpenLesson={(work, bookKey) => navigate({ view: "lesson", book: bookKey, work })}
+            onPlan={(work, bookKey) => navigate({ view: "plan", book: bookKey, work })}
+            onTool={(tool) => navigate({ view: tool })}
+            onFullGraph={explorer.chooseFullGraph}
             />
           )}
           {view === "work" && canonicalGraph && routeWork && (

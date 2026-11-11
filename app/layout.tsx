@@ -14,6 +14,7 @@ import "./pages-v5.css";
 import "./work-graph.css";
 import "./lesson.css";
 import "./plan.css";
+import "./kmap.css";
 import "./melody-line.css";
 import "./reflective.css";
 import "./ink-theme.css";

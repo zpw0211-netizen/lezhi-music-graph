@@ -1,0 +1,105 @@
+/* 核心知识点图（#/kmap，小样）：左边是一册书的知识点网，右边是选中知识点的资源卡。沿用 .lesson 的纸色与松绿。 */
+.kmap { max-width:1480px; --k-pine:#1E7A4A; --k-ochre:#A8701A; --k-brick:#B2452F; --k-ink:#44524D; --k-teal:#256F7C; }
+.kmap .hue-pine { --hue:var(--k-pine); } .kmap .hue-ochre { --hue:var(--k-ochre); } .kmap .hue-brick { --hue:var(--k-brick); }
+.kmap .hue-ink { --hue:var(--k-ink); } .kmap .hue-teal { --hue:var(--k-teal); } .kmap .hue-work { --hue:#7A8580; }
+
+.kmap-hero { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:16px 32px; padding:14px 0 18px; border-bottom:1px solid var(--line); }
+.kmap-kicker { margin:0; color:var(--seal); font-family:var(--serif); font-size:13px; letter-spacing:.16em; }
+.kmap-hero h1 { margin:6px 0 8px; font-family:var(--font-display); font-weight:500; font-size:clamp(30px,3.4vw,44px); line-height:1.2; letter-spacing:.04em; }
+.kmap-hero p:last-child { margin:0; color:var(--ink-2); text-wrap:pretty; }
+.kmap-controls { display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; font-size:14px; color:var(--ink-2); }
+.kmap-controls label { display:flex; align-items:center; gap:8px; }
+.kmap-controls select { min-height:36px; padding:0 10px; border:1px solid var(--line); border-radius:8px; background:var(--sheet); color:var(--ink); font:inherit; }
+.kmap-check input { width:16px; height:16px; accent-color:var(--pine); }
+.kmap-link { padding:4px 0; border:0; background:none; color:var(--pine); font:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+
+.kmap-body { display:grid; grid-template-columns:minmax(0,1.618fr) minmax(320px,1fr); gap:22px; align-items:start; margin-top:18px; }
+.kmap-stage { position:sticky; top:12px; border:1px solid var(--line); border-radius:6px; background:var(--sheet); overflow:hidden; }
+.kmap-stage svg { display:block; width:100%; height:auto; touch-action:pan-y; }
+.kmap-legend { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:0; padding:8px 14px; border-top:1px solid var(--line); color:var(--ink-3); font-size:12.5px; }
+.kmap-legend .dot { width:10px; height:10px; border-radius:50%; background:var(--k-pine); }
+.kmap-legend .dot.is-work { width:7px; height:7px; margin-left:12px; background:#9AA6A0; }
+.kmap-legend .pill { width:22px; height:11px; margin-left:12px; border-radius:6px; background:var(--k-ink); }
+
+.kmap-edges line { stroke:#8FA097; stroke-width:1; opacity:.5; transition:opacity .25s ease, stroke .25s ease; }
+.kmap-edges .to-work line { stroke-width:.7; opacity:.16; }
+.kmap-edges .is-on line { stroke:var(--k-pine); stroke-width:1.5; opacity:.9; }
+.kmap-edges .is-off line { opacity:.05; }
+.kmap-edges text { font-size:11.5px; fill:#7C8A84; letter-spacing:.04em; pointer-events:none; paint-order:stroke; stroke:var(--sheet); stroke-width:3px; stroke-linejoin:round; transition:opacity .25s ease; }
+.kmap-edges .is-on text { font-size:12.5px; fill:var(--k-pine); }
+.kmap-edges .is-off text { opacity:.08; }
+.kmap-node { cursor:pointer; outline:none; transition:opacity .25s ease; }
+.kmap-node text { font-family:var(--serif); font-size:14px; fill:var(--ink); pointer-events:none; paint-order:stroke; stroke:var(--sheet); stroke-width:3.5px; stroke-linejoin:round; }
+.kmap-node circle { transition:transform .25s cubic-bezier(.3,1.4,.5,1); transform-box:fill-box; transform-origin:center; }
+.kmap-node.is-point circle { fill:color-mix(in srgb, var(--hue) 78%, white); stroke:var(--hue); stroke-width:1.2; }
+.kmap-node.is-point.is-minor circle { fill:var(--sheet); }
+.kmap-node.is-point.is-minor text { font-size:12.5px; fill:var(--ink-2); }
+.kmap-node.is-hub rect { fill:var(--hue); }
+.kmap-node.is-hub text { font-size:17px; letter-spacing:.08em; fill:#fff; stroke:none; }
+.kmap-node.is-work circle { fill:#9AA6A0; }
+.kmap-node.is-work .kmap-hit { fill:transparent; }
+.kmap-node.is-work text { display:none; font-size:13px; fill:var(--ink-2); }
+.kmap-node.is-work.is-named text, .kmap-node.is-work:hover text { display:block; }
+.kmap-node.is-work.is-lit circle:not(.kmap-hit) { fill:var(--k-brick); transform:scale(1.35); }
+.kmap-node.is-off { opacity:.16; }
+.kmap-node:hover circle:not(.kmap-hit), .kmap-node:focus-visible circle:not(.kmap-hit) { transform:scale(1.18); }
+.kmap-node.is-selected.is-point circle { fill:var(--hue); stroke:var(--sheet); stroke-width:2.5; filter:drop-shadow(0 0 0 2px var(--hue)); transform:scale(1.2); }
+.kmap-node.is-selected text { font-weight:700; }
+.kmap-node:focus-visible rect, .kmap-node:focus-visible circle:not(.kmap-hit) { stroke:var(--ink); stroke-width:2; }
+
+.kmap-card { position:relative; padding:20px 22px 26px; border:1px solid var(--line); border-radius:6px; background:var(--sheet); }
+.kmap-close { position:absolute; top:14px; right:16px; padding:2px 0; border:0; background:none; color:var(--ink-3); font:inherit; font-size:13px; cursor:pointer; }
+.kmap-close:hover { color:var(--pine); }
+.kmap-card-head h2 { margin:8px 0 6px; font-family:var(--font-display); font-weight:500; font-size:30px; letter-spacing:.04em; }
+.kmap-card-head p { margin:0; color:var(--ink-3); font-size:13.5px; }
+.kmap-chip { display:inline-block; padding:2px 10px; border-radius:999px; background:color-mix(in srgb, var(--hue) 14%, white); color:var(--hue); font-size:12.5px; letter-spacing:.08em; }
+.kmap-card section { margin-top:22px; }
+.kmap-card h3 { display:flex; align-items:center; gap:10px; margin:0 0 10px; font-family:var(--serif); font-size:15px; letter-spacing:.14em; color:var(--pine); }
+.kmap-card h3::after { content:""; flex:1; height:1px; background:var(--line); }
+.kmap-quiet { margin:0 0 10px; color:var(--ink-3); font-size:13.5px; text-wrap:pretty; }
+.kmap-defs { display:grid; gap:10px; margin:0; }
+.kmap-defs div { display:grid; grid-template-columns:5.2em 1fr; gap:10px; }
+.kmap-defs dt { color:var(--ink-3); font-size:13.5px; }
+.kmap-defs dd { margin:0; line-height:1.7; }
+.kmap-defs small { display:block; color:var(--ink-3); font-size:12px; }
+.kmap-example { margin:0 0 14px; }
+.kmap-example figcaption { margin-bottom:4px; font-family:var(--serif); }
+.kmap-example small, .kmap-unit small, .kmap-members small { color:var(--ink-3); font-size:12.5px; }
+.kmap-fold { margin-top:6px; }
+.kmap-fold > button { padding:3px 0; border:0; background:none; color:var(--pine); font:inherit; font-size:14px; cursor:pointer; }
+.kmap-fold > button::before { content:"▸ "; }
+.kmap-fold.is-open > button::before { content:"▾ "; }
+.kmap-fold-body { margin-top:8px; }
+.kmap-fold-body img { display:block; max-width:100%; height:auto; border:1px solid var(--line); border-radius:4px; }
+.kmap-unit h4 { margin:14px 0 4px; color:var(--ink-3); font-size:13px; font-weight:500; letter-spacing:.06em; }
+.kmap-unit ul, .kmap-members { margin:0; padding:0; list-style:none; }
+.kmap-unit li { display:grid; grid-template-columns:1fr auto; gap:2px 12px; align-items:center; padding:8px 0; border-bottom:1px dashed var(--line); }
+.kmap-unit li > div:first-child { display:grid; gap:1px; min-width:0; }
+.kmap-unit li .kmap-fold { grid-column:1 / -1; margin-top:0; }
+.kmap-work-name, .kmap-members button { padding:0; border:0; background:none; color:var(--ink); font:inherit; font-family:var(--serif); font-size:16px; text-align:left; cursor:pointer; }
+.kmap-work-name:hover, .kmap-members button:hover { color:var(--pine); }
+.kmap-actions { display:flex; gap:8px; }
+.kmap-actions button { min-height:30px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:var(--sheet); color:var(--pine); font:inherit; font-size:13px; cursor:pointer; white-space:nowrap; transition:background .2s ease, color .2s ease, transform .15s ease; }
+.kmap-actions button:hover { background:var(--pine); color:var(--sheet); border-color:var(--pine); }
+.kmap-actions button:active { transform:scale(.96); }
+.kmap-card-head .kmap-actions { margin-top:12px; }
+.kmap-members li { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); }
+.kmap-books, .kmap-tags { display:flex; flex-wrap:wrap; gap:8px; }
+.kmap-books button, .kmap-tags button { min-height:30px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:var(--sheet); color:var(--ink-2); font:inherit; font-size:13.5px; cursor:pointer; }
+.kmap-books button[aria-current] { border-color:var(--pine); background:var(--pine); color:var(--sheet); }
+.kmap-tags button { border-color:color-mix(in srgb, var(--hue) 40%, white); color:var(--hue); }
+.kmap-tags button:hover, .kmap-books button:hover { border-color:var(--pine); }
+.kmap-practice { display:grid; gap:8px; }
+.kmap-practice button { display:grid; gap:2px; padding:10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--paper-2); color:var(--ink); font:inherit; text-align:left; cursor:pointer; transition:border-color .2s ease, transform .15s ease; }
+.kmap-practice button:hover { border-color:var(--pine); }
+.kmap-practice button:active { transform:scale(.98); }
+.kmap-practice strong { font-family:var(--serif); font-weight:500; color:var(--pine); }
+.kmap-practice span { color:var(--ink-3); font-size:13px; }
+
+@media (max-width:1000px) {
+  .kmap-body { grid-template-columns:1fr; }
+  .kmap-stage { position:static; overflow-x:auto; }
+  .kmap-stage svg { min-width:680px; }
+  .kmap-legend { position:sticky; left:0; }
+}
+@media (prefers-reduced-motion:reduce) { .kmap-node, .kmap-node circle, .kmap-edges line, .kmap-edges text { transition:none; } }
