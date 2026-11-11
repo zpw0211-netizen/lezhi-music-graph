@@ -98,3 +98,25 @@
   .plan-timeline span small { display:none; }
 }
 .plan-doc-head p.plan-standard { color:var(--pine); font-size:13px; }
+
+/* 详案：分析与准备是整段文字；每一步有名称、师生活动和设计意图。 */
+.plan-upgrade { margin:14px 0 0; padding:10px 14px; border-radius:8px; background:#F6EEDB; color:#6B4E14; font-size:14px; line-height:1.7; }
+.plan-prose textarea, .plan-homework textarea { white-space:pre-wrap; }
+.plan-prose h3 + textarea { margin-left:-10px; width:calc(100% + 10px); }
+.plan-board { padding:14px 18px !important; border:1px solid var(--line) !important; border-radius:4px; background:#23372D !important; color:#F4F1E6 !important; font-family:var(--kai); font-size:17px !important; line-height:1.9 !important; }
+.plan-stage li.has-title { grid-template-columns:1.6em minmax(0,1fr) 28px; padding:10px 0 12px; border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+.plan-stage li.has-title:last-child { border-bottom:0; }
+.plan-stage li.has-title::before { grid-row:1; padding-top:1px; }
+.plan-step { grid-column:2; grid-row:1; display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:0; padding:0 10px; font-family:var(--font-display); font-size:16.5px; font-weight:600; color:var(--ink); }
+.plan-stage li.has-title > textarea { grid-row:2; white-space:pre-wrap; }
+.plan-stage li.has-title .plan-remove { grid-row:1; margin-top:-2px; }
+.plan-stage li.has-title.is-added > textarea { background:#FBF6EA; }
+.plan-intent { grid-column:2; display:grid; grid-template-columns:auto minmax(0,1fr); gap:0 6px; align-items:start; margin:2px 0 4px 10px; padding:4px 4px 4px 12px; border-left:3px solid var(--pine); border-radius:0 6px 6px 0; background:color-mix(in srgb, var(--pine) 6%, var(--sheet)); }
+.plan-intent > span { padding-top:7px; color:var(--pine); font-family:var(--serif); font-size:13.5px; font-weight:600; letter-spacing:.06em; white-space:nowrap; }
+.plan .plan-intent textarea { font-size:14.5px; color:var(--ink-2); }
+.plan-homework .plan-intent { margin-left:0; }
+.plan-homework > textarea { margin-left:-10px; width:calc(100% + 10px); }
+@media (max-width: 720px) {
+  .plan-intent { grid-template-columns:minmax(0,1fr); margin-left:0; }
+  .plan-intent > span { padding:4px 10px 0; }
+}

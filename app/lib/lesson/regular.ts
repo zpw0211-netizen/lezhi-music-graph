@@ -26,7 +26,7 @@ const SOLEMN_WORKS = /国歌|队歌|国际歌/;
 const pick = (facts: LessonFact[], pattern: RegExp) => facts.find((fact) => pattern.test(fact.label))?.value;
 const CN = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 /** 1–99 写成汉字：十二、二十、三十五。 */
-const cn = (n: number) => (n < 10 ? CN[n] : n < 100 ? `${n >= 20 ? CN[Math.floor(n / 10)] : ""}十${n % 10 ? CN[n % 10] : ""}` : String(n));
+export const cn = (n: number) => (n < 10 ? CN[n] : n < 100 ? `${n >= 20 ? CN[Math.floor(n / 10)] : ""}十${n % 10 ? CN[n % 10] : ""}` : String(n));
 
 /** 拍子的强弱规律和对应的身体动作。 */
 function pulse(meter: string | undefined) {
@@ -41,7 +41,7 @@ function pulse(meter: string | undefined) {
   return null;
 }
 
-type Shape = {
+export type Shape = {
   count: number;
   /** 每句的开头几个字，如「我唱歌来…」。 */
   lines: string[];
@@ -56,7 +56,7 @@ type Shape = {
 const sung = (note: MelodyNote) => note.d > 0 && note.d < 8;
 
 /** 从主旋律里读出乐句结构，给任务用；没有旋律数据时为 null。 */
-function shapeOf(melody: Melody | undefined): Shape | null {
+export function shapeOf(melody: Melody | undefined): Shape | null {
   if (!melody?.bars.length) return null;
   const flat = melody.bars.flat();
   const words = (from: number, to: number) => flat.slice(from, to).map((note) => (note.slur || note.tie ? "" : note.lyric ?? "")).join("").replace(/[^\p{Script=Han}A-Za-z]/gu, "");
@@ -136,6 +136,8 @@ export type RegularScript = {
   culture: string;
   review: Array<{ area: Literacy; text: string }>;
   homework: string;
+  /** 主旋律的乐句结构，教案的教材分析和板书用。 */
+  shape: Shape | null;
 };
 
 /** 按课型、学段、本课事实与主旋律生成整节常规课的文字脚本。 */
@@ -357,5 +359,5 @@ export function regularScript(input: { workName: string; kind: LessonKind; grade
     create: "修改完善小组的编创作品，下节课展示。",
   }[kind];
 
-  return { standard: { band: BAND_NAMES[band], ...standardTask(kind, band) }, goals, focus, warmup, scene, firstListen, secondListen, learn, practiceTip, perform, create, culture, review, homework };
+  return { standard: { band: BAND_NAMES[band], ...standardTask(kind, band) }, goals, focus, warmup, scene, firstListen, secondListen, learn, practiceTip, perform, create, culture, review, homework, shape };
 }

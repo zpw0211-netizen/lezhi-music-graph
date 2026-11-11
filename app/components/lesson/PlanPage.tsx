@@ -101,7 +101,7 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
     <header className="plan-hero">
       <p className="plan-kicker">教师端 · 样板</p>
       <h1 id="plan-title">智能备课</h1>
-      <p>说一句你要上什么课、班里什么情况，芽谱用本课的旋律、范唱、谱例和节奏练习排出一节课。教案里的音乐资源都来自已核对的教材数据，生成后可以逐句修改，教案检查会随改随查。</p>
+      <p>说一句你要上什么课、班里什么情况，芽谱用本课的旋律、范唱、谱例和节奏练习排出一节课的详案：教材与学情分析、每一步的师生活动和设计意图、板书和作业，步骤和上课模式的课件一一对应。音乐资源都来自已核对的教材数据，生成后可以逐句修改，教案检查会随改随查。</p>
     </header>
 
     <form className="plan-request" onSubmit={submitRequest}>
@@ -141,6 +141,7 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
   const make = (options: Options) => buildPlan({
     workName: context.workName, grade: context.grade, facts: context.facts, melodies: context.melodies, scoreUrls: context.scoreUrls, related: context.related,
     kind: options.kind ?? context.defaultKind, minutes: options.minutes ?? 40, className: options.className || undefined, note: options.note || undefined,
+    bookTitle: books.find((book) => book.key === bookKey)?.title,
   });
   // 一句话带来的要求立即生成；否则读这一课上次保存的教案。
   const [plan, setPlan] = useState<LessonPlan | null>(() => {
@@ -230,7 +231,15 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
           <button type="button" onClick={() => onOpenLesson(work, bookKey)}>打开这一课 · 上课模式</button>
         </div>
       </div>
+      {!plan.version && <p className="plan-upgrade" role="status">这是旧版的简案。点上面的“按选项重新生成”，可以得到带教材分析、师生活动、设计意图和板书的详案（会覆盖现在的内容）。</p>}
       {issueList(issues.filter((issue) => "plan" in issue.where))}
+
+      {plan.analysis && <section className="plan-prose">
+        <h3>教材分析</h3>
+        <textarea aria-label="教材分析" value={plan.analysis.textbook} onChange={(event) => update({ ...plan, analysis: { ...plan.analysis!, textbook: event.target.value } })} />
+        <h3>学情分析</h3>
+        <textarea aria-label="学情分析" value={plan.analysis.students} onChange={(event) => update({ ...plan, analysis: { ...plan.analysis!, students: event.target.value } })} />
+      </section>}
 
       <section className="plan-goals">
         <h3>教学目标</h3>
@@ -242,6 +251,11 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
         <dl className="plan-focus"><div><dt>教学重点</dt><dd>{plan.focus.key}</dd></div><div><dt>教学难点</dt><dd>{plan.focus.hard}</dd></div></dl>
       </section>
 
+      {plan.prepare !== undefined && <section className="plan-prose">
+        <h3>教学准备</h3>
+        <textarea aria-label="教学准备" value={plan.prepare} onChange={(event) => update({ ...plan, prepare: event.target.value })} />
+      </section>}
+
       <section className="plan-stages">
         <h3>教学过程</h3>
         <div className="plan-timeline" aria-hidden="true">{plan.stages.map((stage) => <span key={stage.key} data-stage={stage.key} style={{ flexGrow: stage.minutes }}>{stage.name}<small>{stage.minutes}′</small></span>)}</div>
@@ -251,23 +265,36 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
             <label className="plan-minutes-input"><input type="number" min={1} max={60} value={stage.minutes} aria-label={`${stage.name}时长`}
               onChange={(event) => update({ ...plan, stages: plan.stages.map((item, k) => (k === s ? { ...item, minutes: Math.max(0, Number(event.target.value) || 0) } : item)) })} />分钟</label>
           </header>
-          <ol>{stage.activities.map((item, a) => <li key={item.id} className={item.added ? "is-added" : ""}>
-            {item.added && <span className="plan-tag">按班级情况</span>}
+          <ol>{stage.activities.map((item, a) => <li key={item.id} className={`${item.added ? "is-added" : ""}${item.title ? " has-title" : ""}`}>
+            {item.title && <p className="plan-step">{item.title}{item.added && <span className="plan-tag">按班级情况</span>}</p>}
+            {item.added && !item.title && <span className="plan-tag">按班级情况</span>}
             <textarea aria-label={`${stage.name}活动 ${a + 1}`} rows={Math.min(6, Math.max(2, Math.ceil(item.text.length / 46)))} value={item.text}
               onChange={(event) => update({ ...plan, stages: plan.stages.map((st, k) => (k === s ? { ...st, activities: st.activities.map((it, j) => (j === a ? { ...it, text: event.target.value } : it)) } : st)) })} />
+            {item.intent !== undefined && <label className="plan-intent"><span>设计意图</span>
+              <textarea aria-label={`${stage.name}活动 ${a + 1} 的设计意图`} value={item.intent} placeholder="为什么这样安排？"
+                onChange={(event) => update({ ...plan, stages: plan.stages.map((st, k) => (k === s ? { ...st, activities: st.activities.map((it, j) => (j === a ? { ...it, intent: event.target.value } : it)) } : st)) })} /></label>}
             {item.resources.length > 0 && <div className="plan-chips">{item.resources.map((res, r) => resource(res, `${item.id}-${r}`))}</div>}
             {item.resources.map((res, r) => (res.kind === "melody" || res.kind === "follow") && open === `${item.id}-${r}` && context.melodies.length
               ? <div key={r} className="plan-player"><MelodySet melodies={context.melodies} notationStyle={EDITION.notation ?? "jianpu"} /></div> : null)}
             <button type="button" className="plan-remove" aria-label="删除这条活动" onClick={() => update({ ...plan, stages: plan.stages.map((st, k) => (k === s ? { ...st, activities: st.activities.filter((_, j) => j !== a) } : st)) })}><WorkbenchIcon name="close" /></button>
           </li>)}</ol>
-          <button type="button" className="plan-link" onClick={() => update({ ...plan, stages: plan.stages.map((st, k) => (k === s ? { ...st, activities: [...st.activities, { id: `n${Date.now()}`, text: "", resources: [] }] } : st)) })}>＋ 加一条活动</button>
+          <button type="button" className="plan-link" onClick={() => update({ ...plan, stages: plan.stages.map((st, k) => (k === s ? { ...st, activities: [...st.activities, { id: `n${Date.now()}`, text: "", resources: [], ...(plan.version ? { title: "补充活动", intent: "" } : {}) }] } : st)) })}>＋ 加一条活动</button>
           {issueList(stageIssues(stage.key))}
         </section>)}
         <p className="plan-sum">合计 {plan.stages.reduce((sum, stage) => sum + stage.minutes, 0)} / {plan.minutes} 分钟
           <button type="button" className="plan-link" onClick={() => update({ ...plan, ...fitMinutes(plan.stages, plan.minutes) })}>按比例对齐课时</button></p>
       </section>
 
-      <section className="plan-homework"><h3>作业</h3><p>{plan.homework}</p></section>
+      {plan.board !== undefined && <section className="plan-prose">
+        <h3>板书设计</h3>
+        <textarea className="plan-board" aria-label="板书设计" value={plan.board} onChange={(event) => update({ ...plan, board: event.target.value })} />
+      </section>}
+
+      <section className="plan-homework"><h3>作业</h3>
+        <textarea aria-label="作业" value={plan.homework} onChange={(event) => update({ ...plan, homework: event.target.value })} />
+        {plan.homeworkIntent !== undefined && <label className="plan-intent"><span>设计意图</span>
+          <textarea aria-label="作业的设计意图" value={plan.homeworkIntent} onChange={(event) => update({ ...plan, homeworkIntent: event.target.value })} /></label>}
+      </section>
     </article>}
   </>;
 }
