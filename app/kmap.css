@@ -1,5 +1,5 @@
 /* 核心知识点图（#/kmap，小样）：左边是一册书的知识点网，右边是选中知识点的资源卡。沿用 .lesson 的纸色与松绿。 */
-.kmap { max-width:1480px; --k-pine:#1E7A4A; --k-ochre:#A8701A; --k-brick:#B2452F; --k-ink:#44524D; --k-teal:#256F7C; }
+.kmap { max-width:1560px; --k-pine:#1E7A4A; --k-ochre:#A8701A; --k-brick:#B2452F; --k-ink:#44524D; --k-teal:#256F7C; }
 .kmap .hue-pine { --hue:var(--k-pine); } .kmap .hue-ochre { --hue:var(--k-ochre); } .kmap .hue-brick { --hue:var(--k-brick); }
 .kmap .hue-ink { --hue:var(--k-ink); } .kmap .hue-teal { --hue:var(--k-teal); } .kmap .hue-work { --hue:#7A8580; }
 
@@ -13,9 +13,9 @@
 .kmap-check input { width:16px; height:16px; accent-color:var(--pine); }
 .kmap-link { padding:4px 0; border:0; background:none; color:var(--pine); font:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
 
-.kmap-body { display:grid; grid-template-columns:minmax(0,1.618fr) minmax(320px,1fr); gap:22px; align-items:start; margin-top:18px; }
+.kmap-body { display:grid; grid-template-columns:minmax(0,2.4fr) minmax(300px,1fr); gap:20px; align-items:start; margin-top:18px; }
 .kmap-stage { position:sticky; top:12px; border:1px solid var(--line); border-radius:6px; background:var(--sheet); overflow:hidden; }
-.kmap-stage svg { display:block; width:100%; height:auto; touch-action:pan-y; }
+.kmap-stage svg { display:block; width:100%; height:auto; max-height:calc(100vh - 70px); touch-action:pan-y; }
 .kmap-legend { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:0; padding:8px 14px; border-top:1px solid var(--line); color:var(--ink-3); font-size:12.5px; }
 .kmap-legend .dot { width:10px; height:10px; border-radius:50%; background:var(--k-pine); }
 .kmap-legend .dot.is-work { width:7px; height:7px; margin-left:12px; background:#9AA6A0; }
