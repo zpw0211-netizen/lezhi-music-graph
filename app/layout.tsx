@@ -92,7 +92,8 @@ export default function RootLayout({
         {publicBasePath && (
           <script
             dangerouslySetInnerHTML={{
-              __html: `if("serviceWorker"in navigator)addEventListener("load",function(){navigator.serviceWorker.register("${publicBasePath}/sw.js",{scope:"${publicBasePath}/"}).catch(function(){})});`,
+              // 新版本在后台换上后，已经开着的页面还是旧的：给一条提示，由使用者决定什么时候刷新（上课中不打断）。
+              __html: `if("serviceWorker"in navigator){var s=navigator.serviceWorker,had=!!s.controller;s.addEventListener("controllerchange",function(){if(!had){had=true;return}if(document.getElementById("yapu-update"))return;var b=document.createElement("button");b.id="yapu-update";b.type="button";b.textContent="网站有新版本，点这里刷新";b.style.cssText="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;padding:10px 20px;border:0;border-radius:999px;background:#1E7A4A;color:#fff;font:inherit;font-size:15px;white-space:nowrap;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.22)";b.onclick=function(){location.reload()};document.body.appendChild(b)});addEventListener("load",function(){s.register("${publicBasePath}/sw.js",{scope:"${publicBasePath}/"}).catch(function(){})})}`,
             }}
           />
         )}
