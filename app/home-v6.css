@@ -142,3 +142,5 @@
 @media (prefers-reduced-motion: reduce) {
   .hv *, .hv *::before, .hv *::after { animation: none !important; transition: none !important; }
 }
+/* 目录很长（高中一册十九个单元）时文字一直排到画的顶部：整幅压暗，保证看得清。 */
+.hv-feature:has(.hv-units.is-many)::after { background: linear-gradient(180deg, rgb(16 34 25 / 58%), rgb(16 34 25 / 92%) 46%); }
