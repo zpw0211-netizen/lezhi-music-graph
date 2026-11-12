@@ -15,8 +15,11 @@ const CHINESE_NUMERALS = ["零", "一", "二", "三", "四", "五", "六", "七"
 const chineseCount = (count) => count <= 10 ? CHINESE_NUMERALS[count] : count < 20 ? `十${CHINESE_NUMERALS[count - 10]}` : String(count);
 export const PUBLISHED_BOOK_COUNT_LABEL = `${chineseCount(PUBLISHED_BOOKS.length)}册`;
 const publishedGrades = PUBLISHED_BOOKS.map((book) => book.grade);
+const seniorOnly = PUBLISHED_BOOKS.length > 0 && PUBLISHED_BOOKS.every((book) => book.stage === "高中");
 export const PUBLISHED_GRADE_RANGE_LABEL = !publishedGrades.length
   ? "教材"
+  : seniorOnly
+    ? "高中必修"
   : Math.min(...publishedGrades) === Math.max(...publishedGrades)
     ? `${chineseCount(publishedGrades[0])}年级`
     : `${chineseCount(Math.min(...publishedGrades))}至${chineseCount(Math.max(...publishedGrades))}年级`;

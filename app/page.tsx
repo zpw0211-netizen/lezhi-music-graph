@@ -41,6 +41,7 @@ import {
   bookStageForKey,
   booksForStage,
   defaultBookStage,
+  gradeTermLabel,
   isBookStage,
   type BookStage,
 } from "./lib/app/books";
@@ -118,7 +119,7 @@ function RecordsBookPicker({
         const active = book.key === selectedBookKey;
         return <button
           aria-current={active ? "page" : undefined}
-          aria-label={`${book.grade}年级${book.semester}`}
+          aria-label={gradeTermLabel(book)}
           className={active ? "is-active" : ""}
           key={book.key}
           onClick={() => chooseBook(book)}
@@ -464,7 +465,7 @@ export default function Home() {
               hits: searchResults.slice(0, 8).map(({ entity, book, relationCount }) => ({
                 key: `${book.key}-${entity.id}`,
                 title: entity.name,
-                meta: `${book.grade}年级${book.semester} · ${entity.type} · ${relationCount} 条知识联系`,
+                meta: `${gradeTermLabel(book)} · ${entity.type} · ${relationCount} 条知识联系`,
                 onPick: () => pickSearchResult(entity),
               })),
             }}

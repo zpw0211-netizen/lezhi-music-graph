@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "edition": {
+    "key": "gaozhong",
+    "label": "人音版",
+    "press": "人民音乐出版社",
+    "basePath": "/gaozhong",
+    "unitActivities": true,
+    "hotSearches": ["姑苏风光", "幸福歌", "宗巴朗松", "保卫黄河", "雨花石"]
+  },
+  "books": [
+    {
+      "key": "hs-m1",
+      "stage": "高中",
+      "grade": 10,
+      "semester": "必修1",
+      "shortName": "鉴赏",
+      "fullName": "必修1 音乐鉴赏",
+      "title": "人音版高中音乐鉴赏",
+      "pages": 220,
+      "pdfOffset": 12,
+      "published": true,
+      "unitArt": 19
+    },
+    {
+      "key": "hs-m4",
+      "stage": "高中",
+      "grade": 10,
+      "semester": "必修4",
+      "shortName": "编创",
+      "fullName": "必修4 音乐编创",
+      "title": "人音版高中音乐编创",
+      "pages": 132,
+      "pdfOffset": 8,
+      "published": true,
+      "unitArt": 9
+    }
+  ]
+}

@@ -168,6 +168,8 @@ export function melodiesFor(bookKey: string | undefined, ...names: string[]): Me
 const STAFF_OMIT = new Set(["g8s2|水调歌头·明月几时有|1"]);
 
 function findMelodies(bookKey: string | undefined, names: string[]): { melodies: Melody[]; name?: string } {
+  // 高中各册还没有录旋律：同名歌一律不借用别的版本。
+  if (bookKey?.startsWith("hs-")) return { melodies: [] };
   // 湘艺版只用本册自己录的旋律：同名歌在别的版本里印的谱不一定一样，不借用。
   if (bookKey?.startsWith("xy-") || bookKey?.startsWith("wx-xy-")) {
     const book = BOOK_MELODIES[bookKey] ?? {};

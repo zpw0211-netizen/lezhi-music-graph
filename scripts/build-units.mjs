@@ -30,7 +30,7 @@ const { isWorkType } = require(path.join(ROOT, "app/lib/app/types.ts"));
 const { getPrintedPage, getScoreMedia, hasMelody, isStarredWork, parseUnitTask } = require(path.join(ROOT, "app/lib/app/unit-data.ts"));
 const { MELODIES, melodiesFor } = require(path.join(ROOT, "app/lib/lesson/melodies.ts"));
 // 人教版 and 湘艺版 books only use their own transcriptions; never another edition's melody of the same title.
-const workHasMelody = (bookKey, name) => (/^(pep|xy)-/.test(bookKey)
+const workHasMelody = (bookKey, name) => (/^(pep|xy|hs)-/.test(bookKey)
   ? melodiesFor(bookKey, name.replace(/^《|》$/g, ""), name).length > 0
   : hasMelody(name, MELODIES));
 
@@ -81,6 +81,16 @@ const valueOf = (triple, entityById) => {
   return triple.literal ?? "";
 };
 
+// 高中《音乐鉴赏》以“序篇”开头，后面的单元按书上的序号编，不顺延。
+const CN_DIGITS = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+const seniorNumeral = (name) => {
+  if (EDITION.key !== "gaozhong") return null;
+  if (/^序篇/.test(name)) return "序";
+  const match = /^第([一二三四五六七八九十]+)单元/.exec(name);
+  if (!match) return null;
+  const [tens, ones] = match[1].includes("十") ? match[1].split("十") : ["", match[1]];
+  return financialNumeral((match[1].includes("十") ? (CN_DIGITS[tens] ?? 1) * 10 : 0) + (CN_DIGITS[ones] ?? 0));
+};
 const financialNumeral = (order) => {
   if (order >= 0 && order < FINANCIAL_DIGITS.length) return FINANCIAL_DIGITS[order];
   if (order === 10) return "拾";
@@ -95,7 +105,8 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
   const unitTriples = triplesBySubject.get(unit.id) ?? [];
   const pdfOffset = BOOK_BY_KEY.get(bookKey)?.pdfOffset ?? 0;
   const orderValue = Number(unitTriples.find((triple) => triple.predicate === "单元顺序")?.literal);
-  const order = Number.isInteger(orderValue) && orderValue > 0 ? orderValue : index + 1;
+  // 高中《音乐鉴赏》的序篇是第 0 单元，按页序编号，序篇排第 1，免得和第一单元重号。
+  const order = EDITION.key !== "gaozhong" && Number.isInteger(orderValue) && orderValue > 0 ? orderValue : index + 1;
   const unitWorkIds = new Set(unitTriples
     .filter((triple) => triple.predicate === "包含作品" && triple.objectId)
     .map((triple) => triple.objectId));
@@ -242,7 +253,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     id: unit.id,
     name,
     title,
-    numeral: financialNumeral(order),
+    numeral: seniorNumeral(name) ?? financialNumeral(order),
     theme,
     goals,
     knowledgePoints,
@@ -259,7 +270,7 @@ const buildUnit = (unit, index, bookKey, entityById, triplesBySubject, workByNam
     },
   };
   // 湘艺版按“课”编排，每一课（含新年联欢会、我的音乐天地）都是普通单元，不当学习项目。
-  if (EDITION.key !== "xiangyi" && !/^第[一二三四五六七八九十0-9]+单元/.test(name)) result.kind = "project";
+  if (EDITION.key !== "xiangyi" && !/^(第[一二三四五六七八九十0-9]+单元|序篇)/.test(name)) result.kind = "project";
   return result;
 };
 

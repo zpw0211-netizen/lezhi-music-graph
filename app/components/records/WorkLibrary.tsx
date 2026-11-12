@@ -161,7 +161,9 @@ function melodyEditionBookKey(bookKey?: string) {
 }
 
 function bookIntroduction(units: readonly TextbookUnit[]) {
-  const themes = units.map((unit) => unit.theme?.trim() || unit.title).filter(Boolean);
+  const fullThemes = units.map((unit) => unit.theme?.trim() || unit.title).filter(Boolean);
+  // 单元多、主题句又长（高中《音乐鉴赏》19 个单元）时改用单元名，导语不至于铺满整页。
+  const themes = (units.length > 15 || EDITION.key === "gaozhong") && fullThemes.join("").length > 160 ? units.map((unit) => unit.title.replace(/^序篇\s*/, "")).filter(Boolean) : fullThemes;
   if (!themes.length) return "";
   if (themes.length === 1) return `围绕「${themes[0]}」展开。`;
   const middle = themes.slice(1, -1);
@@ -763,7 +765,9 @@ export function WorkLibrary({
     const showTasks = tasks.length > 0 && taskUnits.has(unit.id);
     const numeral = unit.numeral ?? UNIT_NUMERALS[unit.order - 1] ?? unit.order;
     const lessonTitle = unit.title.match(LESSON_TITLE);
-    const chapterTitle = lessonTitle?.[1] || unit.title;
+    // 高中《音乐鉴赏》的“序篇 不忘初心”：眉题写“序篇”，标题只留“不忘初心”。
+    const prelude = numeral === "序";
+    const chapterTitle = lessonTitle?.[1] || (prelude ? unit.title.replace(/^序篇\s*/, "") : unit.title);
     const unitWord = lessonBook ? "本课" : "本单元";
     // Curated unit points (人教版) have a description and a page; the rest are auto-extracted and left out.
     const keyPoints = (unit.knowledgePoints ?? [])
@@ -850,7 +854,7 @@ export function WorkLibrary({
           <span aria-hidden="true" className="records-chapter-number">{numeral}</span>
           <div>
             {/* 湘艺版按“课”编排，标题自带“第一课”：眉题写成“第 壹 课”，标题只留课名；书末的联欢会、选唱等不编号。 */}
-            {lessonTitle ? <p className="records-chapter-kicker">第 {numeral} 课</p> : !lessonBook && <p className="records-chapter-kicker">第 {numeral} 单元</p>}
+            {lessonTitle ? <p className="records-chapter-kicker">第 {numeral} 课</p> : !lessonBook && <p className="records-chapter-kicker">{prelude ? "序篇" : `第 ${numeral} 单元`}</p>}
             <h2 data-long={chapterTitle.length > 7 ? "true" : undefined} id={`${anchorId}-title`}>{chapterTitle}</h2>
             {unit.theme && <span className="records-theme-seal">{unit.theme}</span>}
           </div>

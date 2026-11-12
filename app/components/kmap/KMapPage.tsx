@@ -19,13 +19,14 @@ const melodyBook = (key: string) => (EDITION.notation === "staff" ? `wx-${key}` 
 const notationStyle = EDITION.notation === "staff" ? "staff" : "jianpu";
 const bookLabel = (book: BookDirectory) => PUBLISHED_BOOK_SHORT_NAMES[book.key] ?? `${book.grade}${book.semester.replace(/册$/, "")}`;
 const pointRadius = (node: KNode) => 5 + Math.min(17, Math.sqrt(node.works.length) * 2.1);
-// 全套视图：全部分册、小学、初中。
+// 全套视图：全部分册、小学、初中、高中。
 const SCOPES: Record<string, { name: string; test: (grade: number) => boolean }> = {
   all: { name: "全套", test: () => true },
   "all-primary": { name: "全套 · 小学", test: (grade) => grade <= 6 },
-  "all-junior": { name: "全套 · 初中", test: (grade) => grade >= 7 },
+  "all-junior": { name: "全套 · 初中", test: (grade) => grade >= 7 && grade <= 9 },
+  "all-senior": { name: "全套 · 高中", test: (grade) => grade >= 10 },
 };
-const gradeOf = (key: string) => Number(key.match(/g(\d)s\d$/)?.[1] ?? 0);
+const gradeOf = (key: string) => (/^hs-/.test(key) ? 10 : Number(key.match(/g(\d)s\d$/)?.[1] ?? 0));
 // 标签占的地方：汉字约 14px 宽，西文约 8px。
 const textWidth = (text: string, size: number) => [...text].reduce((sum, char) => sum + (char.charCodeAt(0) > 255 ? size : size * 0.58), 0);
 const PRACTICE: Partial<Record<KGroup, Array<{ tool: Tool; label: string; hint: string }>>> = {

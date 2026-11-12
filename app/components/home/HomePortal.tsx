@@ -64,7 +64,7 @@ const bookArt = (book: { key: string; title: string }) => BOOK_ART[book.key] ?? 
 const shortBookTitle = (book: { title: string }) => stripEditionPrefix(book.title);
 /** "六年级上册（简谱）" → ["六年级", "上册（简谱）"], so a label never wraps a lone character onto its own line. */
 const splitBookTitle = (book: { title: string }): [string, string] => {
-  const match = shortBookTitle(book).match(/^(.+?年级)(.+)$/);
+  const match = shortBookTitle(book).match(/^(.+?年级|高中)(.+)$/);
   return match ? [match[1], match[2]] : [shortBookTitle(book), ""];
 };
 const MelodyPlayer = dynamic<PropsOf<typeof MelodyPlayerComponent>>(
@@ -212,7 +212,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             <div className="home-scroll-copy">
               <p className="home-scroll-overline">卷 {volume} · {EDITION.label.split("·")[0]}</p>
               <h3>{shortBookTitle(book)}</h3>
-              <p className="home-scroll-intro">{bookUnits[0]?.theme ? `从${bookUnits[0].theme}出发，一个${unitWord}一个${unitWord}读这册教材。` : `按${unitWord}阅读教材内容与关联作品。`}</p>
+              <p className="home-scroll-intro">{bookUnits[0]?.theme && EDITION.key !== "gaozhong" ? `从${bookUnits[0].theme}出发，一个${unitWord}一个${unitWord}读这册教材。` : `按${unitWord}阅读教材内容与关联作品。`}</p>
               {/* 单元目录还在加载时不显示“0 个单元”，但保留这一行的高度，避免内容跳动。 */}
               <p className="home-scroll-countline" aria-hidden={!bookUnits.length} style={bookUnits.length ? undefined : { visibility: "hidden" }}>{bookUnits.length} {unitWord === "课" ? "课" : "个单元"} · {fmt(workCount)} 首作品</p>
               <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>

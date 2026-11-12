@@ -10,7 +10,7 @@ import { graphRuntimeFor } from "../../graph-runtime";
 import { relationshipMatchesPerspective } from "../../lib/graph/graph-algorithms";
 import { PUBLIC_BASE_PATH, publicAssetUrl } from "../../lib/app/assets";
 import { StageBookPicker } from "../StageBookPicker";
-import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOKS, availableBookStages, graphPositionFor, type BookStage } from "../../lib/app/books";
+import { PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_BOOKS, availableBookStages, gradeTermLabel, graphPositionFor, type BookStage } from "../../lib/app/books";
 import {
   EMPTY_ENTITIES,
   fmt,
@@ -828,7 +828,7 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
               ? group.center.name.length > 12
                 ? group.center.name.slice(0, 12) + "…"
                 : group.center.name
-              : group.book.grade + "年级" + group.book.semester}
+              : gradeTermLabel(group.book)}
           </text>
           <text className="node-type" y="25">
             {isFocus ? group.center.type : "教材中心"}
@@ -1054,7 +1054,7 @@ export function GraphExplorer({ explorer, stage, onStageChange }: {
         className={`book-tab ${graphMode !== "all" && book.key === explorer.bookKey ? "active" : ""}`}
         onClick={() => explorer.chooseBook(book)}
       >
-        {book.grade}年级{book.semester}
+        {gradeTermLabel(book)}
       </button>
     ))}
   </>;

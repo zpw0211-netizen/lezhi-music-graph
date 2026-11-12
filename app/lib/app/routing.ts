@@ -79,7 +79,7 @@ export function parseRoute(hash: string, search = ""): AppRoute {
     }
     if (view === "lesson" || view === "work") {
       const parts = rest.map(decodeURIComponent);
-      const book = parts.length >= 2 && /^(?:pep-|xy-)?g\d+s\d$/.test(parts[0]) ? parts.shift() : undefined;
+      const book = parts.length >= 2 && /^(?:(?:pep-|xy-)?g\d+s\d|hs-m\d+)$/.test(parts[0]) ? parts.shift() : undefined;
       const work = parts.join("/");
       return work ? { view, ...(book ? { book } : {}), work: bare(work) } : { view: "records" };
     }

@@ -58,7 +58,7 @@ jobs:
   #   人音版 (/renyin/) and the entry page (yapu.studio/) come from the main app.
   #   The other editions are built from editions/<name> on top of the same code (scripts/build-edition.mjs).
   #   Repository variables take editions off the site: PUBLISH_RENJIAO (人教版 and 人教版五线谱),
-  #   PUBLISH_STAFF (both 五线谱 editions), PUBLISH_XIANGYI (湘艺版) set to "false".
+  #   PUBLISH_STAFF (both 五线谱 editions), PUBLISH_XIANGYI (湘艺版), PUBLISH_GAOZHONG (高中音乐教材) set to "false".
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -75,6 +75,8 @@ jobs:
             enabled: ${{ vars.PUBLISH_STAFF != 'false' && vars.PUBLISH_RENJIAO != 'false' }}
           - site: xiangyi
             enabled: ${{ vars.PUBLISH_XIANGYI != 'false' }}
+          - site: gaozhong
+            enabled: ${{ vars.PUBLISH_GAOZHONG != 'false' }}
     steps:
       - name: Checkout
         if: ${{ format('{0}', matrix.enabled) == 'true' }}
