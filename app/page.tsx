@@ -488,7 +488,7 @@ export default function Home() {
             onSearch={submitSearch}
             onOpenBook={(bookKey) => openRecordsBook(bookKey)}
             onStageChange={persistBookStage}
-            onOpenFullGraph={explorer.chooseFullGraph}
+            onOpenFullGraph={() => goTo("graph")}
             onView={(value) => (value === "assistant" ? openAssistant() : navigate({ view: value }))}
             onPickEntityName={(name) => {
               const entity = explorer.canonicalBook?.entities.find((item) => item.name === name);
