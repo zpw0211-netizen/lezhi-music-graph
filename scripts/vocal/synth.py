@@ -4,15 +4,16 @@ Usage: python scripts/vocal/synth.py <todo.json> <outdir> [--voice qixuan|ria] [
 Writes <key>.wav and <key>.json ({offset, leadBeats, shift, voice}) per melody.
 
 Pipeline: lyrics -> pinyin -> phonemes; duration model places consonants before each
-note onset; the pitch curve is built from the notes themselves (exact pitch, short glides,
-light vibrato on long notes) so the voice stays in tune with the piano; the variance model
-adds breathiness/voicing; acoustic model -> mel; PC-NSF-HiFiGAN -> waveform.
+note onset; the pitch curve is centred on the written notes. Natural 绮萱 uses the
+voicebank pitch model and punctuation to shape phrases. The variance model adds
+breathiness/voicing; acoustic model -> mel; PC-NSF-HiFiGAN -> waveform.
 """
 import json
 import math
 import os
 import re
 import sys
+from pathlib import Path
 
 import numpy as np
 import onnxruntime as ort
@@ -255,6 +256,7 @@ def plan(mel, shift):
     per_note = syllables(notes)
     # Sung events: each syllable (a note may hold several characters) with start/end seconds.
     events = []  # (start, end, midi, phonemes) ; melisma/tie notes extend the previous event
+    characters = []  # None for a melisma resumed after a rest
     pitch_notes = []  # (start, end, midi) for the pitch curve, every sounding note
     t = 0.0
     first = None
@@ -281,6 +283,7 @@ def plan(mel, shift):
                 for (c, phs), w in zip(sylls, weights):
                     e = s + dur * w / total
                     events.append([s, e, midi, phs])
+                    characters.append(c)
                     s = e
                 if first is None:
                     first = t
@@ -291,21 +294,148 @@ def plan(mel, shift):
                 # a melisma resumed after a breath (slur across a rest): carry on with the syllable's vowel
                 phs = events[-1][3]
                 events.append([t, t + dur, midi, phs[next((j for j, p in enumerate(phs) if is_vowel(p)), 0):]])
+                characters.append(None)
             else:
                 voiced = False
         t += dur
-    total_end = t
     if first is None:
         raise ValueError("nothing to sing")
-    return events, pitch_notes, first, total_end, beat
+    return events, characters, pitch_notes, first, beat
 
 
 def frames(sec):
     return int(round(sec * FPS))
 
 
-def build(mel, shift):
-    events, pitch_notes, first, total_end, beat = plan(mel, shift)
+
+PITCH = None
+
+
+def punctuation_ends(text, characters):
+    """Validate the whole Han sequence before assigning a breath after a syllable."""
+    han_events = [i for i, c in enumerate(characters) if c and HAN.fullmatch(c)]
+    if not han_events:
+        return None
+    sung = "".join(characters[i] for i in han_events)
+    supplied = "".join(HAN.findall(text))
+    if sung != supplied:
+        first = next((i for i, (a, b) in enumerate(zip(sung, supplied)) if a != b), min(len(sung), len(supplied)))
+        raise ValueError(f"第 {first + 1} 字不匹配（旋律 {sung[first:first+1]!r}，标点稿 {supplied[first:first+1]!r}；"
+                         f"旋律 {len(sung)} 字，标点稿 {len(supplied)} 字）")
+    ends = {}
+    seen = 0
+    for ch in text:
+        if HAN.fullmatch(ch):
+            seen += 1
+        elif seen and ch in "，、；：。！？":
+            k = han_events[seen - 1]
+            while k + 1 < len(characters) and characters[k + 1] is None:
+                k += 1
+            seconds = 0.4 if ch in "。！？" else 0.28
+            ends[k] = max(ends.get(k, 0), seconds)
+    return ends
+
+
+def natural_pitch(pn, toks, langs, pd, tt, t0, base):
+    """Infer expressive pitch, then centre each note on its written MIDI pitch."""
+    global PITCH
+    if PITCH is None:
+        j = lambda p: os.path.join(str(VOICEBANK), "dspitch", p)  # noqa: E731
+        PITCH = (session(j("0102_qixuan_muon1_pitch.qixuan.linguistic.onnx")), session(j("0102_qixuan_muon1_pitch.qixuan.pitch.onnx")),
+                 phoneme_ids(j("0102_qixuan_muon1_pitch.phonemes.json")))
+    pl, pp, pids = PITCH
+    n_frames = len(tt)
+    expressiveness = float(os.environ.get("EXPR", "1.0"))
+    penc, _ = pl.run(None, {"tokens": np.array([[pids[p] for p in toks]], np.int64), **langs, "ph_dur": pd})
+    nm, nr, nd, cur = [], [], [], 0
+    for s, e, m in pn:
+        # The exported notes may extend into an instrumental coda past the audio window.
+        a = min(n_frames, max(0, frames(s - t0)))
+        b = min(n_frames, frames(e - t0))
+        if a > cur:
+            nm.append(m)
+            nr.append(True)
+            nd.append(a - cur)
+            cur = a
+        if b > cur:
+            nm.append(m)
+            nr.append(False)
+            nd.append(b - cur)
+            cur = b
+    if cur < n_frames:
+        nm.append(pn[-1][2])
+        nr.append(True)
+        nd.append(n_frames - cur)
+    assert sum(nd) == n_frames, (sum(nd), n_frames)
+    pred = pp.run(None, {"encoder_out": penc, "ph_dur": pd, "note_midi": np.array([nm], np.float32), "note_rest": np.array([nr], bool),
+                         "note_dur": np.array([nd], np.int64), "pitch": base[None].astype(np.float32),
+                         "expr": np.full((1, n_frames), expressiveness, np.float32), "retake": np.ones((1, n_frames), bool),
+                         "steps": np.array(10, np.int64)})[0][0].astype(np.float64)
+    off = np.zeros(n_frames)
+    for s, e, m in pn:
+        a, b = max(0, frames(s - t0)), min(n_frames, frames(e - t0))
+        if b - a < 2:
+            continue
+        core = pred[a + (b - a) // 4: b - (b - a) // 8]
+        off[a:b] = np.median(core) - m
+    k = max(1, frames(0.06))
+    off = np.convolve(np.pad(off, k, mode="edge"), np.ones(2 * k + 1) / (2 * k + 1), mode="same")[k:-k]
+    f = pred - off
+    # long notes the model left flat get a gentle, slightly irregular vibrato
+    for s, e, m in pn:
+        if e - s < 0.75:
+            continue
+        sel = (tt >= s + 0.28) & (tt < e - 0.06)
+        if not sel.any() or np.std(f[sel] - m) > 0.15:
+            continue
+        x = tt[sel] - (s + 0.28)
+        rate = 5.3 + 0.4 * np.sin(2 * math.pi * 0.7 * x)
+        f[sel] += 0.28 * np.minimum(1.0, x / 0.35) * np.sin(2 * math.pi * np.cumsum(rate) / FPS)
+    return f
+
+
+def phrase_gain(preds, events, breaths, first, beat, meter, tt, t0):
+    """Shape the variance model's breathiness and the waveform's gain."""
+    starts = [first] + [events[k + 1][0] for k, _ in breaths]
+    ends = [b for _, b in breaths] + [events[-1][1]]
+    gain = np.ones(len(tt))
+    breathiness = float(os.environ.get("BREATH", "10"))
+    accent = float(os.environ.get("ACCENT", "0.18"))
+    bi = V.var_names.index("breathiness") if "breathiness" in V.var_names else None
+    for s, e in zip(starts, ends):
+        a, b = max(0, frames(s - t0)), min(len(tt), frames(e - t0))
+        if b - a < 4:
+            continue
+        x = np.linspace(0, 1, b - a)
+        if bi is not None:
+            preds[bi][0, a:b] += breathiness * np.clip((x - 0.55) / 0.45, 0, 1) ** 1.5
+        gain[a:b] = 0.8 + 0.25 * np.sin(np.pi * np.clip(x * 1.15, 0, 1)) - 0.15 * np.clip((x - 0.8) / 0.2, 0, 1)
+    mm = re.match(r"(\d+)/(\d+)", str(meter))
+    bar = (int(mm[1]) * 4 / int(mm[2]) if mm else 4) * beat
+    for i in range(int((events[-1][1] - first) / bar) + 1):
+        start = first + i * bar
+        sel = (tt >= start) & (tt < start + 0.25)
+        gain[sel] *= 1 + accent * np.exp(-(tt[sel] - start) / 0.09)
+    return gain
+
+
+def build(mel, shift, punctuation=None):
+    natural = V.name == "qixuan" and os.environ.get("VOCAL_STYLE") != "plain"
+    events, characters, pitch_notes, first, beat = plan(mel, shift)
+    mismatch = False
+    allowed = None
+    if natural and punctuation is not None:
+        try:
+            allowed = punctuation_ends(punctuation, characters)
+        except ValueError as exc:
+            mismatch = True
+            print("WARN punctuation", mel["key"], str(exc), "— using unpunctuated breaths", flush=True)
+    if allowed is not None:
+        for k, limit in allowed.items():
+            s, e, _, _ = events[k]
+            if k + 1 < len(events) and events[k + 1][0] - e < 0.15:
+                events[k][1] -= min(limit, 0.35 * (e - s))
+    breaths = []
     lead = 0.5  # seconds kept before the first sung note (silence, then a breath)
     t0 = first - lead
     end = events[-1][1] + 0.5
@@ -332,8 +462,10 @@ def build(mel, shift):
         words.append((vows, [midi] * len(vows), s, e))
         gap = nxt - e
         if gap > 0.02:
-            if k + 1 < len(events) and gap > 0.25:
-                sp = gap - min(0.4, gap * 0.5)
+            breath = gap > 0.25 if allowed is None else k in allowed and gap > 0.15
+            if k + 1 < len(events) and breath:
+                sp = gap - (min(0.5, gap * 0.85) if allowed is not None else min(0.4, gap * 0.5))
+                breaths.append((k, e))
                 words.append((["SP"], [midi], e, e + sp))
                 words.append((["AP"], [midi], e + sp, nxt))
             else:
@@ -416,14 +548,17 @@ def build(mel, shift):
         x = tt[sel] - (s + 0.3)
         fade = np.minimum(1.0, x / 0.4)
         f[sel] += 0.22 * fade * np.sin(2 * math.pi * 5.4 * x)
+    pd = np.array([ph_dur], dtype=np.int64)
+    if natural:
+        f = natural_pitch(pn, toks, langs, pd, tt, t0, base)
     f0 = 440.0 * 2 ** ((f - 69) / 12)
     # variance (breathiness, voicing, and tension where the voice has it)
     vids = np.array([[V.var_ids[p] for p in toks]], dtype=np.int64)
-    pd = np.array([ph_dur], dtype=np.int64)
     venc, _ = V.var_ling.run(None, {"tokens": vids, **langs, "ph_dur": pd})
     zeros = np.zeros((1, n_frames), np.float32)
     preds = V.var.run(None, {"encoder_out": venc, "ph_dur": pd, "pitch": f[None].astype(np.float32), **{n: zeros for n in V.var_names},
                              "retake": np.ones((1, n_frames, len(V.var_names)), bool), "steps": np.array(10, np.int64)})
+    gain = phrase_gain(preds, events, breaths, first, beat, mel.get("meter", "4/4"), tt, t0) if natural else None
     aids = np.array([[V.ac_ids[p] for p in toks]], dtype=np.int64)
     feed = {"tokens": aids, **langs, "durations": pd, "f0": f0[None].astype(np.float32),
             **{n: p.astype(np.float32) for n, p in zip(V.var_names, preds)},
@@ -431,8 +566,17 @@ def build(mel, shift):
             "depth": np.array(0.6, np.float32), "steps": np.array(20, np.int64)}
     mel_ = V.acoustic.run(None, {k: v for k, v in feed.items() if k in V.ac_inputs})[0]
     wav = V.voc.run(None, {"mel": (mel_ * V.mel_factor).astype(np.float32), "f0": f0[None].astype(np.float32)})[0][0]
+    if gain is not None:
+        wav = wav * np.interp(np.arange(len(wav)) / SR * FPS, np.arange(n_frames), gain)
+    if f0_out := os.environ.get("F0_OUT"):
+        np.save(f0_out, np.stack([tt, f, base]))
     lead_beats = round(first / beat, 6)  # beats before the first syllable; instrumental intros are not sung
-    return wav, lead, lead_beats, f, t0
+    # Label resumed melismas with the syllable that began them, not "~".
+    labels = []
+    for ch in characters:
+        labels.append(ch if ch is not None else labels[-1])
+    breath_log = [(labels[k], round(e - t0, 3)) for k, e in breaths]
+    return wav, lead, lead_beats, breath_log, mismatch
 
 
 def main():
@@ -446,6 +590,8 @@ def main():
     out = args[1]
     only = set(args[2:])
     os.makedirs(out, exist_ok=True)
+    punctuation, override = None, None
+    mismatches = []
     for mel in todo:
         if only and mel["key"] not in only:
             continue
@@ -469,15 +615,28 @@ def main():
         else:
             shift = -12 if med > 64 else 0
         try:
-            wav, offset, lead_beats, _, _ = build(mel, shift)
+            text = None
+            if singer == "qixuan" and os.environ.get("VOCAL_STYLE") != "plain":
+                if punctuation is None:
+                    override_file = os.environ.get("PUNCT")
+                    override = Path(override_file).read_text(encoding="utf-8-sig") if override_file else None
+                    punctuation_file = Path(__file__).with_name("punct.json")
+                    punctuation = json.loads(punctuation_file.read_text(encoding="utf-8")) if punctuation_file.exists() else {}
+                text = override if override is not None else punctuation.get(mel["key"])
+            wav, offset, lead_beats, breaths, mismatch = build(mel, shift, text)
         except Exception as exc:  # noqa: BLE001
             print("FAIL", mel["key"], mel["book"], mel["name"], repr(exc), flush=True)
             continue
+        if mismatch:
+            mismatches.append(mel["key"])
+        print("breaths after:", " ".join(f"{ch}@{sec:.3f}s" for ch, sec in breaths) or "—", flush=True)
         peak = float(np.max(np.abs(wav))) or 1.0
         wav = wav / peak * 0.89
         sf.write(os.path.join(out, mel["key"] + ".wav"), wav, SR)
         json.dump({"offset": round(offset, 4), "leadBeats": lead_beats, "shift": shift, "voice": singer}, open(os.path.join(out, mel["key"] + ".json"), "w"))
         print("ok", mel["key"], mel["book"], mel["name"], mel.get("label", ""), singer, f"{len(wav)/SR:.1f}s", "shift", shift, flush=True)
+
+    print("punctuation mismatches:", ", ".join(mismatches) or "—", flush=True)
 
 
 if __name__ == "__main__":
