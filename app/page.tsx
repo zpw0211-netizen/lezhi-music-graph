@@ -472,6 +472,17 @@ export default function Home() {
           />
         )}
         <div className={`route-view${view === "compose" || view === "lab" || view === "ear" || view === "rhythm" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
+          {(view === "kmap" || view === "graph") && (
+            // 两种知识图谱都保留：核心知识点图和完整图谱，在这里来回切换。
+            <nav className="graph-tabs" aria-label="知识图谱的两种看法">
+              <button type="button" aria-current={view === "kmap" ? "page" : undefined} onClick={() => navigate({ view: "kmap" })}>
+                <strong>核心知识点</strong><small>精选知识点，带讲解、谱例和课例</small>
+              </button>
+              <button type="button" aria-current={view === "graph" ? "page" : undefined} onClick={() => { if (view !== "graph") explorer.chooseFullGraph(); }}>
+                <strong>完整图谱</strong><small>全部知识点、作品和它们的联系</small>
+              </button>
+            </nav>
+          )}
           {dataStatus}
           {missingWork}
           {/* 按课学习 needs only the book directory, which arrives well before the full graph. */}
@@ -586,7 +597,6 @@ export default function Home() {
             onOpenLesson={(work, bookKey) => navigate({ view: "lesson", book: bookKey, work })}
             onPlan={(work, bookKey) => navigate({ view: "plan", book: bookKey, work })}
             onTool={(tool) => navigate({ view: tool })}
-            onFullGraph={explorer.chooseFullGraph}
             />
           )}
           {view === "work" && canonicalGraph && routeWork && (

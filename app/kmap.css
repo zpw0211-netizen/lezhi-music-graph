@@ -114,3 +114,15 @@
 .kmap-node.is-book.is-selected text, .kmap-node.is-book:hover text { fill:#fff; }
 .kmap-node.is-book.is-lit rect { stroke:var(--k-brick); stroke-width:1.8; }
 .kmap-legend .square { width:16px; height:11px; margin-left:12px; border:1.2px solid #7A8580; border-radius:3px; }
+
+/* 知识图谱的两个栏：核心知识点 / 完整图谱 */
+.graph-tabs { display:flex; gap:8px; width:100%; max-width:1560px; margin:0 auto; padding:12px clamp(16px,3vw,40px) 0; box-sizing:border-box; }
+.network-mode .graph-tabs { max-width:none; padding:8px 14px; border-bottom:1px solid var(--line, #E3E0D6); }
+.graph-tabs button { display:grid; gap:2px; min-width:0; padding:8px 18px; border:1px solid var(--line, #E3E0D6); border-radius:10px; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; transition:background .2s ease, border-color .2s ease; }
+.graph-tabs button strong { font-size:16px; font-weight:600; letter-spacing:.04em; white-space:nowrap; }
+.graph-tabs button small { font-size:12.5px; opacity:.72; white-space:nowrap; }
+.graph-tabs button:hover { border-color:#1E7A4A; }
+.graph-tabs button[aria-current="page"] { background:#1E7A4A; border-color:#1E7A4A; color:#fff; cursor:default; }
+@media (max-width:640px) { .graph-tabs button { flex:1; padding:8px 12px; } .graph-tabs button small { display:none; } }
+.graph-tabs button[aria-current="page"] strong, .graph-tabs button[aria-current="page"] small { color:#fff; }
+.graph-tabs button[aria-current="page"] small { opacity:.88; }

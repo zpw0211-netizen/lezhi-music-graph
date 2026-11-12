@@ -129,7 +129,7 @@ function Fold({ label, children }: { label: string; children: () => ReactNode })
 }
 
 /** 核心知识点图（小样）：一册书的知识点网 + 每个知识点的讲解、谱例、音频、课例和练习。 */
-export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point: routePoint, assetUrl, onRoute, onOpenLesson, onPlan, onTool, onFullGraph }: {
+export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point: routePoint, assetUrl, onRoute, onOpenLesson, onPlan, onTool }: {
   graph: CanonicalGraph;
   books: BookDirectory[];
   bookKey?: string;
@@ -141,7 +141,6 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
   onOpenLesson: (work: string, bookKey: string) => void;
   onPlan: (work: string, bookKey: string) => void;
   onTool: (tool: Tool) => void;
-  onFullGraph: () => void;
 }) {
   const scope = routeBook && SCOPES[routeBook] ? routeBook : null;
   const bookKey = scope ?? (books.some((book) => book.key === routeBook) ? routeBook! : books.some((book) => book.key === fallbackBook) ? fallbackBook! : books.find((book) => /(^|-)g7s1$/.test(book.key))?.key ?? books[0]?.key ?? "g7s1");
@@ -379,7 +378,6 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
           {books.map((item) => <option key={item.key} value={item.key}>{bookLabel(item)}</option>)}
         </select></label>
         {!scope && <label className="kmap-check"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />显示全部 {points.length} 个知识点</label>}
-        <button type="button" className="kmap-link" onClick={onFullGraph}>查看完整图谱</button>
       </div>
     </header>
 
