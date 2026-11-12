@@ -15,6 +15,7 @@ import {
   LESSON_KINDS, STAGES, cultureFacts, elementFacts, lessonKindOf, reflectiveScript,
   type LessonFact, type LessonKind, type StageKey,
 } from "../../lib/lesson/reflective";
+import { SKIN_NAMES, SKIN_SLOTS, isSkinKey, skinOf, type SkinKey } from "../../lib/lesson/skins";
 import { REGULAR_STAGES, regularScript } from "../../lib/lesson/regular";
 import { STANDARD } from "../../lib/lesson/curriculum";
 import { EDITION } from "../../lib/app/books";
@@ -23,7 +24,8 @@ type ScoreAsset = { url: string; title?: string };
 type Question = { id: string; prompt: string; options: string[]; answer: string };
 // art：这一页右侧的课件插画（public/art/lesson/<art>.webp，人教版由 editions/renjiao 覆盖成剪纸风格的同名图）。
 type Slide = { key: string; stage: StageKey; step: string; title: string; steps: number; art?: string; render: (step: number) => ReactNode };
-type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string> };
+// skin：老师在备课里指定的主题图；"none" 是不用主题图，不写就按本课数据自动选。
+type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string>; skin?: SkinKey | "none" };
 
 const STORAGE_PREFIX = "yapu-reflective:";
 
@@ -135,6 +137,8 @@ export function ReflectivePresent({
   const [preparing, setPreparing] = useState(false);
   const [model, setModelState] = useState<Model>(readModel);
   const kind = saved.kind ?? lessonKindOf(mode, workType, workName);
+  const autoSkin = useMemo(() => skinOf({ workName, workType, kind, facts }), [facts, kind, workName, workType]);
+  const skin = saved.skin === "none" ? null : isSkinKey(saved.skin) ? saved.skin : autoSkin;
   const script = useMemo(() => reflectiveScript({ workName, kind, grade, facts }), [facts, grade, kind, workName]);
   const regular = useMemo(() => regularScript({ workName, kind, grade, facts, melody: melody?.[0] }), [facts, grade, kind, melody, workName]);
   const stages = model === "regular" ? REGULAR_STAGES : STAGES;
@@ -521,6 +525,13 @@ export function ReflectivePresent({
             {(Object.keys(LESSON_KINDS) as LessonKind[]).map((key) => <option key={key} value={key}>{LESSON_KINDS[key]}</option>)}
           </select>
         </label>
+        <label>主题图
+          <select value={saved.skin ?? "auto"} onChange={(event) => update({ skin: event.target.value === "auto" ? undefined : event.target.value as SkinKey | "none" })}>
+            <option value="auto">{autoSkin ? `自动（${SKIN_NAMES[autoSkin]}）` : "自动（通用插画）"}</option>
+            <option value="none">不用主题图</option>
+            {(Object.keys(SKIN_NAMES) as SkinKey[]).map((key) => <option key={key} value={key}>{SKIN_NAMES[key]}</option>)}
+          </select>
+        </label>
         <button type="button" aria-pressed={isHidden} disabled={!canToggleHidden} onClick={toggleHidden}>{isHidden ? "上课时显示这一页" : "上课时隐藏这一页"}</button>
         {!canToggleHidden && <span>上课至少保留一页。</span>}
         {!visibleSlides.length && <span>旧设置隐藏了全部页面，上课时会恢复显示。</span>}
@@ -543,7 +554,9 @@ export function ReflectivePresent({
       </aside>
     </div>}
     <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}-${model}`} ref={stageRef}>
-      {slide.art && <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />}
+      {slide.art && (skin && SKIN_SLOTS.has(slide.art)
+        ? <Picture className="reflect-art is-skin" src={assetUrl(`art/skin/${skin}.webp`)} art={skin} />
+        : <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />)}
       <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
     </div>
     <footer className="present-bar">
