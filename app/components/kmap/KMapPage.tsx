@@ -184,7 +184,14 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
     }
     return result;
   }, [basePositions, map]);
-  const [hover, setHover] = useState<string | null>(null);
+  const [hover, setHoverNow] = useState<string | null>(null);
+  // 鼠标划过一串点时不必每个都点亮：停稳一小会儿才算，离开也稍等一下（紧接着进了另一个点就直接换）。
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setHover = (id: string | null) => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => setHoverNow(id), id ? 70 : 120);
+  };
+  useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
   // 窄屏上图可以左右拖：选中一个点后把它移到中间。
   const stageRef = useRef<HTMLDivElement | null>(null);
   const selectedAt = selected ? positions.get(selected.id) : undefined;

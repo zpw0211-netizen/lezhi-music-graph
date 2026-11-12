@@ -23,14 +23,15 @@
 
 .kmap-disc { fill:color-mix(in srgb, var(--paper-2) 55%, var(--sheet)); stroke:var(--line); stroke-width:1; }
 .kmap-ring { fill:none; stroke:var(--line); stroke-width:1; stroke-dasharray:2 7; }
-.kmap-edges line { stroke:#8FA097; stroke-width:1; opacity:.5; transition:opacity .25s ease, stroke .25s ease; }
+.kmap-edges line { stroke:#8FA097; stroke-width:1; opacity:.5; }
 .kmap-edges .to-work line { stroke-width:.7; opacity:.16; }
 .kmap-edges .is-on line { stroke:var(--k-pine); stroke-width:1.5; opacity:.9; }
 .kmap-edges .is-off line { opacity:.05; }
-.kmap-edges text { font-size:11.5px; fill:#7C8A84; letter-spacing:.04em; pointer-events:none; paint-order:stroke; stroke:var(--sheet); stroke-width:3px; stroke-linejoin:round; transition:opacity .25s ease; }
+.kmap-edges text { font-size:11.5px; fill:#7C8A84; letter-spacing:.04em; pointer-events:none; paint-order:stroke; stroke:var(--sheet); stroke-width:3px; stroke-linejoin:round; }
 .kmap-edges .is-on text { font-size:12.5px; fill:var(--k-pine); }
 .kmap-edges .is-off text { opacity:.08; }
-.kmap-node { cursor:pointer; outline:none; transition:opacity .25s ease; }
+/* 几百条线和点一起做透明度过渡会让整张图每帧重画，鼠标一动就卡：明暗直接切换，只留圆点的放大动画。 */
+.kmap-node { cursor:pointer; outline:none; }
 .kmap-node text { font-family:var(--serif); font-size:14px; fill:var(--ink); pointer-events:none; paint-order:stroke; stroke:var(--sheet); stroke-width:3.5px; stroke-linejoin:round; }
 .kmap-node circle { transition:transform .25s cubic-bezier(.3,1.4,.5,1); transform-box:fill-box; transform-origin:center; }
 .kmap-node.is-point circle { fill:color-mix(in srgb, var(--hue) 78%, white); stroke:var(--hue); stroke-width:1.2; }
@@ -104,7 +105,7 @@
   .kmap-stage svg { min-width:680px; }
   .kmap-legend { position:sticky; left:0; }
 }
-@media (prefers-reduced-motion:reduce) { .kmap-node, .kmap-node circle, .kmap-edges line, .kmap-edges text { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .kmap-node circle { transition:none; } }
 
 /* 全套视图：分册点 */
 .kmap-node.is-book rect { fill:var(--sheet); stroke:#7A8580; stroke-width:1.2; }
