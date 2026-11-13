@@ -26,6 +26,7 @@ import "./about.css";
 import "./styles/motion.css";
 import "./records.css";
 import "./lab.css";
+import "./lab-v2.css";
 import "./exploration.css";
 import "./rhythm.css";
 import "./compose.css";

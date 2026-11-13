@@ -228,25 +228,23 @@ function LupanWheel({
         <defs>
           {/* Cast bronze face with fine casting grain. */}
           <radialGradient id="lupan-metal-face" cx="38%" cy="30%" r="78%">
-            <stop offset="0" stopColor="#F2DDA8" />
-            <stop offset=".34" stopColor="#D8B776" />
-            <stop offset=".68" stopColor="#B08A4E" />
-            <stop offset=".9" stopColor="#8A6735" />
-            <stop offset="1" stopColor="#6E5028" />
+            <stop offset="0" stopColor="#FFFFFF" />
+            <stop offset=".5" stopColor="#FBF8EE" />
+            <stop offset=".86" stopColor="#F3EDDD" />
+            <stop offset="1" stopColor="#EAE2CC" />
           </radialGradient>
           <linearGradient id="lupan-metal-sheen" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#FFF6DD" stopOpacity=".55" />
-            <stop offset=".3" stopColor="#FFF6DD" stopOpacity="0" />
-            <stop offset=".52" stopColor="#FFF0C8" stopOpacity=".22" />
+            <stop offset="0" stopColor="#FFFFFF" stopOpacity=".5" />
+            <stop offset=".35" stopColor="#FFFFFF" stopOpacity="0" />
             <stop offset=".7" stopColor="#3A2A14" stopOpacity="0" />
-            <stop offset="1" stopColor="#2A1D0C" stopOpacity=".32" />
+            <stop offset="1" stopColor="#2A1D0C" stopOpacity=".08" />
           </linearGradient>
           <linearGradient id="lupan-bronze-edge" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#5A3D20" />
-            <stop offset=".2" stopColor="#D9BC82" />
-            <stop offset=".45" stopColor="#8E6B3A" />
-            <stop offset=".7" stopColor="#E8CF97" />
-            <stop offset="1" stopColor="#5E4224" />
+            <stop offset="0" stopColor="#123828" />
+            <stop offset=".22" stopColor="#2F7A55" />
+            <stop offset=".48" stopColor="#1A4E37" />
+            <stop offset=".72" stopColor="#368560" />
+            <stop offset="1" stopColor="#123828" />
           </linearGradient>
           <filter id="lupan-metal-grain" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
             <feTurbulence type="fractalNoise" baseFrequency="1.8" numOctaves="3" seed="11" result="grain" />
@@ -283,20 +281,19 @@ function LupanWheel({
       >
         <defs>
           <radialGradient id="lupan-stud" cx="36%" cy="30%" r="78%">
-            <stop offset="0" stopColor="#FFF4D2" />
-            <stop offset=".42" stopColor="#E7C987" />
-            <stop offset=".82" stopColor="#B48C4B" />
-            <stop offset="1" stopColor="#7C5A2C" />
+            <stop offset="0" stopColor="#FFFFFF" />
+            <stop offset=".6" stopColor="#FBF8EE" />
+            <stop offset="1" stopColor="#ECE4CF" />
           </radialGradient>
           <radialGradient id="lupan-stud-lit" cx="36%" cy="30%" r="78%">
             <stop offset="0" stopColor="#FFFBEA" />
-            <stop offset=".45" stopColor="#F6DB98" />
-            <stop offset="1" stopColor="#C2913E" />
+            <stop offset=".5" stopColor="#F8DE9A" />
+            <stop offset="1" stopColor="#E3B24C" />
           </radialGradient>
           <radialGradient id="lupan-patina" cx="40%" cy="32%" r="80%">
-            <stop offset="0" stopColor="#6E5432" />
-            <stop offset=".6" stopColor="#47331B" />
-            <stop offset="1" stopColor="#2C1F10" />
+            <stop offset="0" stopColor="#2E7652" />
+            <stop offset=".6" stopColor="#1B5038" />
+            <stop offset="1" stopColor="#0F3324" />
           </radialGradient>
           <filter id="lupan-ink-soft" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
             <feGaussianBlur stdDeviation="1.1" />
@@ -913,25 +910,8 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
     nextQuestion();
   };
 
-  return <section className="lupan-lab" aria-labelledby="lupan-title">
-    <header className="lupan-intro">
-      <p className="lupan-kicker">五声律坊</p>
-      <h2 id="lupan-title">律盘</h2>
-      <div className="lupan-current-key" aria-live="polite"><span>当前调式 · 1={gongKeyName}</span><b>{keyName} {modeRoot}</b></div>
-    </header>
-
+  return <section className="lupan-lab lupan-v2" aria-labelledby="lupan-title">
     <section className="lupan-stage" aria-label="律盘练习">
-      <aside className="lupan-stick-board" aria-label="选择音阶">
-        <p className="lupan-side-lead">以耳朵认识五声，<br /><span>再从不同正声出发</span><span>听调式。</span></p>
-        <p className="lupan-stage-label">当前音阶</p>
-        <div className="lupan-current-scale-card">
-          <b>{scaleTitle}</b>
-          <span>{selectedMode.subtitle}</span>
-          <small>{keyName} {modeRoot}调式 · 1={gongKeyName}</small>
-        </div>
-        <p className="lupan-bamboo-legend"><b>转动律盘</b><span>把当前调式整体移到新的音高。</span></p>
-      </aside>
-
       <div className="lupan-center-column">
         <LupanWheel
           wheelRef={wheelRef}
@@ -953,10 +933,75 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
         />
       </div>
 
-      {inspect && <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
-        <button type="button" className="lupan-card-close" aria-label="关闭说明" onClick={() => setInspect(null)}>×</button>
-        {renderInspectCard()}
-      </aside>}
+      <div className="lupan-console">
+        <header className="lupan-intro">
+          <div>
+            <p className="lupan-kicker">五声律坊</p>
+            <h2 id="lupan-title">转一转律盘，听五声</h2>
+          </div>
+          <div className="lupan-current-key" aria-live="polite"><span>当前调式 · 1={gongKeyName}</span><b>{keyName} {modeRoot}</b></div>
+        </header>
+      <section className="lupan-sound-panel" aria-label="按键练习">
+        <div className="lupan-keys-and-actions">
+          <div className="lupan-scale-options" role="group" aria-label="选择音阶类型">
+            <span className="lupan-choice-label">音阶</span>
+            <div className="lupan-scale-option-list">
+              {MODES.map((item) => <button
+                key={item.id}
+                type="button"
+                className={`lupan-scale-option${scale === item.id ? " is-selected" : ""}`}
+                aria-pressed={scale === item.id}
+                onClick={() => chooseScale(item.id)}
+              >
+                <b>{item.title}</b><small>{item.legend}</small>
+              </button>)}
+            </div>
+          </div>
+          <div className="lupan-root-options" role="group" aria-label="选择调式主音">
+            <span className="lupan-choice-label">调式主音</span>
+            <div className="lupan-root-option-list">
+              {TONE_ROOTS.map((root) => <button
+                key={root}
+                type="button"
+                className={`lupan-root-option${modeRoot === root ? " is-selected" : ""}`}
+                aria-pressed={modeRoot === root}
+                onClick={() => chooseModeRoot(root)}
+              ><b>{root}</b><span>{root}调式</span></button>)}
+            </div>
+            <p>同一组音从不同正声开始，会形成不同的调式。律盘中心当前显示：{modeRoot}调式。</p>
+          </div>
+          <div className="lupan-five-keys" ref={keyboardRef} role="group" aria-label={`${scaleTitle}${modeRoot}调式按键，${displayKey}`} aria-busy={loading}>
+            {scaleNotes.map((note, index) => <button
+              key={note.name}
+              type="button"
+              className={`lupan-five-key${index === 0 ? " is-main" : ""}${activeKeys.includes(index) ? " is-sounding" : ""}${question?.chosen === index ? index === question.answer ? " is-correct" : " is-wrong" : ""}`}
+              aria-label={`${note.name}，${note.solfege}，简谱 ${note.degree}，${displayKey}${index === 0 ? `，${modeRoot}调式主音` : ""}，键盘快捷键 ${index + 1}`}
+              onClick={() => playKey(index)}
+            >
+              <span className="lupan-key-degree">{note.degree}</span>
+              <strong>{note.name}</strong>
+              <small>{note.solfege}</small>
+              {activeKeys.includes(index) && <span key={pulse} className="lupan-key-ripple" aria-hidden="true" />}
+            </button>)}
+          </div>
+          <div className="lupan-sound-row-actions">
+            <button type="button" disabled={loading} onClick={() => {
+              setQuestion(null);
+              setLearningProgress((progress) => ({ ...progress, played: true }));
+              const phrase = scoreNotes.map((note) => ({ midi: note.midi, index: note.noteIndex }));
+              void playSequence(phrase, { kind: "phrase", title: `${modeRoot}调式上行再下行` });
+            }}>上行再下行</button>
+            <span>{modeRoot}调式 · {scaleNotes.length} 个音 · 按键 1–{scaleNotes.length} 可试听</span>
+          </div>
+        </div>
+
+        <p className="lupan-live-message" role="status" aria-live="polite">{message}</p>
+      </section>
+        {inspect && <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
+          <button type="button" className="lupan-card-close" aria-label="关闭说明" onClick={() => setInspect(null)}>×</button>
+          {renderInspectCard()}
+        </aside>}
+      </div>
     </section>
 
     <section className="lupan-learning-overview" aria-label="今天的学习任务">
@@ -974,67 +1019,6 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       </ol>
     </section>
 
-    <section className="lupan-sound-panel" aria-label="按键练习">
-      <div className="lupan-keys-and-actions">
-        <div className="lupan-step-heading">
-          <span className="lupan-step-number">01</span>
-          <div><p className="lupan-step-caption">第一步 · 按一按</p><h2 id="lupan-sound-title">自己试着弹{scaleTitle}音阶</h2><p>先选择音阶和调式主音，再逐个试听，感受音与音之间的距离。</p></div>
-          {learningProgress.played && <span className="lupan-step-done">完成</span>}
-        </div>
-        <div className="lupan-scale-options" role="group" aria-label="选择音阶类型">
-          <span className="lupan-choice-label">音阶</span>
-          <div className="lupan-scale-option-list">
-            {MODES.map((item) => <button
-              key={item.id}
-              type="button"
-              className={`lupan-scale-option${scale === item.id ? " is-selected" : ""}`}
-              aria-pressed={scale === item.id}
-              onClick={() => chooseScale(item.id)}
-            >
-              <b>{item.title}</b><small>{item.legend}</small>
-            </button>)}
-          </div>
-        </div>
-        <div className="lupan-root-options" role="group" aria-label="选择调式主音">
-          <span className="lupan-choice-label">调式主音</span>
-          <div className="lupan-root-option-list">
-            {TONE_ROOTS.map((root) => <button
-              key={root}
-              type="button"
-              className={`lupan-root-option${modeRoot === root ? " is-selected" : ""}`}
-              aria-pressed={modeRoot === root}
-              onClick={() => chooseModeRoot(root)}
-            ><b>{root}</b><span>{root}调式</span></button>)}
-          </div>
-          <p>同一组音从不同正声开始，会形成不同的调式。律盘中心当前显示：{modeRoot}调式。</p>
-        </div>
-        <div className="lupan-five-keys" ref={keyboardRef} role="group" aria-label={`${scaleTitle}${modeRoot}调式按键，${displayKey}`} aria-busy={loading}>
-          {scaleNotes.map((note, index) => <button
-            key={note.name}
-            type="button"
-            className={`lupan-five-key${index === 0 ? " is-main" : ""}${activeKeys.includes(index) ? " is-sounding" : ""}${question?.chosen === index ? index === question.answer ? " is-correct" : " is-wrong" : ""}`}
-            aria-label={`${note.name}，${note.solfege}，简谱 ${note.degree}，${displayKey}${index === 0 ? `，${modeRoot}调式主音` : ""}，键盘快捷键 ${index + 1}`}
-            onClick={() => playKey(index)}
-          >
-            <span className="lupan-key-degree">{note.degree}</span>
-            <strong>{note.name}</strong>
-            <small>{note.solfege}</small>
-            {activeKeys.includes(index) && <span key={pulse} className="lupan-key-ripple" aria-hidden="true" />}
-          </button>)}
-        </div>
-        <div className="lupan-sound-row-actions">
-          <button type="button" disabled={loading} onClick={() => {
-            setQuestion(null);
-            setLearningProgress((progress) => ({ ...progress, played: true }));
-            const phrase = scoreNotes.map((note) => ({ midi: note.midi, index: note.noteIndex }));
-            void playSequence(phrase, { kind: "phrase", title: `${modeRoot}调式上行再下行` });
-          }}>上行再下行</button>
-          <span>{modeRoot}调式 · {scaleNotes.length} 个音 · 按键 1–{scaleNotes.length} 可试听</span>
-        </div>
-      </div>
-
-      <p className="lupan-live-message" role="status" aria-live="polite">{message}</p>
-    </section>
 
     <div className="lupan-practice-row">
       <section className="lupan-tape-row lupan-lesson-step" aria-labelledby="lupan-listen-title">

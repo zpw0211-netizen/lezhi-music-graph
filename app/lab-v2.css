@@ -1,0 +1,100 @@
+/* 五声律坊第二版：律盘在左，音阶、调式和按键在右，一屏内完成操作。
+   律盘换成宣纸盘面、松绿盘边，和全站的纸色、松绿、朱红一致。 */
+
+/* ── 律盘配色 ── */
+.lupan-v2 .lupan-disc-shadow { fill: rgba(18, 56, 40, .2); }
+.lupan-v2 .lupan-disc-edge { stroke: #0E2C20; stroke-width: 1.2; }
+.lupan-v2 .lupan-disc-knurl { stroke: rgba(255, 255, 255, .34); stroke-width: 8; stroke-dasharray: 1.2 3.4; }
+.lupan-v2 .lupan-disc-bevel { stroke: #E7D49B; stroke-width: 2.2; opacity: .95; }
+.lupan-v2 .lupan-disc-face { stroke: #CFC3A2; stroke-width: 1.2; filter: none; }
+.lupan-v2 .lupan-disc-lathe .is-dark { stroke: rgba(120, 104, 66, .045); }
+.lupan-v2 .lupan-disc-lathe .is-light { stroke: rgba(255, 255, 255, .5); }
+.lupan-v2 .lupan-disc-sheen { mix-blend-mode: normal; opacity: .5; }
+.lupan-v2 .lupan-disc-etched { stroke: rgba(30, 74, 60, .5); stroke-width: 1.2; }
+.lupan-v2 .lupan-disc-etched-lip { stroke: transparent; }
+.lupan-v2 .lupan-disc-inner { stroke: rgba(30, 74, 60, .2); }
+.lupan-v2 .lupan-disc-faint { stroke: rgba(30, 74, 60, .2); }
+.lupan-v2 .lupan-disc-inner-rim { fill: rgba(30, 122, 74, .035); stroke: rgba(30, 74, 60, .26); }
+.lupan-v2 .lupan-pitch-tick { stroke: rgba(30, 60, 46, .5); }
+.lupan-v2 .lupan-pitch-tick.is-major { stroke: var(--lupan-seal); }
+.lupan-v2 .lupan-pitch-name { fill: #2B3A32; font-family: var(--ui, "PingFang SC", "Microsoft YaHei", sans-serif); stroke: rgba(255, 255, 255, .7); }
+.lupan-v2 .lupan-pitch-name.is-tonic { fill: var(--lupan-seal); }
+.lupan-v2 .lupan-pitch-hit:hover .lupan-pitch-plate,
+.lupan-v2 .lupan-pitch-hit:focus-visible .lupan-pitch-plate { fill: rgba(30, 122, 74, .08); stroke: rgba(30, 74, 60, .4); }
+.lupan-v2 .lupan-pitch-hit.is-inspected .lupan-pitch-plate { fill: #FFFFFF; }
+.lupan-v2 .lupan-note-shadow { fill: rgba(18, 56, 40, .2); }
+.lupan-v2 .lupan-note-core { stroke: #1E4A3C; stroke-width: 1.5; }
+.lupan-v2 .lupan-scale-note:focus-visible .lupan-note-core { stroke: #123828; }
+.lupan-v2 .lupan-note-degree { fill: #5C6B62; font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-note-name { fill: #17221C; }
+.lupan-v2 .lupan-note-solfege { fill: #5C6B62; font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-bias-stamp { fill: rgba(255, 255, 255, .7); }
+.lupan-v2 .lupan-hub-ring { stroke: rgba(30, 74, 60, .4); }
+.lupan-v2 .lupan-hub-shadow { fill: rgba(12, 40, 28, .3); }
+.lupan-v2 .lupan-hub { stroke: #E7D49B; }
+.lupan-v2 .lupan-hub-main { fill: #FFF6DC; }
+.lupan-v2 .lupan-hub-key { fill: #F3DFA6; font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-hub-sub { fill: rgba(255, 246, 220, .78); font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-fixed-marker { stroke: #FFFFFF; }
+
+/* ── 控制台：标题、音阶、调式、按键 ── */
+.lupan-v2 .lupan-console { min-width: 0; }
+.lupan-v2 .lupan-intro { align-items: flex-end; justify-content: space-between; gap: 16px; padding: 0 0 16px; border-bottom: 1px solid var(--lupan-line); }
+.lupan-v2 .lupan-intro .lupan-kicker { margin: 0 0 6px; font-family: var(--ui, "Microsoft YaHei", sans-serif); letter-spacing: .24em; }
+.lupan-v2 .lupan-intro h2 { font-size: clamp(24px, 2.1vw, 32px); letter-spacing: .04em; white-space: nowrap; }
+.lupan-v2 .lupan-current-key { flex-direction: column; align-items: flex-end; gap: 2px; margin-left: 0; font-family: var(--ui, "Microsoft YaHei", sans-serif); white-space: nowrap; }
+.lupan-v2 .lupan-current-key b { font-size: 30px; }
+.lupan-v2 .lupan-sound-panel { margin: 0; padding: 18px 0 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.lupan-v2 :is(.lupan-scale-options, .lupan-root-options) { grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 0 0 16px; }
+.lupan-v2 .lupan-choice-label { color: var(--lupan-ink-3); font: 12px/1.4 var(--ui, "Microsoft YaHei", sans-serif); letter-spacing: .16em; }
+.lupan-v2 .lupan-scale-option { min-height: 54px; border-radius: 12px; }
+.lupan-v2 .lupan-scale-option b { font-size: 15px; }
+.lupan-v2 .lupan-root-option { min-height: 46px; border-radius: 12px; }
+.lupan-v2 :is(.lupan-scale-option, .lupan-root-option).is-selected { border-color: var(--lupan-pine); background: var(--lupan-pine); color: #FFFFFF; box-shadow: 0 8px 18px -10px rgba(25, 77, 53, .7); }
+.lupan-v2 .lupan-scale-option.is-selected small,
+.lupan-v2 .lupan-root-option.is-selected span { color: rgba(255, 255, 255, .82); }
+.lupan-v2 .lupan-root-options > p { grid-column: 1; margin: 0; font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-five-keys { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
+.lupan-v2 .lupan-five-key { min-height: 104px; border-radius: 14px; box-shadow: 0 10px 20px -18px rgba(25, 54, 39, .6); }
+.lupan-v2 .lupan-five-key.is-main { border-bottom-width: 3px; }
+.lupan-v2 .lupan-sound-row-actions { margin-top: 14px; font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-sound-row-actions button { min-height: 40px; padding: 0 18px; border: 1px solid var(--lupan-pine); border-radius: 999px; background: #FFFFFF; font: 500 13px/1 var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-sound-row-actions button:hover { background: var(--lupan-pine); color: #FFFFFF; }
+.lupan-v2 .lupan-live-message { margin-top: 10px; }
+.lupan-v2 .lupan-inspector { align-self: auto; margin-top: 6px; padding: 14px 0 0; border-top: 1px solid var(--lupan-line); }
+.lupan-v2 .lupan-turn-controls { margin-top: 6px; }
+.lupan-v2 .lupan-turn-controls button { min-width: 38px; min-height: 34px; padding: 0; border: 1px solid var(--lupan-line); border-radius: 50%; background: #FFFFFF; font: 18px/1 var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-turn-controls span { font-family: var(--ui, "Microsoft YaHei", sans-serif); font-size: 12px; }
+
+/* 学习进度压成一条。 */
+.lupan-v2 .lupan-learning-overview { margin: 18px 0 16px; padding: 14px clamp(18px, 2.2vw, 28px); border-radius: 16px; box-shadow: none; }
+.lupan-v2 .lupan-learning-copy .lupan-kicker { font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.lupan-v2 .lupan-learning-copy h2 { font-size: 22px; }
+.lupan-v2 .lupan-learning-copy > p:last-child { display: none; }
+
+@media (min-width: 1101px) {
+  .lupan-v2 .lupan-stage { grid-template-columns: minmax(0, 1.14fr) minmax(400px, .86fr); align-items: center; column-gap: clamp(24px, 3vw, 52px); min-height: 0; padding: 14px 0 6px; }
+  .lupan-v2 .lupan-dial-wrap { width: min(100%, 700px, calc(100dvh - 190px)); }
+  .lupan-v2 .lupan-console { padding: clamp(20px, 2vw, 30px); border: 1px solid var(--lupan-line); border-radius: 22px; background: #FFFFFF; box-shadow: 0 24px 60px -44px rgba(25, 54, 39, .5); }
+}
+@media (max-width: 1100px) {
+  .lupan-v2 .lupan-stage { display: flex; flex-direction: column; align-items: stretch; gap: 14px; min-height: 0; }
+  .lupan-v2 .lupan-dial-wrap { width: min(100%, 560px); min-width: 0; }
+  .lupan-v2 .lupan-intro { padding-top: 6px; }
+}
+@media (max-width: 560px) {
+  .lupan-v2 .lupan-intro h2 { font-size: 22px; white-space: normal; }
+  .lupan-v2 .lupan-current-key b { font-size: 24px; }
+  .lupan-v2 .lupan-scale-option-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lupan-v2 .lupan-five-key { min-height: 84px; }
+}
+
+/* 七声时一排七个键：字小一号，“变宫”“变徵”不折行。 */
+.lupan-v2 .lupan-five-key strong { white-space: nowrap; }
+.lupan-v2 .lupan-five-keys:has(> :nth-child(6)) { gap: 6px; }
+.lupan-v2 .lupan-five-keys:has(> :nth-child(6)) .lupan-five-key strong { font-size: clamp(17px, 1.55vw, 23px); line-height: 1.5; }
+/* 说明卡展开时律盘不跟着移动。 */
+@media (min-width: 1101px) {
+  .lupan-v2 .lupan-stage { align-items: start; }
+  .lupan-v2 .lupan-console { margin-top: clamp(0px, 4dvh, 44px); }
+}

@@ -175,3 +175,27 @@
   .compose-block.is-rest { margin-left: 0; }
   .compose-divider { display: none; }
 }
+
+/* 第二版：左边写，右边随时看到自己的乐谱。 */
+.compose-workbench { display: grid; gap: 20px; min-width: 0; }
+.compose-workbench > * { min-width: 0; }
+.compose-workbench .compose-stage { margin-top: 0; }
+.compose-stage-kicker { margin: 0 0 -6px; color: var(--c-seal); font-size: 12px; letter-spacing: .3em; }
+.compose-kicker { font-family: var(--ui, "Microsoft YaHei", sans-serif); }
+.compose-palette-label { margin-bottom: -6px; }
+.compose-editor { border-radius: 22px; background: #fff; box-shadow: 0 24px 60px -46px rgb(25 54 39 / 50%); }
+.compose-stage { border-radius: 22px; background: var(--c-paper); }
+.compose-bar-notes { min-height: 128px; border-radius: 4px; }
+.compose-block { border-radius: 16px; }
+.compose-settings { margin-bottom: 16px; padding: 10px 16px; border: 1px solid var(--c-line); border-radius: 16px; background: #fff; }
+.compose-chips button { border-radius: 999px; }
+.compose-save button { border-radius: 999px; }
+@media (min-width: 1180px) {
+  .compose-workbench { grid-template-columns: minmax(0, 1.42fr) minmax(360px, 1fr); align-items: start; }
+  .compose-workbench .compose-stage { position: sticky; top: 12px; }
+  .compose-workbench .compose-author { width: 96px; }
+  .compose-workbench .compose-keys { flex-basis: 100%; margin-left: 0; }
+}
+.compose-workbench .compose-bar-notes { min-height: 116px; }
+.compose-workbench .compose-rhythm-row { align-items: flex-start; }
+.compose-workbench .compose-rhythm-row > .compose-field-label { padding-top: 12px; }

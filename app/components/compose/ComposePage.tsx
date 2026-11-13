@@ -364,6 +364,7 @@ export function ComposePage() {
       </div>}
     </div>
 
+    <div className="compose-workbench">
     <section className="compose-editor" aria-label="写旋律">
       <div className="compose-score-head">
         <span className="compose-key">1=C <b>{meter}</b></span>
@@ -417,6 +418,7 @@ export function ComposePage() {
             : cursorBar < 0 ? <>{bars.length} 小节都写满了</>
             : <>正在写第 <b>{cursorBar + 1}</b> 小节 · 还剩 <b>{formatBeats(beats - barBeats(bars[cursorBar]), meter)}</b></>}
         </p>
+        <span className="compose-field-label compose-palette-label">音高 · 点一下就写进去</span>
         <div className="compose-palette" aria-label="音块">
           {blocks.map((block, index) =>
             <button key={`${block.d}${block.o}`} type="button" className="compose-block"
@@ -447,6 +449,7 @@ export function ComposePage() {
     </section>
 
     <section className="compose-stage" ref={stageRef} aria-label="我的作品">
+      <p className="compose-stage-kicker">我的作品</p>
       <div className="compose-card-head">
         <input className="compose-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="给旋律起个名字" aria-label="作品名称" maxLength={16} />
         <input className="compose-author" value={author} onChange={(event) => setAuthor(event.target.value)} placeholder="作者" aria-label="作者" maxLength={12} />
@@ -476,6 +479,8 @@ export function ComposePage() {
         <button type="button" onClick={showcase} disabled={!hasNotes}>投屏展示</button>
       </div>
     </section>
+
+    </div>
 
     {works.length > 0 && <section className="compose-gallery" aria-label="作品集">
       <h3>作品集 <small>保存在这台电脑上</small></h3>

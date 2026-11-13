@@ -154,3 +154,18 @@
   .ink-app .workspace .exploration-shell { padding-left: 6px !important; padding-right: 6px !important; }
   .exploration-panel > .lupan-lab { width: calc(100% + 12px); margin-left: -6px; }
 }
+
+/* 页头收成一条：标题在左，四个工具在右，把高度让给工具本身。 */
+@media (min-width: 881px) {
+  .exploration-shell { padding-top: 12px; }
+  .exploration-heading { grid-template-columns: auto minmax(0, 1fr); gap: 28px; margin-bottom: 4px; padding: 10px 12px 10px 26px; border-radius: 999px; box-shadow: 0 6px 22px rgb(23 34 28 / 4%); }
+  .exploration-kicker, .exploration-intro > p:last-child { display: none; }
+  .exploration-intro h1 { font-size: 22px; white-space: nowrap; }
+  .exploration-tabs { display: flex; justify-content: flex-end; gap: 6px; }
+  .exploration-tabs button { min-height: 44px; gap: 8px; padding: 6px 18px 6px 8px; border-color: transparent; border-radius: 999px; background: transparent; }
+  .exploration-tabs button.is-active { border-color: var(--exploration-green); background: var(--exploration-green); box-shadow: 0 8px 18px -10px rgb(25 77 53 / 70%); }
+  .exploration-tabs button.is-active .exploration-tab-copy > span { color: #fff; }
+  .exploration-tab-number { width: 28px; height: 28px; }
+  .is-active .exploration-tab-number { background: rgb(255 255 255 / 18%); }
+  .exploration-tab-copy small { display: none; }
+}
