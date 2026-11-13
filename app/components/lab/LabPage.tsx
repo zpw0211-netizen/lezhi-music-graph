@@ -888,7 +888,7 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       {!info.extension && works.length > 0 && <div className="lupan-card-works">
         <p>教材里的五声作品</p>
         <ul>{works.slice(0, 3).map((work) => <li key={`${work.bookKey}:${work.name}`}>
-          <button type="button" onClick={() => onOpenWork(work.name, work.bookKey)}>《{work.name}》</button>
+          <button type="button" onClick={() => onOpenWork(work.name, work.bookKey)}>{work.name.startsWith("《") ? work.name : `《${work.name}》`}</button>
         </li>)}</ul>
       </div>}
     </div>;
@@ -912,6 +912,12 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
 
   return <section className="lupan-lab lupan-v2" aria-labelledby="lupan-title">
     <section className="lupan-stage" aria-label="律盘练习">
+      <div className={`lupan-side${inspect ? " has-card" : ""}`}>
+        {inspect ? <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
+          <button type="button" className="lupan-card-close" aria-label="关闭说明" onClick={() => setInspect(null)}>×</button>
+          {renderInspectCard()}
+        </aside> : <p className="lupan-side-hint">点律盘上的一个音，或者中间的圆心，这里会出现它的说明。</p>}
+      </div>
       <div className="lupan-center-column">
         <LupanWheel
           wheelRef={wheelRef}
@@ -997,10 +1003,6 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
 
         <p className="lupan-live-message" role="status" aria-live="polite">{message}</p>
       </section>
-        {inspect && <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
-          <button type="button" className="lupan-card-close" aria-label="关闭说明" onClick={() => setInspect(null)}>×</button>
-          {renderInspectCard()}
-        </aside>}
       </div>
     </section>
 

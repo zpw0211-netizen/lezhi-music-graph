@@ -108,3 +108,25 @@
   .lupan-v2 .lupan-current-key b { font-size: 26px; }
   .lupan-v2 .lupan-console { padding: clamp(18px, 1.6vw, 26px); }
 }
+
+/* 三栏：点到的音的说明卡在左，律盘居中，控制台靠右。舞台比页面内容更宽，给律盘留地方。 */
+.lupan-v2 .lupan-side { min-width: 0; }
+.lupan-v2 .lupan-side .lupan-inspector { margin: 0; padding: 0; border: 0; }
+.lupan-v2 .lupan-side .lupan-inspector > :not(.lupan-card-close) { border-radius: 16px; }
+.lupan-v2 .lupan-side-hint { margin: 0; padding: 16px 18px; border: 1px dashed #C4D3CA; border-radius: 16px; color: var(--lupan-ink-3); font: 13px/1.8 var(--ui, "Microsoft YaHei", sans-serif); }
+@media (max-width: 1100px) {
+  .lupan-v2 .lupan-side { order: 3; }
+  .lupan-v2 .lupan-side:not(.has-card) { display: none; }
+}
+@media (min-width: 1101px) and (max-width: 1279px) {
+  .lupan-v2 .lupan-center-column { grid-column: 1; grid-row: 1 / span 2; }
+  .lupan-v2 .lupan-console { grid-column: 2; grid-row: 1; }
+  .lupan-v2 .lupan-side { grid-column: 2; grid-row: 2; margin-top: 14px; }
+  .lupan-v2 .lupan-side:not(.has-card) { display: none; }
+}
+@media (min-width: 1280px) {
+  .lupan-v2 .lupan-stage { --stage-w: min(1720px, calc(100vw - 56px)); width: var(--stage-w); margin-inline: calc((100% - var(--stage-w)) / 2); grid-template-columns: minmax(210px, 1fr) auto minmax(404px, 1fr); column-gap: clamp(14px, 1.8vw, 36px); }
+  .lupan-v2 .lupan-side { align-self: center; justify-self: end; width: min(100%, 320px); max-height: calc(100dvh - 190px); overflow: auto; scrollbar-width: thin; }
+  .lupan-v2 .lupan-dial-wrap { width: min(800px, calc(100dvh - 156px), calc(100vw - 56px - 210px - 404px - 76px)); }
+  .lupan-v2 .lupan-console { justify-self: end; width: min(100%, 440px); }
+}
