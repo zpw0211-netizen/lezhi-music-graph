@@ -10,7 +10,6 @@ import "./graph-explorer.css";
 import "./knowledge-detail.css";
 import "./workbench-v5.css";
 import "./home-portal.css";
-import "./home-v6.css";
 import "./pages-v5.css";
 import "./work-graph.css";
 import "./lesson.css";

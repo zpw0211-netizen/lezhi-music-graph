@@ -167,13 +167,13 @@ async function main() {
     await titleNode.waitFor({ state: "attached", timeout: 90_000 });
     const title = (await titleNode.innerText()).trim();
     if (!title.includes("芽谱")) fail(`首页标题为空或不正确：${title}`);
-    await page.locator(".home-portal .hv-search input").waitFor({ state: "visible", timeout: 10_000 });
-    const scrollCount = await page.locator(".home-portal .hv-book:not(.is-upcoming)").count();
+    await page.locator(".home-portal .home-search input").waitFor({ state: "visible", timeout: 10_000 });
+    const scrollCount = await page.locator(".home-portal .home-scroll-trigger").count();
     // The home shows one stage (小学 or 初中) at a time.
     const stageCounts = [...new Set(PUBLISHED_BOOKS.map((book) => book.stage))].map((stage) => PUBLISHED_BOOKS.filter((book) => book.stage === stage).length);
     if (!stageCounts.includes(scrollCount)) fail(`首页教材画卷数量不正确：${scrollCount}，预期其中之一 ${stageCounts.join("/")}`);
-    const bookmarkCount = await page.locator(".home-portal .hv-entry-list .hv-entry").count();
-    if (bookmarkCount !== 4) fail(`首页入口数量不正确：${bookmarkCount}，预期 4（智能备课、知识图谱、音乐探索与创造、智能问答）`);
+    const bookmarkCount = await page.locator(".home-portal .home-bookmark-list .home-bookmark-item").count();
+    if (bookmarkCount !== 2) fail(`首页探索入口数量不正确：${bookmarkCount}，预期 2（音乐探索与创造、知识图谱）`);
   });
 
   await step("桌面：按课学习导航到 #/records", async () => {
