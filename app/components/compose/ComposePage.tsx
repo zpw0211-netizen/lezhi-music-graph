@@ -5,9 +5,9 @@ import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import {
-  LEVELS, PITCH_SETS, RHYTHM_CARDS, barBeats, beatsOf, colorOf, composeHints, durationsFor, formatBeats, inspireBar, noteShape,
+  BASS_STYLES, LEVELS, PITCH_SETS, RHYTHM_CARDS, barBeats, beatsOf, colorOf, composeHints, durationsFor, formatBeats, inspireBar, noteShape,
   loadWorks, midiOfNote, questionsFor, setupOf, stepOf, storeWorks, toMelody, unitOf,
-  type ComposeMode, type ComposeNote, type Level, type Meter, type PitchSet, type SavedWork,
+  type BassStyle, type ComposeMode, type ComposeNote, type Level, type Meter, type PitchSet, type SavedWork,
 } from "./compose-model";
 
 const emptyBars = (count: number) => Array.from({ length: count }, () => [] as ComposeNote[]);
@@ -74,6 +74,7 @@ export function ComposePage() {
   const [author, setAuthor] = useState("");
   const [notation, setNotation] = useState<"jianpu" | "staff">("jianpu");
   const [accompaniment, setAccompaniment] = useState(false);
+  const [bassStyle, setBassStyle] = useState<BassStyle>("broken");
   // 本页只在浏览器里载入（主页面水合之后），可以直接读取本机作品集。
   const [works, setWorks] = useState<SavedWork[]>(() => (typeof window === "undefined" ? [] : loadWorks()));
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -261,14 +262,14 @@ export function ComposePage() {
     return () => window.removeEventListener("keydown", listener);
   }, []);
 
-  const melody = useMemo(() => toMelody(bars, meter, lyrics, title, accompaniment), [bars, meter, lyrics, title, accompaniment]);
+  const melody = useMemo(() => toMelody(bars, meter, lyrics, title, accompaniment, bassStyle), [bars, meter, lyrics, title, accompaniment, bassStyle]);
   const hasNotes = bars.some((bar) => bar.length);
-  const playerKey = useMemo(() => JSON.stringify([bars, meter, lyrics, title, notation, accompaniment]), [bars, meter, lyrics, title, notation, accompaniment]);
+  const playerKey = useMemo(() => JSON.stringify([bars, meter, lyrics, title, notation, accompaniment, bassStyle]), [bars, meter, lyrics, title, notation, accompaniment, bassStyle]);
   const hints = composeHints(bars, meter, mode, lyrics, lockedBars, pitchSet);
   const complete = cursorBar < 0;
 
   const save = () => {
-    const work: SavedWork = { id: String(Date.now()), title: title.trim() || "我的旋律", author: author.trim(), meter, bars, lyrics, savedAt: Date.now(), accompaniment, level, pitchSet };
+    const work: SavedWork = { id: String(Date.now()), title: title.trim() || "我的旋律", author: author.trim(), meter, bars, lyrics, savedAt: Date.now(), accompaniment, bassStyle, level, pitchSet };
     const next = [work, ...works];
     setWorks(next);
     setMessage(storeWorks(next) ? `《${work.title}》已保存在这台电脑上。` : "这台电脑不允许保存，请截图留存作品。");
@@ -290,6 +291,7 @@ export function ComposePage() {
     setTitle(work.title);
     setAuthor(work.author);
     setAccompaniment(Boolean(work.accompaniment) && LEVELS[setup.level].accompaniment);
+    setBassStyle(work.bassStyle && work.bassStyle in BASS_STYLES ? work.bassStyle : "broken");
     setSelected(null);
     setMessage(`已打开《${work.title}》。`);
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -468,6 +470,14 @@ export function ComposePage() {
           <span>自动配低音伴奏</span>
         </label>}
       </div>
+      {levelInfo.accompaniment && accompaniment && <div className="compose-bass">
+        <span className="compose-field-label">伴奏织体 · 换一种走法听听</span>
+        <div className="compose-chips" role="radiogroup" aria-label="伴奏织体">
+          {(Object.keys(BASS_STYLES) as BassStyle[]).map((value) =>
+            <button key={value} type="button" role="radio" aria-checked={bassStyle === value} className={bassStyle === value ? "is-active" : ""} onClick={() => setBassStyle(value)}>{BASS_STYLES[value].label}</button>)}
+        </div>
+        <p className="compose-bass-caption">{BASS_STYLES[bassStyle].caption}。</p>
+      </div>}
       {hasNotes
         ? <div className="compose-player"><MelodyPlayer key={playerKey} melody={melody} notationStyle={notation} /></div>
         : <p className="compose-empty">写下第一个音，这里就会出现你的乐谱，可以播放听一听。</p>}

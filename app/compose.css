@@ -199,3 +199,8 @@
 .compose-workbench .compose-bar-notes { min-height: 116px; }
 .compose-workbench .compose-rhythm-row { align-items: flex-start; }
 .compose-workbench .compose-rhythm-row > .compose-field-label { padding-top: 12px; }
+
+/* 伴奏织体：勾上自动伴奏后才出现，一排可选的走法，下面一句话说明。 */
+.compose-bass { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--c-line); border-radius: 14px; background: color-mix(in srgb, var(--c-pine) 5%, #fff); }
+.compose-bass .compose-chips { flex-wrap: wrap; }
+.compose-bass-caption { margin: 0; color: var(--c-ink-2); font-size: 13px; line-height: 1.6; }

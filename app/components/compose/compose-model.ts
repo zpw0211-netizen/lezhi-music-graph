@@ -148,13 +148,25 @@ const CHORDS = [
 ] as const;
 type Chord = (typeof CHORDS)[number];
 
-/** A bass note counted in scale steps from the chord root (0 root, 2 third, 4 fifth, 7 octave). Roots sit in C3–E3 or F2–A2. */
-function bassNote(root: number, steps: number, b: number): MelodyNote {
-  const n = root - (root <= 3 ? 7 : 14) + steps;
+/** 低音伴奏的织体：同一套和弦，换不同的走法。 */
+export type BassStyle = "hold" | "broken" | "alberti" | "arpeggio" | "walking";
+export const BASS_STYLES: Record<BassStyle, { label: string; caption: string }> = {
+  hold: { label: "长音", caption: "每个和弦只拉一个长长的根音，最安静" },
+  broken: { label: "分解和弦", caption: "根音、五音一拍一个，稳稳地走" },
+  alberti: { label: "阿尔贝蒂低音", caption: "根音—五音—三音—五音，轻快地转" },
+  arpeggio: { label: "琶音", caption: "根音、三音、五音一路往上爬" },
+  walking: { label: "行进低音", caption: "一拍一个音，一步步走向下一个和弦" },
+};
+
+/** Chord roots sit in C3–E3 or F2–A2; a bass pitch is counted in scale steps (C4 = 1). */
+const rootAt = (root: number) => root - (root <= 3 ? 7 : 14);
+function bassAt(n: number, b: number): MelodyNote {
   const d = ((n - 1) % 7 + 7) % 7 + 1;
   const o = Math.floor((n - 1) / 7);
   return o ? { d, o, b } : { d, b };
 }
+/** A bass note counted in scale steps from the chord root (0 root, 2 third, 4 fifth, 7 octave). */
+const bassNote = (root: number, steps: number, b: number) => bassAt(rootAt(root) + steps, b);
 
 /** How well a chord fits the melody between two beats: time on chord tones, plus the note on the strong beat. */
 function fitOf(chord: Chord, bar: ComposeNote[], from: number, to: number) {
@@ -179,43 +191,66 @@ function pickChord(bar: ComposeNote[], from: number, to: number, prefer?: Chord,
   return ranked[0].chord;
 }
 
-/** 自动低音：按旋律给每小节（4/4、6/8 每半小节）配一个和弦，用分解和弦的低音走起来；开头配主和弦，倒数第二小节尽量用属和弦，最后回到主音。 */
-export function bassLine(bars: ComposeNote[][], meter: Meter = "2/4"): MelodyNote[][] {
+/** 一段和弦（一小节，4/4、6/8 是半小节）按织体写成几个低音；next 是下一段和弦的根音，行进低音用它来接。 */
+function bassFigure(style: BassStyle, root: number, length: number, compound: boolean, next?: number): MelodyNote[] {
+  if (style === "hold") return [bassNote(root, 0, length)];
+  if (style === "alberti" || style === "arpeggio") {
+    const steps = style === "alberti" ? [0, 4, 2, 4, 2, 4] : [0, 2, 4, 7, 4, 2];
+    return steps.slice(0, Math.round(length / 0.5)).map((step) => bassNote(root, step, 0.5));
+  }
+  // 八分音符为拍的拍子（3/8、6/8）：一长一短。
+  if (compound) return [bassNote(root, 0, 1), bassNote(root, 4, 0.5)];
+  if (style === "broken") return [0, 4, 7].slice(0, length).map((step) => bassNote(root, step, 1));
+  // 行进低音：根音、三音（三拍子再加五音），最后一拍从旁边一级走向下一个根音。
+  const notes = [0, 2, 4].slice(0, length).map((step) => rootAt(root) + step);
+  if (next !== undefined && next !== root) {
+    const target = rootAt(next);
+    notes[notes.length - 1] = target > rootAt(root) ? target - 1 : target + 1;
+  }
+  return notes.map((n) => bassAt(n, 1));
+}
+
+/** 自动低音：按旋律给每小节（4/4、6/8 每半小节）配一个和弦，再按选的织体写成低音；开头配主和弦，倒数第二小节尽量用属和弦，最后回到主音。 */
+export function bassLine(bars: ComposeNote[][], meter: Meter = "2/4", style: BassStyle = "broken"): MelodyNote[][] {
   const beats = beatsOf(meter);
   const halves = meter === "4/4" || meter === "6/8";
+  const compound = meter.endsWith("/8");
   const [tonic, , dominant] = CHORDS;
-  return bars.map((bar, index) => {
+  const half = beats / 2;
+  const segments: Array<[number, number]> = halves ? [[0, half], [half, beats]] : [[0, beats]];
+  // 先定每小节的和弦，再写音：行进低音要知道下一个和弦是什么。
+  const plan = bars.map((bar, index) => {
     const filled = barBeats(bar);
-    const full = Math.abs(filled - beats) < 1e-6;
-    const isFinal = index === bars.length - 1;
-    const isPenultimate = index === bars.length - 2;
-    if (!full) return [bassNote(pickChord(bar, 0, filled).root, 0, filled)];
-    if (isFinal) return [bassNote(tonic.root, 0, beats)];
-    const half = beats / 2;
-    const segments: Array<[number, number]> = halves ? [[0, half], [half, beats]] : [[0, beats]];
-    const chords = segments.map(([from, to], k) => {
-      if (index === 0 && k === 0) return pickChord(bar, from, to, tonic, 1);
-      if (isPenultimate && k === segments.length - 1) return pickChord(bar, from, to, dominant, 0.8);
-      return pickChord(bar, from, to);
-    });
-    const r0 = chords[0].root;
-    switch (meter) {
-      case "2/4": return [bassNote(r0, 0, 1), bassNote(r0, 4, 1)];
-      case "3/4": return [bassNote(r0, 0, 1), bassNote(r0, 4, 1), bassNote(r0, 7, 1)];
-      case "3/8": return [bassNote(r0, 0, 1), bassNote(r0, 4, 0.5)];
-      case "4/4": {
-        const r1 = chords[1].root;
-        return [bassNote(r0, 0, 1), bassNote(r0, 4, 1), ...(r1 === r0 ? [bassNote(r0, 7, 1), bassNote(r0, 4, 1)] : [bassNote(r1, 0, 1), bassNote(r1, 4, 1)])];
-      }
-      case "6/8": {
-        const r1 = chords[1].root;
-        return [bassNote(r0, 0, 1), bassNote(r0, 4, 0.5), ...(r1 === r0 ? [bassNote(r0, 2, 1), bassNote(r0, 4, 0.5)] : [bassNote(r1, 0, 1), bassNote(r1, 4, 0.5)])];
-      }
+    if (Math.abs(filled - beats) > 1e-6) return { partial: filled, roots: [pickChord(bar, 0, filled).root] };
+    if (index === bars.length - 1) return { final: true, roots: [tonic.root] };
+    return { roots: segments.map(([from, to], k) => {
+      if (index === 0 && k === 0) return pickChord(bar, from, to, tonic, 1).root;
+      if (index === bars.length - 2 && k === segments.length - 1) return pickChord(bar, from, to, dominant, 0.8).root;
+      return pickChord(bar, from, to).root;
+    }) };
+  });
+  return plan.map((item, index) => {
+    if (item.partial !== undefined) return [bassNote(item.roots[0], 0, item.partial)];
+    if (item.final) return [bassNote(tonic.root, 0, beats)];
+    const [r0, r1] = item.roots;
+    const after = plan[index + 1]?.roots[0];
+    if (!halves) return bassFigure(style, r0, beats, compound, after);
+    // 分解和弦在 4/4、6/8 里半小节不换和弦时，后半小节换个走法，不原样重复。
+    if (style === "broken" && r1 === r0) {
+      return compound
+        ? [bassNote(r0, 0, 1), bassNote(r0, 4, 0.5), bassNote(r0, 2, 1), bassNote(r0, 4, 0.5)]
+        : [bassNote(r0, 0, 1), bassNote(r0, 4, 1), bassNote(r0, 7, 1), bassNote(r0, 4, 1)];
     }
+    if (style === "walking" && !compound && r1 === r0) {
+      const notes = [0, 2, 4, 2].map((step) => rootAt(r0) + step);
+      if (after !== undefined && after !== r0) notes[3] = rootAt(after) > rootAt(r0) ? rootAt(after) - 1 : rootAt(after) + 1;
+      return notes.map((n) => bassAt(n, 1));
+    }
+    return [...bassFigure(style, r0, half, compound, r1), ...bassFigure(style, r1, half, compound, after)];
   });
 }
 
-export function toMelody(bars: ComposeNote[][], meter: Meter, lyrics: string, title: string, accompaniment: boolean): Melody {
+export function toMelody(bars: ComposeNote[][], meter: Meter, lyrics: string, title: string, accompaniment: boolean, bassStyle: BassStyle = "broken"): Melody {
   const words = lyricSyllables(lyrics);
   let w = 0;
   const written = bars.filter((bar) => bar.length);
@@ -236,7 +271,7 @@ export function toMelody(bars: ComposeNote[][], meter: Meter, lyrics: string, ti
     bars: melodyBars,
     ...(accompaniment && written.length ? {
       label: "旋律",
-      voices: [{ label: "低音伴奏", bars: bassLine(written, meter) }],
+      voices: [{ label: "低音伴奏", bars: bassLine(written, meter, bassStyle) }],
       staff: [undefined, { clef: "bass" as const }],
     } : {}),
   };
@@ -313,7 +348,7 @@ export function noteShape(b: number) {
   return { eighth: b < 1, dotted: Math.abs(b - 1.5) < 1e-6 || Math.abs(b - 0.75) < 1e-6, dashes: b >= 2 ? Math.round(b) - 1 : 0 };
 }
 
-export type SavedWork = { id: string; title: string; author: string; meter: Meter; bars: ComposeNote[][]; lyrics: string; savedAt: number; accompaniment?: boolean; level?: Level; pitchSet?: PitchSet };
+export type SavedWork = { id: string; title: string; author: string; meter: Meter; bars: ComposeNote[][]; lyrics: string; savedAt: number; accompaniment?: boolean; bassStyle?: BassStyle; level?: Level; pitchSet?: PitchSet };
 
 /** 打开作品时要恢复的编辑设置。旧作品没存年级和音块，就按作品里用到的音和拍号推断。 */
 export function setupOf(work: SavedWork): { level: Level; pitchSet: PitchSet } {
