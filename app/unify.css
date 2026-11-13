@@ -48,3 +48,35 @@
   .ear-start-main .ear-start-title { font-size: 38px; }
   .ear-start-main .ear-start-actions { justify-content: flex-start; }
 }
+
+/* 下拉框和勾选框：不用系统默认的箭头和蓝色勾，换成全站的松绿细箭头。 */
+select { appearance: none; -webkit-appearance: none; padding-right: 34px !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%231E4A3C' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1.5 1.5 6 6l4.5-4.5'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 13px center !important; background-size: 11px 8px !important; cursor: pointer; }
+select:disabled { cursor: not-allowed; opacity: .6; }
+input[type="checkbox"] { accent-color: var(--pine, #1E7A4A); }
+.kmap-controls select { min-height: 40px; padding-left: 16px; border-radius: 999px; }
+.kmap-check { min-height: 40px; padding: 0 16px 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--sheet); cursor: pointer; transition: border-color .2s, background .2s; }
+.kmap-check:hover { border-color: var(--pine); }
+.kmap-check:has(input:checked) { border-color: var(--pine); background: color-mix(in srgb, var(--pine) 8%, var(--sheet)); color: var(--pine); }
+
+/* 按课学习：顶栏的分册选择和 logo、导航之间留出间隔；“翻开”按钮和全站一样是胶囊形。 */
+.home-nav-center:has(.records-top-book-picker) { padding-inline: clamp(10px, 1.6vw, 26px); }
+.home-nav:has(.records-top-book-picker) .app-nav-search { flex: 0 1 190px; width: 190px; min-width: 150px; }
+.records-cover-start { padding: 10px 18px 10px 24px; border-radius: 999px; }
+
+/* 知识图谱：标题区收矮，图和右边的卡片换成圆角卡片，整张图尽量落在一屏里。 */
+.kmap .kmap-hero { padding: 6px 0 14px; }
+.kmap .kmap-kicker { display: none; }
+.kmap .kmap-hero h1 { margin: 0 0 6px; font-size: clamp(26px, 2.6vw, 34px); }
+.kmap .kmap-body { margin-top: 14px; }
+.kmap .kmap-stage, .kmap .kmap-card { border-radius: 18px; }
+@media (min-width: 1041px) {
+  .kmap .kmap-stage { top: 81px; }
+  .kmap .kmap-stage svg { max-height: calc(100dvh - 142px); }
+}
+/* 窄一些的电脑屏：搜索框先收成一个放大镜，点到才展开，导航五项不被挤掉。 */
+@media (min-width: 881px) and (max-width: 1380px) {
+  .home-nav-center:has(.records-top-book-picker) { padding-inline: 0; }
+  .home-nav:has(.records-top-book-picker) .stage-book-picker--top .records-top-book-picker > button { flex-basis: 35px; width: 35px; }
+  .home-nav:has(.records-top-book-picker) .app-nav-search { flex: 0 0 auto; width: 40px; min-width: 0; padding: 0 11px; overflow: hidden; transition: width .25s var(--ease, ease); }
+  .home-nav:has(.records-top-book-picker) .app-nav-search:focus-within { width: 200px; overflow: visible; }
+}
