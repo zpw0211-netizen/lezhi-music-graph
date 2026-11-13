@@ -258,12 +258,19 @@ export function EarPage() {
 
     <section className="ear-stage" aria-label={`${levelInfo.name}练习`}>
       {!started && <div className="ear-start">
-        <p className="ear-start-title">{levelInfo.name}</p>
-        <p className="ear-start-tip">{startTip(level, options.pitchSet)}</p>
-        <div className="ear-start-actions">
-          <button type="button" className="ear-primary" onClick={start}>开始一轮</button>
-          {level !== "updown" && <button type="button" className="ear-ghost" onClick={reference}>先听标准音 la（440Hz）</button>}
+        <div className="ear-start-main">
+          <p className="ear-start-title">{levelInfo.name}</p>
+          <p className="ear-start-tip">{startTip(level, options.pitchSet)}</p>
+          <div className="ear-start-actions">
+            <button type="button" className="ear-primary" onClick={start}>开始一轮</button>
+            {level !== "updown" && <button type="button" className="ear-ghost" onClick={reference}>先听标准音 la（440Hz）</button>}
+          </div>
         </div>
+        <ol className="ear-steps" aria-label="怎么玩">
+          <li><b>01</b><strong>听</strong><span>听清楚再回答，没听清可以重听（电脑上按空格键）。</span></li>
+          <li><b>02</b><strong>答</strong><span>答对了自动进入下一题；答错了会给出正确答案，对照着再听。</span></li>
+          <li><b>03</b><strong>得星</strong><span>每轮 10 题，答对 8 题得两颗星，全对得三颗星。</span></li>
+        </ol>
       </div>}
 
       {finished && <div className="ear-result" role="status">

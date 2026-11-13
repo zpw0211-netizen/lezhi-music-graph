@@ -29,3 +29,22 @@
 
 /* 首页和内页对齐到同一条边线（1440 宽时内容区是 92–1348）。 */
 @media (min-width: 881px) { .hv { --hv-wrap: min(1256px, calc(100% - 64px)); } }
+
+/* 按课学习封面：单元目录垫一张半透明的纸，不再直接压在插图上。 */
+.records-book-directory:not(.records-book-directory-placeholder) { min-height: 0; padding: 4px 18px 10px; border: 1px solid rgb(255 255 255 / 80%); border-radius: 18px; background: rgb(255 255 255 / 80%); box-shadow: 0 18px 40px -30px rgb(25 54 39 / 55%); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+@media (max-width: 720px) { .records-book-directory:not(.records-book-directory-placeholder) { padding: 2px 12px; border-radius: 14px; } }
+
+/* 听音训练：开始前左边是这一关和按钮，右边三步说明怎么玩。 */
+.ear-start { grid-template-columns: minmax(0, 1fr); gap: 26px clamp(28px, 5vw, 72px); }
+.ear-start-main { display: grid; justify-items: center; gap: 10px; }
+.ear-steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; text-align: left; }
+.ear-steps li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: 4px 14px; padding: 14px 18px; border: 1px solid var(--e-line); border-radius: 16px; background: #fff; }
+.ear-steps b { color: var(--seal, #B8392A); font: 400 13px/1.4 var(--serif); letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.ear-steps strong { font: 600 17px/1.4 var(--font-display); letter-spacing: .04em; }
+.ear-steps span { grid-column: 2; color: var(--e-ink-2); font-size: 14px; line-height: 1.7; }
+@media (min-width: 981px) {
+  .ear-start { grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); align-items: center; place-content: center stretch; text-align: left; }
+  .ear-start-main { justify-items: start; padding-left: clamp(8px, 3vw, 48px); }
+  .ear-start-main .ear-start-title { font-size: 38px; }
+  .ear-start-main .ear-start-actions { justify-content: flex-start; }
+}
