@@ -4,16 +4,17 @@ import { useEffect, useId, useMemo, useRef, type RefObject } from "react";
 import type { MelodyNote } from "../../lib/lesson/jianpu";
 import type { Phrase } from "../../lib/lesson/phrases";
 
-// The melody drawn as one wavy line, in the style of the 芽谱 promo film:
-// a smooth curve through a bead on every note, dotted ahead and a glowing
-// gold ribbon behind, with a red orb riding it. Across is time on a compressed
+// The melody drawn as a ridge line over an ink-wash landscape: a smooth curve
+// through a bead on every note, dotted ahead and a glowing ribbon behind that
+// runs warm on the peaks and green in the valleys, with a swallow flying it.
+// The highest and lowest notes carry a small label. Across is time on a compressed
 // scale (short notes keep room for their digit, long notes and rests stop
 // leaving wide gaps), up is pitch in scale steps, so 5 always sits above 3;
 // faint degree guides on the left keep the heights readable.
 
 const BEAT_W = 48;
 const GUTTER = 36;
-const PAD_TOP = 30;
+const PAD_TOP = 48;
 const STEM_GAP = 24;
 const LYRIC_H = 26;
 const ROW_UNITS = 18;
@@ -94,6 +95,9 @@ function sampleCurve(points: Array<[number, number]>): Array<[number, number]> {
   return out;
 }
 
+/** The area under a stretch of the line, down to the foot of the plot. */
+const washOf = (samples: Array<[number, number]>, foot: number) => `${pathOf(samples)}L${samples[samples.length - 1][0].toFixed(1)} ${foot}L${samples[0][0].toFixed(1)} ${foot}Z`;
+
 const pathOf = (samples: Array<[number, number]>) => samples.map(([x, y], k) => `${k ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join("");
 
 function Degree({ x, y, degree, octave, size, className }: { x: number; y: number; degree: number; octave: number; size: number; className?: string }) {
@@ -129,7 +133,17 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
   const rhythmY = PAD_TOP + plotH + (hasRhythm ? stepH * 1.2 : 0);
   const lyricY = rhythmY + STEM_GAP;
   const height = lyricY + LYRIC_H;
+  const washY = PAD_TOP + plotH + 12;
   const yOf = (step: number) => PAD_TOP + (high - step) * stepH;
+
+  // First highest and first lowest note, labelled when the tune really rises and falls.
+  const peaks = useMemo(() => {
+    const pitched = beads.filter((bead): bead is Bead => !!bead && bead.step !== null);
+    if (pitched.length < 4) return { top: -1, bottom: -1 };
+    const top = pitched.reduce((best, bead) => (bead.step as number) > (best.step as number) ? bead : best);
+    const bottom = pitched.reduce((best, bead) => (bead.step as number) < (best.step as number) ? bead : best);
+    return (top.step as number) - (bottom.step as number) >= 3 ? { top: top.index, bottom: bottom.index } : { top: -1, bottom: -1 };
+  }, [beads]);
 
   const rows = useMemo<Row[]>(() => {
     // Rows of whole phrases, up to ROW_UNITS beat widths each.
@@ -166,6 +180,7 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
 
   const clipRefs = useRef<Array<SVGRectElement | null>>([]);
   const orbRefs = useRef<Array<SVGGElement | null>>([]);
+  const tilts = useRef<number[]>([]);
 
   // Move the orb and the lit part of the ribbon every frame from the shared beat position.
   useEffect(() => {
@@ -195,15 +210,32 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
             }
           }
         }
+        let tilt = 0;
         if (y === null) y = rhythmY;
+        else {
+          // Nose up on the climbs, down on the falls.
+          for (const samples of row.samples) {
+            if (samples.length < 2 || x < samples[0][0] || x > samples[samples.length - 1][0]) continue;
+            let i = 1;
+            while (i < samples.length - 1 && samples[i][0] < x) i += 1;
+            const a = samples[Math.max(0, i - 3)], b = samples[Math.min(samples.length - 1, i + 3)];
+            tilt = Math.max(-26, Math.min(26, Math.atan2(b[1] - a[1], Math.max(1e-6, b[0] - a[0])) * 180 / Math.PI * 0.7));
+          }
+        }
+        const prev = tilts.current[k] ?? 0;
+        const eased = prev + (tilt - prev) * 0.12;
+        tilts.current[k] = eased;
         orb.style.opacity = "1";
-        orb.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+        orb.setAttribute("transform", `translate(${x.toFixed(1)} ${(y - 15).toFixed(1)}) rotate(${eased.toFixed(1)})`);
       });
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   }, [rows, beatRef, rhythmY, posAt]);
+
+  // The one note sounding now: the last bead at or before the playback position, across all rows.
+  const activeIndex = current < 0 ? -1 : beads.reduce((best, bead) => bead && bead.index <= current && bead.index > best ? bead.index : best, -1);
 
   if (!steps.length) return null;
 
@@ -219,8 +251,16 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
         <defs>
           <clipPath id={clipId}><rect ref={(el) => { clipRefs.current[rowIndex] = el; }} x={0} y={0} width={0} height={height} /></clipPath>
           <filter id={glowId} x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="4" /></filter>
-          <radialGradient id={`${glowId}-orb`}><stop offset="0" stopColor="#FF9C7A" /><stop offset=".55" stopColor="#C9352B" /><stop offset="1" stopColor="#8E1E18" /></radialGradient>
+          {/* Warm on the peaks, green in the valleys. */}
+          <linearGradient id={`${glowId}-pitch`} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={PAD_TOP} y2={PAD_TOP + Math.max(plotH, 1)}><stop offset="0" stopColor="#E0703F" /><stop offset=".45" stopColor="#E2A744" /><stop offset="1" stopColor="#4E9B76" /></linearGradient>
+          <linearGradient id={`${glowId}-wash`} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={PAD_TOP} y2={washY}><stop offset="0" stopColor="#3F7D62" stopOpacity=".2" /><stop offset="1" stopColor="#3F7D62" stopOpacity="0" /></linearGradient>
+          <linearGradient id={`${glowId}-lit`} gradientUnits="userSpaceOnUse" x1={0} x2={0} y1={PAD_TOP} y2={washY}><stop offset="0" stopColor="#E9A545" stopOpacity=".42" /><stop offset=".55" stopColor="#7DB58F" stopOpacity=".22" /><stop offset="1" stopColor="#7DB58F" stopOpacity="0" /></linearGradient>
         </defs>
+        {/* The ridge as an ink wash; the part already sung warms up. */}
+        {row.samples.map((samples, k) => samples.length > 1 && <path key={`w${k}`} className="melody-line-wash" d={washOf(samples, washY)} fill={`url(#${glowId}-wash)`} />)}
+        <g clipPath={`url(#${clipId})`}>
+          {row.samples.map((samples, k) => samples.length > 1 && <path key={`wl${k}`} className="melody-line-wash" d={washOf(samples, washY)} fill={`url(#${glowId}-lit)`} />)}
+        </g>
         {/* Faint scale-step guides; do lines a little stronger. */}
         {Array.from({ length: high - low + 1 }, (_, k) => {
           const step = high - k;
@@ -228,7 +268,7 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
           const y = yOf(step);
           return <g key={step} className={`melody-line-guide${degree === 1 ? " is-do" : ""}`}>
             <line x1={GUTTER - 4} x2={xOf(row.end) - BEAD_X} y1={y} y2={y} />
-            <Degree className="melody-line-label" x={GUTTER - 20} y={y} degree={degree} octave={Math.floor(step / 7)} size={11} />
+            {(stepH > 14 || degree % 2 === 1) && <Degree className="melody-line-label" x={GUTTER - 20} y={y} degree={degree} octave={Math.floor(step / 7)} size={11} />}
           </g>;
         })}
         {barStarts.filter((beat) => beat > row.start + 1e-6 && beat < row.end - 1e-6).map((beat) => (
@@ -243,13 +283,13 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
         {row.samples.map((samples, k) => <path key={`d${k}`} className="melody-line-ahead" d={pathOf(samples)} />)}
         <g clipPath={`url(#${clipId})`}>
           {row.samples.map((samples, k) => <path key={`g${k}`} className="melody-line-glow" d={pathOf(samples)} filter={`url(#${glowId})`} />)}
-          {row.samples.map((samples, k) => <path key={`r${k}`} className="melody-line-ribbon" d={pathOf(samples)} />)}
+          {row.samples.map((samples, k) => <path key={`r${k}`} className="melody-line-ribbon" d={pathOf(samples)} stroke={`url(#${glowId}-pitch)`} />)}
           {row.samples.map((samples, k) => <path key={`l${k}`} className="melody-line-shine" d={pathOf(samples)} />)}
         </g>
         {row.beads.map((bead) => {
           const x = xOf(bead.beat);
           const played = current >= bead.index;
-          const active = current >= bead.index && !row.beads.some((other) => other.index > bead.index && other.index <= current);
+          const active = bead.index === activeIndex;
           const dim = activePhrase !== null && !inActive(bead);
           if (bead.step === null) {
             return <g key={bead.index} className={`melody-line-x${active ? " is-active" : ""}${dim ? " is-dim" : ""}`}>
@@ -260,15 +300,26 @@ export function MelodyLine({ notes, bars, phrases, current, activePhrase, singin
           const y = yOf(bead.step);
           return <g key={bead.index} className={`melody-line-bead${played ? " is-played" : ""}${active ? " is-active" : ""}${dim ? " is-dim" : ""}`}>
             {active && <circle className="melody-line-ring" cx={x} cy={y} r={9} />}
-            <circle cx={x} cy={y} r={5.5} />
+            <circle className="melody-line-dot" cx={x} cy={y} r={5.5} />
+            {bead.index === peaks.top && <g className="melody-line-peak">
+              <path d={`M${x} ${y - 27}v-13l9 3.4-9 3.4`} />
+              <text x={x + 12} y={y - 33} dominantBaseline="central">最高音</text>
+            </g>}
+            {bead.index === peaks.bottom && <text className="melody-line-valley" x={x + 11} y={y + 3} dominantBaseline="central">最低音</text>}
             <Degree className="melody-line-digit" x={x} y={y - 16} degree={bead.degree} octave={bead.octave} size={12} />
             {bead.lyric && <text className="melody-line-lyric" x={x} y={lyricY} textAnchor="middle">{bead.lyric}</text>}
           </g>;
         })}
         <g ref={(el) => { orbRefs.current[rowIndex] = el; }} className="melody-line-orb" style={{ opacity: 0 }}>
-          <circle r={15} className="melody-line-orb-halo" filter={`url(#${glowId})`} />
-          <circle r={7.5} fill={`url(#${glowId}-orb)`} />
-          <circle r={2.4} cx={-2.2} cy={-2.4} fill="#fff" opacity={0.7} />
+          <circle r={17} className="melody-line-orb-halo" filter={`url(#${glowId})`} />
+          {/* A swallow, nose to the right. */}
+          <path className="melody-line-bird-tail" d="M-7 .5L-19-5.5-13.5 .5-19 6.5Z" />
+          <path className="melody-line-bird-wing is-far" d="M1-1.5C-1-9-6-13-11-13-8-9-6-5-4-.5Z" />
+          <path className="melody-line-bird-body" d="M-9 .5C-5-5 5-5.5 11-1.5 12.5-.8 14-.6 15.5-.5 14 .3 12.5 .9 11 1.6 6 5-4 5-9 .5Z" />
+          <path className="melody-line-bird-belly" d="M-5 2.2C0 4.6 6 4.2 10 1.8 6 2.6 0 3-5 2.2Z" />
+          <circle className="melody-line-bird-throat" cx={7.8} cy={1.7} r={1.25} />
+          <circle className="melody-line-bird-eye" cx={9.2} cy={-1.6} r={0.9} />
+          <path className="melody-line-bird-wing" d="M2-1C1-11-5-17-12-18-8-13-6-7-5 0Z" />
         </g>
       </svg>;
     })}
