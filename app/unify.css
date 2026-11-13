@@ -1,0 +1,31 @@
+/* 全站统一：页面宽度、切换栏和按钮。放在最后加载。 */
+
+/* 一、页面宽度：和首页一致，内容区最宽 1280px，两侧各留 32px 以上。 */
+@media (min-width: 881px) {
+  .route-view > :is(.lesson.plan, .lesson.kmap, .graph-tabs, .exploration-shell) {
+    width: min(1280px, calc(100% - 64px)); max-width: none; margin-inline: auto; padding-inline: 0; box-sizing: border-box;
+  }
+  .exploration-shell .exploration-heading { margin-inline: 0; }
+  .exploration-panel > :is(.lupan-lab, .compose-lab, .ear-lab, .rhythm-lab) { width: 100%; margin-inline: 0; padding-inline: 0; }
+}
+
+/* 二、切换栏：一律是白底胶囊条，选中项松绿实底。 */
+.graph-tabs { gap: 6px; padding-top: 14px; }
+.graph-tabs button { display: inline-flex; align-items: baseline; gap: 10px; min-height: 44px; padding: 8px 22px; border-radius: 999px; background: #fff; }
+.graph-tabs button strong { font-size: 15px; }
+.graph-tabs button small { font-size: 12.5px; }
+.graph-tabs button[aria-current="page"] { box-shadow: 0 8px 18px -10px rgb(25 77 53 / 70%); }
+
+/* 三、按钮：主操作松绿实底，其余白底描边，全部胶囊形。 */
+.rhythm-transport > button,
+.rhythm-result-actions button,
+.rhythm-save button,
+.ear-primary,
+.ear-chips button { border-radius: 999px; }
+.ear-primary { box-shadow: 0 8px 18px -10px rgb(25 77 53 / 70%); }
+.plan .plan-request textarea { border-radius: 14px; }
+.plan-options { border-radius: 16px; }
+.plan-options select { border-radius: 999px; }
+
+/* 首页和内页对齐到同一条边线（1440 宽时内容区是 92–1348）。 */
+@media (min-width: 881px) { .hv { --hv-wrap: min(1256px, calc(100% - 64px)); } }

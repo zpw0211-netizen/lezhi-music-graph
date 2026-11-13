@@ -33,6 +33,7 @@ import "./compose.css";
 import "./ear.css";
 import "./graph-compact.css";
 import "./account.css";
+import "./unify.css";
 import { AccountProvider } from "./components/account/AccountProvider";
 
 const geistMono = Geist_Mono({
@@ -89,6 +90,9 @@ export default function RootLayout({
       <body
         className={`${geistMono.variable} antialiased`}
       >
+        {/* 全站标题用的楷体：界面字每页都用；单元名和扩展字两个文件只在标题里出现这些字时才下载。scripts/brand/build-site-font.py 生成。 */}
+        <style>{[["Yapu Kai", "yapu-kai"], ["Yapu Kai Units", "yapu-kai-units"], ["Yapu Kai Ext", "yapu-kai-ext"]].map(([family, file]) =>
+          `@font-face{font-family:"${family}";src:url("${publicBasePath}/fonts/${file}.woff2") format("woff2");font-weight:100 900;font-display:swap}`).join("")}</style>
         <AccountProvider>{children}</AccountProvider>
         {/* Offline cache, written per edition by prepare-github-pages.mjs from scripts/pages-sw.js. */}
         {publicBasePath && (

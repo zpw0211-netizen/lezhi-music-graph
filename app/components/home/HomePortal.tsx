@@ -173,8 +173,6 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       onNavigate={view => { if (view === "graph") onOpenFullGraph(); else if (view !== "home") onView(view); }}
       trailing={<button type="button" className="home-nav-search" onClick={focusSearch} aria-label="搜索"><WorkbenchIcon name="search" /></button>} />
     <main className="hv">
-      {/* 标题用的楷体随站点自带，和入口页、标志一致。 */}
-      <style>{`@font-face{font-family:"Yapu Kai";src:url("${publicAssetUrl("fonts/home-kai.woff2")}") format("woff2");font-display:swap}`}</style>
       <section className="hv-hero" aria-labelledby="home-title">
         <div className="hv-hero-copy">
           <p className="hv-kicker">{EDITION.label} · {PUBLISHED_GRADE_RANGE_LABEL}</p>
