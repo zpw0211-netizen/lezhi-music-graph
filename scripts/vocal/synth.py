@@ -371,16 +371,25 @@ def natural_pitch(pn, toks, langs, pd, tt, t0, base):
                          "note_dur": np.array([nd], np.int64), "pitch": base[None].astype(np.float32),
                          "expr": np.full((1, n_frames), expressiveness, np.float32), "retake": np.ones((1, n_frames), bool),
                          "steps": np.array(10, np.int64)})[0][0].astype(np.float64)
-    off = np.zeros(n_frames)
+    # Keep the model's shape (scoops, releases) but hold every note on its written pitch:
+    # deviations are measured from the model's own level for that note and clamped, wide only at the attack.
+    tune = float(os.environ.get("TUNE", "0.08"))
+    f = base.copy()
     for s, e, m in pn:
         a, b = max(0, frames(s - t0)), min(n_frames, frames(e - t0))
         if b - a < 2:
             continue
-        core = pred[a + (b - a) // 4: b - (b - a) // 8]
-        off[a:b] = np.median(core) - m
-    k = max(1, frames(0.06))
-    off = np.convolve(np.pad(off, k, mode="edge"), np.ones(2 * k + 1) / (2 * k + 1), mode="same")[k:-k]
-    f = pred - off
+        seg = pred[a:b]
+        core = seg[(b - a) // 4: max((b - a) // 4 + 1, (b - a) - (b - a) // 8)]
+        dev = seg - np.median(core)
+        lim = np.full(b - a, tune)
+        att = max(1, min(frames(0.07), int(0.25 * (b - a))))
+        lim[:att] = np.linspace(0.6, tune, att)
+        rel = min(frames(0.03), (b - a) // 6)
+        if rel:
+            lim[-rel:] = np.maximum(lim[-rel:], np.linspace(tune, 0.4, rel))
+        f[a:b] = m + np.clip(dev, -lim, lim)
+    f = np.convolve(np.pad(f, 1, mode="edge"), np.ones(3) / 3, mode="same")[1:-1]
     # long notes the model left flat get a gentle, slightly irregular vibrato
     for s, e, m in pn:
         if e - s < 0.75:
@@ -390,7 +399,7 @@ def natural_pitch(pn, toks, langs, pd, tt, t0, base):
             continue
         x = tt[sel] - (s + 0.28)
         rate = 5.3 + 0.4 * np.sin(2 * math.pi * 0.7 * x)
-        f[sel] += 0.28 * np.minimum(1.0, x / 0.35) * np.sin(2 * math.pi * np.cumsum(rate) / FPS)
+        f[sel] += float(os.environ.get("VIB", "0.24")) * np.minimum(1.0, x / 0.35) * np.sin(2 * math.pi * np.cumsum(rate) / FPS)
     return f
 
 
@@ -399,8 +408,8 @@ def phrase_gain(preds, events, breaths, first, beat, meter, tt, t0):
     starts = [first] + [events[k + 1][0] for k, _ in breaths]
     ends = [b for _, b in breaths] + [events[-1][1]]
     gain = np.ones(len(tt))
-    breathiness = float(os.environ.get("BREATH", "10"))
-    accent = float(os.environ.get("ACCENT", "0.18"))
+    breathiness = float(os.environ.get("BREATH", "10" if V.name == "qixuan" else "3"))
+    accent = float(os.environ.get("ACCENT", "0.18" if V.name == "qixuan" else "0.08"))
     bi = V.var_names.index("breathiness") if "breathiness" in V.var_names else None
     for s, e in zip(starts, ends):
         a, b = max(0, frames(s - t0)), min(len(tt), frames(e - t0))
@@ -419,8 +428,8 @@ def phrase_gain(preds, events, breaths, first, beat, meter, tt, t0):
     return gain
 
 
-def build(mel, shift, punctuation=None):
-    natural = V.name == "qixuan" and os.environ.get("VOCAL_STYLE") != "plain"
+def build(mel, shift, punctuation=None, borrowed=None, pitch_only=False):
+    natural = os.environ.get("VOCAL_STYLE") != "plain"
     events, characters, pitch_notes, first, beat = plan(mel, shift)
     mismatch = False
     allowed = None
@@ -549,8 +558,14 @@ def build(mel, shift, punctuation=None):
         fade = np.minimum(1.0, x / 0.4)
         f[sel] += 0.22 * fade * np.sin(2 * math.pi * 5.4 * x)
     pd = np.array([ph_dur], dtype=np.int64)
-    if natural:
+    if natural and V.name == "qixuan":
         f = natural_pitch(pn, toks, langs, pd, tt, t0, base)
+        if pitch_only:
+            return tt, f
+    elif natural and borrowed is not None:
+        # Ria has no pitch model: borrow 绮萱's expressive deviations (sung an octave up), shifted onto the written notes
+        bt, bf = borrowed
+        f = np.interp(tt, bt, bf)
     f0 = 440.0 * 2 ** ((f - 69) / 12)
     # variance (breathiness, voicing, and tension where the voice has it)
     vids = np.array([[V.var_ids[p] for p in toks]], dtype=np.int64)
@@ -590,7 +605,7 @@ def main():
     out = args[1]
     only = set(args[2:])
     os.makedirs(out, exist_ok=True)
-    punctuation, override = None, None
+    punctuation, override, by_words = None, None, {}
     mismatches = []
     for mel in todo:
         if only and mel["key"] not in only:
@@ -616,14 +631,24 @@ def main():
             shift = -12 if med > 64 else 0
         try:
             text = None
-            if singer == "qixuan" and os.environ.get("VOCAL_STYLE") != "plain":
+            if os.environ.get("VOCAL_STYLE") != "plain":
                 if punctuation is None:
                     override_file = os.environ.get("PUNCT")
                     override = Path(override_file).read_text(encoding="utf-8-sig") if override_file else None
                     punctuation_file = Path(__file__).with_name("punct.json")
                     punctuation = json.loads(punctuation_file.read_text(encoding="utf-8")) if punctuation_file.exists() else {}
-                text = override if override is not None else punctuation.get(mel["key"])
-            wav, offset, lead_beats, breaths, mismatch = build(mel, shift, text)
+                    # a part that sings the same words as another entry (e.g. a low part borrowing the tune's lyrics)
+                    # reuses that entry's punctuation
+                    by_words = {"".join(HAN.findall(v)): v for v in punctuation.values()}
+                words = "".join(HAN.findall("".join(n.get("lyric") or "" for n in mel["notes"])))
+                text = override if override is not None else punctuation.get(mel["key"]) or by_words.get(words)
+            borrowed = None
+            if singer == "ria" and os.environ.get("VOCAL_STYLE") != "plain":
+                use("qixuan")
+                bt, bf = build(mel, shift + 12, text, pitch_only=True)
+                use("ria")
+                borrowed = (bt, bf - 12)
+            wav, offset, lead_beats, breaths, mismatch = build(mel, shift, text, borrowed)
         except Exception as exc:  # noqa: BLE001
             print("FAIL", mel["key"], mel["book"], mel["name"], repr(exc), flush=True)
             continue
