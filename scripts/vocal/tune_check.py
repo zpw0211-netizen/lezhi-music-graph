@@ -1,4 +1,7 @@
 """Strict tuning check: every sung note >= 0.08 s (core 20%..90%); lists notes off by more than 30 cents.
+
+Usage: python scripts/vocal/tune_check.py <todo.json> <out>/<key>.wav ...  (reads <key>.json next to each wav)
+"""
 import json, sys, re, os
 import numpy as np, librosa
 def notes_of(mel, offset, shift):
