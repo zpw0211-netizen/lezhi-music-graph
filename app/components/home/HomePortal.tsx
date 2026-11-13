@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { publicAssetUrl } from "../../lib/app/assets";
 import {
@@ -20,7 +20,6 @@ import {
 import { RECORDS_FOCUS_UNIT_KEY } from "../../lib/app/focus-unit";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { AppTopNav } from "../AppTopNav";
-import { BrandLogo } from "./BrandMark";
 import { SITE_NAME } from "../../lib/app/brand";
 import type { MelodyPlayer as MelodyPlayerComponent } from "../lesson/MelodyPlayer";
 import { fetchWithRetry } from "../../lib/app/fetch-retry";
@@ -36,10 +35,13 @@ type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
 const HOT_SEARCHES = EDITION.hotSearches ?? [];
 const HOME_LAST_READ_BOOK_KEY = "yapu-home-last-book";
 const HOME_LAST_READ_CHANGE_EVENT = "yapu:home-last-book-change";
-const BOOKMARKS = [
-  { label: "音乐探索与创造", lines: ["音乐探索", "与创造"], description: "写一段自己的旋律，再练听音、转律盘、打节奏。", file: "art/bookmarks/map.webp", href: "#/compose" },
-  { label: "知识图谱", lines: ["知识", "图谱"], description: "从一个知识点查看它和作品的联系。", file: "art/bookmarks/graph.webp", href: null },
-] as const;
+// 首页的四个入口。图标是 34×34 的线稿。
+const ENTRIES: Array<{ label: string; description: string; view?: PortalView; href?: string; icon: ReactNode }> = [
+  { label: "智能备课", description: "选一课，生成教案和上课用的幻灯片。", view: "plan", icon: <><rect x="4" y="6" width="26" height="17" rx="2" /><path d="M12 29h10M17 23v6M14.5 11.5v6l5.5-3-5.5-3Z" /></> },
+  { label: "知识图谱", description: "知识点连着讲解、谱例和课例。", view: "graph", icon: <><circle cx="17" cy="17" r="3.5" /><circle cx="7" cy="8" r="2.5" /><circle cx="27" cy="9" r="2.5" /><circle cx="8" cy="27" r="2.5" /><circle cx="27" cy="26" r="2.5" /><path d="m9 10 5.5 4.5M25 10.5l-5.5 4M10 25l4.5-5.5M25 24.5l-5.5-5" /></> },
+  { label: "音乐探索与创造", description: "旋律创编、听音训练、律盘和节奏。", href: "#/compose", icon: <><path d="M13 25V8l14-3v17" /><circle cx="9.5" cy="25" r="3.5" /><circle cx="23.5" cy="22" r="3.5" /><path d="M13 13l14-3" /></> },
+  { label: "智能问答", description: "有关教材的问题，直接问。", view: "assistant", icon: <><path d="M6 8h22v14H16l-6 5v-5H6Z" /><path d="M11.5 13h11M11.5 17h7" /></> },
+];
 const PENTATONIC = [
   { name: "宫", degree: 1, note: "do" }, { name: "商", degree: 2, note: "re" },
   { name: "角", degree: 3, note: "mi" }, { name: "徵", degree: 5, note: "sol" },
@@ -170,32 +172,27 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
     <AppTopNav active="home" onAbout={onResearchInfo}
       onNavigate={view => { if (view === "graph") onOpenFullGraph(); else if (view !== "home") onView(view); }}
       trailing={<button type="button" className="home-nav-search" onClick={focusSearch} aria-label="搜索"><WorkbenchIcon name="search" /></button>} />
-    <main>
-      <section className="home-hero" aria-labelledby="home-title">
-        <div className="home-hero-inner">
-          <div className="home-hero-primary">
-            <div className="home-title-plate">
-              <p className="home-hero-kicker">{EDITION.label} · {PUBLISHED_GRADE_RANGE_LABEL}</p>
-              <div className="home-wordmark"><BrandLogo /><h1 id="home-title" className="home-title-accessible">{SITE_NAME}</h1></div>
-              <p className="home-brand-tagline" aria-hidden="true">芽谱AI · 音乐数字教材平台</p>
-            </div>
-            <p className="home-hero-lead">翻开一册，<br />从这一课开始。</p>
-          </div>
-          <div className="home-hero-search-column">
-            <form className="home-search" role="search" onSubmit={onSearch}>
-              <input ref={searchInput} value={query} onChange={event => onQuery(event.target.value)} placeholder="搜索作品、人物、乐理或教材内容" aria-label="搜索作品、人物、乐理或教材内容" />
-              <button type="submit">检索 <span aria-hidden="true">→</span></button>
-              {query && results.length > 0 && <div className="home-search-results">
-                {results.slice(0, 7).map(({ entity, book, relationCount }) => <button type="button" key={book.key + "-" + entity.id} onClick={() => onPickResult(entity, book)}>
-                  <span><strong>{entity.name}</strong><small>{book.title} · {entity.type} · {relationCount} 条知识联系</small></span><WorkbenchIcon name="arrow" />
-                </button>)}
-              </div>}
-            </form>
-            <div className="home-hot"><span>试着搜索</span>{HOT_SEARCHES.map(term => <button key={term} type="button" onClick={() => { onQuery(term); focusSearch(); }}>{term}</button>)}</div>
-          </div>
+    <main className="hv">
+      {/* 标题用的楷体随站点自带，和入口页、标志一致。 */}
+      <style>{`@font-face{font-family:"Yapu Kai";src:url("${publicAssetUrl("fonts/home-kai.woff2")}") format("woff2");font-display:swap}`}</style>
+      <section className="hv-hero" aria-labelledby="home-title">
+        <div className="hv-hero-copy">
+          <p className="hv-kicker">{EDITION.label} · {PUBLISHED_GRADE_RANGE_LABEL}</p>
+          <h1 id="home-title" className="home-title-accessible">{SITE_NAME}</h1>
+          <p className="hv-headline" aria-hidden="true"><span>翻开一册，</span><span>从这一课开始</span></p>
+          <p className="hv-lead">{PUBLISHED_BOOK_COUNT_LABEL}教材一课一课对照课本整理，看谱、听旋律、备课、上课都从这里进。</p>
+          <form className="hv-search" role="search" onSubmit={onSearch}>
+            <WorkbenchIcon name="search" />
+            <input ref={searchInput} value={query} onChange={event => onQuery(event.target.value)} placeholder="搜索作品、人物、乐理或教材内容" aria-label="搜索作品、人物、乐理或教材内容" />
+            <button type="submit">搜索</button>
+            {query && results.length > 0 && <div className="hv-search-results">
+              {results.slice(0, 7).map(({ entity, book, relationCount }) => <button type="button" key={book.key + "-" + entity.id} onClick={() => onPickResult(entity, book)}>
+                <span><strong>{entity.name}</strong><small>{book.title} · {entity.type} · {relationCount} 条知识联系</small></span><WorkbenchIcon name="arrow" />
+              </button>)}
+            </div>}
+          </form>
+          {HOT_SEARCHES.length > 0 && <div className="hv-hot"><span>试着搜索</span>{HOT_SEARCHES.map(term => <button key={term} type="button" onClick={() => { onQuery(term); focusSearch(); }}>{term}</button>)}</div>}
         </div>
-      </section>
-      <section className="home-scrolls" id="home-scrolls" aria-label={`${bookStage}教材`}>
         {activeBook && (() => {
           const book = activeBook;
           const art = bookArt(book);
@@ -204,100 +201,98 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
           // 湘艺版按“课”编排（标题写作“第一课 唱歌、游戏”），这里也说“课”。
           const unitWord = bookUnits.some(unit => /^第[一二三四五六七八九十]+课/.test(unit.title ?? "")) ? "课" : "单元";
           const volume = volumeNumeral(book.key, orderedBooks);
-          return <article key={book.key} className="home-feature" id="home-book-feature" aria-live="polite" aria-label={`卷${volume}，${book.title}`}>
-            <div className="home-feature-art" aria-hidden="true">
-              <Image src={publicAssetUrl(art.file)} alt="" width={1200} height={750} priority decoding="async" unoptimized />
-            </div>
-            <span className="home-scroll-stamp" aria-label="上次读到" hidden={lastReadBookKey !== book.key}>上次读到</span>
-            <div className="home-scroll-copy">
-              <p className="home-scroll-overline">卷 {volume} · {EDITION.label.split("·")[0]}</p>
+          return <article key={book.key} className="hv-feature" id="home-book-feature" aria-live="polite" aria-label={`卷${volume}，${book.title}`}>
+            <Image className="hv-feature-art" src={publicAssetUrl(art.file)} alt="" width={1200} height={750} priority decoding="async" unoptimized />
+            {lastReadBookKey === book.key && <span className="hv-feature-stamp">上次读到</span>}
+            <div className="hv-feature-copy">
+              <p className="hv-feature-overline">卷 {volume} · {EDITION.label.split("·")[0]}</p>
               <h3>{shortBookTitle(book)}</h3>
-              <p className="home-scroll-intro">{bookUnits[0]?.theme && EDITION.key !== "gaozhong" ? `从${bookUnits[0].theme}出发，一个${unitWord}一个${unitWord}读这册教材。` : `按${unitWord}阅读教材内容与关联作品。`}</p>
               {/* 单元目录还在加载时不显示“0 个单元”，但保留这一行的高度，避免内容跳动。 */}
-              <p className="home-scroll-countline" aria-hidden={!bookUnits.length} style={bookUnits.length ? undefined : { visibility: "hidden" }}>{bookUnits.length} {unitWord === "课" ? "课" : "个单元"} · {fmt(workCount)} 首作品</p>
-              <ol className="home-unit-list">{bookUnits.map(unit => <li key={unit.id}>
+              <p className="hv-feature-count" aria-hidden={!bookUnits.length} style={bookUnits.length ? undefined : { visibility: "hidden" }}>{bookUnits.length} {unitWord === "课" ? "课" : "个单元"} · {fmt(workCount)} 首作品</p>
+              <ol className={"hv-units" + (bookUnits.length > 8 ? " is-many" : "")}>{bookUnits.map(unit => <li key={unit.id}>
                 <button type="button" aria-label={`${unit.numeral || unit.order}，${unit.name || unit.title}，进入${book.title}`} onClick={() => openUnit(book, unit)}>
-                  <span className="home-unit-number">{unit.numeral || unit.order}</span><span className="home-unit-title">{unit.title || unit.name}</span>
+                  <span className="hv-unit-number">{unit.numeral || unit.order}</span><span className="hv-unit-title">{unit.title || unit.name}</span>
                 </button>
               </li>)}</ol>
-              <button type="button" className="home-scroll-cta" onClick={() => openBook(book)}>翻开这一册 <WorkbenchIcon name="right" /></button>
+              <button type="button" className="hv-feature-cta" onClick={() => openBook(book)}>翻开这一册 <span aria-hidden="true">→</span></button>
             </div>
           </article>;
         })()}
-        <div className="home-shelf-index">
-          {availableBookStages(orderedBooks).length > 1 && <div className="home-stage-tabs" role="group" aria-label="选择学段">
+      </section>
+
+      <section className="hv-shelf" id="home-scrolls" aria-label={`${bookStage}教材`}>
+        <header className="hv-sec">
+          <h2>全部分册</h2>
+          <p>鼠标移到一册上看目录，点一下翻开。</p>
+          {availableBookStages(orderedBooks).length > 1 && <div className="hv-stage-tabs" role="group" aria-label="选择学段">
             {availableBookStages(orderedBooks).map((stage) => <button key={stage} type="button" aria-pressed={bookStage === stage} onClick={() => selectStage(stage)}>{stage}</button>)}
           </div>}
-          <div className="home-book-grid" role="group" aria-label={`${bookStage}各册，点选查看，再点一次翻开`}>
-            {stageBooks.map((book, index) => {
-              const isOpen = activeBookKey === book.key;
-              const volume = volumeNumeral(book.key, orderedBooks);
-              const [grade, rest] = splitBookTitle(book);
-              return <button key={book.key} type="button" className={"home-scroll-trigger" + (isOpen ? " is-open" : "")}
-                aria-label={`卷${volume}，${book.title}${isOpen ? "，再点一次翻开" : ""}`} aria-pressed={isOpen} aria-controls="home-book-feature"
-                onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}
-                onFocus={() => setOpenBookKey(book.key)}
-                onClick={() => { if (isOpen) openBook(book); else setOpenBookKey(book.key); }}>
-                <Image src={publicAssetUrl(bookArt(book).file)} alt="" width={1200} height={750} loading={index < 3 ? "eager" : "lazy"} decoding="async" unoptimized />
-                <span className="home-book-card-label">
-                  <span className="home-scroll-number">卷{volume}</span>
-                  <span className="home-scroll-name"><span>{grade}</span><span>{rest}</span></span>
-                </span>
-                {lastReadBookKey === book.key && <span className="home-book-card-mark" aria-hidden="true" title="上次读到" />}
-              </button>;
-            })}
-            {/* Registered books not yet published keep their place on the shelf, so the whole series is visible. */}
-            {upcomingBooks.map((book) => {
-              const [grade, rest] = splitBookTitle(book);
-              return <div key={book.key} className="home-scroll-trigger is-upcoming" aria-label={`${book.title}，整理中`}>
-                <span className="home-book-card-label">
-                  <span className="home-scroll-number">整理中</span>
-                  <span className="home-scroll-name"><span>{grade}</span><span>{rest}</span></span>
-                </span>
-              </div>;
-            })}
+        </header>
+        <div className="hv-books" style={{ "--hv-cols": Math.max(4, stageBooks.length + upcomingBooks.length > 6 ? Math.ceil((stageBooks.length + upcomingBooks.length) / 2) : stageBooks.length + upcomingBooks.length) } as CSSProperties} role="group" aria-label={`${bookStage}各册，点选查看，再点一次翻开`}>
+          {stageBooks.map((book, index) => {
+            const isOpen = activeBookKey === book.key;
+            const volume = volumeNumeral(book.key, orderedBooks);
+            const [grade, rest] = splitBookTitle(book);
+            return <button key={book.key} type="button" className={"hv-book" + (isOpen ? " is-open" : "")}
+              aria-label={`卷${volume}，${book.title}${isOpen ? "，再点一次翻开" : ""}`} aria-pressed={isOpen} aria-controls="home-book-feature"
+              onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}
+              onFocus={() => setOpenBookKey(book.key)}
+              onClick={() => { if (isOpen) openBook(book); else setOpenBookKey(book.key); }}>
+              <span className="hv-book-art"><Image src={publicAssetUrl(bookArt(book).file)} alt="" width={1200} height={750} loading={index < 6 ? "eager" : "lazy"} decoding="async" unoptimized /></span>
+              <span className="hv-book-label">
+                <span className="hv-book-volume">卷{volume}</span>
+                <span className="hv-book-name"><b>{grade}</b><span>{rest}</span></span>
+              </span>
+              {lastReadBookKey === book.key && <span className="hv-book-mark">上次读到</span>}
+            </button>;
+          })}
+          {/* Registered books not yet published keep their place on the shelf, so the whole series is visible. */}
+          {upcomingBooks.map((book) => {
+            const [grade, rest] = splitBookTitle(book);
+            return <div key={book.key} className="hv-book is-upcoming" aria-label={`${book.title}，整理中`}>
+              <span className="hv-book-art" />
+              <span className="hv-book-label">
+                <span className="hv-book-volume">整理中</span>
+                <span className="hv-book-name"><b>{grade}</b><span>{rest}</span></span>
+              </span>
+            </div>;
+          })}
+        </div>
+      </section>
+
+      <section className="hv-entries" aria-labelledby="home-entries-title">
+        <header className="hv-sec"><h2 id="home-entries-title">常用功能</h2><p>备课、查知识、玩音乐、问问题，各有一个入口。</p></header>
+        <div className="hv-entry-list">
+          {ENTRIES.map(entry => {
+            const content = <>
+              <span className="hv-entry-icon" aria-hidden="true"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{entry.icon}</svg></span>
+              <strong>{entry.label}</strong>
+              <span className="hv-entry-desc">{entry.description}</span>
+              <span className="hv-entry-go">进入 <i aria-hidden="true">→</i></span>
+            </>;
+            return entry.href
+              ? <a key={entry.label} className="hv-entry" href={entry.href}>{content}</a>
+              : <button key={entry.label} type="button" className="hv-entry" onClick={() => (entry.view === "graph" ? onOpenFullGraph() : onView(entry.view!))}>{content}</button>;
+          })}
+        </div>
+      </section>
+
+      <section className="hv-lab" aria-labelledby="home-lab-title">
+        <div className="hv-lab-copy">
+          <p className="hv-kicker">音乐探索与创造</p><h2 id="home-lab-title">听见宫、商、角、徵、羽</h2>
+          <p>点右边的五个音听一听，也可以按键盘上的 1、2、3、5、6。</p>
+          <div className="hv-lab-actions">
+            <button type="button" className="hv-lab-phrase" onClick={() => playSample(5)} data-playing={activeNote === "phrase"} aria-pressed={activeNote === "phrase"}>▶ 上行再下行</button>
+            <a href="#/lab" className="hv-lab-enter">进入音乐探索与创造 <span aria-hidden="true">→</span></a>
           </div>
         </div>
-      </section>
-      <section className="home-lab" aria-labelledby="home-lab-title">
-        <div className="home-lab-heading" data-reveal>
-          <p className="home-section-overline">音乐探索与创造</p><h2 id="home-lab-title">听见宫、商、角、徵、羽</h2>
-          <p>用几个音写一段自己的旋律，练练听音的耳朵，再转动律盘，听见一首旋律里的五声与七声。</p>
-          <button type="button" className="home-lab-phrase" onClick={() => playSample(5)} data-playing={activeNote === "phrase"} aria-pressed={activeNote === "phrase"}>▶ 上行再下行</button>
-          <p className="home-lab-hint">按 1、2、3、5、6，也能依次弹奏五个音。</p>
-          <a href="#/lab" className="home-lab-enter">进入音乐探索与创造 <WorkbenchIcon name="right" /></a>
-        </div>
-        <div className="home-pentatonic" role="group" aria-label="五声音阶，按数字 1、2、3、5、6 播放" data-reveal>
+        <div className="hv-pentatonic" role="group" aria-label="五声音阶，按数字 1、2、3、5、6 播放">
           {PENTATONIC.map((note, index) => <button key={note.name} type="button" className={activeNote === note.name ? "is-playing" : ""} onClick={() => playSample(index)} aria-label={"播放" + note.name + "音，键盘" + [1, 2, 3, 5, 6][index]} aria-pressed={activeNote === note.name}>
-            <span className="home-key-index">{[1, 2, 3, 5, 6][index]}</span><span className="home-key-name">{note.name}</span><span className="home-key-note">{note.note}</span>
+            <span className="hv-key-index">{[1, 2, 3, 5, 6][index]}</span><span className="hv-key-name">{note.name}</span><span className="hv-key-note">{note.note}</span>
           </button>)}
         </div>
-        <div className="home-lab-player" aria-hidden="true" inert>
+        <div className="hv-lab-player" aria-hidden="true" inert>
           {[...LAB_MELODIES, PENTATONIC_PHRASE].map((melody, index) => <div key={index} ref={element => { labPlayerRefs.current[index] = element; }}><MelodyPlayer melody={melody} /></div>)}
-        </div>
-      </section>
-      <section className="home-bookmarks" aria-labelledby="home-bookmark-title">
-        <header className="home-bookmark-heading" data-reveal>
-          <h2 id="home-bookmark-title">接着探索</h2>
-          <p>旋律创编、听音训练和律盘共享一个探索空间；知识图谱还原作品之间的联系。</p>
-        </header>
-        <div className="home-bookmark-list">
-          {BOOKMARKS.map(bookmark => {
-            const content = <>
-              <span className="home-bookmark-stage" aria-hidden="true">
-                <span className="home-bookmark-string" /><span className="home-bookmark-knot" /><span className="home-bookmark-tassel" />
-                <span className="home-bookmark-paper">
-                  <Image src={publicAssetUrl(bookmark.file)} alt="" width={360} height={900} loading="lazy" decoding="async" unoptimized />
-                  <span className="home-bookmark-seal">芽谱</span><span className="home-bookmark-label">{bookmark.lines.map(line => <span key={line}>{line}</span>)}</span>
-                </span>
-              </span>
-              <span className="home-bookmark-copy"><strong>{bookmark.label}</strong><span>{bookmark.description}</span></span>
-              <span className="home-bookmark-arrow" aria-hidden="true">↗</span>
-            </>;
-            return bookmark.href
-              ? <a key={bookmark.label} className="home-bookmark-item" href={bookmark.href}>{content}</a>
-              : <button key={bookmark.label} type="button" className="home-bookmark-item" onClick={onOpenFullGraph}>{content}</button>;
-          })}
         </div>
       </section>
     </main>

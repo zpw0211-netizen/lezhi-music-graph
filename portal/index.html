@@ -12,7 +12,6 @@
 <link rel="icon" href="/favicon.ico?v=2" sizes="16x16 32x32 48x48">
 <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" sizes="180x180">
-<link rel="preload" href="/portal-kai.woff2" as="font" type="font/woff2" crossorigin>
 <script>
   // Links shared before the entry page existed (yapu.studio/#/records/…) and any account
   // callback belong to the 人音版 site, which now lives at /renyin/.
@@ -26,261 +25,161 @@
   })();
 </script>
 <style>
-  /* 字体只有两种：标题用楷体（.kai 和 h1–h3，字形子集由 scripts/brand/build-portal-font.py 按本页文字生成），其余全部用黑体。 */
   @font-face { font-family: "Yapu Kai"; src: url("/portal-kai.woff2") format("woff2"); font-display: swap; }
   :root {
-    --paper: #F6F8F6; --paper-2: #ECF2EE; --sheet: #FFFFFF; --ink: #15201A; --ink-2: #44544B; --ink-3: #6B7971;
-    --pine: #1E7A4A; --pine-deep: #17603A; --seal: #B5452F; --line: #DCE5DF; --amber: #E9A83A;
-    --kai: "Yapu Kai", "LXGW WenKai", "KaiTi", "STKaiti", "Kaiti SC", serif;
-    --ui: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    --paper: #F7F9F8; --paper-2: #EEF3F0; --sheet: #FFFFFF; --ink: #17221C; --ink-2: #44544B; --ink-3: #68766E;
+    --pine: #276344; --pine-deep: #194D35; --seal: #AF4236; --line: #DCE5DF; --amber: #E9A83A;
+    --kai: "Yapu Kai", "LXGW WenKai", "STKaiti", "KaiTi", serif;
+    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+    --ui: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
     --ease: cubic-bezier(.16, 1, .3, 1);
-    --wrap: min(1160px, calc(100% - 48px));
   }
   * { box-sizing: border-box; }
-  html { background: var(--paper); scroll-behavior: smooth; }
+  html { background: var(--paper); }
   body { margin: 0; color: var(--ink); background: var(--paper); font: 16px/1.75 var(--ui); -webkit-font-smoothing: antialiased; }
   a { color: inherit; text-decoration: none; }
-  p, h1, h2, h3 { margin: 0; text-wrap: pretty; line-break: strict; }
-  h1, h2, h3, .kai { font-family: var(--kai); font-weight: 400; }
-  :focus-visible { outline: 2px solid var(--pine); outline-offset: 3px; border-radius: 4px; }
+  p, h1, h2 { margin: 0; text-wrap: pretty; line-break: strict; }
 
-  /* 顶栏：左边品牌，右边所属课题。 */
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px 32px; flex-wrap: wrap; width: var(--wrap); margin: 0 auto; padding: 20px 0; }
-  .brand { display: flex; align-items: center; gap: 14px; }
-  .brand img { display: block; width: auto; height: 46px; }
-  .brand span { padding-left: 14px; border-left: 1px solid var(--line); color: var(--ink-2); font-size: 14px; letter-spacing: .12em; white-space: nowrap; }
-  .project { color: var(--ink-3); font-size: 12.5px; line-height: 1.7; text-align: right; }
-  .project b { color: var(--ink-2); font-weight: 500; }
-
-  /* 首屏：一句话说清楚是什么，一个主按钮；右边是三套教材的画。 */
-  .hero { position: relative; isolation: isolate; overflow: hidden; }
+  /* Hero: the faded sprout scene from the 人音版 home page, 20% opacity, melting into the paper. */
+  .hero { position: relative; isolation: isolate; padding: clamp(55px, 9vh, 89px) 21px 34px; text-align: center; }
   .hero::before {
-    position: absolute; z-index: -1; inset: 0; content: ""; pointer-events: none;
-    background:
-      radial-gradient(60% 80% at 82% 40%, rgb(30 122 74 / 9%), transparent 70%),
-      radial-gradient(40% 60% at 8% 100%, rgb(233 168 58 / 10%), transparent 70%);
+    position: absolute; z-index: -1; inset: 0; content: ""; opacity: .2; pointer-events: none;
+    background: url("/renyin/art/home-sprouts.webp") 50% 46% / cover no-repeat;
+    -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent); mask-image: linear-gradient(180deg, #000 55%, transparent);
   }
-  .hero-in { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .92fr); align-items: center; gap: 56px; width: var(--wrap); margin: 0 auto; padding: clamp(36px, 7vh, 76px) 0 clamp(48px, 9vh, 92px); }
-  .kicker { display: inline-flex; align-items: center; gap: 12px; color: var(--seal); font-size: 14px; letter-spacing: .32em; }
-  .kicker::before { width: 28px; height: 1px; background: currentColor; content: ""; }
-  .hero h1 { margin-top: 20px; font-size: clamp(40px, 5.2vw, 70px); line-height: 1.24; letter-spacing: .02em; }
-  .hero h1 em { color: var(--pine); font-style: normal; }
-  .hero h1 span { display: block; white-space: nowrap; }
-  .lead { max-width: 30em; margin-top: 24px; color: var(--ink-2); font-size: clamp(16px, 1.25vw, 18px); line-height: 1.95; }
-  .cta { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 26px; margin-top: 34px; }
-  .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 30px; border-radius: 999px; background: var(--pine); color: #fff; font-size: 17px; letter-spacing: .06em; white-space: nowrap; box-shadow: 0 14px 28px -16px rgb(23 96 58 / 70%); transition: transform .35s var(--ease), background .25s, box-shadow .35s var(--ease); }
-  .btn:hover { background: var(--pine-deep); transform: translateY(-2px); box-shadow: 0 20px 34px -16px rgb(23 96 58 / 75%); }
-  .btn i, .pick i { font-style: normal; transition: transform .35s var(--ease); }
-  .btn:hover i { transform: translateX(4px); }
-  .more { color: var(--pine-deep); font-size: 16px; white-space: nowrap; border-bottom: 1px solid rgb(30 122 74 / 35%); padding-bottom: 2px; transition: border-color .25s; }
-  .more:hover { border-color: var(--pine); }
-  .facts { display: flex; flex-wrap: wrap; gap: 10px 34px; margin: 44px 0 0; padding: 0; list-style: none; color: var(--ink-3); font-size: 14px; }
-  .facts b { display: block; color: var(--ink); font: 400 26px/1.3 var(--kai); letter-spacing: .04em; white-space: nowrap; }
+  /* The research project this platform belongs to, in the top-left corner. */
+  /* In the flow (not absolute) so it never runs into the logo: 18px from the top, the logo starts below it. */
+  .project { margin: calc(18px - clamp(55px, 9vh, 89px)) 0 28px clamp(0px, 1.4vw - 6px, 13px); color: var(--ink-2); font: 13px/1.75 var(--serif); text-align: left; }
+  .project b { color: var(--ink); font-weight: 600; }
+  .brand { display: inline-flex; align-items: center; gap: clamp(8px, 1.4vw, 21px); }
+  .brand img { display: block; width: clamp(220px, 34vw, 400px); height: auto; }
+  .kicker { margin-top: 13px; color: var(--seal); font: 15px/1.6 var(--serif); letter-spacing: .5em; text-indent: .5em; }
+  .brand h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .rule { display: flex; align-items: center; justify-content: center; gap: 13px; margin: 21px auto 0; color: var(--pine); }
+  .rule::before, .rule::after { width: 55px; height: 1px; background: var(--line); content: ""; }
+  .rule i { width: 7px; height: 7px; border-radius: 50%; background: var(--pine); opacity: .7; }
+  .lead { max-width: 34em; margin: 21px auto 0; color: var(--ink-2); font: clamp(15px, 1.25vw, 17px)/2 var(--serif); text-wrap: balance; }
 
-  /* 三张画像印出来的画片，错落叠在一起。 */
-  .prints { position: relative; aspect-ratio: 1 / .86; }
-  .prints img { position: absolute; display: block; width: 68%; height: auto; aspect-ratio: 8 / 5; object-fit: cover; border: 7px solid #fff; border-radius: 6px; box-shadow: 0 30px 50px -28px rgb(21 50 35 / 55%), 0 2px 6px rgb(21 50 35 / 10%); animation: settle 1.1s var(--ease) both; }
-  .prints img:nth-child(1) { top: 2%; right: 0; --r: 5deg; transform: rotate(5deg); animation-delay: .15s; }
-  .prints img:nth-child(2) { bottom: 0; left: 0; --r: -6deg; transform: rotate(-6deg); animation-delay: .3s; }
-  .prints img:nth-child(3) { top: 22%; left: 15%; width: 74%; --r: -1deg; transform: rotate(-1deg); animation-delay: .45s; }
-  @keyframes settle { from { opacity: 0; transform: translateY(26px) rotate(calc(var(--r) * 2.2)); } }
+  /* Modules: one card per textbook series. Inside a card: art 0.382, text 0.618. */
+  main { width: min(960px, calc(100% - 32px)); margin: 0 auto; padding: 21px 0 89px; }
+  .label { margin: 0 0 21px; color: var(--ink-3); font: 13px/1 var(--serif); letter-spacing: .5em; text-align: center; text-indent: .5em; }
+  .card {
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.618fr); min-height: 233px;
+    margin-bottom: 21px; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: var(--sheet);
+    box-shadow: 0 1px 0 rgb(23 34 28 / 3%); transition: transform .45s var(--ease), box-shadow .45s var(--ease), border-color .3s;
+    animation: rise .8s var(--ease) both; animation-delay: calc(.25s + var(--i) * .12s);
+  }
+  a.card:hover, a.card:focus-visible { transform: translateY(-4px); border-color: rgb(39 99 68 / 45%); box-shadow: 0 21px 40px -26px rgb(23 50 36 / 55%); }
+  a.card:focus-visible { outline: 2px solid var(--pine); outline-offset: 3px; }
+  .art { position: relative; overflow: hidden; background: var(--paper-2); }
+  .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+  a.card:hover .art img { transform: scale(1.05); }
+  .art::after { position: absolute; inset: 0; content: ""; background: linear-gradient(90deg, transparent 60%, rgb(255 255 255 / 55%)); }
+  .card.is-building .art img { filter: grayscale(.55) contrast(.9); opacity: .55; }
+  .body { display: flex; flex-direction: column; padding: 34px clamp(21px, 3.4vw, 40px) 26px; }
+  .head { display: flex; align-items: baseline; gap: 13px; flex-wrap: wrap; }
+  .num { color: var(--seal); font: 20px/1 var(--kai); }
+  .card h2 { font: 400 clamp(26px, 2.6vw, 32px)/1.3 var(--kai); letter-spacing: .04em; white-space: nowrap; }
+  .press { color: var(--ink-3); font: 14px/1.5 var(--serif); white-space: nowrap; }
+  .desc { margin-top: 13px; color: var(--ink-2); font: 15px/1.9 var(--serif); text-wrap: pretty; }
+  .foot { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 13px; margin-top: auto; padding-top: 21px; color: var(--ink-3); font: 13px/1.5 var(--ui); }
+  .chip { padding: 2px 10px; border: 1px solid currentColor; border-radius: 2px; font-size: 12px; white-space: nowrap; }
+  .chip.live { color: var(--pine); }
+  .chip.building { color: var(--seal); }
+  .go { margin-left: auto; color: var(--pine); font: 15px/1.5 var(--serif); white-space: nowrap; }
+  .go b { display: inline-block; font-weight: 400; transition: transform .35s var(--ease); }
+  a.card:hover .go b { transform: translateX(5px); }
+  .muted { margin-left: auto; color: var(--ink-3); font: 14px/1.5 var(--serif); white-space: nowrap; }
+  footer { padding: 0 21px 34px; color: var(--ink-3); font: 12px/1.8 var(--ui); text-align: center; }
+  footer .rights { max-width: 46em; margin: 6px auto 0; text-wrap: pretty; }
 
-  /* 四件事：进去以后能做什么。 */
-  .uses { border-block: 1px solid var(--line); background: var(--sheet); }
-  .uses ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: var(--wrap); margin: 0 auto; padding: 0; list-style: none; }
-  .uses li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 4px 16px; padding: 30px 26px 30px 0; }
-  .uses li + li { padding-left: 26px; border-left: 1px solid var(--line); }
-  .uses svg { grid-row: span 2; width: 34px; height: 34px; margin-top: 3px; color: var(--pine); }
-  .uses h3 { font-size: 22px; line-height: 1.4; letter-spacing: .04em; white-space: nowrap; }
-  .uses p { color: var(--ink-3); font-size: 14px; line-height: 1.75; white-space: nowrap; }
-  .nb { white-space: nowrap; }
+  /* The 芽谱AI lockup rises in once. */
+  .brand img { animation: rise .9s cubic-bezier(.34, 1.56, .64, 1) .1s both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 
-  /* 教材：人音版放大做主推，其余三套并排。 */
-  main { width: var(--wrap); margin: 0 auto; padding: clamp(52px, 9vh, 88px) 0 96px; }
-  .sec { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px 24px; margin-bottom: 30px; }
-  .sec h2 { font-size: clamp(30px, 3.2vw, 40px); line-height: 1.3; letter-spacing: .06em; }
-  .sec p { color: var(--ink-3); font-size: 15px; }
-  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-  .card { position: relative; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--sheet); transition: transform .45s var(--ease), box-shadow .45s var(--ease), border-color .3s; }
-  .card:hover { transform: translateY(-4px); border-color: rgb(30 122 74 / 40%); box-shadow: 0 28px 48px -32px rgb(21 50 35 / 55%); }
-  .art { position: relative; display: block; overflow: hidden; aspect-ratio: 8 / 5; background: var(--paper-2); }
-  .art img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
-  .card:hover .art img { transform: scale(1.04); }
-  .body { display: flex; flex: 1; flex-direction: column; padding: 24px 26px 26px; }
-  .head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
-  .num { color: var(--seal); font-size: 19px; }
-  .card h3 { font-size: 30px; line-height: 1.3; letter-spacing: .05em; white-space: nowrap; }
-  .press { color: var(--ink-3); font-size: 13.5px; white-space: nowrap; }
-  .desc { margin-top: 12px; color: var(--ink-2); font-size: 15px; line-height: 1.85; }
-  .meta { margin-top: 12px; color: var(--ink-3); font-size: 13.5px; line-height: 1.7; }
-  .picks { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 22px; }
-  .pick { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 20px; border: 1px solid var(--pine); border-radius: 999px; color: var(--pine-deep); font-size: 15px; white-space: nowrap; transition: background .25s, color .25s; }
-  .pick.is-main, .pick:hover { background: var(--pine); color: #fff; }
-  .pick.is-main:hover { background: var(--pine-deep); border-color: var(--pine-deep); }
-  .pick:hover i { transform: translateX(3px); }
-  .card.is-lead { grid-column: 1 / -1; flex-direction: row; }
-  .card.is-lead .art { flex: 0 0 54%; aspect-ratio: auto; min-height: 340px; }
-  .card.is-lead .body { justify-content: center; padding: 40px clamp(28px, 4vw, 52px); }
-  .card.is-lead h3 { font-size: clamp(36px, 3.6vw, 46px); }
-  .card.is-lead .desc { font-size: 16px; }
-  .card.is-lead .picks { margin-top: 0; padding-top: 26px; }
-  .tag { align-self: flex-start; margin-bottom: 14px; padding: 3px 12px; border-radius: 999px; background: rgb(181 69 47 / 9%); color: var(--seal); font-size: 13px; letter-spacing: .08em; white-space: nowrap; }
-
-  footer { padding: 30px 24px 40px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 12.5px; line-height: 1.8; text-align: center; }
-  footer .rights { max-width: 46em; margin: 6px auto 0; }
-
-  .hero-copy > * { animation: rise .9s var(--ease) both; }
-  .hero-copy > :nth-child(2) { animation-delay: .08s; } .hero-copy > :nth-child(3) { animation-delay: .16s; }
-  .hero-copy > :nth-child(4) { animation-delay: .24s; } .hero-copy > :nth-child(5) { animation-delay: .32s; }
-  @keyframes rise { from { opacity: 0; transform: translateY(16px); } }
-
-  @media (max-width: 980px) {
-    .hero-in { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-    .prints { width: min(560px, 100%); margin: 0 auto; }
-    .uses ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .uses li { padding: 24px 20px 24px 0; }
-    .uses li:nth-child(3) { padding-left: 0; border-left: 0; }
-    .uses li:nth-child(n+3) { border-top: 1px solid var(--line); }
-    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .card.is-lead { flex-direction: column; }
-    .card.is-lead .art { flex: none; aspect-ratio: 8 / 5; min-height: 0; }
-    .card.is-lead .body { padding: 26px; }
+  @media (max-width: 640px) {
+    .project { font-size: 12px; }
   }
   @media (max-width: 640px) {
-    :root { --wrap: calc(100% - 32px); }
-    .top { padding: 14px 0; }
-    .brand img { height: 38px; }
-    .brand span { display: none; }
-    .project { text-align: left; font-size: 12px; }
-    /* 第二行九个字要排在一行里。 */
-    .hero h1 { font-size: min(46px, calc((100vw - 32px) / 9.5)); }
-    .btn { width: 100%; justify-content: center; }
-    .facts { gap: 10px 26px; margin-top: 34px; }
-    .facts b { font-size: 22px; }
-    .uses ul { grid-template-columns: minmax(0, 1fr); }
-    .uses li, .uses li + li { padding: 20px 0; border-left: 0; }
-    .uses li + li { border-top: 1px solid var(--line); }
-    .grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-    .body, .card.is-lead .body { padding: 22px 20px 24px; }
-    .pick { flex: 1; justify-content: center; }
+    .kicker { letter-spacing: .3em; text-indent: .3em; font-size: 14px; }
+    .card { grid-template-columns: 1fr; }
+    .art { height: 144px; }
+    .art::after { background: linear-gradient(180deg, transparent 55%, rgb(255 255 255 / 60%)); }
+    .body { padding: 21px 21px 21px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
-    html { scroll-behavior: auto; }
   }
 </style>
 </head>
 <body>
-<header class="top">
+<header class="hero">
+  <p class="project">国家社科基金教育学国家一般项目<br><b>《指向核心素养的青少年音乐创造力培养模式研究》</b><br>项目编号：BLA230249</p>
   <div class="brand">
-    <img src="/yapu-logo.webp" alt="芽谱AI" width="900" height="408">
-    <span>音乐数字教材平台</span>
+    <img src="/yapu-logo.webp" alt="" width="900" height="408">
+    <h1>芽谱AI — 音乐数字教材平台</h1>
   </div>
-  <p class="project">国家社科基金教育学国家一般项目（BLA230249）<br><b>《指向核心素养的青少年音乐创造力培养模式研究》</b></p>
+  <p class="kicker">芽谱AI · 音乐数字教材平台</p>
+  <div class="rule" aria-hidden="true"><i></i></div>
+  <p class="lead">芽谱AI把中小学音乐教科书一课一课做成数字教材：看谱、听旋律、查知识之间的联系。内容以课本为准，并标出所在页码。</p>
 </header>
 
-<section class="hero">
-  <div class="hero-in">
-    <div class="hero-copy">
-      <p class="kicker">芽谱AI · 音乐数字教材平台</p>
-      <h1><span>让音乐课本</span><span><em>能听、能唱、能上课</em></span></h1>
-      <p class="lead">芽谱AI把中小学音乐教科书一课一课做成数字教材：看谱、听旋律、查知识之间的联系。内容以课本为准，并标出所在页码。</p>
-      <div class="cta">
-        <a class="btn" href="/renyin/">进入人音版 <i aria-hidden="true">→</i></a>
-        <a class="more" href="#books">选择其他教材</a>
-      </div>
-      <ul class="facts">
-        <li><b>三家出版社</b>人音 · 人教 · 湘艺</li>
-        <li><b>小学到高中</b>一年级至高中必修</li>
-        <li><b>简谱与五线谱</b>同一套课程两种谱</li>
-      </ul>
+<main>
+  <p class="label">教材板块</p>
+
+  <a class="card" href="/renyin/" style="--i: 0">
+    <div class="art"><img src="/art/renyin.webp" alt="" width="800" height="500" loading="eager"></div>
+    <div class="body">
+      <div class="head"><span class="num">壹</span><h2>人音版 · 简谱</h2><span class="press">人民音乐出版社</span></div>
+      <p class="desc">按课学习、知识图谱、音乐探索与创造、问问教材。小学九册的歌曲旋律都已对照课本逐页核对，可以直接播放。</p>
+      <div class="foot"><span>小学一至六年级 · 初中七至九年级 · 十五册</span><span class="chip live">已上线</span><span class="go">进入 <b>→</b></span></div>
     </div>
-    <div class="prints" aria-hidden="true">
-      <img src="/art/renjiao.webp" alt="" width="800" height="500">
-      <img src="/art/xiangyi.webp" alt="" width="800" height="500">
-      <img src="/art/renyin.webp" alt="" width="800" height="500">
+  </a>
+
+  <a class="card" href="/renyin-staff/" style="--i: 1">
+    <div class="art"><img src="/art/renyin-staff.webp" alt="" width="800" height="500" loading="eager"></div>
+    <div class="body">
+      <div class="head"><span class="num">贰</span><h2>人音版 · 五线谱</h2><span class="press">人民音乐出版社</span></div>
+      <p class="desc">与简谱版同一套课程和旋律，谱例按五线谱课本排成五线谱，页码与谱例原图对照五线谱课本。</p>
+      <div class="foot"><span>已整理十二册（五线谱）</span><span class="chip live">已上线</span><span class="go">进入 <b>→</b></span></div>
     </div>
-  </div>
-</section>
+  </a>
 
-<section class="uses" aria-label="在芽谱里能做什么">
-  <ul>
-    <li>
-      <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8c-3-2-7-2.500-11-2v20c4-.5 8 0 11 2 3-2 7-2.500 11-2V6c-4-.5-8 0-11 2Z"/><path d="M17 8v20"/></svg>
-      <h3>按课学习</h3><p>看谱例、听旋律、跟着唱</p>
-    </li>
-    <li>
-      <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="26" height="17" rx="2"/><path d="M12 29h10M17 23v6M14.500 11.500v6l5.500-3-5.500-3Z"/></svg>
-      <h3>上课与备课</h3><p>上课模式投屏，智能备课</p>
-    </li>
-    <li>
-      <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="17" cy="17" r="3.500"/><circle cx="7" cy="8" r="2.500"/><circle cx="27" cy="9" r="2.500"/><circle cx="8" cy="27" r="2.500"/><circle cx="27" cy="26" r="2.500"/><path d="m9 10 5.500 4.500M25 10.500l-5.500 4M10 25l4.500-5.500M25 24.500l-5.500-5"/></svg>
-      <h3>知识图谱</h3><p>讲解、谱例、课例连在一起</p>
-    </li>
-    <li>
-      <svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 25V8l14-3v17"/><circle cx="9.500" cy="25" r="3.500"/><circle cx="23.500" cy="22" r="3.500"/><path d="M13 13l14-3"/></svg>
-      <h3>探索与创造</h3><p>旋律创编、听音、节奏训练</p>
-    </li>
-  </ul>
-</section>
+  <a class="card" href="/renjiao/" style="--i: 2">
+    <div class="art"><img src="/art/renjiao.webp" alt="" width="800" height="500" loading="eager"></div>
+    <div class="body">
+      <div class="head"><span class="num">叁</span><h2>人教版 · 简谱</h2><span class="press">人民教育出版社</span></div>
+      <p class="desc">十四册的单元、栏目与课本页码已经整理好，配上剪纸风格插图。旋律对照课本逐册核对，核对完的陆续开放播放。</p>
+      <div class="foot"><span>小学一至六年级 · 初中七至九年级 · 十四册</span><span class="chip live">已上线</span><span class="go">进入 <b>→</b></span></div>
+    </div>
+  </a>
 
-<main id="books">
-  <div class="sec">
-    <h2>选择教材</h2>
-    <p>按手里的课本选，进去以后还可以随时换。</p>
-  </div>
-  <div class="grid">
-    <article class="card is-lead">
-      <a class="art" href="/renyin/" tabindex="-1" aria-hidden="true"><img src="/art/renyin.webp" alt="" width="800" height="500"></a>
-      <div class="body">
-        <span class="tag">推荐从这里开始</span>
-        <div class="head"><span class="num kai">壹</span><h3>人音版</h3><span class="press">人民音乐出版社</span></div>
-        <p class="desc">按课学习、知识图谱、音乐探索与创造、智能问答都在这里。歌曲旋律对照课本逐页核对，可以直接播放。</p>
-        <p class="meta">小学一至六年级 · 初中七至九年级<br>简谱十五册 · 五线谱十二册</p>
-        <div class="picks">
-          <a class="pick is-main" href="/renyin/" aria-label="人音版 · 简谱">简谱版 <i aria-hidden="true">→</i></a>
-          <a class="pick" href="/renyin-staff/" aria-label="人音版 · 五线谱">五线谱版 <i aria-hidden="true">→</i></a>
-        </div>
-      </div>
-    </article>
+  <a class="card" href="/renjiao-staff/" style="--i: 3">
+    <div class="art"><img src="/art/renjiao-staff.webp" alt="" width="800" height="500" loading="eager"></div>
+    <div class="body">
+      <div class="head"><span class="num">肆</span><h2>人教版 · 五线谱</h2><span class="press">人民教育出版社</span></div>
+      <p class="desc">与人教简谱版同一套课程和旋律，谱例排成五线谱，页码与谱面图对照人教五线谱课本。</p>
+      <div class="foot"><span>小学一至六年级 · 初中七至九年级 · 十四册（五线谱）</span><span class="chip live">已上线</span><span class="go">进入 <b>→</b></span></div>
+    </div>
+  </a>
 
-    <article class="card">
-      <a class="art" href="/renjiao/" tabindex="-1" aria-hidden="true"><img src="/art/renjiao.webp" alt="" width="800" height="500" loading="lazy"></a>
-      <div class="body">
-        <div class="head"><span class="num kai">贰</span><h3>人教版</h3><span class="press">人民教育出版社</span></div>
-        <p class="desc">单元、栏目与课本页码都已整理，配剪纸风格插图。旋律逐册核对，陆续开放播放。</p>
-        <p class="meta">小学至初中 · 十四册</p>
-        <div class="picks">
-          <a class="pick is-main" href="/renjiao/" aria-label="人教版 · 简谱">简谱版 <i aria-hidden="true">→</i></a>
-          <a class="pick" href="/renjiao-staff/" aria-label="人教版 · 五线谱">五线谱版 <i aria-hidden="true">→</i></a>
-        </div>
-      </div>
-    </article>
+  <a class="card" href="/xiangyi/" style="--i: 4">
+    <div class="art"><img src="/art/xiangyi.webp" alt="" width="800" height="500" loading="eager"></div>
+    <div class="body">
+      <div class="head"><span class="num">伍</span><h2>湘艺版 · 简谱</h2><span class="press">湖南文艺出版社</span></div>
+      <p class="desc">按课编排，一课一课对照课本页码整理，配上湘绣风格插图。旋律对照课本逐册核对，可以直接播放。</p>
+      <div class="foot"><span>小学一至六年级 · 初中七至九年级 · 十四册</span><span class="chip live">已上线</span><span class="go">进入 <b>→</b></span></div>
+    </div>
+  </a>
 
-    <article class="card">
-      <a class="art" href="/xiangyi/" tabindex="-1" aria-hidden="true"><img src="/art/xiangyi.webp" alt="" width="800" height="500" loading="lazy"></a>
-      <div class="body">
-        <div class="head"><span class="num kai">叁</span><h3>湘艺版</h3><span class="press">湖南文艺出版社</span></div>
-        <p class="desc">一课一课对照课本页码整理，配湘绣风格插图。旋律逐册核对，可以直接播放。</p>
-        <p class="meta">小学至初中 · 十四册</p>
-        <div class="picks">
-          <a class="pick is-main" href="/xiangyi/" aria-label="湘艺版 · 简谱">简谱版 <i aria-hidden="true">→</i></a>
-        </div>
-      </div>
-    </article>
-
-    <article class="card">
-      <a class="art" href="/gaozhong/" tabindex="-1" aria-hidden="true"><img src="/art/gaozhong.webp" alt="" width="800" height="500" loading="lazy"></a>
-      <div class="body">
-        <div class="head"><span class="num kai">肆</span><h3>高中音乐</h3><span class="press">人民音乐出版社</span></div>
-        <p class="desc">普通高中必修两册：<span class="nb">《音乐鉴赏》</span><span class="nb">《音乐编创》。</span>谱例和要点对照课本页码整理。</p>
-        <p class="meta">必修 1 · 必修 4 · 二册</p>
-        <div class="picks">
-          <a class="pick is-main" href="/gaozhong/" aria-label="高中音乐教材">进入高中 <i aria-hidden="true">→</i></a>
-        </div>
-      </div>
-    </article>
-  </div>
+  <a class="card" href="/gaozhong/" style="--i: 5">
+    <div class="art"><img src="/art/gaozhong.webp" alt="" width="800" height="500" loading="eager"></div>
+    <div class="body">
+      <div class="head"><span class="num">陆</span><h2>高中音乐教材</h2><span class="press">人民音乐出版社</span></div>
+      <p class="desc">普通高中音乐必修两册：《音乐鉴赏》按单元听赏作品、学习知识；《音乐编创》从旋律、主题、歌曲结构讲到伴奏编配。谱例和要点都对照课本页码整理。</p>
+      <div class="foot"><span>必修1 音乐鉴赏 · 必修4 音乐编创 · 二册</span><span class="chip live">已上线</span><span class="go">进入 <b>→</b></span></div>
+    </div>
+  </a>
 </main>
 
 <footer>
