@@ -424,14 +424,14 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             const key = (event: React.KeyboardEvent) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); select(node); } };
             if (node.kind === "hub") {
               const width = textWidth(node.name, 17) + 30;
-              return <g key={node.id} className={`kmap-node is-hub hue-${GROUPS[node.group!].hue}${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" aria-label={`音乐要素：${node.name}`} onKeyDown={key} {...handlers}>
+              return <g key={node.id} className={`kmap-node is-hub hue-${GROUPS[node.group!].hue}${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" data-motion-ignore="" aria-label={`音乐要素：${node.name}`} onKeyDown={key} {...handlers}>
                 <rect x={-width / 2} y={-18} width={width} height={36} rx={18} />
                 <text textAnchor="middle" dy="0.36em">{node.name}</text>
               </g>;
             }
             if (node.kind === "book") {
               const width = textWidth(node.name, 13) + 14;
-              return <g key={node.id} className={`kmap-node is-book${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" aria-label={`分册：${node.name}`} onKeyDown={key} {...handlers}>
+              return <g key={node.id} className={`kmap-node is-book${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" data-motion-ignore="" aria-label={`分册：${node.name}`} onKeyDown={key} {...handlers}>
                 <rect x={-width / 2} y={-12} width={width} height={24} rx={5} />
                 <text textAnchor="middle" dy="0.36em">{node.name}</text>
               </g>;
@@ -446,7 +446,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
               </g>;
             }
             const radius = node.core ? pointRadius(node) : 4.5;
-            return <g key={node.id} className={`kmap-node is-point hue-${GROUPS[node.group!].hue}${node.core ? "" : " is-minor"}${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" aria-label={`知识点：${node.name}，${node.works.length} 首作品`} onKeyDown={key} {...handlers}>
+            return <g key={node.id} className={`kmap-node is-point hue-${GROUPS[node.group!].hue}${node.core ? "" : " is-minor"}${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" data-motion-ignore="" aria-label={`知识点：${node.name}，${node.works.length} 首作品`} onKeyDown={key} {...handlers}>
               <circle r={radius} />
               <text textAnchor="middle" y={radius + 14}>{node.name}</text>
             </g>;
