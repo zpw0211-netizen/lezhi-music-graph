@@ -408,8 +408,8 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             const y2 = b.y - uy * (gap(to) + 3);
             // 知识点之间的关系一直标着；作品的连线选中后才标，太多时不标（右边课例里有）。
             const toBook = from.kind === "book" || to.kind === "book";
-            // 全套视图节点多：“包含”只在选中时标出来。
-            const labelled = length > 46 && (toBook ? on : work ? on && !crowded : on || (!focus && !(map.whole && edge.label === "包含")));
+            // “包含”每条线都一样，颜色和箭头已经说明了归属，只在选中时标出来。
+            const labelled = length > 46 && (toBook ? on : work ? on && !crowded : on || (!focus && edge.label !== "包含"));
             const angle = Math.atan2(uy, ux) * 180 / Math.PI;
             const state = on ? " is-on" : focus ? " is-off" : "";
             return <g key={`${edge.a}-${edge.b}`} className={`${work ? "to-work" : "to-point"}${state}`}>
@@ -452,7 +452,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             </g>;
           })}
         </svg>
-        <p className="kmap-legend"><span className="dot is-point" />知识点（圆越大，用到它的作品越多）{scope ? <><span className="square" />分册（线上的数字是这一册有几首作品用到）</> : <><span className="dot is-work" />作品</>}<span className="pill" />音乐要素</p>
+        <p className="kmap-legend"><span className="dot is-point" />知识点（圆越大，用到它的作品越多）{scope ? <><span className="square" />分册（线上的数字是这一册有几首作品用到）</> : <><span className="dot is-work" />作品</>}<span className="pill" />音乐要素（箭头指向它包含的知识点，颜色相同）</p>
       </div>
 
       <aside className="kmap-card" aria-live="polite" style={{ "--kmap-hue": "var(--pine)" } as CSSProperties}>

@@ -192,7 +192,7 @@
 .compose-save button { border-radius: 999px; }
 @media (min-width: 1180px) {
   .compose-workbench { grid-template-columns: minmax(0, 1.42fr) minmax(360px, 1fr); align-items: start; }
-  .compose-workbench .compose-stage { position: sticky; top: 12px; }
+  .compose-workbench .compose-stage { position: sticky; top: 81px; }
   .compose-workbench .compose-author { width: 96px; }
   .compose-workbench .compose-keys { flex-basis: 100%; margin-left: 0; }
 }

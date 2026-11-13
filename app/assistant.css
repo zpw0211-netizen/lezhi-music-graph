@@ -1087,12 +1087,9 @@
   transform: rotate(45deg) skew(8deg, 8deg);
 }
 .assistant-page .ask-bubble--teacher::after { right: 14px; left: auto; }
-.assistant-page .ask-bubble.tone-0 { --bubble-bg: #DDEBE3; --bubble-ink: #1F4A3C; --bubble-edge: rgba(31, 74, 60, .22); }
-.assistant-page .ask-bubble.tone-1 { --bubble-bg: #F8E3DC; --bubble-ink: #8E2A1B; --bubble-edge: rgba(184, 57, 42, .22); }
-.assistant-page .ask-bubble.tone-2 { --bubble-bg: #DCE6EF; --bubble-ink: #284A66; --bubble-edge: rgba(40, 74, 102, .22); }
-.assistant-page .ask-bubble.tone-3 { --bubble-bg: #F6EACB; --bubble-ink: #6E4A0C; --bubble-edge: rgba(145, 99, 25, .25); }
-.assistant-page .ask-bubble.tone-4 { --bubble-bg: #EEDFEA; --bubble-ink: #6A3B5C; --bubble-edge: rgba(106, 59, 92, .22); }
-.assistant-page .ask-bubble.tone-5 { --bubble-bg: #E4ECD2; --bubble-ink: #46581B; --bubble-edge: rgba(70, 88, 27, .24); }
+/* 两种颜色对应两种提问的人：学生问用松绿，备课问用暖金，都在全站的纸色、松绿、金色之内。 */
+.assistant-page .ask-bubble--student { --bubble-bg: #E3F0E8; --bubble-ink: #1F4A3C; --bubble-edge: rgba(31, 74, 60, .24); }
+.assistant-page .ask-bubble--teacher { --bubble-bg: #FBF3DF; --bubble-ink: #6B4A12; --bubble-edge: rgba(145, 99, 25, .28); }
 .assistant-page .ask-bubble-who { display: flex; align-items: center; font: 11px/1.4 var(--serif); letter-spacing: .2em; opacity: .72; }
 /* "正在输入" dots after 学生问 / 备课问 */
 .assistant-page .ask-bubble-who::after {

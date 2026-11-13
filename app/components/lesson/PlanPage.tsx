@@ -18,6 +18,13 @@ type Context = { workName: string; facts: LessonFact[]; melodies: Melody[]; scor
 const KINDS = Object.keys(LESSON_KINDS) as LessonKind[];
 const MINUTES = [20, 30, 40, 45];
 const EXAMPLE = "明天给八（3）班上《菊花台》，歌唱课，40 分钟。班里男生多在变声期，重点让他们敢开口。";
+/** 还没选课题时，先说清一份详案里有什么。 */
+const GAINS: [string, string][] = [
+  ["分析和目标", "教材分析、学情分析、教学目标和重点难点，按课型和班级情况写出来。"],
+  ["每一步怎么上", "每一步的师生活动和设计意图，本课的旋律、范唱、谱例和节奏练习点开就能用。"],
+  ["板书、作业和课件", "步骤和上课模式的课件一一对应，教案可以导出 Word、打印或复制。"],
+];
+const OUTLINE: [string, string][] = [["analysis", "教材与学情分析"], ["goals", "教学目标"], ["prepare", "教学准备"], ["stages", "教学过程"], ["board", "板书设计"], ["homework", "作业"]];
 const storageKey = (book: string, work: string) => `yapu-plan:${EDITION.key}:${book}:${work}`;
 const readPlan = (book: string, work: string): LessonPlan | null => {
   try {
@@ -121,35 +128,42 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
     setAsked((current) => ({ token: current.token + 1, options: null }));
   };
 
-  return <section className="lesson plan" aria-labelledby="plan-title">
+  return <section className="lesson plan plan-v2" aria-labelledby="plan-title">
     <header className="plan-hero">
-      <p className="plan-kicker">教师端 · 样板</p>
-      <h1 id="plan-title">智能备课</h1>
-      <p>说一句你要上什么课、班里什么情况，芽谱用本课的旋律、范唱、谱例和节奏练习排出一节课的详案：教材与学情分析、每一步的师生活动和设计意图、板书和作业，步骤和上课模式的课件一一对应。音乐资源都来自已核对的教材数据，生成后可以逐句修改，教案检查会随改随查。</p>
+      <div>
+        <p className="plan-kicker">教师端 · 样板</p>
+        <h1 id="plan-title">智能备课</h1>
+      </div>
+      <p className="plan-lead">说一句你要上什么课、班里什么情况，芽谱排出一节课的详案。音乐资源都来自已核对的教材数据，生成后可以逐句修改，教案检查会随改随查。</p>
     </header>
 
-    <form className="plan-request" onSubmit={submitRequest}>
-      <label htmlFor="plan-request">用一句话说要求</label>
-      <div className="plan-request-row">
-        <textarea id="plan-request" rows={2} value={request} placeholder={EXAMPLE} onChange={(event) => setRequest(event.target.value)} />
-        <button type="submit" className="plan-primary">生成教案</button>
-      </div>
-      {!request && <button type="button" className="plan-link" onClick={() => setRequest(EXAMPLE)}>填入示例</button>}
-      {message && <p className="plan-message" role="status">{message}</p>}
-    </form>
+    <div className="plan-start">
+      <form className="plan-request" onSubmit={submitRequest}>
+        <label htmlFor="plan-request" className="plan-start-title">用一句话说要求</label>
+        <textarea id="plan-request" rows={3} value={request} placeholder={EXAMPLE} onChange={(event) => setRequest(event.target.value)} />
+        <div className="plan-request-foot">
+          {!request && <button type="button" className="plan-link" onClick={() => setRequest(EXAMPLE)}>填入示例</button>}
+          <button type="submit" className="plan-primary">生成教案</button>
+        </div>
+        {message && <p className="plan-message" role="status">{message}</p>}
+      </form>
 
-    <div className="plan-options">
-      <label>分册
-        <select id="plan-book" value={bookKey} onChange={(event) => { setAsked((current) => ({ token: current.token, options: null })); onRoute(event.target.value); }}>
-          {books.map((book) => <option key={book.key} value={book.key}>{book.title}</option>)}
-        </select>
-      </label>
-      <label>课题
-        <select id="plan-work" value={work ? bareWorkName(work.name) : ""} onChange={(event) => { setAsked((current) => ({ token: current.token, options: null })); onRoute(bookKey, event.target.value || undefined); }}>
-          <option value="">选择课题</option>
-          {lessons.map((entity) => <option key={entity.id} value={bareWorkName(entity.name)}>{entity.name}</option>)}
-        </select>
-      </label>
+      <div className="plan-pick">
+        <p className="plan-start-title">或者直接选课题</p>
+        <div className="plan-options">
+          <label>分册
+            <select id="plan-book" value={bookKey} onChange={(event) => { setAsked((current) => ({ token: current.token, options: null })); onRoute(event.target.value); }}>
+              {books.map((book) => <option key={book.key} value={book.key}>{book.title}</option>)}
+            </select>
+          </label>
+          <label>课题
+            <select id="plan-work" value={work ? bareWorkName(work.name) : ""} onChange={(event) => { setAsked((current) => ({ token: current.token, options: null })); onRoute(bookKey, event.target.value || undefined); }}>
+              <option value="">选择课题</option>
+              {lessons.map((entity) => <option key={entity.id} value={bareWorkName(entity.name)}>{entity.name}</option>)}
+            </select>
+          </label>
+        </div>
+      </div>
     </div>
 
     <div className="plan-carry">
@@ -161,7 +175,13 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
       {carry && <p className="plan-message" role="status">{carry}</p>}
     </div>
 
-    {!work && <p className="plan-empty">先在上面说一句要求，或者选一个课题。</p>}
+    {!work && <section className="plan-gains" aria-labelledby="plan-gains-title">
+      <h2 id="plan-gains-title">一份详案里有什么</h2>
+      <ul>{GAINS.map(([title, text], index) => <li key={title}>
+        <h3><span>{"0" + (index + 1)}</span>{title}</h3>
+        <p>{text}</p>
+      </li>)}</ul>
+    </section>}
     {work && context && <PlanEditor key={`${bookKey}:${work.id}:${asked.token}`} bookKey={bookKey} context={context} asked={asked.options}
       assetUrl={assetUrl} books={books} graph={graph} onOpenLesson={onOpenLesson} />}
   </section>;
@@ -247,8 +267,12 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
   </li>)}</ul> : null;
   const work = bareWorkName(context.workName);
 
-  return <>
+  const jump = (id: string) => document.getElementById("plan-sec-" + id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  return <div className={`plan-work${plan ? " has-doc" : ""}`}>
+    <aside className="plan-rail" aria-label="这节课的设置">
     <div className="plan-options plan-settings">
+      <p className="plan-rail-title">这节课</p>
       <label>课型
         <select id="plan-kind" value={options.kind} onChange={(event) => setOptions({ ...options, kind: event.target.value as LessonKind })}>
           {KINDS.map((item) => <option key={item} value={item}>{LESSON_KINDS[item]}</option>)}
@@ -267,8 +291,24 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
       </label>
       <button type="button" className="plan-primary" onClick={generate}>{plan ? "按选项重新生成" : "生成教案"}</button>
     </div>
+    {plan && <div className="plan-doc-actions">
+      <p className="plan-rail-title">带走教案</p>
+      <span className={`plan-check ${fixes ? "is-fix" : "is-ok"}`}>{fixes ? `教案检查：${fixes} 处需要改` : "教案检查：通过"}</span>
+      <button type="button" className="is-main" onClick={exportWord}>导出 Word</button>
+      <button type="button" onClick={print}>打印</button>
+      <button type="button" onClick={copy}>复制文字</button>
+      <button type="button" className="is-wide" onClick={() => onOpenLesson(work, bookKey)}>打开这一课 · 上课模式</button>
+    </div>}
+    {plan && <nav className="plan-outline" aria-label="教案目录">
+      <p className="plan-rail-title">目录</p>
+      {OUTLINE.filter(([id]) => (id === "analysis" ? plan.analysis : id === "prepare" ? plan.prepare !== undefined : id === "board" ? plan.board !== undefined : true))
+        .map(([id, label]) => <button key={id} type="button" onClick={() => jump(id)}>{label}</button>)}
+    </nav>}
+    </aside>
+
+    <div className="plan-main">
     {message && <p className="plan-message" role="status">{message}</p>}
-    {!plan && <p className="plan-empty">已选《{work}》。点“生成教案”开始。</p>}
+    {!plan && <p className="plan-empty">已选《{work}》。定好课型和课时，点“生成教案”开始。</p>}
 
     {plan && <article className="plan-doc">
       <div className="plan-doc-head">
@@ -277,25 +317,18 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
           <p>{LESSON_KINDS[plan.kind]} · {plan.minutes} 分钟{plan.className ? ` · ${plan.className}` : ""}{plan.classNote ? ` · ${plan.classNote}` : ""}</p>
           {plan.standard && <p className="plan-standard">课标依据：{plan.standard.band} · 学习任务“{plan.standard.task}”（{STANDARD}第 {plan.standard.page} 页）</p>}
         </div>
-        <div className="plan-doc-actions">
-          <span className={`plan-check ${fixes ? "is-fix" : "is-ok"}`}>{fixes ? `教案检查：${fixes} 处需要改` : "教案检查：通过"}</span>
-          <button type="button" className="is-main" onClick={exportWord}>导出 Word</button>
-          <button type="button" onClick={print}>打印</button>
-          <button type="button" onClick={copy}>复制文字</button>
-          <button type="button" onClick={() => onOpenLesson(work, bookKey)}>打开这一课 · 上课模式</button>
-        </div>
       </div>
-      {!plan.version && <p className="plan-upgrade" role="status">这是旧版的简案。点上面的“按选项重新生成”，可以得到带教材分析、师生活动、设计意图和板书的详案（会覆盖现在的内容）。</p>}
+      {!plan.version && <p className="plan-upgrade" role="status">这是旧版的简案。点“按选项重新生成”，可以得到带教材分析、师生活动、设计意图和板书的详案（会覆盖现在的内容）。</p>}
       {issueList(issues.filter((issue) => "plan" in issue.where))}
 
-      {plan.analysis && <section className="plan-prose">
+      {plan.analysis && <section className="plan-prose" id="plan-sec-analysis">
         <h3>教材分析</h3>
         <textarea aria-label="教材分析" value={plan.analysis.textbook} onChange={(event) => update({ ...plan, analysis: { ...plan.analysis!, textbook: event.target.value } })} />
         <h3>学情分析</h3>
         <textarea aria-label="学情分析" value={plan.analysis.students} onChange={(event) => update({ ...plan, analysis: { ...plan.analysis!, students: event.target.value } })} />
       </section>}
 
-      <section className="plan-goals">
+      <section className="plan-goals" id="plan-sec-goals">
         <h3>教学目标</h3>
         <ol>{plan.goals.map((goal, index) => <li key={goal.area}>
           <b>{goal.area}</b>
@@ -305,12 +338,12 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
         <dl className="plan-focus"><div><dt>教学重点</dt><dd>{plan.focus.key}</dd></div><div><dt>教学难点</dt><dd>{plan.focus.hard}</dd></div></dl>
       </section>
 
-      {plan.prepare !== undefined && <section className="plan-prose">
+      {plan.prepare !== undefined && <section className="plan-prose" id="plan-sec-prepare">
         <h3>教学准备</h3>
         <textarea aria-label="教学准备" value={plan.prepare} onChange={(event) => update({ ...plan, prepare: event.target.value })} />
       </section>}
 
-      <section className="plan-stages">
+      <section className="plan-stages" id="plan-sec-stages">
         <h3>教学过程</h3>
         <div className="plan-timeline" aria-hidden="true">{plan.stages.map((stage) => <span key={stage.key} data-stage={stage.key} style={{ flexGrow: stage.minutes }}>{stage.name}<small>{stage.minutes}′</small></span>)}</div>
         {plan.stages.map((stage, s) => <section key={stage.key} className="plan-stage" data-stage={stage.key}>
@@ -339,16 +372,17 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
           <button type="button" className="plan-link" onClick={() => update({ ...plan, ...fitMinutes(plan.stages, plan.minutes) })}>按比例对齐课时</button></p>
       </section>
 
-      {plan.board !== undefined && <section className="plan-prose">
+      {plan.board !== undefined && <section className="plan-prose" id="plan-sec-board">
         <h3>板书设计</h3>
         <textarea className="plan-board" aria-label="板书设计" value={plan.board} onChange={(event) => update({ ...plan, board: event.target.value })} />
       </section>}
 
-      <section className="plan-homework"><h3>作业</h3>
+      <section className="plan-homework" id="plan-sec-homework"><h3>作业</h3>
         <textarea aria-label="作业" value={plan.homework} onChange={(event) => update({ ...plan, homework: event.target.value })} />
         {plan.homeworkIntent !== undefined && <label className="plan-intent"><span>设计意图</span>
           <textarea aria-label="作业的设计意图" value={plan.homeworkIntent} onChange={(event) => update({ ...plan, homeworkIntent: event.target.value })} /></label>}
       </section>
     </article>}
-  </>;
+    </div>
+  </div>;
 }
