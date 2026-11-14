@@ -17,10 +17,62 @@ type Saved = { meterId: MeterId; barCount: number; bpm: number; voices: Voice[] 
 const INSTRUMENTS: Array<{ kind: PercussionKind; label: string; caption: string }> = [
   { kind: "roundDrum", label: "鼓", caption: "低沉，适合打稳稳的拍子" },
   { kind: "woodBlock", label: "双响筒", caption: "清脆，适合密一点的节奏" },
+  { kind: "shaker", label: "沙锤", caption: "沙沙的，适合填在空拍里" },
+  { kind: "triangle", label: "三角铁", caption: "清亮，余音细细的，适合点在长音上" },
+  { kind: "tambourine", label: "铃鼓", caption: "又敲又响，适合活泼的节奏" },
   { kind: "smallGong", label: "小锣", caption: "明亮，适合点在重要的地方" },
-  { kind: "smallCymbal", label: "小镲", caption: "沙沙的，适合填在空拍里" },
+  { kind: "smallCymbal", label: "小镲", caption: "响亮，偶尔敲一下就很出彩" },
   { kind: "bigGong", label: "大锣", caption: "余音长，一小节敲一下就够" },
 ];
+/** 合奏里每件乐器的音量、高频上限（Hz），和要不要在下一击之前收住余音。锣和镲的录音本来很亮，这里压一压。 */
+const MIX: Partial<Record<PercussionKind, { level: number; cut: number; choke: boolean }>> = {
+  roundDrum: { level: 0.95, cut: 4200, choke: false },
+  woodBlock: { level: 0.5, cut: 5200, choke: false },
+  shaker: { level: 0.55, cut: 9000, choke: false },
+  triangle: { level: 0.5, cut: 9000, choke: true },
+  tambourine: { level: 0.6, cut: 9000, choke: false },
+  smallGong: { level: 0.42, cut: 3600, choke: true },
+  smallCymbal: { level: 0.36, cut: 5200, choke: true },
+  bigGong: { level: 0.5, cut: 3000, choke: true },
+};
+const softOutputs = new WeakMap<AudioContext, AudioNode>();
+/** 总输出：先削一点高频，再过压限，几件乐器同时敲也不会爆音。 */
+function softOutput(context: AudioContext): AudioNode {
+  let input = softOutputs.get(context);
+  if (!input) {
+    const shelf = context.createBiquadFilter();
+    shelf.type = "highshelf"; shelf.frequency.value = 4500; shelf.gain.value = -5;
+    const limiter = context.createDynamicsCompressor();
+    limiter.threshold.value = -16; limiter.knee.value = 10; limiter.ratio.value = 8; limiter.attack.value = 0.002; limiter.release.value = 0.18;
+    const out = context.createGain();
+    out.gain.value = 0.85;
+    shelf.connect(limiter).connect(out).connect(context.destination);
+    softOutputs.set(context, shelf);
+    input = shelf;
+  }
+  return input;
+}
+/** 一件乐器自己的通道：音量、低通，外加一个用来收余音的闸。 */
+function voiceBus(context: AudioContext, out: AudioNode, kind: PercussionKind) {
+  const mix = MIX[kind] ?? { level: 0.6, cut: 5000, choke: false };
+  const gate = context.createGain();
+  const filter = context.createBiquadFilter();
+  filter.type = "lowpass"; filter.frequency.value = mix.cut; filter.Q.value = 0.5;
+  const level = context.createGain();
+  level.gain.value = mix.level;
+  gate.connect(filter).connect(level).connect(out);
+  let struck = false;
+  return {
+    hit(at: number, accent: number) {
+      if (mix.choke && struck) {
+        gate.gain.setTargetAtTime(0.0001, Math.max(context.currentTime, at - 0.035), 0.008);
+        gate.gain.setValueAtTime(1, at);
+      }
+      struck = true;
+      playPercussion(context, gate, kind, at, accent);
+    },
+  };
+}
 const LABEL_OF = new Map(INSTRUMENTS.map((item) => [item.kind, item.label]));
 const METER_IDS: MeterId[] = ["2/4", "3/4", "4/4"];
 const BAR_COUNTS = [2, 4, 8];
@@ -32,15 +84,17 @@ const STARTER: Voice[] = [
   { id: 1, kind: "roundDrum", ids: [], muted: false },
   { id: 2, kind: "woodBlock", ids: [], muted: false },
 ];
+/** 强拍最响，其他拍头稍轻，拍子中间的音最轻，听起来有起伏。 */
+const accentOf = (start: number, beats: number) => (Math.abs(start % beats) < 1e-6 ? 1 : Math.abs(start % 1) < 1e-6 ? 0.74 : 0.56);
 
 function click(context: AudioContext, out: AudioNode, at: number, downbeat: boolean) {
   const osc = context.createOscillator();
   const gain = context.createGain();
-  osc.type = "square";
-  osc.frequency.value = downbeat ? 1760 : 1180;
+  osc.type = "sine";
+  osc.frequency.value = downbeat ? 1320 : 990;
   gain.gain.setValueAtTime(0.0001, at);
-  gain.gain.exponentialRampToValueAtTime(downbeat ? 0.1 : 0.06, at + 0.001);
-  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.035);
+  gain.gain.exponentialRampToValueAtTime(downbeat ? 0.16 : 0.1, at + 0.003);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.05);
   osc.connect(gain).connect(out);
   osc.start(at);
   osc.stop(at + 0.05);
@@ -114,7 +168,7 @@ export function BeatPage() {
     const context = getPianoAudioContext();
     void context.resume();
     await loadPercussionStrokes(context);
-    playPercussion(context, context.destination, kind, context.currentTime + 0.02, 0.9);
+    voiceBus(context, softOutput(context), kind).hit(context.currentTime + 0.02, 0.9);
   };
 
   const add = (patternId: string) => {
@@ -179,8 +233,9 @@ export function BeatPage() {
     void context.resume();
     await loadPercussionStrokes(context);
     const master = context.createGain();
-    master.gain.value = 0.9;
-    master.connect(context.destination);
+    master.gain.value = 1;
+    master.connect(softOutput(context));
+    const buses = new Map(sounding.map((item) => [item.voice.id, voiceBus(context, master, item.voice.kind)]));
     const secPerBeat = 60 / bpm;
     const passSeconds = totalBeats * secPerBeat;
     const origin = context.currentTime + 0.15;
@@ -194,7 +249,7 @@ export function BeatPage() {
       for (const item of sounding) {
         for (const token of item.tokens) {
           if (!token.sounding) continue;
-          playPercussion(context, master, item.voice.kind, start + token.start * secPerBeat, Math.abs(token.start % meter.beats) < 1e-6 ? 1 : 0.78);
+          buses.get(item.voice.id)!.hit(start + token.start * secPerBeat, accentOf(token.start, meter.beats));
         }
       }
     };

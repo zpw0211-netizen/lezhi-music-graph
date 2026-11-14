@@ -4,7 +4,8 @@ import { publicAssetUrl } from "../app/assets";
 // score (small gong, big gong, drums, cymbals…) can be told apart by ear. A part is recognised
 // by its label; any other label keeps the plain thump the player always used. Recorded strokes
 // are used when they have loaded; otherwise a synthesised approximation plays.
-export type PercussionKind = "smallGong" | "bigGong" | "roundDrum" | "hourglassDrum" | "smallCymbal" | "bigCymbal" | "woodBlock";
+// The last three are classroom instruments for 节奏创编; they are always synthesised and no part label maps to them.
+export type PercussionKind = "smallGong" | "bigGong" | "roundDrum" | "hourglassDrum" | "smallCymbal" | "bigCymbal" | "woodBlock" | "triangle" | "shaker" | "tambourine";
 
 const KINDS: Array<[string, PercussionKind]> = [
   ["小锣", "smallGong"],
@@ -23,7 +24,7 @@ export function percussionKind(label: string | undefined): PercussionKind | null
 
 /** Recorded single strokes (public/media/instruments/percussion, see SOURCES.md) and how each kind uses them. */
 type Stroke = { file: string; rate: number; gain: number; ring: number };
-const STROKES: Record<PercussionKind, Stroke> = {
+const STROKES: Partial<Record<PercussionKind, Stroke>> = {
   smallGong: { file: "xiaoluo", rate: 1, gain: 0.85, ring: 0.6 },
   bigGong: { file: "daluo", rate: 1, gain: 0.8, ring: 1.5 },
   roundDrum: { file: "frame", rate: 1, gain: 1.1, ring: 0.7 },
@@ -41,7 +42,7 @@ export function loadPercussionStrokes(ctx: BaseAudioContext): Promise<void> {
   if (existing) return existing;
   const buffers = new Map<string, AudioBuffer>();
   strokeBuffers.set(ctx, buffers);
-  const files = [...new Set(Object.values(STROKES).map((stroke) => stroke.file))];
+  const files = [...new Set(Object.values(STROKES).map((stroke) => stroke!.file))];
   const loading = Promise.all(files.map(async (file) => {
     try {
       const response = await fetch(publicAssetUrl(`media/instruments/percussion/${file}.mp3`));
@@ -103,8 +104,8 @@ function noise(ctx: AudioContext, out: AudioNode, when: number, type: BiquadFilt
 /** Plays the recorded stroke for `kind`; false when it has not loaded. */
 function playStroke(ctx: AudioContext, out: AudioNode, kind: PercussionKind, when: number, level: number) {
   const stroke = STROKES[kind];
-  const buffer = strokeBuffers.get(ctx)?.get(stroke.file);
-  if (!buffer) return false;
+  const buffer = stroke && strokeBuffers.get(ctx)?.get(stroke.file);
+  if (!stroke || !buffer) return false;
   const source = ctx.createBufferSource();
   const gain = ctx.createGain();
   source.buffer = buffer;
@@ -151,6 +152,17 @@ export function playPercussion(ctx: AudioContext, out: AudioNode, kind: Percussi
     case "woodBlock": // two hollow tones
       tone(ctx, out, when, 980, 980, 0, 0.7 * level, 0.07, 0.002);
       tone(ctx, out, when, 690, 690, 0, 0.5 * level, 0.09, 0.002);
+      break;
+    case "triangle": // a clear, thin ring: a few high partials, no clang
+      [[1, 0.3, 0.9], [2.76, 0.16, 0.6], [5.4, 0.06, 0.3]].forEach(([ratio, gain, decay]) => tone(ctx, out, when, 1568 * ratio, 1568 * ratio, 0, gain * level, decay, 0.002));
+      break;
+    case "shaker": // one soft swish
+      noise(ctx, out, when, "bandpass", 5200, 0.5 * level, 0.09);
+      break;
+    case "tambourine": // a light tap on the head with a short shimmer of jingles
+      tone(ctx, out, when, 260, 180, 0.05, 0.5 * level, 0.12);
+      noise(ctx, out, when, "bandpass", 6800, 0.4 * level, 0.2);
+      tone(ctx, out, when, 5200, 5200, 0, 0.03 * level, 0.16, 0.002);
       break;
   }
 }
