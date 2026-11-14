@@ -55,6 +55,7 @@ const SOLO: Array<[RegExp, SkinKey]> = [
 ];
 const OTHER_INSTRUMENT = /二胡|板胡|京胡|高胡|扬琴|阮|柳琴|三弦|箫|葫芦丝|巴乌|埙|钢琴(?!伴奏)|双簧管|圆号|竖琴|手风琴|中提琴|低音提琴|长号|大管|萨克斯/;
 const ENSEMBLE = /合奏|重奏|乐队|丝竹|吹打|吹歌|管弦乐(?!协奏)|交响(?!协奏)/;
+const FOLK_PERCUSSION = /鸭子拌嘴|老虎磨牙|四物乐|锣鼓|鼓乐/;
 const NATIONS: Array<[RegExp, SkinKey]> = [
   [/蒙古族|内蒙古/, "folk-grassland"],
   [/藏族|西藏/, "folk-plateau"],
@@ -74,12 +75,16 @@ export function skinOf(input: { workName: string; workType: string; kind: Lesson
   // 括号里的「（中国民歌）」不算。
   if (SOLEMN.test(workName.replace(/（[^（）]*）/g, "")) || /颂歌|革命历史歌曲/.test(genre)) return "solemn";
 
-  const played = values(/^(演奏形式|表演形式|演奏乐器|主奏乐器)$/);
+  const played = values(/^(演奏形式|表演形式|演奏乐器|主奏乐器|主要乐器)$/);
+  // 各版本写法不同：有的把「古琴曲」「小提琴独奏曲」写在体裁里，有的把课堂乐器写在学习方式里（「快乐的口风琴」「打击乐表现」）。
+  const soloist = `${played} ${values(/^(音乐体裁|体裁)$/)}`;
+  const classroom = `${played} ${values(/^学习方式$/)}`;
   const instrument = (): SkinKey | null => {
     if (/二胡/.test(played)) return "ins-erhu";
-    if (/打击乐/.test(played) && !/民族|民间|锣鼓|戏曲|马林巴/.test(played)) return "ins-percussion";
-    const solo = SOLO.filter(([pattern]) => pattern.test(played));
-    if (solo.length === 1 && !OTHER_INSTRUMENT.test(played) && !ENSEMBLE.test(played)) return solo[0][1];
+    // 画上是三角铁、铃鼓这些课堂打击乐器；民间锣鼓乐不配这张。
+    if (/打击乐/.test(classroom) && !/民族|民间|锣鼓|戏曲|马林巴/.test(classroom) && !FOLK_PERCUSSION.test(workName)) return "ins-percussion";
+    const solo = SOLO.filter(([pattern]) => pattern.test(`${soloist} ${classroom}`));
+    if (solo.length === 1 && !OTHER_INSTRUMENT.test(soloist) && !ENSEMBLE.test(soloist)) return solo[0][1];
     if (GUOYUE.test(played) || GUOYUE.test(genre)) return "ins-guoyue";
     if (/钢琴(独奏|协奏曲)/.test(played) || /^钢琴$/.test(values(/^(演奏乐器|主奏乐器)$/))) return "ins-piano";
     if (ORCHESTRA.test(played) || ORCHESTRA.test(genre)) return "ins-orchestra";
