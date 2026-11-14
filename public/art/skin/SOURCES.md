@@ -4,4 +4,4 @@
 提示词与逐图自检见协作目录 `T096-skin-art.report.md` 与 `skin-art/SOURCES.md`。
 
 已验收使用：folk-han、folk-grassland、folk-plateau、folk-xinjiang、folk-southwest、folk-world、ins-erhu、ins-piano、ins-guoyue、ins-orchestra、opera-jingju、opera-stage、solemn。
-单件乐器（古筝、琵琶等 17 张）返工中，未收入。
+2026-11-15 验收补入 17 张单件乐器：ins-guzheng、ins-pipa、ins-dizi、ins-suona、ins-matouqin、ins-guqin、ins-bianzhong、ins-sheng、ins-violin、ins-cello、ins-flute、ins-trumpet、ins-clarinet、ins-guitar、ins-melodica、ins-recorder、ins-percussion。

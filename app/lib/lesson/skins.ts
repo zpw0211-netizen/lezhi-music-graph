@@ -11,7 +11,24 @@ export const SKIN_NAMES = {
   "folk-southwest": "民歌 · 西南山寨",
   "folk-world": "外国民歌 · 海港小镇",
   "ins-erhu": "二胡",
+  "ins-guzheng": "古筝",
+  "ins-pipa": "琵琶",
+  "ins-dizi": "笛子",
+  "ins-suona": "唢呐",
+  "ins-matouqin": "马头琴",
+  "ins-guqin": "古琴",
+  "ins-bianzhong": "编钟",
+  "ins-sheng": "笙",
   "ins-piano": "钢琴",
+  "ins-violin": "小提琴",
+  "ins-cello": "大提琴",
+  "ins-flute": "长笛",
+  "ins-trumpet": "小号",
+  "ins-clarinet": "单簧管",
+  "ins-guitar": "吉他",
+  "ins-melodica": "口风琴",
+  "ins-recorder": "竖笛",
+  "ins-percussion": "课堂打击乐",
   "ins-guoyue": "民族器乐",
   "ins-orchestra": "管弦乐队",
   "opera-jingju": "京剧",
@@ -29,6 +46,15 @@ const OPERA = /戏歌|昆曲|黄梅戏|豫剧|评剧|越剧|川剧|秦腔|粤剧
 const SOLEMN = /国歌|国旗|祖国|中华|中国|红旗|长城|黄河|共产党|少年先锋队|队歌|解放军/;
 const GUOYUE = /板胡|京胡|高胡|马头琴|古筝|古琴|琵琶|扬琴|阮|柳琴|三弦|冬不拉|热瓦普|笛子|竹笛|(?<!排)箫|唢呐|笙|葫芦丝|巴乌|埙|编钟|编磬|管子|民乐|民族管弦乐|弹拨乐|丝竹|吹打|吹歌|锣鼓|鼓乐|广东音乐/;
 const ORCHESTRA = /管弦乐|交响|协奏曲|序曲|四重奏|室内乐|管乐合奏|小提琴|大提琴|长笛|单簧管|双簧管|小号|圆号|竖琴/;
+// 单件乐器的画：只有这一课的主奏乐器就是它（独奏、协奏曲、齐奏）时才用；几件乐器一起的仍配合奏的画。
+const SOLO: Array<[RegExp, SkinKey]> = [
+  [/古筝/, "ins-guzheng"], [/琵琶/, "ins-pipa"], [/笛子|竹笛|曲笛|梆笛/, "ins-dizi"], [/唢呐/, "ins-suona"],
+  [/马头琴/, "ins-matouqin"], [/古琴/, "ins-guqin"], [/编钟/, "ins-bianzhong"], [/(?<!芦)笙/, "ins-sheng"],
+  [/小提琴/, "ins-violin"], [/大提琴/, "ins-cello"], [/长笛/, "ins-flute"], [/小号/, "ins-trumpet"], [/单簧管/, "ins-clarinet"],
+  [/吉他/, "ins-guitar"], [/口风琴/, "ins-melodica"], [/竖笛/, "ins-recorder"],
+];
+const OTHER_INSTRUMENT = /二胡|板胡|京胡|高胡|扬琴|阮|柳琴|三弦|箫|葫芦丝|巴乌|埙|钢琴(?!伴奏)|双簧管|圆号|竖琴|手风琴|中提琴|低音提琴|长号|大管|萨克斯/;
+const ENSEMBLE = /合奏|重奏|乐队|丝竹|吹打|吹歌|管弦乐(?!协奏)|交响(?!协奏)/;
 const NATIONS: Array<[RegExp, SkinKey]> = [
   [/蒙古族|内蒙古/, "folk-grassland"],
   [/藏族|西藏/, "folk-plateau"],
@@ -51,6 +77,9 @@ export function skinOf(input: { workName: string; workType: string; kind: Lesson
   const played = values(/^(演奏形式|表演形式|演奏乐器|主奏乐器)$/);
   const instrument = (): SkinKey | null => {
     if (/二胡/.test(played)) return "ins-erhu";
+    if (/打击乐/.test(played) && !/民族|民间|锣鼓|戏曲|马林巴/.test(played)) return "ins-percussion";
+    const solo = SOLO.filter(([pattern]) => pattern.test(played));
+    if (solo.length === 1 && !OTHER_INSTRUMENT.test(played) && !ENSEMBLE.test(played)) return solo[0][1];
     if (GUOYUE.test(played) || GUOYUE.test(genre)) return "ins-guoyue";
     if (/钢琴(独奏|协奏曲)/.test(played) || /^钢琴$/.test(values(/^(演奏乐器|主奏乐器)$/))) return "ins-piano";
     if (ORCHESTRA.test(played) || ORCHESTRA.test(genre)) return "ins-orchestra";
