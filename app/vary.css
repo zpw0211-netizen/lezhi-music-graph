@@ -1,0 +1,84 @@
+/* 旋律变奏（#/vary）：左边是主题和变奏两张谱，右边是变奏手法和“我的变奏曲”。 */
+.vary-lab { padding-bottom: 56px; }
+.vary-intro { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 24px; margin: 6px 0 14px; }
+.vary-kicker { margin: 0; color: var(--rhythm-seal); font: 12.5px/1.5 var(--serif); letter-spacing: .24em; }
+.vary-intro h2 { margin: 2px 0 0; font: 500 clamp(24px, 2.4vw, 32px)/1.3 var(--font-display); letter-spacing: .06em; }
+.vary-note { margin: 0; color: var(--rhythm-ink-3); font-size: 13px; }
+.vary-label { margin: 0; color: var(--rhythm-ink-3); font-size: 12.5px; letter-spacing: .12em; white-space: nowrap; }
+.vary-empty { margin: 0; color: var(--rhythm-ink-3); font-size: 13px; line-height: 1.7; }
+
+.vary-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 14px 18px; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #fff; }
+.vary-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-width: 0; }
+.vary-notation { margin-left: auto; }
+.vary-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.vary-chips button { display: inline-flex; align-items: baseline; gap: 8px; min-height: 38px; padding: 0 16px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 14px; white-space: nowrap; transition: background .2s, border-color .2s, color .2s; }
+.vary-chips button small { color: var(--rhythm-ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.vary-chips button:hover { border-color: var(--rhythm-pine); }
+.vary-chips button.is-active { border-color: var(--rhythm-pine); background: var(--rhythm-pine); color: #fff; font-weight: 600; }
+.vary-chips button.is-active small { color: rgb(255 255 255 / 80%); }
+.vary-field select { min-height: 38px; max-width: 100%; padding: 0 14px; border: 1px solid var(--rhythm-line); border-radius: 999px; background-color: #fff; color: var(--rhythm-ink); font: inherit; font-size: 14px; }
+
+.vary-workbench { display: grid; gap: 18px; margin-top: 16px; }
+.vary-scores, .vary-side { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.vary-card { min-width: 0; padding: 14px 18px 16px; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #fff; }
+.vary-card-result { border-color: var(--rhythm-pine); box-shadow: 0 0 0 3px rgb(39 99 68 / 10%), 0 18px 40px -34px rgb(25 54 39 / 60%); }
+.vary-card-result.is-empty { border-style: dashed; border-color: #B9CCC0; box-shadow: none; background: #FAFCFB; }
+.vary-card-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 0 8px; }
+.vary-card-title b { font: 600 20px/1.4 var(--font-display); letter-spacing: .08em; color: var(--rhythm-pine); }
+.vary-card-title span { color: var(--rhythm-ink-2); font-size: 13px; }
+.vary-player { min-width: 0; }
+.vary-placeholder { margin: 6px 0 4px; color: var(--rhythm-ink-2); font-size: 14px; line-height: 1.8; text-wrap: pretty; }
+.vary-empty, .vary-note { text-wrap: pretty; }
+.vary-compare { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.vary-compare li { padding: 5px 12px; border-radius: 999px; background: var(--rhythm-pine-soft); color: #23513A; font-size: 13px; }
+.vary-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.vary-actions button:not(.vary-primary) { min-height: 42px; padding: 0 18px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 13.5px; }
+.vary-actions button:not(.vary-primary):hover { border-color: var(--rhythm-pine); }
+.vary-primary { min-height: 42px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--rhythm-pine); color: #fff !important; font-size: 14.5px !important; font-weight: 600; letter-spacing: .04em; box-shadow: 0 8px 18px -10px rgb(25 77 53 / 70%); }
+.vary-primary:hover:not(:disabled) { background: #194D35; }
+.vary-primary:disabled { background: #C9D6CE; box-shadow: none; }
+
+.vary-palette, .vary-set { display: grid; gap: 12px; padding: 16px 18px 18px; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #fff; }
+.vary-group { display: grid; gap: 6px; }
+.vary-group-name { color: var(--rhythm-seal); font: 13px/1.5 var(--serif); letter-spacing: .2em; }
+.vary-techniques { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.vary-technique { display: grid; gap: 2px; align-content: start; min-height: 72px; padding: 10px 14px; border: 1px solid var(--rhythm-line); border-radius: 14px; background: #FAFCFB; text-align: left; transition: border-color .2s, background .2s; }
+.vary-technique b { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font: 600 17px/1.4 var(--font-display); letter-spacing: .04em; color: var(--rhythm-ink); }
+.vary-technique b i { padding: 0 8px; border-radius: 999px; background: rgb(255 255 255 / 22%); font: 400 11.5px/1.7 var(--ui, sans-serif); letter-spacing: 0; }
+.vary-technique span { color: var(--rhythm-ink-2); font-size: 12.5px; line-height: 1.55; text-wrap: balance; }
+.vary-technique:hover { border-color: var(--rhythm-pine); background: var(--rhythm-pine-soft); }
+.vary-technique.is-active { border-color: var(--rhythm-pine); background: var(--rhythm-pine); }
+.vary-technique.is-active b { color: #fff; }
+.vary-technique.is-active span { color: rgb(255 255 255 / 86%); }
+.vary-technique.is-blocked { opacity: .55; }
+.vary-message { margin: 0; color: var(--rhythm-seal); font-size: 13px; }
+
+.vary-set-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.vary-set-list li { display: flex; align-items: center; gap: 8px; padding: 4px 6px 4px 4px; border: 1px solid var(--rhythm-line); border-radius: 999px; transition: border-color .2s, background .2s; }
+.vary-set-list li.is-playing { border-color: var(--rhythm-pine); background: var(--rhythm-pine-soft); }
+.vary-set-name { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; flex: 1; min-width: 0; padding: 5px 12px; border: 0; border-radius: 999px; background: none; text-align: left; font: 600 16px/1.5 var(--font-display) !important; letter-spacing: .04em; }
+.vary-set-name small { color: var(--rhythm-ink-2); font: 400 12.5px/1.5 var(--ui, sans-serif); letter-spacing: 0; }
+.vary-set-remove { flex: none; padding: 4px 12px; border: 0; border-radius: 999px; background: none; color: var(--rhythm-ink-3) !important; font-size: 12.5px !important; }
+.vary-set-remove:hover { background: #F8E6E2; color: var(--rhythm-seal) !important; }
+.vary-set .vary-primary { justify-self: start; }
+
+@media (min-width: 1101px) {
+  .vary-workbench { grid-template-columns: minmax(0, 1.45fr) minmax(380px, 1fr); align-items: start; }
+}
+@media (max-width: 560px) {
+  .vary-settings { padding: 12px 14px; gap: 10px 16px; }
+  .vary-notation { margin-left: 0; }
+  .vary-card { padding: 12px 12px 14px; }
+  .vary-palette, .vary-set { padding: 14px 12px 16px; }
+  .vary-technique { padding: 9px 11px; }
+  .vary-actions .vary-primary { flex: 1 1 100%; }
+}
+/* 窄屏：主题、手法、变奏、变奏曲依次排，点完手法往下一眼就看到结果。 */
+@media (max-width: 1100px) {
+  .vary-workbench { gap: 14px; }
+  .vary-scores, .vary-side { display: contents; }
+  .vary-scores > .vary-card:first-child { order: 1; }
+  .vary-palette { order: 2; }
+  .vary-card-result { order: 3; }
+  .vary-set { order: 4; }
+}

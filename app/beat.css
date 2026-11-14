@@ -70,7 +70,7 @@
   .beat-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* 探索工具现在是五个：手机上三个一排，桌面上胶囊排成一行。 */
+/* 探索工具现在是六个：手机上三个一排，桌面上胶囊排成一行。 */
 @media (max-width: 880px) { .exploration-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 881px) and (max-width: 1240px) {
   .exploration-tabs button { padding: 6px 12px 6px 6px; gap: 6px; }

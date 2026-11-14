@@ -34,6 +34,7 @@ import "./ear.css";
 import "./graph-compact.css";
 import "./account.css";
 import "./beat.css";
+import "./vary.css";
 import "./unify.css";
 import { AccountProvider } from "./components/account/AccountProvider";
 
