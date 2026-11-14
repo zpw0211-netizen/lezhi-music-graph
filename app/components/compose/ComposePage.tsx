@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
+import { useExplorationNav } from "../exploration/exploration-tools";
+import { HANDOFF_STORE, isVaryMeter } from "../vary/vary-model";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import {
@@ -268,6 +270,16 @@ export function ComposePage() {
   const hints = composeHints(bars, meter, mode, lyrics, lockedBars, pitchSet);
   const complete = cursorBar < 0;
 
+  // 写满的旋律可以带到旋律变奏里，当作三部曲的主题。
+  const goTo = useExplorationNav();
+  const canVary = isVaryMeter(meter);
+  const toVary = () => {
+    try {
+      window.localStorage.setItem(HANDOFF_STORE, JSON.stringify({ id: "custom", title: title.trim() || "我的旋律", source: "我在旋律创编里写的", meter, bars: bars.map((bar) => bar.map((note) => ({ d: note.d, o: note.o, b: note.b }))) }));
+    } catch { setMessage("这台电脑不允许保存，没法把旋律带过去。"); return; }
+    goTo("vary");
+  };
+
   const save = () => {
     const work: SavedWork = { id: String(Date.now()), title: title.trim() || "我的旋律", author: author.trim(), meter, bars, lyrics, savedAt: Date.now(), accompaniment, bassStyle, level, pitchSet };
     const next = [work, ...works];
@@ -487,6 +499,12 @@ export function ComposePage() {
       <div className="compose-save">
         <button type="button" className="compose-primary" onClick={save} disabled={!complete}>{complete ? "保存作品" : "写满后可以保存"}</button>
         <button type="button" onClick={showcase} disabled={!hasNotes}>投屏展示</button>
+      </div>
+      <div className="compose-next">
+        <button type="button" className="compose-next-button" onClick={toVary} disabled={!complete || !canVary}>
+          <b>下一步：拿去变奏 →</b>
+          <span>{!canVary ? "八分音符为一拍的旋律暂时不能变奏" : complete ? "把这条旋律当主题，变出对比段，连成一首三部曲" : "写满之后，可以拿它当主题做一首三部曲"}</span>
+        </button>
       </div>
     </section>
 

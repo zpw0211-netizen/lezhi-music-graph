@@ -5,19 +5,19 @@ import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import { loadWorks } from "../compose/compose-model";
+import { useExplorationNav } from "../exploration/exploration-tools";
 import {
-  SAMPLE_THEMES, TECHNIQUES, TECHNIQUE_BY_ID, applicable, applyAll, beatsOf, bpmOf, compare, isVaryMeter, midiOf, toMelody,
+  HANDOFF_STORE, SAMPLE_THEMES, TECHNIQUES, TECHNIQUE_BY_ID, applicable, applyAll, bpmOf, compare, isTheme, isVaryMeter, midiOf, toMelody,
   type TechniqueId, type Theme, type Tune,
 } from "./vary-model";
 
-/** 旋律变奏：选一条主题，用几种手法变一变，把喜欢的变奏收起来，连成一首“主题与变奏”。 */
+/** 旋律变奏：拿一条主题（自己写的或示例），变出对比段和再现段，连成一首 A–B–A′ 的单三部曲式小曲。 */
 
-type Saved = { themeId: string; recipe: TechniqueId[]; set: TechniqueId[][] };
+type Saved = { themeId: string; recipe: TechniqueId[]; b: TechniqueId[] | null; a2: TechniqueId[]; custom?: Theme };
+type Slot = "b" | "a2";
 const STORE = "yapu-vary";
 const MAX_STEPS = 3;
-const MAX_SET = 5;
 const GROUPS = ["装饰", "节奏", "音高"] as const;
-const ORDINAL = ["一", "二", "三", "四", "五"];
 const validRecipe = (value: unknown): value is TechniqueId[] => Array.isArray(value) && value.length <= MAX_STEPS && value.every((id) => TECHNIQUE_BY_ID.has(id as TechniqueId));
 const recipeName = (recipe: TechniqueId[]) => recipe.map((id) => TECHNIQUE_BY_ID.get(id)!.label).join(" → ");
 
@@ -26,27 +26,40 @@ function readSaved(): Saved | null {
     const raw = window.localStorage.getItem(STORE);
     if (!raw) return null;
     const saved = JSON.parse(raw) as Saved;
-    if (typeof saved.themeId !== "string" || !validRecipe(saved.recipe) || !Array.isArray(saved.set)) return null;
-    return { themeId: saved.themeId, recipe: saved.recipe, set: saved.set.filter(validRecipe).filter((item) => item.length).slice(0, MAX_SET) };
+    if (typeof saved.themeId !== "string" || !validRecipe(saved.recipe)) return null;
+    return {
+      themeId: saved.themeId, recipe: saved.recipe,
+      b: validRecipe(saved.b) && saved.b.length ? saved.b : null,
+      a2: validRecipe(saved.a2) ? saved.a2 : [],
+      ...(isTheme(saved.custom) ? { custom: saved.custom } : {}),
+    };
   } catch { return null; }
 }
-
+/** 旋律创编里点“拿去变奏”送过来的旋律，只取一次。 */
+function takeHandoff(): Theme | null {
+  try {
+    const raw = window.localStorage.getItem(HANDOFF_STORE);
+    if (!raw) return null;
+    window.localStorage.removeItem(HANDOFF_STORE);
+    const theme = JSON.parse(raw) as unknown;
+    return isTheme(theme) ? { ...theme, id: "custom" } : null;
+  } catch { return null; }
+}
 /** 旋律创编里存下的作品（二、三、四拍子的）也能拿来当主题。 */
 function worksAsThemes(): Theme[] {
   return loadWorks().flatMap((work) => {
-    const bars = work.bars.filter((bar) => bar.length).map((bar) => bar.map((note) => ({ d: note.d, o: note.o, b: note.b })));
-    const meter = work.meter;
-    if (!isVaryMeter(meter) || !bars.length) return [];
-    if (bars.some((bar) => Math.abs(bar.reduce((sum, note) => sum + note.b, 0) - beatsOf(meter)) > 1e-6)) return [];
-    return [{ id: `work:${work.id}`, title: work.title || "我的旋律", source: "我在旋律创编里写的", meter, bars }];
+    const theme = { id: `work:${work.id}`, title: work.title || "我的旋律", source: "我在旋律创编里写的", meter: work.meter, bars: work.bars.filter((bar) => bar.length).map((bar) => bar.map((note) => ({ d: note.d, o: note.o, b: note.b }))) };
+    return isVaryMeter(theme.meter) && isTheme(theme) ? [theme] : [];
   });
 }
 
 export function VaryPage() {
+  const goTo = useExplorationNav();
   const [themes, setThemes] = useState<Theme[]>(SAMPLE_THEMES);
   const [themeId, setThemeId] = useState(SAMPLE_THEMES[0].id);
   const [recipe, setRecipe] = useState<TechniqueId[]>([]);
-  const [set, setSet] = useState<TechniqueId[][]>([]);
+  const [sectionB, setSectionB] = useState<TechniqueId[] | null>(null);
+  const [sectionA2, setSectionA2] = useState<TechniqueId[]>([]);
   const [notation, setNotation] = useState<"jianpu" | "staff">("jianpu");
   const [message, setMessage] = useState("");
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
@@ -54,18 +67,22 @@ export function VaryPage() {
 
   const loaded = useRef(false);
   useEffect(() => {
-    const all = [...SAMPLE_THEMES, ...worksAsThemes()];
     const saved = readSaved();
+    const handoff = takeHandoff();
+    const custom = handoff ?? saved?.custom;
+    const all = [...(custom ? [custom] : []), ...SAMPLE_THEMES, ...worksAsThemes()];
     /* eslint-disable react-hooks/set-state-in-effect -- one-time hydration from browser storage after mount */
     setThemes(all);
-    if (saved && all.some((theme) => theme.id === saved.themeId)) { setThemeId(saved.themeId); setRecipe(saved.recipe); setSet(saved.set); }
+    if (handoff) setThemeId(handoff.id);
+    else if (saved && all.some((theme) => theme.id === saved.themeId)) { setThemeId(saved.themeId); setRecipe(saved.recipe); setSectionB(saved.b); setSectionA2(saved.a2); }
     /* eslint-enable react-hooks/set-state-in-effect */
     loaded.current = true;
   }, []);
+  const custom = themes.find((item) => item.id === "custom");
   useEffect(() => {
     if (!loaded.current) return;
-    try { window.localStorage.setItem(STORE, JSON.stringify({ themeId, recipe, set } satisfies Saved)); } catch { /* storage may be unavailable */ }
-  }, [themeId, recipe, set]);
+    try { window.localStorage.setItem(STORE, JSON.stringify({ themeId, recipe, b: sectionB, a2: sectionA2, ...(custom ? { custom } : {}) } satisfies Saved)); } catch { /* storage may be unavailable */ }
+  }, [themeId, recipe, sectionB, sectionA2, custom]);
 
   const stop = useCallback(() => { stopRef.current?.(); stopRef.current = null; setPlayingIndex(null); }, []);
   useEffect(() => () => { stopRef.current?.(); }, []);
@@ -75,12 +92,19 @@ export function VaryPage() {
   const themeMelody = useMemo(() => toMelody(theme, theme.title, theme.source), [theme]);
   const variationMelody = useMemo(() => toMelody(variation, "", "学生创编"), [variation]);
   const notes = useMemo(() => (recipe.length ? compare(theme, variation) : []), [theme, variation, recipe]);
-  const inSet = set.some((item) => item.join() === recipe.join());
+
+  // 三部曲：A 是主题，B 是对比段，A′ 是再现段（不变就是原样再现）。
+  const tuneB = useMemo(() => (sectionB ? applyAll(theme, sectionB) : null), [theme, sectionB]);
+  const tuneA2 = useMemo(() => applyAll(theme, sectionA2), [theme, sectionA2]);
+  const sameMeter = tuneB !== null && tuneB.meter === theme.meter && tuneA2.meter === theme.meter;
+  const wholeMelody = useMemo(() => (tuneB && sameMeter
+    ? toMelody({ meter: theme.meter, bars: [...theme.bars, ...tuneB.bars, ...tuneA2.bars] }, `${theme.title} · 三部曲`, "学生创编")
+    : null), [theme, tuneB, tuneA2, sameMeter]);
 
   const chooseTheme = (id: string) => {
     if (id === themeId) return;
     stop();
-    setThemeId(id); setRecipe([]); setSet([]); setMessage("");
+    setThemeId(id); setRecipe([]); setSectionB(null); setSectionA2([]); setMessage("");
   };
   const toggle = (id: TechniqueId) => {
     stop();
@@ -91,18 +115,18 @@ export function VaryPage() {
     if (reason) { setMessage(`${reason}。`); return; }
     setRecipe([...recipe, id]);
   };
-  const keep = () => {
-    if (!recipe.length || inSet) return;
-    if (set.length >= MAX_SET) { setMessage(`变奏曲里最多收 ${MAX_SET} 段变奏。`); return; }
+  const place = (slot: Slot) => {
+    if (!recipe.length) return;
     stop();
-    setSet([...set, recipe]);
-    setMessage("");
+    if (slot === "b") setSectionB(recipe); else setSectionA2(recipe);
+    setMessage(slot === "b" ? "已放进 B 段。再变一个放进 A′ 段，或者让 A′ 段原样再现。" : "已放进 A′ 段。");
   };
 
-  /** 主题和收起来的变奏一段接一段地弹，段与段之间空一小节。 */
-  const playSet = async () => {
+  /** A、B、A′ 一段接一段地弹。 */
+  const playWhole = async () => {
     if (playingIndex !== null) { stop(); return; }
-    const pieces: Tune[] = [theme, ...set.map((item) => applyAll(theme, item))];
+    if (!tuneB) return;
+    const pieces: Tune[] = [theme, tuneB, tuneA2];
     const context = getPianoAudioContext();
     void context.resume();
     const sampler = await loadInstrumentSampler(context, "piano");
@@ -123,9 +147,8 @@ export function VaryPage() {
         }
         at += note.b * beat;
       });
-      at += beatsOf(piece.meter) * beat;
     }
-    const end = at;
+    const end = at + 0.6;
     let frame = 0;
     const tick = () => {
       const now = context.currentTime;
@@ -144,34 +167,48 @@ export function VaryPage() {
     frame = window.requestAnimationFrame(tick);
   };
 
-  const samples = themes.filter((item) => !item.id.startsWith("work:"));
+  const openSection = (key: string) => {
+    stop();
+    setRecipe(key === "b" ? sectionB ?? [] : key === "a2" ? sectionA2 : []);
+  };
+  const samples = themes.filter((item) => item.id.startsWith("sample-"));
   const works = themes.filter((item) => item.id.startsWith("work:"));
+  const step = sectionB ? 3 : 2;
+  const sections = [
+    { key: "a", letter: "A", role: "主题", text: "原样呈示", bars: theme.bars.length, filled: true },
+    { key: "b", letter: "B", role: "对比段", text: sectionB ? recipeName(sectionB) : "还空着", bars: tuneB?.bars.length ?? 0, filled: Boolean(sectionB) },
+    { key: "a2", letter: "A′", role: "再现段", text: sectionA2.length ? recipeName(sectionA2) : "原样再现", bars: tuneA2.bars.length, filled: true },
+  ];
 
   return <section className="rhythm-lab vary-lab" aria-labelledby="vary-title">
     <header className="vary-intro">
       <div>
         <p className="vary-kicker">旋律变奏</p>
-        <h2 id="vary-title">一条主题，变出几种样子</h2>
+        <h2 id="vary-title">把主题变一变，连成一首三部曲</h2>
       </div>
-      <p className="vary-note">选一条主题，点变奏手法，听听它变成了什么。</p>
+      <ol className="vary-steps" aria-label="创作步骤">
+        <li className="is-done"><b>1</b>写一条主题</li>
+        <li className={step === 2 ? "is-current" : "is-done"}><b>2</b>变出对比段</li>
+        <li className={step === 3 ? "is-current" : ""}><b>3</b>连成 A–B–A′</li>
+      </ol>
     </header>
 
     <div className="vary-settings">
       <div className="vary-field">
         <span className="vary-label">主题</span>
         <div className="vary-chips" role="radiogroup" aria-label="主题">
+          {custom && <button type="button" role="radio" aria-checked={themeId === custom.id} className={`vary-chip-mine${themeId === custom.id ? " is-active" : ""}`} onClick={() => chooseTheme(custom.id)}>{custom.title}<small>我刚写的</small></button>}
           {samples.map((item) => <button key={item.id} type="button" role="radio" aria-checked={themeId === item.id} className={themeId === item.id ? "is-active" : ""} onClick={() => chooseTheme(item.id)}>{item.title}<small>{item.meter}</small></button>)}
         </div>
       </div>
-      <label className="vary-field">
-        <span className="vary-label">我的作品</span>
-        {works.length
-          ? <select value={themeId.startsWith("work:") ? themeId : ""} onChange={(event) => { if (event.target.value) chooseTheme(event.target.value); }}>
-            <option value="">从旋律创编里选一首</option>
-            {works.map((item) => <option key={item.id} value={item.id}>{item.title}（{item.meter}）</option>)}
-          </select>
-          : <span className="vary-empty">在旋律创编里保存作品后，可以拿到这里来变奏。</span>}
-      </label>
+      {works.length > 0 && <label className="vary-field">
+        <span className="vary-label">存过的作品</span>
+        <select value={themeId.startsWith("work:") ? themeId : ""} onChange={(event) => { if (event.target.value) chooseTheme(event.target.value); }}>
+          <option value="">选一首</option>
+          {works.map((item) => <option key={item.id} value={item.id}>{item.title}（{item.meter}）</option>)}
+        </select>
+      </label>}
+      <button type="button" className="vary-link" onClick={() => goTo("compose")}>✎ 去旋律创编写一条自己的主题</button>
       <div className="vary-field vary-notation">
         <span className="vary-label">谱式</span>
         <div className="vary-chips" role="radiogroup" aria-label="谱式">
@@ -194,11 +231,12 @@ export function VaryPage() {
               <div className="vary-player"><MelodyPlayer key={`${theme.id}-${recipe.join()}-${notation}`} melody={variationMelody} notationStyle={notation} /></div>
               <ul className="vary-compare" aria-label="和主题比一比">{notes.map((note) => <li key={note}>{note}</li>)}</ul>
               <div className="vary-actions">
-                <button type="button" className="vary-primary" onClick={keep} disabled={inSet}>{inSet ? "已经收进变奏曲" : "＋ 收进我的变奏曲"}</button>
+                <button type="button" className="vary-primary" onClick={() => place("b")} disabled={sectionB?.join() === recipe.join()}>放进 B 段 · 对比</button>
+                <button type="button" className="vary-secondary" onClick={() => place("a2")} disabled={sectionA2.join() === recipe.join()}>放进 A′ 段 · 再现</button>
                 <button type="button" onClick={() => { stop(); setRecipe([]); setMessage(""); }}>回到主题重来</button>
               </div>
             </>
-            : <p className="vary-placeholder">在右边点一种变奏手法，这里就会出现变过的旋律。手法可以叠起来用，最多三种。</p>}
+            : <p className="vary-placeholder">点一种变奏手法，这里就会出现变过的旋律。手法可以叠起来用，最多三种。</p>}
         </article>
       </div>
 
@@ -209,10 +247,10 @@ export function VaryPage() {
             <span className="vary-group-name">{group}</span>
             <div className="vary-techniques">
               {TECHNIQUES.filter((item) => item.group === group).map((item) => {
-                const step = recipe.indexOf(item.id);
-                const blocked = step < 0 ? applicable(item.id, variation) : null;
-                return <button key={item.id} type="button" aria-pressed={step >= 0} className={`vary-technique${step >= 0 ? " is-active" : ""}${blocked ? " is-blocked" : ""}`} onClick={() => toggle(item.id)}>
-                  <b>{item.label}{step >= 0 && <i>第 {step + 1} 步</i>}</b>
+                const at = recipe.indexOf(item.id);
+                const blocked = at < 0 ? applicable(item.id, variation) : null;
+                return <button key={item.id} type="button" aria-pressed={at >= 0} className={`vary-technique${at >= 0 ? " is-active" : ""}${blocked ? " is-blocked" : ""}`} onClick={() => toggle(item.id)}>
+                  <b>{item.label}{at >= 0 && <i>第 {at + 1} 步</i>}</b>
                   <span>{blocked ?? item.caption}</span>
                 </button>;
               })}
@@ -220,21 +258,31 @@ export function VaryPage() {
           </div>)}
           {message && <p className="vary-message" role="status">{message}</p>}
         </div>
-
-        <div className="vary-set">
-          <p className="vary-label">我的变奏曲 · 主题加上收起来的变奏</p>
-          <ol className="vary-set-list">
-            <li className={playingIndex === 0 ? "is-playing" : ""}><button type="button" className="vary-set-name" onClick={() => { stop(); setRecipe([]); }}>主题</button></li>
-            {set.map((item, index) => <li key={item.join()} className={playingIndex === index + 1 ? "is-playing" : ""}>
-              <button type="button" className="vary-set-name" onClick={() => { stop(); setRecipe(item); }}>变奏{ORDINAL[index]}<small>{recipeName(item)}</small></button>
-              <button type="button" className="vary-set-remove" aria-label={`删除变奏${ORDINAL[index]}`} onClick={() => { stop(); setSet(set.filter((_, k) => k !== index)); }}>删除</button>
-            </li>)}
-          </ol>
-          {set.length
-            ? <button type="button" className="vary-primary" onClick={() => void playSet()}>{playingIndex !== null ? "■ 停止" : "▶ 连起来听"}</button>
-            : <p className="vary-empty">变出喜欢的旋律后，点“收进我的变奏曲”，就能和主题连起来听。</p>}
-        </div>
       </div>
     </div>
+
+    <section className="vary-form" aria-labelledby="vary-form-title">
+      <header className="vary-form-head">
+        <div>
+          <h3 id="vary-form-title">我的三部曲</h3>
+          <p>单三部曲式：主题（A）— 对比（B）— 再现（A′）。B 段要和主题不一样，A′ 段再回到主题。</p>
+        </div>
+        <button type="button" className="vary-primary" onClick={() => void playWhole()} disabled={!tuneB}>{playingIndex !== null ? "■ 停止" : "▶ 听整首"}</button>
+      </header>
+      <ol className="vary-sections">
+        {sections.map((item, index) => <li key={item.key} className={`vary-section is-${item.key}${item.filled ? "" : " is-empty"}${playingIndex === index ? " is-playing" : ""}`}>
+          <button type="button" className="vary-section-main" onClick={() => openSection(item.key)} disabled={!item.filled}>
+            <b>{item.letter}</b>
+            <span><em>{item.role}</em><small>{item.text}{item.filled ? ` · ${item.bars} 小节` : ""}</small></span>
+          </button>
+          {item.key === "b" && sectionB && <button type="button" className="vary-section-clear" onClick={() => { stop(); setSectionB(null); }}>清空</button>}
+          {item.key === "a2" && sectionA2.length > 0 && <button type="button" className="vary-section-clear" onClick={() => { stop(); setSectionA2([]); }}>改回原样</button>}
+        </li>)}
+      </ol>
+      {!tuneB && <p className="vary-empty">B 段还空着。变出一段和主题对比明显的旋律（比如换调式、倒影、拉宽），点“放进 B 段”。</p>}
+      {tuneB && sectionB && sectionB.join() === sectionA2.join() && <p className="vary-message">B 段和 A′ 段用了同样的变法。A′ 段是“回家”，让它更像主题会更好。</p>}
+      {wholeMelody && <div className="vary-player vary-whole"><MelodyPlayer key={`whole-${theme.id}-${sectionB?.join()}-${sectionA2.join()}-${notation}`} melody={wholeMelody} notationStyle={notation} /></div>}
+      {tuneB && !sameMeter && <p className="vary-empty">有一段换了拍子，整首谱不能写在一行拍号里。点“听整首”可以连起来听，点上面的 A、B、A′ 可以分段看谱。</p>}
+    </section>
   </section>;
 }

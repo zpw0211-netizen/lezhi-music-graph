@@ -10,6 +10,18 @@ const n = (d: number, b = 1, o = 0): VaryNote => ({ d, o, b });
 export const beatsOf = (meter: VaryMeter) => Number(meter[0]);
 export const isVaryMeter = (meter: string): meter is VaryMeter => meter === "2/4" || meter === "3/4" || meter === "4/4";
 
+/** 旋律创编把写好的旋律放在这里，旋律变奏打开时取走。 */
+export const HANDOFF_STORE = "yapu-vary-handoff";
+/** 从浏览器里读回来的主题先验一遍：拍号认识，每小节拍数对，音都在范围里。 */
+export function isTheme(value: unknown): value is Theme {
+  const theme = value as Theme | undefined;
+  if (!theme || typeof theme.id !== "string" || typeof theme.title !== "string" || typeof theme.source !== "string") return false;
+  if (!isVaryMeter(theme.meter) || !Array.isArray(theme.bars) || !theme.bars.length || theme.bars.length > 16) return false;
+  return theme.bars.every((bar) => Array.isArray(bar) && bar.length > 0
+    && bar.every((note) => Number.isInteger(note.d) && note.d >= 0 && note.d <= 7 && Number.isInteger(note.o) && Math.abs(note.o) <= 1 && [0.5, 1, 1.5, 2, 3, 4].includes(note.b))
+    && Math.abs(bar.reduce((sum, note) => sum + note.b, 0) - beatsOf(theme.meter)) < 1e-6);
+}
+
 /** 示例主题由芽谱编写，不是课本里的曲子。 */
 export const SAMPLE_THEMES: Theme[] = [
   { id: "sample-a", title: "示例主题一", source: "芽谱编写的示例", meter: "2/4", bars: [

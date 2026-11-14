@@ -3,6 +3,7 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { publicAssetUrl } from "../../lib/app/assets";
 import type { AppView } from "../../lib/app/routing";
+import { ExplorationNavContext } from "./exploration-tools";
 
 type ExplorationView = Extract<AppView, "compose" | "vary" | "beat" | "ear" | "lab" | "rhythm">;
 
@@ -109,7 +110,7 @@ export function ExplorationPage({
         aria-labelledby={`exploration-tab-${activeView}`}
         tabIndex={-1}
       >
-        {children}
+        <ExplorationNavContext.Provider value={onViewChange}>{children}</ExplorationNavContext.Provider>
       </div>
     </section>
   );

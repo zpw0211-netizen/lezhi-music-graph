@@ -121,7 +121,10 @@ export function inspireBar(previous: ComposeNote | undefined, blocks: PitchBlock
   return rhythm.map((b, k) => {
     if (previous || k) {
       const move = [-2, -1, -1, 0, 1, 1, 2][Math.floor(random() * 7)];
-      let next = Math.min(pitched.length - 1, Math.max(0, index + move));
+      // 走到最低或最高的音块时折回来，不贴着边原地打转。
+      let next = index + move;
+      if (next < 0 || next > pitched.length - 1) next = index - move;
+      next = Math.min(pitched.length - 1, Math.max(0, next));
       if (isLast) {
         const left = rhythm.length - 1 - k;
         if (Math.abs(home - next) > left) next = index + Math.sign(home - index) * Math.min(2, Math.max(0, Math.abs(home - index) - left));

@@ -204,3 +204,29 @@
 .compose-bass { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--c-line); border-radius: 14px; background: color-mix(in srgb, var(--c-pine) 5%, #fff); }
 .compose-bass .compose-chips { flex-wrap: wrap; }
 .compose-bass-caption { margin: 0; color: var(--c-ink-2); font-size: 13px; line-height: 1.6; }
+
+/* 节奏一栏分两行：上一行是单个音的时值，下一行是整小节的节奏卡，不让某一张卡片单独掉到第三行。 */
+.compose-durations .compose-divider { flex: 0 0 100%; width: auto; height: 0; margin: 0; border: 0; background: none; }
+@media (max-width: 640px) {
+  .compose-durations .compose-divider { display: block; }
+  /* 手机上音块排成整齐的格子，高低差收小一点。 */
+  .compose-palette { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: 8px; }
+  .compose-palette:has(.compose-block:nth-child(8)) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .compose-block { min-width: 0; padding-top: calc(8px + var(--step, 0) * 10px); }
+}
+@media (max-width: 640px) {
+  /* 手机上五张节奏卡收紧一点，排在同一行。 */
+  .compose-card { flex: 1 1 0; min-width: 0; justify-content: center; padding: 0 2px; }
+  .compose-card .compose-rhythm-glyph { gap: 3px; font-size: 14px; }
+  .compose-durations { gap: 5px; }
+}
+
+/* 写完旋律后的下一步：带到旋律变奏。 */
+.compose-next { margin-top: 12px; }
+.compose-next-button { display: grid; gap: 2px; width: 100%; padding: 12px 18px; border: 1px solid #EBD9B0; border-radius: 16px; background: #FBF3E3; text-align: left; transition: border-color .2s, background .2s; }
+.compose-next-button b { color: #7A5510; font: 600 17px/1.5 var(--font-display); letter-spacing: .04em; }
+.compose-next-button span { color: #8A6A2A; font-size: 12.5px; line-height: 1.6; text-wrap: pretty; }
+.compose-next-button:hover:not(:disabled) { border-color: #D9B869; background: #F8EBCF; }
+.compose-next-button:disabled { border-color: var(--c-line); background: #F6F8F6; }
+.compose-next-button:disabled b { color: var(--c-ink-3); }
+.compose-next-button:disabled span { color: var(--c-ink-3); }
