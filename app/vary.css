@@ -11,7 +11,7 @@
 .vary-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-width: 0; }
 .vary-notation { margin-left: auto; }
 .vary-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.vary-chips button { display: inline-flex; align-items: baseline; gap: 8px; min-height: 38px; padding: 0 16px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 14px; white-space: nowrap; transition: background .2s, border-color .2s, color .2s; }
+.vary-chips button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; line-height: 1.2; min-height: 38px; padding: 0 16px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 14px; white-space: nowrap; transition: background .2s, border-color .2s, color .2s; }
 .vary-chips button small { color: var(--rhythm-ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
 .vary-chips button:hover { border-color: var(--rhythm-pine); }
 .vary-chips button.is-active { border-color: var(--rhythm-pine); background: var(--rhythm-pine); color: #fff; font-weight: 600; }
@@ -61,7 +61,7 @@
 .vary-steps li.is-done b { background: var(--rhythm-pine-soft); color: var(--rhythm-pine); }
 .vary-steps li.is-current { border-color: var(--rhythm-pine); background: var(--rhythm-pine); color: #fff; font-weight: 600; }
 .vary-steps li.is-current b { background: rgb(255 255 255 / 22%); color: #fff; }
-.vary-link { min-height: 38px; padding: 0 16px; border: 1px dashed #D9B869; border-radius: 999px; background: #FBF3E3; color: #7A5510 !important; font-size: 13.5px !important; white-space: nowrap; }
+.vary-link { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; line-height: 1.2; padding: 0 16px; border: 1px dashed #D9B869; border-radius: 999px; background: #FBF3E3; color: #7A5510 !important; font-size: 13.5px !important; white-space: nowrap; }
 .vary-link:hover { border-style: solid; background: #F8EBCF; }
 .vary-chips .vary-chip-mine:not(.is-active) { border-color: #D9B869; background: #FBF3E3; }
 .vary-secondary { min-height: 42px; padding: 0 20px; border: 1px solid var(--rhythm-pine) !important; border-radius: 999px; background: var(--rhythm-pine-soft) !important; color: var(--rhythm-pine) !important; font-size: 14px !important; font-weight: 600; }
