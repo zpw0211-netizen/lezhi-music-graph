@@ -452,7 +452,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             </g>;
           })}
         </svg>
-        <p className="kmap-legend"><span className="dot is-point" />知识点（圆越大，用到它的作品越多）{scope ? <><span className="square" />分册（线上的数字是这一册有几首作品用到）</> : <><span className="dot is-work" />作品</>}<span className="pill" />音乐要素（箭头指向它包含的知识点，颜色相同）</p>
+        <p className="kmap-legend"><span className="kmap-legend-item"><span className="dot is-point" />知识点（圆越大，用到它的作品越多）</span>{scope ? <span className="kmap-legend-item"><span className="square" />分册（线上的数字是这一册有几首作品用到）</span> : <span className="kmap-legend-item"><span className="dot is-work" />作品</span>}<span className="kmap-legend-item"><span className="pill" />音乐要素（箭头指向它包含的知识点，颜色相同）</span></p>
       </div>
 
       <aside className="kmap-card" aria-live="polite" style={{ "--kmap-hue": "var(--pine)" } as CSSProperties}>

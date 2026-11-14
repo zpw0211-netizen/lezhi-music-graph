@@ -18,6 +18,7 @@ export type AppView =
   | "lab"
   | "ear"
   | "rhythm"
+  | "beat"
   | "plan"
   | "kmap";
 
@@ -45,6 +46,7 @@ const VIEWS = new Set<AppView>([
   "lab",
   "ear",
   "rhythm",
+  "beat",
   "plan",
   "kmap",
 ]);
