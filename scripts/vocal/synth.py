@@ -443,7 +443,13 @@ def build(mel, shift, punctuation=None, borrowed=None, pitch_only=False):
         for k, limit in allowed.items():
             s, e, _, _ = events[k]
             if k + 1 < len(events) and events[k + 1][0] - e < 0.15:
-                events[k][1] -= min(limit, 0.35 * (e - s))
+                # Borrow the breath from the syllable's last written note only, never more than a third of it:
+                # cutting by the whole syllable's length swallowed short melisma tails (e.g. the falling step at
+                # the end of a phrase), so the tune lost a note and sounded off.
+                last = next((ps for ps, pe, _ in reversed(pitch_notes) if abs(pe - e) < 1e-6 and ps < e), s)
+                cut = min(limit, 0.35 * (e - s), 0.35 * (e - max(s, last)))
+                if cut >= 0.06:
+                    events[k][1] -= cut
     breaths = []
     lead = 0.5  # seconds kept before the first sung note (silence, then a breath)
     t0 = first - lead
