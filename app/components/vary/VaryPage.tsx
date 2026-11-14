@@ -4,16 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
-import { loadWorks } from "../compose/compose-model";
+import { BASS_STYLES, loadWorks, type BassStyle } from "../compose/compose-model";
 import { useExplorationNav } from "../exploration/exploration-tools";
 import {
-  HANDOFF_STORE, SAMPLE_THEMES, TECHNIQUES, TECHNIQUE_BY_ID, applicable, applyAll, bpmOf, compare, isTheme, isVaryMeter, midiOf, toMelody,
-  type TechniqueId, type Theme, type Tune,
+  HANDOFF_STORE, SAMPLE_THEMES, TECHNIQUES, TECHNIQUE_BY_ID, applicable, applyAll, bassOf, bpmOf, compare, isAccompaniment, isTheme, isVaryMeter, midiOf, toMelody,
+  type Accompaniment, type TechniqueId, type Theme, type Tune,
 } from "./vary-model";
 
 /** 旋律变奏：拿一条主题（自己写的或示例），变出对比段和再现段，连成一首 A–B–A′ 的单三部曲式小曲。 */
 
-type Saved = { themeId: string; recipe: TechniqueId[]; b: TechniqueId[] | null; a2: TechniqueId[]; custom?: Theme };
+type Saved = { themeId: string; recipe: TechniqueId[]; b: TechniqueId[] | null; a2: TechniqueId[]; custom?: Theme; bass?: Accompaniment };
 type Slot = "b" | "a2";
 const STORE = "yapu-vary";
 const MAX_STEPS = 3;
@@ -32,6 +32,7 @@ function readSaved(): Saved | null {
       b: validRecipe(saved.b) && saved.b.length ? saved.b : null,
       a2: validRecipe(saved.a2) ? saved.a2 : [],
       ...(isTheme(saved.custom) ? { custom: saved.custom } : {}),
+      ...(isAccompaniment(saved.bass) ? { bass: saved.bass } : {}),
     };
   } catch { return null; }
 }
@@ -61,6 +62,7 @@ export function VaryPage() {
   const [sectionB, setSectionB] = useState<TechniqueId[] | null>(null);
   const [sectionA2, setSectionA2] = useState<TechniqueId[]>([]);
   const [notation, setNotation] = useState<"jianpu" | "staff">("jianpu");
+  const [bass, setBass] = useState<Accompaniment>("broken");
   const [message, setMessage] = useState("");
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const stopRef = useRef<(() => void) | null>(null);
@@ -73,6 +75,7 @@ export function VaryPage() {
     const all = [...(custom ? [custom] : []), ...SAMPLE_THEMES, ...worksAsThemes()];
     /* eslint-disable react-hooks/set-state-in-effect -- one-time hydration from browser storage after mount */
     setThemes(all);
+    if (saved?.bass) setBass(saved.bass);
     if (handoff) setThemeId(handoff.id);
     else if (saved && all.some((theme) => theme.id === saved.themeId)) { setThemeId(saved.themeId); setRecipe(saved.recipe); setSectionB(saved.b); setSectionA2(saved.a2); }
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -81,16 +84,17 @@ export function VaryPage() {
   const custom = themes.find((item) => item.id === "custom");
   useEffect(() => {
     if (!loaded.current) return;
-    try { window.localStorage.setItem(STORE, JSON.stringify({ themeId, recipe, b: sectionB, a2: sectionA2, ...(custom ? { custom } : {}) } satisfies Saved)); } catch { /* storage may be unavailable */ }
-  }, [themeId, recipe, sectionB, sectionA2, custom]);
+    try { window.localStorage.setItem(STORE, JSON.stringify({ themeId, recipe, b: sectionB, a2: sectionA2, bass, ...(custom ? { custom } : {}) } satisfies Saved)); } catch { /* storage may be unavailable */ }
+  }, [themeId, recipe, sectionB, sectionA2, custom, bass]);
 
   const stop = useCallback(() => { stopRef.current?.(); stopRef.current = null; setPlayingIndex(null); }, []);
   useEffect(() => () => { stopRef.current?.(); }, []);
 
   const theme = themes.find((item) => item.id === themeId) ?? themes[0];
   const variation = useMemo(() => applyAll(theme, recipe), [theme, recipe]);
-  const themeMelody = useMemo(() => toMelody(theme, theme.title, theme.source), [theme]);
-  const variationMelody = useMemo(() => toMelody(variation, "", "学生创编"), [variation]);
+  const withBass = useCallback((tune: Tune) => (bass === "none" ? undefined : bassOf(tune, bass)), [bass]);
+  const themeMelody = useMemo(() => toMelody(theme, theme.title, theme.source, withBass(theme)), [theme, withBass]);
+  const variationMelody = useMemo(() => toMelody(variation, "", "学生创编", withBass(variation)), [variation, withBass]);
   const notes = useMemo(() => (recipe.length ? compare(theme, variation) : []), [theme, variation, recipe]);
 
   // 三部曲：A 是主题，B 是对比段，A′ 是再现段（不变就是原样再现）。
@@ -98,8 +102,10 @@ export function VaryPage() {
   const tuneA2 = useMemo(() => applyAll(theme, sectionA2), [theme, sectionA2]);
   const sameMeter = tuneB !== null && tuneB.meter === theme.meter && tuneA2.meter === theme.meter;
   const wholeMelody = useMemo(() => (tuneB && sameMeter
-    ? toMelody({ meter: theme.meter, bars: [...theme.bars, ...tuneB.bars, ...tuneA2.bars] }, `${theme.title} · 三部曲`, "学生创编")
-    : null), [theme, tuneB, tuneA2, sameMeter]);
+    // 伴奏一段一段地配，每段各自收束。
+    ? toMelody({ meter: theme.meter, bars: [...theme.bars, ...tuneB.bars, ...tuneA2.bars] }, `${theme.title} · 三部曲`, "学生创编",
+      bass === "none" ? undefined : [theme, tuneB, tuneA2].flatMap((tune) => bassOf(tune, bass)))
+    : null), [theme, tuneB, tuneA2, sameMeter, bass]);
 
   const chooseTheme = (id: string) => {
     if (id === themeId) return;
@@ -147,6 +153,13 @@ export function VaryPage() {
         }
         at += note.b * beat;
       });
+      if (bass !== "none") {
+        let low = starts[starts.length - 1];
+        for (const note of bassOf(piece, bass).flat()) {
+          if (note.d) playInstrumentSample(context, "piano", sampler, midiOf({ d: note.d, o: note.o ?? 0 }), low, note.b * beat * 0.96, out, 0.5);
+          low += note.b * beat;
+        }
+      }
     }
     const end = at + 0.6;
     let frame = 0;
@@ -209,7 +222,14 @@ export function VaryPage() {
         </select>
       </label>}
       <button type="button" className="vary-link" onClick={() => goTo("compose")}>✎ 去旋律创编写一条自己的主题</button>
-      <div className="vary-field vary-notation">
+      <label className="vary-field vary-notation">
+        <span className="vary-label">伴奏</span>
+        <select value={bass} aria-label="伴奏" onChange={(event) => { stop(); setBass(event.target.value as Accompaniment); }}>
+          <option value="none">不配伴奏</option>
+          {(Object.keys(BASS_STYLES) as BassStyle[]).map((value) => <option key={value} value={value}>{BASS_STYLES[value].label}</option>)}
+        </select>
+      </label>
+      <div className="vary-field">
         <span className="vary-label">谱式</span>
         <div className="vary-chips" role="radiogroup" aria-label="谱式">
           {([["jianpu", "简谱"], ["staff", "五线谱"]] as const).map(([value, label]) =>
@@ -222,13 +242,13 @@ export function VaryPage() {
       <div className="vary-scores">
         <article className="vary-card">
           <p className="vary-card-title"><b>主题</b><span>{theme.source}</span></p>
-          <div className="vary-player"><MelodyPlayer key={`${theme.id}-${notation}`} melody={themeMelody} notationStyle={notation} /></div>
+          <div className="vary-player"><MelodyPlayer key={`${theme.id}-${notation}-${bass}`} melody={themeMelody} notationStyle={notation} /></div>
         </article>
         <article className={`vary-card vary-card-result${recipe.length ? "" : " is-empty"}`}>
           <p className="vary-card-title"><b>变奏</b><span>{recipe.length ? `主题 → ${recipeName(recipe)}` : "还没有选手法"}</span></p>
           {recipe.length
             ? <>
-              <div className="vary-player"><MelodyPlayer key={`${theme.id}-${recipe.join()}-${notation}`} melody={variationMelody} notationStyle={notation} /></div>
+              <div className="vary-player"><MelodyPlayer key={`${theme.id}-${recipe.join()}-${notation}-${bass}`} melody={variationMelody} notationStyle={notation} /></div>
               <ul className="vary-compare" aria-label="和主题比一比">{notes.map((note) => <li key={note}>{note}</li>)}</ul>
               <div className="vary-actions">
                 <button type="button" className="vary-primary" onClick={() => place("b")} disabled={sectionB?.join() === recipe.join()}>放进 B 段 · 对比</button>
@@ -281,7 +301,7 @@ export function VaryPage() {
       </ol>
       {!tuneB && <p className="vary-empty">B 段还空着。变出一段和主题对比明显的旋律（比如换调式、倒影、拉宽），点“放进 B 段”。</p>}
       {tuneB && sectionB && sectionB.join() === sectionA2.join() && <p className="vary-message">B 段和 A′ 段用了同样的变法。A′ 段是“回家”，让它更像主题会更好。</p>}
-      {wholeMelody && <div className="vary-player vary-whole"><MelodyPlayer key={`whole-${theme.id}-${sectionB?.join()}-${sectionA2.join()}-${notation}`} melody={wholeMelody} notationStyle={notation} /></div>}
+      {wholeMelody && <div className="vary-player vary-whole"><MelodyPlayer key={`whole-${theme.id}-${sectionB?.join()}-${sectionA2.join()}-${notation}-${bass}`} melody={wholeMelody} notationStyle={notation} /></div>}
       {tuneB && !sameMeter && <p className="vary-empty">有一段换了拍子，整首谱不能写在一行拍号里。点“听整首”可以连起来听，点上面的 A、B、A′ 可以分段看谱。</p>}
     </section>
   </section>;

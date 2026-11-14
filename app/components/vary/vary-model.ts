@@ -1,4 +1,5 @@
 import type { Melody, MelodyNote } from "../../lib/lesson/jianpu";
+import { bassLine, type BassStyle } from "../compose/compose-model";
 
 /** 旋律变奏：一条主题，用几种手法变出新的旋律。音高用首调唱名（1=C），时值按四分音符计。 */
 export type VaryNote = { d: number; o: number; b: number; tie?: boolean };
@@ -264,7 +265,19 @@ export const applyAll = (theme: Tune, ids: TechniqueId[]) => ids.reduce((tune, i
 
 export const bpmOf = (meter: VaryMeter) => (meter === "3/4" ? 96 : 84);
 
-export function toMelody(tune: Tune, title: string, source: string): Melody {
+/** 伴奏：和旋律创编用同一套自动低音；"none" 是不配。 */
+export type Accompaniment = BassStyle | "none";
+export const isAccompaniment = (value: unknown): value is Accompaniment => typeof value === "string" && ["none", "hold", "broken", "alberti", "arpeggio", "walking"].includes(value);
+/** 给一段旋律配低音。结尾的音不在主和弦里时（比如换了调式，落在 la 上），最后一小节的低音换成合得上的根音。 */
+export function bassOf(tune: Tune, style: BassStyle): MelodyNote[][] {
+  const bars = bassLine(tune.bars, tune.meter, style);
+  const last = tune.bars.flat().filter((note) => note.d).at(-1);
+  const root = last ? ({ 2: 5, 4: 4, 6: 6, 7: 5 } as Record<number, number>)[last.d] : undefined;
+  if (root && bars.length) bars[bars.length - 1] = [{ d: root, o: -2, b: beatsOf(tune.meter) }];
+  return bars;
+}
+
+export function toMelody(tune: Tune, title: string, source: string, bass?: MelodyNote[][]): Melody {
   return {
     ...(title ? { title } : {}), key: "1=C", tonic: "C", tonicMidi: 60, meter: tune.meter, bpm: bpmOf(tune.meter), source,
     bars: tune.bars.map((bar) => bar.map((note) => {
@@ -273,6 +286,7 @@ export function toMelody(tune: Tune, title: string, source: string): Melody {
       if (note.tie) out.tie = true;
       return out;
     })),
+    ...(bass ? { label: "旋律", voices: [{ label: "低音伴奏", bars: bass }], staff: [undefined, { clef: "bass" as const }] } : {}),
   };
 }
 
