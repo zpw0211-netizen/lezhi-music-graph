@@ -403,6 +403,22 @@ def natural_pitch(pn, toks, langs, pd, tt, t0, base):
     return f
 
 
+def keep_voiced(preds, toks, ph_dur):
+    """The variance model often lets voicing die out over a vowel's last notes before the next consonant
+    (悠~ 着: the ~ went silent). Hold each vowel's voicing near its own steady level up to a short release."""
+    if "voicing" not in V.var_names:
+        return
+    v = preds[V.var_names.index("voicing")][0]
+    rel = max(2, frames(0.03))
+    a = 0
+    for p, d in zip(toks, ph_dur):
+        b = a + int(d)
+        if is_vowel(p) and b - a > rel + 4:
+            ref = float(np.median(v[a:a + max(3, (b - a) // 3)]))
+            v[a:b - rel] = np.maximum(v[a:b - rel], ref - 6.0)
+        a = b
+
+
 def phrase_gain(preds, events, breaths, first, beat, meter, tt, t0):
     """Shape the variance model's breathiness and the waveform's gain."""
     starts = [first] + [events[k + 1][0] for k, _ in breaths]
@@ -518,7 +534,9 @@ def build(mel, shift, punctuation=None, borrowed=None, pitch_only=False):
             # that note, so a short melisma note at the end (悠~ 着) is still sung, not eaten by the 着's zh
             w_start, w_end = words[wi][2], words[wi + 1][2] if wi + 1 < len(words) else end
             last = max([w_start] + [pn[0] for pn in pitch_notes if w_start < pn[0] < w_end])
-            cap = max(len(cons_idx), min(int(wd * 0.45), int(frames(w_end - last) * 0.5)))
+            # a short last note (< 0.25 s, e.g. 哈~ 呀) keeps more of itself: the y/t ate half of it and it read as off-key
+            tail = w_end - last
+            cap = max(len(cons_idx), min(int(wd * 0.45), int(frames(tail) * (0.3 if tail < 0.25 else 0.5))))
             scale = min(1.0, cap / sum(want))
             for j, w in zip(cons_idx, want):
                 out[j] = max(1, int(round(w * scale)))
@@ -579,6 +597,7 @@ def build(mel, shift, punctuation=None, borrowed=None, pitch_only=False):
     zeros = np.zeros((1, n_frames), np.float32)
     preds = V.var.run(None, {"encoder_out": venc, "ph_dur": pd, "pitch": f[None].astype(np.float32), **{n: zeros for n in V.var_names},
                              "retake": np.ones((1, n_frames, len(V.var_names)), bool), "steps": np.array(10, np.int64)})
+    keep_voiced(preds, toks, ph_dur)
     gain = phrase_gain(preds, events, breaths, first, beat, mel.get("meter", "4/4"), tt, t0) if natural else None
     aids = np.array([[V.ac_ids[p] for p in toks]], dtype=np.int64)
     feed = {"tokens": aids, **langs, "durations": pd, "f0": f0[None].astype(np.float32),
