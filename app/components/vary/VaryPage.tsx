@@ -100,13 +100,23 @@ export function VaryPage() {
   // 三部曲：A 是主题，B 是对比段，A′ 是再现段（不变就是原样再现）。
   const tuneB = useMemo(() => (sectionB ? applyAll(theme, sectionB) : null), [theme, sectionB]);
   const tuneA2 = useMemo(() => applyAll(theme, sectionA2), [theme, sectionA2]);
-  const sameMeter = tuneB !== null && tuneB.meter === theme.meter && tuneA2.meter === theme.meter;
-  const wholeMelody = useMemo(() => (tuneB && sameMeter
+  // 整首谱：各段拍号不同时，拍号按小节写（五线谱在换拍处画新拍号，简谱把拍号写在段落标记里）。
+  const wholeMelody = useMemo(() => {
+    if (!tuneB) return null;
+    const pieces = [theme, tuneB, tuneA2];
+    const mixed = pieces.some((piece) => piece.meter !== theme.meter);
+    const marks: Record<number, string> = {};
+    let at = 0;
+    pieces.forEach((piece, index) => {
+      const changed = index > 0 && piece.meter !== pieces[index - 1].meter;
+      marks[at] = ["A", "B", "A′"][index] + (mixed && notation === "jianpu" && (index === 0 || changed) ? ` ${piece.meter}` : "");
+      at += piece.bars.length;
+    });
     // 伴奏一段一段地配，每段各自收束。
-    ? toMelody({ meter: theme.meter, bars: [...theme.bars, ...tuneB.bars, ...tuneA2.bars] }, `${theme.title} · 三部曲`, "学生创编",
-      bass === "none" ? undefined : [theme, tuneB, tuneA2].flatMap((tune) => bassOf(tune, bass)),
-      { 0: "A", [theme.bars.length]: "B", [theme.bars.length + tuneB.bars.length]: "A′" })
-    : null), [theme, tuneB, tuneA2, sameMeter, bass]);
+    const melody = toMelody({ meter: theme.meter, bars: pieces.flatMap((piece) => piece.bars) }, `${theme.title} · 三部曲`, "学生创编",
+      bass === "none" ? undefined : pieces.flatMap((piece) => bassOf(piece, bass)), marks);
+    return mixed ? { ...melody, meter: pieces.flatMap((piece) => piece.bars.map(() => piece.meter)).join("、") } : melody;
+  }, [theme, tuneB, tuneA2, bass, notation]);
 
   const chooseTheme = (id: string) => {
     if (id === themeId) return;
@@ -303,7 +313,6 @@ export function VaryPage() {
       {!tuneB && <p className="vary-empty">B 段还空着。变出一段和主题对比明显的旋律（比如换调式、倒影、拉宽），点“放进 B 段”。</p>}
       {tuneB && sectionB && sectionB.join() === sectionA2.join() && <p className="vary-message">B 段和 A′ 段用了同样的变法。A′ 段是“回家”，让它更像主题会更好。</p>}
       {wholeMelody && <div className="vary-player vary-whole"><MelodyPlayer key={`whole-${theme.id}-${sectionB?.join()}-${sectionA2.join()}-${notation}-${bass}`} melody={wholeMelody} notationStyle={notation} /></div>}
-      {tuneB && !sameMeter && <p className="vary-empty">有一段换了拍子，整首谱不能写在一行拍号里。点“听整首”可以连起来听，点上面的 A、B、A′ 可以分段看谱。</p>}
     </section>
   </section>;
 }
