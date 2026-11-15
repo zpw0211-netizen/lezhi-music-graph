@@ -385,9 +385,9 @@ export function ReflectivePresent({
   const [position, setPosition] = useState({ slide: 0, step: 0 });
   const countsKey = slides.map((item) => `${item.key}:${item.steps}`).join(",");
   const counts = useMemo(() => countsKey.split(",").map((item) => Number(item.split(":")[1])), [countsKey]);
-  const forward = useCallback(() => setPosition(({ slide, step }) => step + 1 < counts[slide] ? { slide, step: step + 1 } : slide + 1 < counts.length ? { slide: slide + 1, step: 0 } : { slide, step }), [counts]);
-  const back = useCallback(() => setPosition(({ slide, step }) => step > 0 ? { slide, step: step - 1 } : slide > 0 ? { slide: slide - 1, step: counts[slide - 1] - 1 } : { slide, step }), [counts]);
-  const goTo = useCallback((index: number) => setPosition({ slide: index, step: 0 }), []);
+  const forward = useCallback(() => setPosition(({ slide, step }) => step + 1 < counts[slide] ? { slide, step: step + 1 } : slide + 1 < counts.length ? { slide: slide + 1, step: 0 } : { slide, step }), [counts, setPosition]);
+  const back = useCallback(() => setPosition(({ slide, step }) => step > 0 ? { slide, step: step - 1 } : slide > 0 ? { slide: slide - 1, step: counts[slide - 1] - 1 } : { slide, step }), [counts, setPosition]);
+  const goTo = useCallback((index: number) => setPosition({ slide: index, step: 0 }), [setPosition]);
   const setModel = (next: Model) => {
     try { window.localStorage.setItem(MODEL_KEY, next); } catch { /* 不保存也能上课 */ }
     setModelState(next);
@@ -404,7 +404,7 @@ export function ReflectivePresent({
   useEffect(() => { toolsOpenRef.current = toolsOpen; }, [toolsOpen]);
   const toolsButtonRef = useRef<HTMLButtonElement | null>(null);
   const toolsCloseRef = useRef<HTMLButtonElement | null>(null);
-  const closeTools = useCallback(() => setToolsOpen(false), []);
+  const closeTools = useCallback(() => setToolsOpen(false), [setToolsOpen]);
   const toolsWereOpen = useRef(false);
   useEffect(() => {
     if (toolsOpen) toolsCloseRef.current?.focus();
