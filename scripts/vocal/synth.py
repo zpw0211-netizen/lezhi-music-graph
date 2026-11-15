@@ -249,6 +249,27 @@ def syllables(notes):
     return per_note
 
 
+def melisma_gaps(notes, per_note):
+    """Lyric-less notes the score forgot to slur (飘_扬, 响_亮 in 歌唱祖国): at most two notes and 1.5 beats,
+    straight after a sung note and straight before the next syllable. They are sung on the vowel, not left silent."""
+    def blank(k):
+        n = notes[k]
+        return n["midi"] is not None and n["d"] < 8 and not n["slur"] and not n["tie"] and k not in per_note
+    out, i = set(), 1
+    while i < len(notes):
+        p = notes[i - 1]
+        if blank(i) and p["midi"] is not None and p["d"] < 8 and (i - 1 in per_note or p["slur"] or p["tie"] or i - 1 in out):
+            j = i
+            while j < len(notes) and blank(j):
+                j += 1
+            if j < len(notes) and j in per_note and j - i <= 2 and sum(n["b"] for n in notes[i:j]) <= 1.5 + 1e-6:
+                out.update(range(i, j))
+            i = j
+        else:
+            i += 1
+    return out
+
+
 def plan(mel, shift):
     """Notes -> timed phoneme words. Returns tokens, word grouping and per-frame note pitch."""
     beat = 60.0 / mel["bpm"]
@@ -261,6 +282,7 @@ def plan(mel, shift):
     t = 0.0
     first = None
     voiced = False  # the last pitched note was sung (rests in between don't reset it)
+    bridge = melisma_gaps(notes, per_note)
     for i, n in enumerate(notes):
         dur = n["b"] * beat
         sung = n["midi"] is not None and n["d"] < 8
@@ -288,7 +310,7 @@ def plan(mel, shift):
                 if first is None:
                     first = t
                 voiced = True
-            elif (n["slur"] or n["tie"]) and events and abs(events[-1][1] - t) < 1e-6:
+            elif (n["slur"] or n["tie"] or i in bridge) and events and abs(events[-1][1] - t) < 1e-6:
                 events[-1][1] = t + dur  # melisma / tie; unslurred notes without lyrics are instrumental (intro, interlude)
             elif (n["slur"] or n["tie"]) and voiced and events and t - events[-1][1] <= 2 * beat + 1e-6:
                 # a melisma resumed after a breath (slur across a rest): carry on with the syllable's vowel
