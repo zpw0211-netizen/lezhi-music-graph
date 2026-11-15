@@ -109,5 +109,11 @@ export function skinOf(input: { workName: string; workType: string; kind: Lesson
     return local ? "folk-han" : null;
   };
   // 歌唱课先看民歌，器乐、欣赏课先看乐器（蒙古族的马头琴曲配民族器乐，蒙古族民歌配草原）。
-  return kind === "sing" ? folk() : instrument() ?? folk();
+  // 边唱边吹的课（学习方式里同时写了演唱和口风琴或竖笛）：配课堂上手里的那件乐器。
+  const wind = (): SkinKey | null => {
+    const melodica = /口风琴/.test(classroom);
+    const recorder = /竖笛/.test(classroom);
+    return melodica === recorder ? null : melodica ? "ins-melodica" : "ins-recorder";
+  };
+  return kind === "sing" ? wind() ?? folk() : instrument() ?? folk();
 }

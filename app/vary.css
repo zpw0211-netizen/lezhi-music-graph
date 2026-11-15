@@ -55,7 +55,7 @@
 
 /* 创作步骤 */
 .vary-steps { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.vary-steps li { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 5px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; color: var(--rhythm-ink-3); font-size: 13px; white-space: nowrap; }
+.vary-steps li { display: inline-flex; align-items: center; gap: 8px; justify-content: center; padding: 5px 13px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; color: var(--rhythm-ink-3); font-size: 13px; white-space: nowrap; }
 .vary-steps li b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #EEF2EF; font: 600 12.5px/1 var(--ui, sans-serif); font-variant-numeric: tabular-nums; }
 .vary-steps li.is-done { color: var(--rhythm-pine); }
 .vary-steps li.is-done b { background: var(--rhythm-pine-soft); color: var(--rhythm-pine); }
