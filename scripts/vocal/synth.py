@@ -425,6 +425,9 @@ def natural_pitch(pn, toks, langs, pd, tt, t0, base):
     return f
 
 
+SONORANT = {"y", "w", "m", "n", "l", "r", "ng", "v"}
+
+
 def keep_voiced(preds, toks, ph_dur):
     """The variance model often lets voicing die out over a vowel's last notes before the next consonant
     (悠~ 着: the ~ went silent). Hold each vowel's voicing near its own steady level up to a short release."""
@@ -433,18 +436,25 @@ def keep_voiced(preds, toks, ph_dur):
     v = preds[V.var_names.index("voicing")][0]
     rel = max(2, frames(0.03))
     spans, a = [], 0
-    for p, d in zip(toks, ph_dur):
-        b = a + int(d)
+    toks, ph_dur = list(toks), [int(d) for d in ph_dur]
+    for i, (p, d) in enumerate(zip(toks, ph_dur)):
+        b = a + d
         if p not in ("SP", "AP") and is_vowel(p) and b - a > rel + 4:
-            spans.append((a, b))
+            # before a voiced glide/nasal (好~一, 啊~呀) the voice carries straight on: no release, and the glide is held too
+            nxt = toks[i + 1].split("/", 1)[-1] if i + 1 < len(toks) else ""
+            glide = ph_dur[i + 1] if nxt in SONORANT else 0
+            spans.append((a, b, glide))
         a = b
     if not spans:
         return
     # a vowel that starts weak (儿, a low 啊) or dips where a melisma changes note is held up to the song's own level
-    song = float(np.median(np.concatenate([v[a:b] for a, b in spans])))
-    for a, b in spans:
+    song = float(np.median(np.concatenate([v[a:b] for a, b, _ in spans])))
+    for a, b, glide in spans:
         ref = max(float(np.median(v[a:a + max(3, (b - a) // 3)])), song - 4.0)
-        v[a:b - rel] = np.maximum(v[a:b - rel], ref - 6.0)
+        end = b if glide else b - rel
+        v[a:end] = np.maximum(v[a:end], ref - 6.0)
+        if glide:
+            v[b:b + glide] = np.maximum(v[b:b + glide], ref - 10.0)
 
 
 def phrase_gain(preds, events, breaths, first, beat, meter, tt, t0):
