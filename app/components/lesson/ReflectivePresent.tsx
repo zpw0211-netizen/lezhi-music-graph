@@ -6,6 +6,7 @@
 // 老师可在“备课”里改课型、隐藏页面、改写提问；这些只存在本机浏览器（localStorage），不影响别人。
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { MelodySet } from "./MelodyPlayer";
 import type { Melody } from "../../lib/lesson/melodies";
 import { WorkbenchIcon } from "../WorkbenchIcon";
@@ -465,7 +466,7 @@ export function ReflectivePresent({
     const stageEl = stageRef.current, content = fitRef.current;
     if (!stageEl || !content) return;
     let raf = 0;
-    const measure = () => {
+    const measure = (sync = false) => {
       const style = getComputedStyle(stageEl);
       const avail = stageEl.clientHeight - parseFloat(style.paddingTop || "0") - parseFloat(style.paddingBottom || "0");
       if (!(avail > 0)) return;
@@ -474,14 +475,33 @@ export function ReflectivePresent({
       const natural = current < 1 ? rect.height / current : rect.height;
       if (!(natural > 0)) return;
       const target = Math.max(0.5, Math.min(1, (avail - 12) / natural));
-      if (Math.abs(target - current) > 0.01) { appliedFit.current = target; setFit(target); }
+      // 放得下时不出滚动条：进场动画的位移会让舞台短暂溢出，滚动条一闪会把内容挤动一下。
+      stageEl.style.overflowY = natural * target <= avail ? "hidden" : "";
+      if (Math.abs(target - current) > 0.01) {
+        appliedFit.current = target;
+        if (sync) flushSync(() => setFit(target)); else setFit(target);
+      }
     };
     measure();
-    const observer = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(measure); });
+    // 图片、谱面晚一步撑开高度时，在同一帧里（绘制之前）就把缩放改好，避免先按旧尺寸画一帧再跳。
+    let loops = 0, loopFrame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(loopFrame); loopFrame = requestAnimationFrame(() => { loops = 0; });
+      if (loops++ < 3) measure(true); else { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => measure()); }
+    });
     observer.observe(content);
     observer.observe(stageEl);
-    return () => { observer.disconnect(); cancelAnimationFrame(raf); };
+    return () => { observer.disconnect(); cancelAnimationFrame(raf); cancelAnimationFrame(loopFrame); };
   }, [slideKey, step, preparing]);
+
+  // 进入上课模式就把各页要用的图（谱例、情境图、主题图）先取回来，翻到那一页时图已在手，版面不会先矮后高地跳一下。
+  const preloadList = [artUrl, ...scores.map((score) => assetUrl(score.url)),
+    ...slides.map((item) => (item.art ? assetUrl(skin && SKIN_SLOTS.has(item.art) ? `art/skin/${skin}.webp` : `art/lesson/${item.art}.webp`) : ""))].filter(Boolean).join("\n");
+  const preloaded = useRef<HTMLImageElement[]>([]);
+  useEffect(() => {
+    preloaded.current = [...new Set(preloadList.split("\n").filter(Boolean))].map((url) => { const image = new Image(); image.decoding = "async"; image.src = url; return image; });
+    return () => { preloaded.current = []; };
+  }, [preloadList]);
 
   // 难点突破页的谱面在框内滚动：播放时把正在唱的音保持在可见范围里。
   useEffect(() => {
