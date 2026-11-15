@@ -277,8 +277,9 @@ export function bassOf(tune: Tune, style: BassStyle): MelodyNote[][] {
   return bars;
 }
 
-export function toMelody(tune: Tune, title: string, source: string, bass?: MelodyNote[][]): Melody {
+export function toMelody(tune: Tune, title: string, source: string, bass?: MelodyNote[][], marks?: Record<number, string>): Melody {
   return {
+    ...(marks ? { marks } : {}),
     ...(title ? { title } : {}), key: "1=C", tonic: "C", tonicMidi: 60, meter: tune.meter, bpm: bpmOf(tune.meter), source,
     bars: tune.bars.map((bar) => bar.map((note) => {
       const out: MelodyNote = { d: note.d, b: note.b };

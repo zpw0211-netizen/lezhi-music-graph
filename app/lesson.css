@@ -315,6 +315,10 @@
   font-family:var(--font-score); }
 .melody-bar { display:flex; min-width:0; align-items:stretch; flex-direction:column; padding:0 12px; border-right:1.5px solid #9AA7A0; }
 .melody-bar:last-child { border-right:3px double #6B7771; }
+.melody-score.has-marks:not(.is-staff) { row-gap:26px; padding-top:28px; }
+.melody-bar.has-mark { position:relative; }
+.melody-mark { position:absolute; top:-21px; left:8px; padding:1px 6px; border:1.5px solid currentColor; border-radius:4px; font:700 12px/1.2 var(--font-ui, sans-serif); color:var(--brand-pine, #1E7A4A); white-space:nowrap; }
+.staff-mark { font:700 13px var(--font-ui, sans-serif); fill:var(--brand-pine, #1E7A4A); }
 .melody-note { display:inline-flex; flex-direction:column; align-items:flex-start; min-width:1.1em; position:relative; }
 .melody-note > .melody-head-cell { align-self:stretch; justify-content:flex-start; padding-left:.2em; }
 .melody-note > .melody-head-cell.has-accidental { padding-left:.4em; }

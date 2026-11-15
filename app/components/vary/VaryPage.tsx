@@ -104,7 +104,8 @@ export function VaryPage() {
   const wholeMelody = useMemo(() => (tuneB && sameMeter
     // 伴奏一段一段地配，每段各自收束。
     ? toMelody({ meter: theme.meter, bars: [...theme.bars, ...tuneB.bars, ...tuneA2.bars] }, `${theme.title} · 三部曲`, "学生创编",
-      bass === "none" ? undefined : [theme, tuneB, tuneA2].flatMap((tune) => bassOf(tune, bass)))
+      bass === "none" ? undefined : [theme, tuneB, tuneA2].flatMap((tune) => bassOf(tune, bass)),
+      { 0: "A", [theme.bars.length]: "B", [theme.bars.length + tuneB.bars.length]: "A′" })
     : null), [theme, tuneB, tuneA2, sameMeter, bass]);
 
   const chooseTheme = (id: string) => {

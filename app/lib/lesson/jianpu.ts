@@ -28,6 +28,8 @@ export type Melody = {
   staff?: Array<{ clef?: "treble" | "bass"; octave?: number } | undefined>;
   /** Staff editions: key whose signature the textbook prints when it spells the same pitches differently (1=♭G drawn with five flats). */
   staffSignature?: string;
+  /** Section letters printed above the bar where a section starts (bar index → "A", "B", "A′"). */
+  marks?: Record<number, string>;
 };
 
 

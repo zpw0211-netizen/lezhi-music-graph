@@ -663,8 +663,9 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       </>}
     </div>}
     {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} beatRef={beatRef} /> :
-    <div ref={scoreRef} className={`melody-score${notationStyle === "staff" ? " is-staff" : ""}`} style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`${notationStyle === "staff" ? "五线谱" : "简谱"}旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
-      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} height={staffHeight} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
+    <div ref={scoreRef} className={`melody-score${notationStyle === "staff" ? " is-staff" : ""}${melody.marks ? " has-marks" : ""}`} style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`${notationStyle === "staff" ? "五线谱" : "简谱"}旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
+      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} height={staffHeight} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${melody.marks?.[barIndex] ? " has-mark" : ""}${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
+        {melody.marks?.[barIndex] && <b className="melody-mark">{melody.marks[barIndex]}</b>}
         {lines.map((line, voice) => {
           const notes = line.bars[barIndex] ?? [];
           const runsByLevel = beamRuns[voice]?.[barIndex] ?? new Map<number, Map<number, BeamRun>>();

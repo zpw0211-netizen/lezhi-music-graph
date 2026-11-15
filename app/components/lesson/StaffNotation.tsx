@@ -642,6 +642,18 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, curr
       const active = offsets[voice]?.[barIndex] + glyph.noteIndex === current[voice];
       body.push(<text key={`lyric-${index}`} x={glyph.x} y={lyricY} textAnchor="middle" className={active ? "staff-lyric is-active" : "staff-lyric"}>{glyph.note.lyric}</text>);
     });
+    // Section letters above the top staff, at the bar where each section starts.
+    if (voice === 0 && melody.marks) {
+      const markY = Math.min(minY, 0) - 7;
+      let any = false;
+      for (let index = start; index < end; index += 1) {
+        const mark = melody.marks[index];
+        if (!mark) continue;
+        any = true;
+        body.push(<text key={`mark-${index}`} x={barX[index - start] + 5} y={markY} className="staff-mark">{mark}</text>);
+      }
+      if (any) minY = markY - 13;
+    }
     staves.push({ above: Math.max(16, -minY + 8), below: hasLyrics ? lyricY + 8 - STAFF_H : Math.max(14, maxY - STAFF_H + 8), body, lyricY });
   });
 
