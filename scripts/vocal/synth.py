@@ -451,8 +451,11 @@ def keep_voiced(preds, toks, ph_dur):
     song = float(np.median(np.concatenate([v[a:b] for a, b, _ in spans])))
     for a, b, glide in spans:
         ref = max(float(np.median(v[a:a + max(3, (b - a) // 3)])), song - 4.0)
-        end = b if glide else b - rel
-        v[a:end] = np.maximum(v[a:end], ref - 6.0)
+        short = b - a < frames(0.16)
+        # a short vowel (爱 in 爱听, 拉 after a leap) held only near its own level comes out as an unpitched breath
+        floor = max(ref, song) - 2.0 if short else ref - 6.0
+        end = b if glide else b - (max(1, rel // 2) if short else rel)
+        v[a:end] = np.maximum(v[a:end], floor)
         if glide:
             v[b:b + glide] = np.maximum(v[b:b + glide], ref - 10.0)
 
