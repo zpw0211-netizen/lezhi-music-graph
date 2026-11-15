@@ -13,7 +13,7 @@ import {
 
 /** 旋律变奏：拿一条主题（自己写的或示例），变出对比段和再现段，连成一首 A–B–A′ 的单三部曲式小曲。 */
 
-type Saved = { themeId: string; recipe: TechniqueId[]; b: TechniqueId[] | null; a2: TechniqueId[]; custom?: Theme; bass?: Accompaniment };
+type Saved = { themeId: string; recipe: TechniqueId[]; b: TechniqueId[] | null; a2: TechniqueId[]; custom?: Theme; bass?: Accompaniment; tempo?: number };
 type Slot = "b" | "a2";
 const STORE = "yapu-vary";
 const MAX_STEPS = 3;
@@ -33,6 +33,7 @@ function readSaved(): Saved | null {
       a2: validRecipe(saved.a2) ? saved.a2 : [],
       ...(isTheme(saved.custom) ? { custom: saved.custom } : {}),
       ...(isAccompaniment(saved.bass) ? { bass: saved.bass } : {}),
+      ...(typeof saved.tempo === "number" && saved.tempo >= 40 && saved.tempo <= 160 ? { tempo: saved.tempo } : {}),
     };
   } catch { return null; }
 }
@@ -63,6 +64,8 @@ export function VaryPage() {
   const [sectionA2, setSectionA2] = useState<TechniqueId[]>([]);
   const [notation, setNotation] = useState<"jianpu" | "staff">("jianpu");
   const [bass, setBass] = useState<Accompaniment>("broken");
+  /** “听整首”的速度；没调过就按拍号的默认速度（二拍子 84、三拍子 96）。 */
+  const [tempo, setTempo] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const stopRef = useRef<(() => void) | null>(null);
@@ -76,6 +79,7 @@ export function VaryPage() {
     /* eslint-disable react-hooks/set-state-in-effect -- one-time hydration from browser storage after mount */
     setThemes(all);
     if (saved?.bass) setBass(saved.bass);
+    if (saved?.tempo) setTempo(saved.tempo);
     if (handoff) setThemeId(handoff.id);
     else if (saved && all.some((theme) => theme.id === saved.themeId)) { setThemeId(saved.themeId); setRecipe(saved.recipe); setSectionB(saved.b); setSectionA2(saved.a2); }
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -84,8 +88,8 @@ export function VaryPage() {
   const custom = themes.find((item) => item.id === "custom");
   useEffect(() => {
     if (!loaded.current) return;
-    try { window.localStorage.setItem(STORE, JSON.stringify({ themeId, recipe, b: sectionB, a2: sectionA2, bass, ...(custom ? { custom } : {}) } satisfies Saved)); } catch { /* storage may be unavailable */ }
-  }, [themeId, recipe, sectionB, sectionA2, custom, bass]);
+    try { window.localStorage.setItem(STORE, JSON.stringify({ themeId, recipe, b: sectionB, a2: sectionA2, bass, ...(tempo ? { tempo } : {}), ...(custom ? { custom } : {}) } satisfies Saved)); } catch { /* storage may be unavailable */ }
+  }, [themeId, recipe, sectionB, sectionA2, custom, bass, tempo]);
 
   const stop = useCallback(() => { stopRef.current?.(); stopRef.current = null; setPlayingIndex(null); }, []);
   useEffect(() => () => { stopRef.current?.(); }, []);
@@ -153,7 +157,7 @@ export function VaryPage() {
     let at = context.currentTime + 0.2;
     const starts: number[] = [];
     for (const piece of pieces) {
-      const beat = 60 / bpmOf(piece.meter);
+      const beat = 60 / (tempo ?? bpmOf(piece.meter));
       starts.push(at);
       const flat = piece.bars.flat();
       flat.forEach((note, index) => {
@@ -298,7 +302,13 @@ export function VaryPage() {
           <h3 id="vary-form-title">我的三部曲</h3>
           <p>单三部曲式：主题（A）— 对比（B）— 再现（A′）。B 段要和主题不一样，A′ 段再回到主题。</p>
         </div>
-        <button type="button" className="vary-primary" onClick={() => void playWhole()} disabled={!tuneB}>{playingIndex !== null ? "■ 停止" : "▶ 听整首"}</button>
+        <div className="vary-form-play">
+          <label className="melody-tempo">速度
+            <input type="range" min={40} max={160} step={4} value={tempo ?? bpmOf(theme.meter)} aria-valuetext={`每分钟 ${tempo ?? bpmOf(theme.meter)} 拍`} disabled={!tuneB || playingIndex !== null} onChange={(event) => setTempo(Number(event.target.value))} />
+            <b>♩={tempo ?? bpmOf(theme.meter)}</b>
+          </label>
+          <button type="button" className="vary-primary" onClick={() => void playWhole()} disabled={!tuneB}>{playingIndex !== null ? "■ 停止" : "▶ 听整首"}</button>
+        </div>
       </header>
       <ol className="vary-sections">
         {sections.map((item, index) => <li key={item.key} className={`vary-section is-${item.key}${item.filled ? "" : " is-empty"}${playingIndex === index ? " is-playing" : ""}`}>
