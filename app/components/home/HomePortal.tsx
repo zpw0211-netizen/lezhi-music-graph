@@ -63,6 +63,21 @@ const PENTATONIC_PHRASE: Melody = {
 // them means the shelf appears at once instead of popping in after the ~3.6MB graph index arrives.
 const STATIC_SHELF_BOOKS = PUBLISHED_BOOKS.map((book) => ({ key: book.key, title: book.title, grade: book.grade, semester: book.semester, pages: book.pages, entityCount: 0, tripleCount: 0, workCount: 0 }));
 const bookArt = (book: { key: string; title: string }) => BOOK_ART[book.key] ?? { file: `art/${book.key}.webp`, alt: `${stripEditionPrefix(book.title)}封面插画` };
+/**
+ * A shelf card is at most ~250px wide, so it shows the 600px copy from art/shelf/ (scripts/build-shelf-art.py)
+ * instead of the 1200px cover: on a first visit the full covers were the largest download of the home page.
+ * Screens that need more pixels still get the full cover through srcset.
+ */
+function ShelfArt({ file, sizes, eager }: { file: string; sizes: string; eager: boolean }) {
+  const full = publicAssetUrl(file);
+  const small = publicAssetUrl(file.replace(/^art\//, "art/shelf/"));
+  // A plain img: the static export has no image optimizer, and next/image would drop this srcset.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={small} srcSet={`${small} 600w, ${full} 1200w`} sizes={sizes} alt="" width={1200} height={750}
+    loading={eager ? "eager" : "lazy"} decoding="async"
+    // Before the small copy is made (a new cover, or a local dev copy), fall back to the full cover.
+    onError={(event) => { const image = event.currentTarget; if (!image.dataset.fallback) { image.dataset.fallback = "1"; image.srcset = ""; image.src = full; } }} />;
+}
 const shortBookTitle = (book: { title: string }) => stripEditionPrefix(book.title);
 /** "六年级上册（简谱）" → ["六年级", "上册（简谱）"], so a label never wraps a lone character onto its own line. */
 const splitBookTitle = (book: { title: string }): [string, string] => {
@@ -111,6 +126,10 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
       : stageBooks[0]?.key ?? "";
   const activeBook = stageBooks.find(book => book.key === activeBookKey);
   const upcomingBooks = BOOK_REGISTRY.filter(book => !book.published && book.stage === bookStage);
+  const shelfCount = stageBooks.length + upcomingBooks.length;
+  const shelfColumns = Math.max(4, shelfCount > 6 ? Math.ceil(shelfCount / 2) : shelfCount);
+  // Card widths follow home-v6.css: two columns up to 640px, four up to 1040px, then the page's 1280px row.
+  const shelfSizes = `(max-width: 640px) 50vw, (max-width: 1040px) 25vw, ${Math.ceil(1280 / shelfColumns)}px`;
   const unitsByBook = useMemo(() => {
     const grouped = new Map<string, PortalUnit[]>();
     for (const unit of units) grouped.set(unit.bookKey, [...(grouped.get(unit.bookKey) ?? []), unit]);
@@ -226,7 +245,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
             {availableBookStages(orderedBooks).map((stage) => <button key={stage} type="button" aria-pressed={bookStage === stage} onClick={() => selectStage(stage)}>{stage}</button>)}
           </div>}
         </header>
-        <div className="hv-books" style={{ "--hv-cols": Math.max(4, stageBooks.length + upcomingBooks.length > 6 ? Math.ceil((stageBooks.length + upcomingBooks.length) / 2) : stageBooks.length + upcomingBooks.length) } as CSSProperties} role="group" aria-label={`${bookStage}各册，点选查看，再点一次翻开`}>
+        <div className="hv-books" style={{ "--hv-cols": shelfColumns } as CSSProperties} role="group" aria-label={`${bookStage}各册，点选查看，再点一次翻开`}>
           {stageBooks.map((book, index) => {
             const isOpen = activeBookKey === book.key;
             const volume = volumeNumeral(book.key, orderedBooks);
@@ -236,7 +255,7 @@ export function HomePortal<E extends PortalEntity, B extends PortalBook, R exten
               onPointerEnter={event => { if (event.pointerType !== "touch") setOpenBookKey(book.key); }}
               onFocus={() => setOpenBookKey(book.key)}
               onClick={() => { if (isOpen) openBook(book); else setOpenBookKey(book.key); }}>
-              <span className="hv-book-art"><Image src={publicAssetUrl(bookArt(book).file)} alt="" width={1200} height={750} loading={index < 6 ? "eager" : "lazy"} decoding="async" unoptimized /></span>
+              <span className="hv-book-art"><ShelfArt file={bookArt(book).file} sizes={shelfSizes} eager={index < 6} /></span>
               <span className="hv-book-label">
                 <span className="hv-book-volume">卷{volume}</span>
                 <span className="hv-book-name"><b>{grade}</b><span>{rest}</span></span>

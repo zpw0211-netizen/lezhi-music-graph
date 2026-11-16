@@ -42,6 +42,7 @@ await symlink(path.join(root, "node_modules"), path.join(work, "node_modules"), 
 const primary = JSON.parse(await readFile(path.join(root, "data", "books.json"), "utf8"));
 for (const { key } of primary.books) {
   await rm(path.join(work, "public", "art", `${key}.webp`), { force: true });
+  await rm(path.join(work, "public", "art", "shelf", `${key}.webp`), { force: true });
   await rm(path.join(work, "public", "media", "scores", key), { recursive: true, force: true });
   for (const dir of ["books", "evidence"]) await rm(path.join(work, "public", "data", dir, `${key}.json`), { force: true });
 }

@@ -59,6 +59,16 @@ for (const relativePath of excludedGraphFiles) {
   await rm(path.join(siteRoot, relativePath), { force: true });
 }
 
+// The home shelf shows art/shelf/<book>.webp (scripts/build-shelf-art.py). A cover without its small copy
+// still shows, from the full file, but costs visitors ~200KB more on their first visit, so stop the build.
+{
+  const artRoot = path.join(siteRoot, "art");
+  const covers = (await exists(artRoot)) ? (await readdir(artRoot)).filter((name) => /^(?:(?:pep-|xy-)?g\d+s\d|hs-m\d+)\.webp$/.test(name)) : [];
+  const missing = [];
+  for (const name of covers) if (!(await exists(path.join(artRoot, "shelf", name)))) missing.push(name);
+  if (missing.length) throw new Error(`首页书架缺少封面小图：${missing.join("、")}。请运行 python scripts/build-shelf-art.py 后提交 art/shelf/ 里的新文件。`);
+}
+
 if (!(await exists(path.join(siteRoot, "404.html"))) && (await exists(siteIndex))) {
   await copyFile(siteIndex, path.join(siteRoot, "404.html"));
 }
