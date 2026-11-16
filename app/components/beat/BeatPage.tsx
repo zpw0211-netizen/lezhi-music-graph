@@ -305,7 +305,6 @@ export function BeatPage() {
   return <section className="rhythm-lab beat-lab" aria-labelledby="beat-title">
     <header className="beat-intro">
       <div>
-        <p className="beat-kicker">节奏创编</p>
         <h2 id="beat-title">几件打击乐器，编一段合奏</h2>
       </div>
       <p className="beat-note">给每件乐器排一行节奏，合在一起听。</p>

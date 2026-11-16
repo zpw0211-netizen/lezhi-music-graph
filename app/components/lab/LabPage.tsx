@@ -942,7 +942,6 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
       <div className="lupan-console">
         <header className="lupan-intro">
           <div>
-            <p className="lupan-kicker">五声律坊</p>
             <h2 id="lupan-title">转一转律盘，听五声</h2>
           </div>
           <div className="lupan-current-key" aria-live="polite"><span>当前调式 · 1={gongKeyName}</span><b>{keyName} {modeRoot}</b></div>

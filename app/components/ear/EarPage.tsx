@@ -201,7 +201,6 @@ export function EarPage() {
   return <div className="ear-lab">
     <header className="ear-intro">
       <div>
-        <p className="ear-kicker">听音训练</p>
         <h2>竖起小耳朵，听出音的高低</h2>
       </div>
       <p className="ear-intro-tip">每轮 {ROUND} 题，答对 8 题得两颗星，全对得三颗星。</p>

@@ -28,7 +28,6 @@
   padding: 14px 0 12px;
   border-bottom: 1px solid var(--rhythm-line);
 }
-.rhythm-kicker { margin: 0 0 2px; color: var(--rhythm-seal); font: 12px/1.6 var(--serif, "Songti SC", serif); letter-spacing: .28em; }
 .rhythm-intro h2 { margin: 0; font: 400 28px/1.25 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .12em; white-space: nowrap; }
 
 .rhythm-mode { display: inline-flex; padding: 4px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; }
@@ -305,3 +304,52 @@
 .rhythm-note-mark { font: 600 9px var(--ui, sans-serif); fill: currentColor; }
 .rhythm-score:has(.rhythm-note-mark) .rhythm-bars { row-gap: 1.1em; }
 .rhythm-group.is-triplet .rhythm-triplet-mark { top: -.45em; }
+
+/* 节奏听写：先写答案，再对照正确答案，一小节一小节打勾。 */
+.rhythm-dictation { display: grid; gap: 10px; }
+.rhythm-dictation-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 0 4px; }
+.rhythm-dictation-head strong { font: 400 22px/1.3 var(--kai, "KaiTi", serif); letter-spacing: .08em; white-space: nowrap; }
+.rhythm-dictation-head span { color: var(--rhythm-ink-3); font-size: 13px; }
+.rhythm-score-label { margin: 6px 0 0; color: var(--rhythm-ink-2); font-size: 13px; }
+.rhythm-score-label.is-answer { padding-top: 12px; border-top: 1px dashed var(--rhythm-line); color: var(--rhythm-pine); font-weight: 600; }
+.rhythm-dictation .rhythm-score { margin-top: .1em; }
+.rhythm-bar { position: relative; }
+.rhythm-bar.is-right { border-radius: .12em; background: #F1F8F3; }
+.rhythm-bar.is-wrong { border-radius: .12em; background: #FCEFEC; }
+.rhythm-bar-mark {
+  position: absolute; top: -.32em; right: .3em; z-index: 1;
+  display: grid; width: 1.7em; height: 1.7em; place-items: center;
+  border-radius: 50%; color: #fff; font: 700 .36em/1 var(--ui, sans-serif);
+}
+.rhythm-bar.is-right .rhythm-bar-mark { background: var(--rhythm-pine); }
+.rhythm-bar.is-wrong .rhythm-bar-mark { background: var(--rhythm-seal); }
+.rhythm-result-hint.is-wrap { margin: 0; white-space: normal; }
+
+.rhythm-record { margin-top: 22px; }
+.rhythm-record > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.rhythm-record h3 { margin: 0; font: 400 19px/1.4 var(--kai, "KaiTi", serif); letter-spacing: .1em; white-space: nowrap; }
+.rhythm-record header p { margin: 0; color: var(--rhythm-ink-2); font-size: 14px; }
+.rhythm-record header button { margin-left: auto; }
+.rhythm-record ol { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.rhythm-record li { display: grid; gap: 1px; min-width: 92px; padding: 8px 12px; border: 1px solid var(--rhythm-line); border-radius: 12px; background: #fff; }
+.rhythm-record li span { color: var(--rhythm-ink-3); font-size: 12px; white-space: nowrap; }
+.rhythm-record li strong { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rhythm-record li.is-all { border-color: #9CC0A9; background: #F2F8F4; }
+.rhythm-record li.is-all strong { color: var(--rhythm-pine); }
+.rhythm-record li.is-half strong { color: #9A6614; }
+.rhythm-record li.is-low { border-color: #EBC3BC; }
+.rhythm-record li.is-low strong { color: var(--rhythm-seal); }
+.rhythm-record li.is-paper strong { color: var(--rhythm-ink-2); font-weight: 400; }
+
+/* 手机：四种玩法平分一行；听写的答题区两小节一行，空格够大，好点。 */
+@media (max-width: 560px) {
+  .rhythm-mode { display: grid; width: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .rhythm-mode button { padding: 0 4px; font-size: 13px; }
+}
+@container (max-width: 560px) {
+  .rhythm-dictation .rhythm-score.is-four { font-size: min(44px, calc(100cqw / (var(--bar-beats, 2) * 5.8 + 3))); }
+  .rhythm-dictation .rhythm-score.is-four .rhythm-bars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* 长提示换行时不留单独一个字。 */
+.rhythm-status, .rhythm-library-hint, .rhythm-record header p, .rhythm-result-hint.is-wrap { text-wrap: pretty; }

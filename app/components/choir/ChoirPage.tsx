@@ -6,7 +6,7 @@ import { ChoirComposer } from "./ChoirComposer";
 import { ChoirPractice } from "./ChoirPractice";
 import { choirPieces } from "./choir-model";
 
-/** 合唱训练：练课本里的合唱歌，或者自己编一首二声部合唱，再分声部练。 */
+/** 声部和鸣（原名合唱训练）：练课本里的合唱歌，或者自己编一首二声部合唱，再分声部练。 */
 
 const STORE = "yapu-choir";
 type Mode = "book" | "mine";
@@ -35,7 +35,6 @@ export function ChoirPage() {
   return <section className="rhythm-lab choir-lab" aria-labelledby="choir-title">
     <header className="choir-intro">
       <div>
-        <p className="choir-kicker">合唱训练</p>
         <h2 id="choir-title">{mode === "mine" ? "自己编一首合唱，再分声部唱" : "唱好自己的声部，再和别人合在一起"}</h2>
       </div>
       {pieces.length > 0 && <div className="choir-modes" role="radiogroup" aria-label="练什么">

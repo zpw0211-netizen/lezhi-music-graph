@@ -211,7 +211,6 @@ export function VaryPage() {
   return <section className="rhythm-lab vary-lab" aria-labelledby="vary-title">
     <header className="vary-intro">
       <div>
-        <p className="vary-kicker">旋律变奏</p>
         <h2 id="vary-title">把主题变一变，连成一首三部曲</h2>
       </div>
       <ol className="vary-steps" aria-label="创作步骤">

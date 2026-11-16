@@ -216,7 +216,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   rhythm: "音乐探索与创造 · 节奏训练",
   beat: "音乐探索与创造 · 节奏创编",
   vary: "音乐探索与创造 · 旋律变奏",
-  choir: "音乐探索与创造 · 合唱训练",
+  choir: "音乐探索与创造 · 声部和鸣",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",

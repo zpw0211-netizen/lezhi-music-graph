@@ -1,7 +1,6 @@
 /* 合唱训练（#/choir）：上面选课本和歌，中间选声部和三步练，下面是谱子和音准图。 */
 .choir-lab { padding-bottom: 56px; }
 .choir-intro { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 24px; margin: 6px 0 14px; }
-.choir-kicker { margin: 0; color: var(--rhythm-seal); font: 12.5px/1.5 var(--serif); letter-spacing: .24em; }
 .choir-intro h2 { text-wrap: balance; margin: 2px 0 0; font: 500 clamp(24px, 2.4vw, 32px)/1.3 var(--font-display); letter-spacing: .06em; }
 .choir-note, .choir-empty { margin: 0; color: var(--rhythm-ink-3); font-size: 13px; text-wrap: pretty; }
 .choir-label { color: var(--rhythm-ink-3); font-size: 12.5px; letter-spacing: .12em; white-space: nowrap; }

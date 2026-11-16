@@ -12,15 +12,17 @@ import {
   packBars,
   timeline,
   type MeterId,
+  type RhythmLevel,
   type RhythmPattern,
 } from "../../lib/rhythm/patterns";
+import { dictationPool, dictationQuestion, gradeDictation } from "../../lib/rhythm/dictation";
 import { drumThump, playRhythm, prepareRhythmAudio, type RhythmPlayback } from "../../lib/rhythm/rhythm-audio";
 import { judgeTaps, WINDOW, type ScoreResult } from "../../lib/rhythm/scoring";
 import { LEVELS, LEVEL_BARS, PASS_SCORE } from "../../lib/rhythm/levels";
 import { PatternGlyph, RhythmScore } from "./RhythmScore";
 import { publicAssetUrl } from "../../lib/app/assets";
 
-type Mode = "random" | "edit" | "levels";
+type Mode = "random" | "edit" | "levels" | "dictation";
 
 const STORAGE_KEY = "yapu.rhythm.v1";
 const LEVELS_KEY = "yapu.rhythm.levels.v1";
@@ -30,8 +32,13 @@ const MAX_EDIT_BARS = 16;
 const MIN_BARS = 8;
 const BAR_COUNTS = [8, 12, 16];
 const MAX_SAVED = 30;
+/** 节奏听写 is short: two bars for the youngest, eight for the oldest. */
+const DICTATION_BARS = [2, 4, 8];
+const MODES: Array<[Mode, string]> = [["random", "随机训练"], ["edit", "自己编排"], ["levels", "闯关"], ["dictation", "节奏听写"]];
 
-type Saved = { mode: Mode; meter: MeterId | number; bars: number; bpm: number; allowed: string[]; edit: string[]; cards?: boolean };
+type Saved = { mode: Mode; meter: MeterId | number; bars: number; bpm: number; allowed: string[]; edit: string[]; cards?: boolean; dictBars?: number; dictLevel?: number };
+/** One dictation question: bars right out of bars asked, or written on paper (nothing on screen). */
+type DictationRecord = { right: number; total: number; onScreen: boolean };
 type Practice = { id: string; name: string; meter: MeterId; bpm: number; ids: string[] };
 
 function readJson<T>(key: string): Partial<T> | null {
@@ -74,6 +81,14 @@ export function RhythmPage() {
   const [unlockAll, setUnlockAll] = useState(false);
   const [mine, setMine] = useState<Practice[]>([]);
   const [saveName, setSaveName] = useState("");
+  const [dictBars, setDictBars] = useState(4);
+  const [dictLevel, setDictLevel] = useState<RhythmLevel>(1);
+  const [questionIds, setQuestionIds] = useState<string[]>([]);
+  const [answerIds, setAnswerIds] = useState<string[]>([]);
+  const [revealed, setRevealed] = useState(false);
+  const [listens, setListens] = useState(0);
+  const [questionNo, setQuestionNo] = useState(1);
+  const [records, setRecords] = useState<DictationRecord[]>([]);
   const [loaded, setLoaded] = useState(false);
   const playbackRef = useRef<RhythmPlayback | null>(null);
   const tapsRef = useRef<number[]>([]);
@@ -89,7 +104,12 @@ export function RhythmPage() {
     const savedMeter = METER_BY_ID.get(storedMeter as MeterId) ?? METERS[0];
     const savedBars = BAR_COUNTS.includes(saved.bars ?? 0) ? saved.bars! : MIN_BARS;
     const savedAllowed = Array.isArray(saved.allowed) && saved.allowed.length ? saved.allowed : DEFAULT_PATTERN_IDS;
-    if (saved.mode === "edit" || saved.mode === "random" || saved.mode === "levels") setMode(saved.mode);
+    if (saved.mode === "edit" || saved.mode === "random" || saved.mode === "levels" || saved.mode === "dictation") setMode(saved.mode);
+    const savedDictBars = DICTATION_BARS.includes(saved.dictBars ?? 0) ? saved.dictBars! : 4;
+    const savedDictLevel = (saved.dictLevel === 2 || saved.dictLevel === 3 ? saved.dictLevel : 1) as RhythmLevel;
+    setDictBars(savedDictBars);
+    setDictLevel(savedDictLevel);
+    setQuestionIds(dictationQuestion(dictationPool(savedMeter, savedDictLevel), savedMeter, savedDictBars));
     setMeterId(savedMeter.id);
     setBarCount(savedBars);
     if (typeof saved.bpm === "number") setBpm(Math.min(160, Math.max(40, saved.bpm)));
@@ -111,8 +131,8 @@ export function RhythmPage() {
 
   useEffect(() => {
     if (!loaded) return;
-    writeJson(STORAGE_KEY, { mode, meter: meterId, bars: barCount, bpm, allowed, edit: editIds } satisfies Saved);
-  }, [loaded, mode, meterId, barCount, bpm, allowed, editIds]);
+    writeJson(STORAGE_KEY, { mode, meter: meterId, bars: barCount, bpm, allowed, edit: editIds, dictBars, dictLevel } satisfies Saved);
+  }, [loaded, mode, meterId, barCount, bpm, allowed, editIds, dictBars, dictLevel]);
   useEffect(() => { if (loaded) writeJson(LEVELS_KEY, { stars: levelStars }); }, [loaded, levelStars]);
   useEffect(() => { if (loaded) writeJson(MINE_KEY, { list: mine }); }, [loaded, mine]);
 
@@ -120,13 +140,23 @@ export function RhythmPage() {
   const activeMeterId = mode === "levels" ? level.meter : meterId;
   const activeBpm = mode === "levels" ? level.bpm : bpm;
   const meter = METER_BY_ID.get(activeMeterId)!;
-  const ids = mode === "random" ? randomIds : mode === "edit" ? editIds : levelIds;
+  const dictating = mode === "dictation";
+  // While dictating, `ids` is the question: it is what plays, and it stays hidden until 看答案.
+  const ids = mode === "random" ? randomIds : mode === "edit" ? editIds : mode === "levels" ? levelIds : questionIds;
   const bars = useMemo(() => packBars(ids, meter), [ids, meter]);
   const tokens = useMemo(() => timeline(bars, meter), [bars, meter]);
   // While composing, the score always shows at least eight bars to fill.
   const shownBars = useMemo(() => mode === "edit" && bars.length < MIN_BARS
     ? [...bars, ...Array.from({ length: MIN_BARS - bars.length }, () => ({ groups: [], empty: meter.beats }))]
     : bars, [mode, bars, meter]);
+  // The pupil's answer, padded with empty bars to the question's length.
+  const answerBars = useMemo(() => {
+    const packed = answerIds.length ? packBars(answerIds, meter) : [];
+    return packed.length < dictBars
+      ? [...packed, ...Array.from({ length: dictBars - packed.length }, () => ({ groups: [], empty: meter.beats }))]
+      : packed;
+  }, [answerIds, meter, dictBars]);
+  const answerMarks = useMemo(() => dictating && revealed && answerIds.length ? gradeDictation(questionIds, answerIds, meter) : undefined, [dictating, revealed, questionIds, answerIds, meter]);
   const totalBeats = bars.length * meter.beats;
   const hasNotes = tokens.some((t) => t.sounding);
 
@@ -165,6 +195,7 @@ export function RhythmPage() {
     const tapRun = kind === "tap";
     tapsRef.current = [];
     setResult(null);
+    if (dictating && !revealed && kind === "listen") setListens((n) => n + 1);
     const runTokens = tokens;
     const runLevel = mode === "levels" ? levelIndex : null;
     const playback = playRhythm(
@@ -175,10 +206,11 @@ export function RhythmPage() {
         meter,
         bpm: activeBpm,
         // While pupils tap, they make the rhythm; the metronome keeps the beat.
-        rhythm: tapRun ? false : rhythmOn,
+        // A dictation question always sounds, once each time.
+        rhythm: tapRun ? false : dictating ? true : rhythmOn,
         metronome: tapRun ? true : metronomeOn,
         countIn: tapRun ? true : countIn,
-        loop: tapRun ? false : loop,
+        loop: tapRun || dictating ? false : loop,
       },
       () => {
         playbackRef.current = null;
@@ -261,6 +293,7 @@ export function RhythmPage() {
   const changeMeter = (next: MeterId) => {
     setMeterId(next);
     if (mode === "random") setRandomIds(generateRhythm(allowed, METER_BY_ID.get(next)!, barCount));
+    if (dictating) newQuestion({ meter: METER_BY_ID.get(next)! });
   };
   const changeBars = (next: number) => {
     setBarCount(next);
@@ -281,18 +314,55 @@ export function RhythmPage() {
     return packed.length >= MAX_EDIT_BARS && last.empty === 0;
   })();
 
+  // 自己编排 writes the teacher's rhythm; 节奏听写 writes the pupil's answer, no longer than the question.
+  const writing = dictating ? answerIds : editIds;
+  const setWriting = dictating ? setAnswerIds : setEditIds;
+  const writeLimit = dictating ? dictBars : MAX_EDIT_BARS;
+  const answerFull = (() => {
+    const packed = packBars(answerIds, meter);
+    return packed.length >= dictBars && packed[packed.length - 1].empty === 0;
+  })();
   const insert = (pattern: RhythmPattern) => {
-    const at = selected === null ? editIds.length : selected + 1;
-    const next = [...editIds.slice(0, at), pattern.id, ...editIds.slice(at)];
+    const at = selected === null ? writing.length : selected + 1;
+    const next = [...writing.slice(0, at), pattern.id, ...writing.slice(at)];
     const packed = packBars(next, meter);
-    if (packed.length > MAX_EDIT_BARS || (packed.length === MAX_EDIT_BARS && packed[packed.length - 1].empty < 0)) return;
-    setEditIds(next);
+    if (packed.length > writeLimit) return;
+    setWriting(next);
     setSelected(selected === null ? null : at);
   };
   const removeSelected = () => {
     if (selected === null) return;
-    setEditIds((current) => current.filter((_, i) => i !== selected));
+    setWriting((current) => current.filter((_, i) => i !== selected));
     setSelected(selected > 0 ? selected - 1 : null);
+  };
+
+  const newQuestion = (change: { meter?: typeof meter; bars?: number; level?: RhythmLevel } = {}) => {
+    const nextMeter = change.meter ?? meter;
+    setQuestionIds(dictationQuestion(dictationPool(nextMeter, change.level ?? dictLevel), nextMeter, change.bars ?? dictBars));
+    // 下一题 moves the count on; changing a setting mid-question keeps its number.
+    if (revealed) setQuestionNo((n) => n + 1);
+    setAnswerIds([]);
+    setSelected(null);
+    setRevealed(false);
+    setListens(0);
+  };
+  const reveal = () => {
+    stop();
+    setSelected(null);
+    setRevealed(true);
+    const marks = gradeDictation(questionIds, answerIds, meter);
+    setRecords((current) => [...current, { right: marks.filter(Boolean).length, total: marks.length, onScreen: answerIds.length > 0 }].slice(-40));
+  };
+  const changeMode = (next: Mode) => {
+    setMode(next);
+    setSelected(null);
+    // The meter is shared: if it changed in another mode, the old question no longer fits.
+    if (next === "dictation" && !dictating) {
+      // (In 闯关 the active meter is the level's: dictation uses the chosen one.)
+      const dictMeter = METER_BY_ID.get(meterId)!;
+      const packed = packBars(questionIds, dictMeter);
+      if (packed.length !== dictBars || packed.some((bar) => bar.empty > 0)) newQuestion({ meter: dictMeter });
+    }
   };
   const copyToEdit = () => {
     setEditIds(randomIds);
@@ -317,15 +387,16 @@ export function RhythmPage() {
   // Projected full screen: shrink the score until the whole stage (every bar, the controls) fits on one screen.
   useEffect(() => {
     const stage = stageRef.current;
-    const score = stage?.querySelector<HTMLElement>(".rhythm-score");
-    if (!stage || !score) return;
+    const scores = [...(stage?.querySelectorAll<HTMLElement>(".rhythm-score") ?? [])];
+    if (!stage || !scores.length) return;
+    // 节奏听写 shows the answer and the question together: both shrink alike.
     const fit = () => {
-      score.style.fontSize = "";
+      scores.forEach((score) => { score.style.fontSize = ""; });
       if (document.fullscreenElement !== stage) return;
-      let size = parseFloat(getComputedStyle(score).fontSize);
+      let size = parseFloat(getComputedStyle(scores[0]).fontSize);
       for (let i = 0; i < 24 && stage.scrollHeight > stage.clientHeight && size > 18; i += 1) {
         size *= 0.92;
-        score.style.fontSize = `${size}px`;
+        scores.forEach((score) => { score.style.fontSize = `${size}px`; });
       }
     };
     fit();
@@ -335,7 +406,7 @@ export function RhythmPage() {
       document.removeEventListener("fullscreenchange", fit);
       window.removeEventListener("resize", fit);
     };
-  }, [shownBars, meter, mode, result, countdown]);
+  }, [shownBars, answerBars, revealed, meter, mode, result, countdown]);
 
   const fullscreen = () => {
     const stage = stageRef.current;
@@ -351,19 +422,21 @@ export function RhythmPage() {
     : lastBar.empty > 0
       ? `已编 ${bars.length} 小节，最后一小节还差 ${Math.round(lastBar.empty / meter.unit)} 拍。`
       : `已编 ${bars.length} 小节，每小节都已填满。`;
+  const answerFilled = answerIds.length ? packBars(answerIds, meter).filter((bar) => bar.empty === 0).length : 0;
+  const onScreen = records.filter((record) => record.onScreen);
+  const recordRight = onScreen.reduce((sum, record) => sum + record.right, 0);
+  const recordTotal = onScreen.reduce((sum, record) => sum + record.total, 0);
+  const dictPatterns = new Set(dictationPool(meter, dictLevel));
   const passed = mode === "levels" && result !== null && result.score >= PASS_SCORE;
   const tempoMark = meter.bottom === 8 ? "♪" : "♩";
 
   return (
     <section className="rhythm-lab" aria-labelledby="rhythm-title">
       <header className="rhythm-intro">
-        <div>
-          <p className="rhythm-kicker">节奏训练</p>
-          <h2 id="rhythm-title">听一听，拍一拍</h2>
-        </div>
+        <h2 id="rhythm-title">{dictating ? "听一听，写下来" : "听一听，拍一拍"}</h2>
         <div className="rhythm-mode" role="radiogroup" aria-label="练习方式">
-          {([["random", "随机训练"], ["edit", "自己编排"], ["levels", "闯关"]] as const).map(([value, label]) => (
-            <button key={value} type="button" role="radio" aria-checked={mode === value} className={mode === value ? "is-active" : ""} onClick={() => setMode(value)}>{label}</button>
+          {MODES.map(([value, label]) => (
+            <button key={value} type="button" role="radio" aria-checked={mode === value} className={mode === value ? "is-active" : ""} onClick={() => changeMode(value)}>{label}</button>
           ))}
         </div>
       </header>
@@ -415,6 +488,26 @@ export function RhythmPage() {
               ))}
             </div>
           </div>
+          {dictating && (
+            <>
+              <div className="rhythm-field">
+                <span className="rhythm-field-label">小节数</span>
+                <div className="rhythm-chips">
+                  {DICTATION_BARS.map((n) => (
+                    <button key={n} type="button" aria-pressed={dictBars === n} className={dictBars === n ? "is-active" : ""} disabled={!!playing} onClick={() => { setDictBars(n); newQuestion({ bars: n }); }}>{n} 小节</button>
+                  ))}
+                </div>
+              </div>
+              <div className="rhythm-field">
+                <span className="rhythm-field-label">难度</span>
+                <div className="rhythm-chips">
+                  {RHYTHM_LEVELS[meter.family].map(({ level: lvl, label }) => (
+                    <button key={lvl} type="button" aria-pressed={dictLevel === lvl} className={dictLevel === lvl ? "is-active" : ""} disabled={!!playing} onClick={() => { setDictLevel(lvl); newQuestion({ level: lvl }); }}>{label}</button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           {mode === "random" && (
             <div className="rhythm-field">
               <span className="rhythm-field-label">小节数</span>
@@ -434,6 +527,31 @@ export function RhythmPage() {
       )}
 
       <div className="rhythm-stage" ref={stageRef}>
+        {dictating ? (
+          <div className="rhythm-dictation">
+            <p className="rhythm-dictation-head">
+              <strong>第 {questionNo} 题</strong>
+              <span>{meter.id} 拍 · {tempoMark} = {bpm} · {dictBars} 小节 · {revealed ? "已公布答案" : listens ? `已听 ${listens} 遍` : "先点「听题目」"}</span>
+            </p>
+            {(!revealed || answerIds.length > 0) && <>
+              <p className="rhythm-score-label">{revealed ? "我写的" : "点下面的节奏型写在这里，也可以写在纸上"}</p>
+              <RhythmScore
+                bars={answerBars}
+                meter={meter}
+                activeKey={null}
+                countdown={revealed ? null : countdown}
+                selected={revealed ? null : selected}
+                onSelect={revealed ? undefined : (index) => setSelected(selected === index ? null : index)}
+                barMarks={answerMarks}
+                label="我写的节奏"
+              />
+            </>}
+            {revealed && <>
+              <p className="rhythm-score-label is-answer">正确答案</p>
+              <RhythmScore bars={bars} meter={meter} activeKey={activeKey} countdown={countdown} label="正确答案" />
+            </>}
+          </div>
+        ) : (
         <RhythmScore
           bars={shownBars}
           meter={meter}
@@ -443,15 +561,27 @@ export function RhythmPage() {
           selected={selected}
           onSelect={mode === "edit" ? (index) => setSelected(selected === index ? null : index) : undefined}
         />
+        )}
 
         <div className="rhythm-play-row">
           <div className="rhythm-transport">
             <button type="button" className={`rhythm-play${playing === "listen" ? " is-playing" : ""}`} onClick={() => void start("listen")} disabled={!hasNotes || audioLoading || playing === "tap"}>
-              {playing === "listen" ? "■ 停止" : audioLoading ? "载入钢琴音…" : mode === "levels" ? "▶ 听示范" : "▶ 播放"}
+              {playing === "listen" ? "■ 停止" : audioLoading ? "载入钢琴音…" : mode === "levels" ? "▶ 听示范" : dictating ? (revealed ? "▶ 听答案" : listens ? "▶ 再听一遍" : "▶ 听题目") : "▶ 播放"}
             </button>
-            <button type="button" className={`rhythm-tap-start${playing === "tap" ? " is-playing" : ""}`} onClick={() => void start("tap")} disabled={!hasNotes || audioLoading || playing === "listen"}>
-              {playing === "tap" ? "■ 停止" : mode === "levels" ? "开始闯关" : "跟拍打分"}
-            </button>
+            {!dictating && (
+              <button type="button" className={`rhythm-tap-start${playing === "tap" ? " is-playing" : ""}`} onClick={() => void start("tap")} disabled={!hasNotes || audioLoading || playing === "listen"}>
+                {playing === "tap" ? "■ 停止" : mode === "levels" ? "开始闯关" : "跟拍打分"}
+              </button>
+            )}
+            {dictating && (revealed ? (
+              <button type="button" className="rhythm-tap-start" onClick={() => newQuestion()} disabled={!!playing}>下一题</button>
+            ) : (
+              <>
+                <button type="button" className="rhythm-tap-start" onClick={reveal} disabled={!listens}>看答案</button>
+                <button type="button" className="rhythm-secondary" onClick={removeSelected} disabled={selected === null}>删除所选</button>
+                <button type="button" className="rhythm-ghost" onClick={() => { setAnswerIds([]); setSelected(null); }} disabled={!answerIds.length}>清空</button>
+              </>
+            ))}
             {mode === "random" && (
               <>
                 <button type="button" className="rhythm-secondary" onClick={regenerate} disabled={!!playing}>换一条</button>
@@ -469,7 +599,10 @@ export function RhythmPage() {
             )}
             {mode !== "levels" && (
               <div className="rhythm-toggles">
-                {([
+                {(dictating ? [
+                  ["节拍器", metronomeOn, setMetronomeOn],
+                  ["预备拍", countIn, setCountIn],
+                ] as const : [
                   ["节奏声", rhythmOn, setRhythmOn],
                   ["节拍器", metronomeOn, setMetronomeOn],
                   ["预备拍", countIn, setCountIn],
@@ -484,7 +617,7 @@ export function RhythmPage() {
             )}
             <button type="button" className="rhythm-ghost rhythm-fullscreen" onClick={fullscreen}>投屏全屏</button>
           </div>
-          <div className="rhythm-drum-wrap">
+          {!dictating && <div className="rhythm-drum-wrap">
             <button
               type="button"
               className={`rhythm-drum${playing === "tap" ? " is-armed" : ""}`}
@@ -499,7 +632,7 @@ export function RhythmPage() {
               {drumHit > 0 && <img key={drumHit} className="rhythm-drum-img is-hit" src={publicAssetUrl("art/rhythm/drum-hit.webp")} alt="" draggable={false} />}
             </button>
             <small>{playing === "tap" ? "跟着节奏敲鼓！" : "点鼓或按空格键"}</small>
-          </div>
+          </div>}
         </div>
 
         {result && (
@@ -525,6 +658,20 @@ export function RhythmPage() {
             </div>
           </div>
         )}
+        {dictating && revealed && (
+          <div className={`rhythm-result${answerMarks?.every(Boolean) ? " is-passed" : ""}`} role="status">
+            {answerMarks ? (
+              <div className="rhythm-result-score">
+                <strong>{answerMarks.filter(Boolean).length}</strong><span>/ {answerMarks.length} 小节写对了</span>
+                <em>{answerMarks.every(Boolean) ? "全对！" : `听了 ${listens} 遍`}</em>
+              </div>
+            ) : (
+              <p className="rhythm-result-hint is-wrap">对照正确答案，看看纸上写对了几小节。可以点「听答案」边听边看。</p>
+            )}
+            {answerMarks && !answerMarks.every(Boolean) && <span className="rhythm-result-hint">打 ✗ 的小节，对照下面的正确答案再听一遍。</span>}
+          </div>
+        )}
+        {dictating && !revealed && <p className="rhythm-status">{listens ? `已写 ${answerFilled} / ${dictBars} 小节。听够了点「看答案」，写在纸上的同学也可以直接对答案。` : "先点「听题目」，有预备拍，听完可以再听。"}{selected !== null && " 新的节奏型会插在所选的后面。"}</p>}
         {mode === "edit" && <p className="rhythm-status">{editStatus}{selected !== null && " 新的节奏型会插在所选的后面。"}</p>}
         {audioError && <p className="rhythm-status">钢琴音载入失败，请检查网络后再试。</p>}
         {mode === "random" && !familyPatterns.some((p) => allowed.includes(p.id)) && <p className="rhythm-status">这个拍号下还没有勾选节奏型，暂时只用{meter.family === "compound" ? "三个八分音符" : "四分音符"}出题。</p>}
@@ -557,12 +704,32 @@ export function RhythmPage() {
         </section>
       )}
 
+      {dictating && records.length > 0 && (
+        <section className="rhythm-record" aria-labelledby="rhythm-record-title">
+          <header>
+            <h3 id="rhythm-record-title">这一轮的听写</h3>
+            <p>{recordTotal ? `屏幕上写了 ${onScreen.length} 题，共写对 ${recordRight} / ${recordTotal} 小节（${Math.round((recordRight / recordTotal) * 100)}%）` : "都写在纸上，对照答案自己数一数写对了几小节。"}</p>
+            <button type="button" className="rhythm-level-toggle" onClick={() => setRecords([])}>清空记录</button>
+          </header>
+          <ol>
+            {records.map((record, index) => (
+              <li key={index} className={!record.onScreen ? "is-paper" : record.right === record.total ? "is-all" : record.right * 2 >= record.total ? "is-half" : "is-low"}>
+                <span>第 {index + 1} 题</span>
+                <strong>{record.onScreen ? `${record.right} / ${record.total}` : "纸上作答"}</strong>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       {mode !== "levels" && (
         <div className="rhythm-library">
           <p className="rhythm-library-hint">
-            {mode === "random" ? "勾选要练的节奏型，「换一条」只会用到勾选的这些。" : editFull ? `已经编满 ${MAX_EDIT_BARS} 小节了。` : "点一个节奏型，把它加进节奏谱。"}
+            {mode === "random" ? "勾选要练的节奏型，「换一条」只会用到勾选的这些。"
+              : dictating ? (revealed ? "点「下一题」继续听写。" : answerFull ? `${dictBars} 小节都写满了，可以点「看答案」。` : "点节奏型，按听到的顺序写进上面的小节。题目只会用到下面这些节奏型。")
+              : editFull ? `已经编满 ${MAX_EDIT_BARS} 小节了。` : "点一个节奏型，把它加进节奏谱。"}
           </p>
-          {RHYTHM_LEVELS[meter.family].map(({ level: lvl, label, caption }) => {
+          {RHYTHM_LEVELS[meter.family].filter(({ level: lvl }) => !dictating || lvl <= dictLevel).map(({ level: lvl, label, caption }) => {
             const levelPatterns = familyPatterns.filter((p) => p.level === lvl);
             const allOn = levelPatterns.every((p) => allowed.includes(p.id));
             return (
@@ -575,7 +742,7 @@ export function RhythmPage() {
                   )}
                 </header>
                 <div className="rhythm-cards">
-                  {levelPatterns.map((pattern) => {
+                  {levelPatterns.filter((pattern) => !dictating || dictPatterns.has(pattern.id)).map((pattern) => {
                     const fits = fitsMeter(pattern, meter);
                     const on = allowed.includes(pattern.id);
                     return mode === "random" ? (
@@ -598,7 +765,7 @@ export function RhythmPage() {
                         key={pattern.id}
                         type="button"
                         className="rhythm-card"
-                        disabled={!fits || editFull}
+                        disabled={!fits || (dictating ? revealed || answerFull : editFull)}
                         onClick={() => insert(pattern)}
                       >
                         <span className="rhythm-check is-add" aria-hidden="true">＋</span>

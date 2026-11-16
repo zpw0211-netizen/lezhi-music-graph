@@ -116,7 +116,7 @@ export function PatternGlyph({ pattern, activeKey, marks, groupIndex, fit }: {
 }
 
 /** The rhythm score, as a line of bars. */
-export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected, onSelect }: {
+export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected, onSelect, barMarks, label = "节奏谱" }: {
   bars: RhythmBar[];
   meter: Meter;
   activeKey: string | null;
@@ -125,13 +125,17 @@ export function RhythmScore({ bars, meter, activeKey, marks, countdown, selected
   /** Edit mode: the selected group, and a handler that makes groups clickable. */
   selected?: number | null;
   onSelect?: (index: number) => void;
+  /** 节奏听写: whether each bar of the written answer matches the question. */
+  barMarks?: boolean[];
+  label?: string;
 }) {
   return (
-    <div className={`rhythm-score is-four`} style={{ "--bar-beats": meter.beats } as CSSProperties} aria-label="节奏谱">
+    <div className={`rhythm-score is-four`} style={{ "--bar-beats": meter.beats } as CSSProperties} aria-label={label}>
       <span className="rhythm-meter" aria-label={`${meter.id} 拍`}><span>{meter.top}</span><span>{meter.bottom}</span></span>
       <div className="rhythm-bars">
         {bars.map((bar, barIndex) => (
-          <div className="rhythm-bar" key={barIndex}>
+          <div className={`rhythm-bar${barMarks?.[barIndex] === true ? " is-right" : barMarks?.[barIndex] === false ? " is-wrong" : ""}`} key={barIndex}>
+            {barMarks && barIndex < barMarks.length && <span className="rhythm-bar-mark" role="img" aria-label={`第 ${barIndex + 1} 小节${barMarks[barIndex] ? "写对了" : "不对"}`}>{barMarks[barIndex] ? "✓" : "✗"}</span>}
             {bar.groups.map(({ index, pattern }) => {
               const playingHere = !!activeKey && activeKey.startsWith(`${index}:`);
               const glyph = <PatternGlyph pattern={pattern} activeKey={activeKey} marks={marks} groupIndex={index} />;

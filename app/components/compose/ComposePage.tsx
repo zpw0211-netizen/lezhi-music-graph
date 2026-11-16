@@ -323,7 +323,6 @@ export function ComposePage() {
   return <div className="compose-lab">
     <header className="compose-intro">
       <div>
-        <p className="compose-kicker">旋律创编</p>
         <h2>用几个音，写一段自己的旋律</h2>
       </div>
       <div className="compose-levels" role="radiogroup" aria-label="年级">
