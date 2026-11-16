@@ -5,7 +5,7 @@ import { displayMeter, midiOf, notation } from "../../lib/lesson/melodies";
 import type { Melody, MelodyNote } from "../../lib/lesson/melodies";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { INSTRUMENTS, loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
-import type { InstrumentId, InstrumentSampler } from "../../lib/lesson/instrument-sampler";
+import type { InstrumentId, InstrumentSampler, PartColor } from "../../lib/lesson/instrument-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { SlidingIndicator } from "../graph/SlidingIndicator";
 import { MelodyLine } from "./MelodyLine";
@@ -116,7 +116,7 @@ function getBeamRuns(notes: MelodyNote[], meter: string): BeamRun[] {
 // Keep decoded instrument banks for the session so switching excerpts does not re-decode samples.
 const sharedSamplers: Partial<Record<InstrumentId, InstrumentSampler>> = {};
 const sharedVocals: Record<string, Promise<AudioBuffer>> = {};
-type Timbre = InstrumentId | "vocal";
+type Timbre = InstrumentId | "vocal" | "choir";
 const VOCAL_LABEL = "人声（童声）";
 /** With a male recording for a lower part: women's voice on top, men's voice below. */
 const CHOIR_LABEL = "人声（女声＋男声）";
@@ -157,24 +157,66 @@ export function MelodySet({ melodies, large, notationStyle = "jianpu" }: { melod
   </div>;
 }
 
+/** A part's seat, left to right, so two parts on different instruments are also apart in space. */
+function colorChain(ctx: AudioContext, color: PartColor, destination: AudioNode): AudioNode {
+  if (!color.pan || typeof ctx.createStereoPanner !== "function") return destination;
+  const panner = ctx.createStereoPanner();
+  panner.pan.value = color.pan;
+  panner.connect(destination);
+  return panner;
+}
+
 /** Plays a jianpu melody (and any extra voices) with WebAudio, highlighting each sounding note. */
-export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundingNotes }: { melody: Melody; large?: boolean; notationStyle?: ScoreNotation; onSoundingNotes?: (notes: number[], playing: boolean) => void }) {
+/** When playback starts: the audio clock, the time beat 0 sounds and the length of a beat (合唱训练 times the singer against it). */
+export type PlaybackClock = { ctx: AudioContext; start: number; secondsPerBeat: number };
+
+export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundingNotes, partLevels, onPlayback, preferVocal, partColors }: {
+  melody: Melody; large?: boolean; notationStyle?: ScoreNotation; onSoundingNotes?: (notes: number[], playing: boolean) => void;
+  /** Volume of each part, 0–1, changeable while playing (合唱训练). Replaces the part checkboxes. */
+  partLevels?: number[];
+  /** Called with the clock when playback starts and with null when it stops. */
+  onPlayback?: (clock: PlaybackClock | null) => void;
+  /** Start on the sung recording when there is one. */
+  preferVocal?: boolean;
+  /** An instrument for each part (合唱训练 自己编): offered as the 分声部 timbre and chosen first, so the parts sound different. */
+  partColors?: Array<PartColor | undefined>;
+}) {
   const soundingCallback = useRef(onSoundingNotes);
   useEffect(() => { soundingCallback.current = onSoundingNotes; }, [onSoundingNotes]);
+  const playbackCallback = useRef(onPlayback);
+  useEffect(() => { playbackCallback.current = onPlayback; }, [onPlayback]);
   const lines = useMemo<Line[]>(() => [{ label: melody.label ?? "旋律", bars: melody.bars }, ...(melody.voices ?? [])], [melody]);
   const [playing, setPlaying] = useState(false);
-  const [instrument, setInstrument] = useState<Timbre>("piano");
   /** One recording per part where one was sung: the main line (绮萱) and lower choral parts (Ria, male). */
   const vocals = useMemo(() => lines.map((_, part) => findVocal(melody, part)), [lines, melody]);
+  const hasColors = !!partColors?.some(Boolean);
+  const [instrument, setInstrument] = useState<Timbre>(() => (preferVocal && vocals.some(Boolean) ? "vocal" : hasColors ? "choir" : "piano"));
+  const choirMode = instrument === "choir" && hasColors;
+  const partColorsRef = useRef(partColors);
+  useEffect(() => { partColorsRef.current = partColors; }, [partColors]);
+  /** Each part's instrument loaded for this run. */
+  const choirSamplers = useRef<Partial<Record<InstrumentId, InstrumentSampler>>>({});
   const vocal = vocals[0];
+  /** Each part's own gain node while playing, so partLevels can change mid-song. */
+  const partGains = useRef<{ ctx: AudioContext; nodes: GainNode[] } | null>(null);
+  const partLevelsRef = useRef(partLevels);
+  useEffect(() => {
+    partLevelsRef.current = partLevels;
+    const gains = partGains.current;
+    if (gains) partLevels?.forEach((level, part) => gains.nodes[part]?.gain.setTargetAtTime(level, gains.ctx.currentTime, 0.04));
+  }, [partLevels]);
   /** Several lines with words are a choir; without words (打击乐合奏, 铝板琴 accompaniment) an ensemble. */
   const playLabel = lines.length < 2 ? "播放旋律" : lines.some((line) => line.bars.some((bar) => bar.some((note) => note.lyric))) ? "播放合唱" : "播放合奏";
   const anyVocal = vocals.some(Boolean);
   const singers = new Set(vocals.flatMap((v) => (v ? [v.singer] : [])));
   const vocalLabel = !singers.has("ria") ? VOCAL_LABEL : singers.has("qixuan") ? CHOIR_LABEL : MALE_LABEL;
-  const timbres = useMemo(() => [...INSTRUMENTS, ...(anyVocal ? [{ id: "vocal" as const, label: vocalLabel }] : [])], [anyVocal, vocalLabel]);
+  const timbres = useMemo(() => [
+    ...(hasColors ? [{ id: "choir" as const, label: partColors!.map((color) => INSTRUMENTS.find((item) => item.id === color?.timbre)?.label ?? "钢琴").join("＋") }] : []),
+    ...INSTRUMENTS,
+    ...(anyVocal ? [{ id: "vocal" as const, label: vocalLabel }] : []),
+  ], [anyVocal, vocalLabel, hasColors, partColors]);
   /** Sampled instrument for everything the recorded voices do not sing (other parts, cues). */
-  const sampleInstrument: InstrumentId = instrument === "vocal" ? "piano" : instrument;
+  const sampleInstrument: InstrumentId = instrument === "vocal" || instrument === "choir" ? "piano" : instrument;
   const singing = instrument === "vocal" && anyVocal;
   const [loadingSampler, setLoadingSampler] = useState(false);
   const [audioMode, setAudioMode] = useState<"unknown" | "sampled" | "synth">("unknown");
@@ -239,7 +281,9 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     setFollow(null);
     beatRef.current = -1;
     setCurrent([]);
+    partGains.current = null;
     soundingCallback.current?.([], false);
+    playbackCallback.current?.(null);
     if (shouldAnnounceStop && mounted.current) setAnnouncement("已停止");
   }, []);
   useEffect(() => {
@@ -293,6 +337,29 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     if (lines.some((line) => percussionKind(line.label))) await loadPercussionStrokes(ctx);
     let sampler = sharedSamplers[sampleInstrument] ?? null;
     let samplerLoadFailed = false;
+    // 分声部音色: each part's instrument; a part without one, or one that cannot load, falls back to the piano.
+    choirSamplers.current = {};
+    const colors = choirMode ? lines.map((_, part) => partColorsRef.current?.[part]) : [];
+    if (choirMode) {
+      const needed = [...new Set(colors.flatMap((color) => (color ? [color.timbre] : [])))];
+      samplerLoading.current = true;
+      setLoadingSampler(true);
+      setAnnouncement("载入分声部音色…");
+      try {
+        await ctx.resume();
+        await Promise.all(needed.map(async (timbre) => {
+          const loaded = sharedSamplers[timbre] ?? await loadInstrumentSampler(ctx, timbre);
+          sharedSamplers[timbre] = loaded;
+          choirSamplers.current[timbre] = loaded;
+        }));
+      } catch {
+        samplerLoadFailed = true;
+      } finally {
+        samplerLoading.current = false;
+        if (mounted.current) setLoadingSampler(false);
+      }
+    }
+    const pianoNeeded = !choirMode || colors.some((color) => !color || !choirSamplers.current[color.timbre]);
     let voices: (AudioBuffer | null)[] = vocals.map(() => null);
     if (singing) {
       samplerLoading.current = true;
@@ -317,7 +384,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         if (mounted.current) setLoadingSampler(false);
       }
     }
-    if (!rhythmOnly && !sampler) {
+    if (!rhythmOnly && !sampler && pianoNeeded) {
       samplerLoading.current = true;
       setLoadingSampler(true);
       setAnnouncement("载入" + instrumentLabel + "音色…");
@@ -398,6 +465,9 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
             osc.connect(gain).connect(master);
             osc.start(t); osc.stop(t + length);
           }
+        } else if (choirMode && partColorsRef.current?.[voice] && choirSamplers.current[partColorsRef.current[voice]!.timbre]) {
+          const color = partColorsRef.current[voice]!;
+          playInstrumentSample(ctx, color.timbre, choirSamplers.current[color.timbre]!, midiOf(melody, note), t, length, master, (color.level ?? 1) * levelScale);
         } else if (sampler) {
           const level = (voice === 0 ? 1 : voice === 1 ? 0.7 : 0.58) * levelScale;
           playInstrumentSample(ctx, sampleInstrument, sampler, midiOf(melody, note), t, length, master, level);
@@ -435,18 +505,28 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     const master = ctx.createGain();
     master.gain.value = lines.length > 1 ? 0.24 : 0.34;
     master.connect(ctx.destination);
+    const outs = lines.map((_, part) => {
+      const gain = ctx.createGain();
+      gain.gain.value = partLevelsRef.current?.[part] ?? 1;
+      const color = choirMode ? partColorsRef.current?.[part] : undefined;
+      gain.connect(color ? colorChain(ctx, color, master) : master);
+      return gain;
+    });
+    partGains.current = { ctx, nodes: outs };
+    const on = (part: number) => !!partLevelsRef.current || enabled[part];
     let end = start;
     const timeline = flats.map((notes, part) => {
-      if (!enabled[part]) {
+      if (!on(part)) {
         // Muted voices still advance so their notes keep highlighting in step.
         let t = start;
         return notes.map((note) => { const at = t; t += note.b * beat; end = Math.max(end, t); return at; });
       }
-      const scheduled = scheduleRange(ctx, master, sampler, part, 0, notes.length, start, beat, 1, !!voices[part]);
+      const scheduled = scheduleRange(ctx, outs[part], sampler, part, 0, notes.length, start, beat, 1, !!voices[part]);
       end = Math.max(end, scheduled.end);
       return scheduled.times;
     });
-    voices.forEach((buffer, part) => { if (buffer && enabled[part]) scheduleVocal(ctx, master, buffer, 0, start, beat, undefined, vocals[part]); });
+    voices.forEach((buffer, part) => { if (buffer && on(part)) scheduleVocal(ctx, outs[part], buffer, 0, start, beat, undefined, vocals[part]); });
+    playbackCallback.current?.({ ctx, start, secondsPerBeat: beat });
     let raf = 0;
     let previousNotes = "";
     const tick = () => {
@@ -462,7 +542,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       setCurrent(indices);
       const notes = indices.flatMap((index, voice) => {
         const note = flats[voice][index];
-        return enabled[voice] && note?.d && note.d !== 9 ? [midiOf(melody, note)] : [];
+        return on(voice) && note?.d && note.d !== 9 ? [midiOf(melody, note)] : [];
       });
       if (notes.join(",") !== previousNotes) {
         previousNotes = notes.join(",");
@@ -615,7 +695,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
           {timbres.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
         </select>
       </label>
-      {lines.length > 1 && <span className="melody-voices" role="group" aria-label="选择声部">
+      {lines.length > 1 && !partLevels && <span className="melody-voices" role="group" aria-label="选择声部">
         {lines.map((line, k) => <label key={line.label} className={`voice-${k}`}>
           <input type="checkbox" checked={enabled[k]} disabled={playing || loadingSampler} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
           {line.label}

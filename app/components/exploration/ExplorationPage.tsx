@@ -5,7 +5,7 @@ import { publicAssetUrl } from "../../lib/app/assets";
 import type { AppView } from "../../lib/app/routing";
 import { ExplorationNavContext } from "./exploration-tools";
 
-type ExplorationView = Extract<AppView, "compose" | "vary" | "beat" | "ear" | "lab" | "rhythm">;
+type ExplorationView = Extract<AppView, "compose" | "vary" | "beat" | "ear" | "lab" | "rhythm" | "choir">;
 
 const tabs: Array<{ view: ExplorationView; label: string; caption: string }> = [
   { view: "compose", label: "旋律创编", caption: "写一段旋律" },
@@ -14,6 +14,7 @@ const tabs: Array<{ view: ExplorationView; label: string; caption: string }> = [
   { view: "ear", label: "听音训练", caption: "练练小耳朵" },
   { view: "lab", label: "五声律坊", caption: "转一转律盘" },
   { view: "rhythm", label: "节奏训练", caption: "拍一拍节奏" },
+  { view: "choir", label: "合唱训练", caption: "唱好一个声部" },
 ];
 
 export function ExplorationPage({
@@ -37,6 +38,7 @@ export function ExplorationPage({
       void import("../beat/BeatPage").catch(() => undefined);
       void import("../vary/VaryPage").catch(() => undefined);
       void import("../compose/ComposePage").catch(() => undefined);
+      void import("../choir/ChoirPage").catch(() => undefined);
       new Image().src = publicAssetUrl("art/rhythm/drum.webp");
     };
     const idle = window.requestIdleCallback?.(preload, { timeout: 2500 });
@@ -69,7 +71,7 @@ export function ExplorationPage({
         <div className="exploration-intro">
           <p className="exploration-kicker">芽谱 · 探索空间</p>
           <h1 id="exploration-title">音乐探索与创造</h1>
-          <p>写旋律、变主题、编节奏，再练耳朵、转律盘、打节奏。</p>
+          <p>写旋律、变主题、编节奏，再练耳朵、转律盘、打节奏、唱合唱。</p>
         </div>
         <div
           className="exploration-tabs"

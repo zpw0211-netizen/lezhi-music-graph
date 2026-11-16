@@ -9,6 +9,8 @@ export const INSTRUMENTS = [
 ] as const;
 
 export type InstrumentId = typeof INSTRUMENTS[number]["id"];
+/** How one part of a choir piece sounds on its own: which instrument, left (−1) to right (1), and how loud — so two parts can be told apart. */
+export type PartColor = { timbre: InstrumentId; pan?: number; level?: number };
 export type InstrumentSampler = {
   samples: Array<{ midi: number; buffer: AudioBuffer; loopStart?: number; loopEnd?: number }>;
 };

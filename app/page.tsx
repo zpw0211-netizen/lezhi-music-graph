@@ -176,6 +176,10 @@ const VaryPage = nextDynamic(
   () => import("./components/vary/VaryPage").then((module) => module.VaryPage),
   { loading: viewLoading },
 );
+const ChoirPage = nextDynamic(
+  () => import("./components/choir/ChoirPage").then((module) => module.ChoirPage),
+  { loading: viewLoading },
+);
 const BeatPage = nextDynamic(
   () => import("./components/beat/BeatPage").then((module) => module.BeatPage),
   { loading: viewLoading },
@@ -212,6 +216,7 @@ const VIEW_TITLES: Record<AppView, string> = {
   rhythm: "音乐探索与创造 · 节奏训练",
   beat: "音乐探索与创造 · 节奏创编",
   vary: "音乐探索与创造 · 旋律变奏",
+  choir: "音乐探索与创造 · 合唱训练",
   graph: "知识图谱",
   assistant: "智能问答",
   research: "研究分析",
@@ -396,7 +401,7 @@ export default function Home() {
     if (entity) navigate({ view: "graph", node: entity.id });
   };
 
-  const needsData = view !== "home" && view !== "import" && view !== "compose" && view !== "ear" && view !== "rhythm" && view !== "beat" && view !== "vary";
+  const needsData = view !== "home" && view !== "import" && view !== "compose" && view !== "ear" && view !== "rhythm" && view !== "beat" && view !== "vary" && view !== "choir";
   const dataStatus =
     needsData && view !== "records" && view !== "lab" && index.status !== "ready" ? (
       <div className="app-view-status" role="status" aria-live="polite">
@@ -426,6 +431,7 @@ export default function Home() {
     {tool === "rhythm" && <RhythmPage />}
     {tool === "beat" && <BeatPage />}
     {tool === "vary" && <VaryPage />}
+    {tool === "choir" && <ChoirPage />}
   </>;
 
   if (!hydrated)
@@ -451,7 +457,7 @@ export default function Home() {
                 ? "records"
                 : view === "import"
                   ? null
-                  : view === "compose" || view === "lab" || view === "ear" || view === "rhythm" || view === "beat" || view === "vary"
+                  : view === "compose" || view === "lab" || view === "ear" || view === "rhythm" || view === "beat" || view === "vary" || view === "choir"
                     ? "compose"
                   : view === "kmap" ? "graph"
                   : view
@@ -483,7 +489,7 @@ export default function Home() {
             }}
           />
         )}
-        <div className={`route-view${view === "compose" || view === "lab" || view === "ear" || view === "rhythm" || view === "beat" || view === "vary" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
+        <div className={`route-view${view === "compose" || view === "lab" || view === "ear" || view === "rhythm" || view === "beat" || view === "vary" || view === "choir" ? " route-view-exploration" : ""}`} ref={viewContainerRef}>
           {(view === "kmap" || view === "graph") && (
             // 两种知识图谱都保留：核心知识点图和完整图谱，在这里来回切换。
             <nav className="graph-tabs" aria-label="知识图谱的两种看法">
@@ -634,7 +640,7 @@ export default function Home() {
             />
           )}
           {view === "import" && <ImportView />}
-          {(view === "compose" || view === "lab" || view === "ear" || view === "rhythm" || view === "beat" || view === "vary") && <ExplorationPage
+          {(view === "compose" || view === "lab" || view === "ear" || view === "rhythm" || view === "beat" || view === "vary" || view === "choir") && <ExplorationPage
             activeView={view}
             onViewChange={nextView => navigate({ view: nextView })}
           >

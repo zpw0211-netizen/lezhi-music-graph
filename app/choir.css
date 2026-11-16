@@ -1,0 +1,194 @@
+/* 合唱训练（#/choir）：上面选课本和歌，中间选声部和三步练，下面是谱子和音准图。 */
+.choir-lab { padding-bottom: 56px; }
+.choir-intro { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 24px; margin: 6px 0 14px; }
+.choir-kicker { margin: 0; color: var(--rhythm-seal); font: 12.5px/1.5 var(--serif); letter-spacing: .24em; }
+.choir-intro h2 { text-wrap: balance; margin: 2px 0 0; font: 500 clamp(24px, 2.4vw, 32px)/1.3 var(--font-display); letter-spacing: .06em; }
+.choir-note, .choir-empty { margin: 0; color: var(--rhythm-ink-3); font-size: 13px; text-wrap: pretty; }
+.choir-label { color: var(--rhythm-ink-3); font-size: 12.5px; letter-spacing: .12em; white-space: nowrap; }
+
+.choir-pick { display: grid; gap: 12px; padding: 14px 18px; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #fff; }
+.choir-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-width: 0; }
+.choir-songs { align-items: flex-start; }
+.choir-songs .choir-label { line-height: 38px; }
+.choir-songs .choir-chips { flex: 1 1 0; min-width: 0; }
+.choir-field select { min-height: 38px; max-width: 100%; padding: 0 14px; border: 1px solid var(--rhythm-line); border-radius: 999px; background-color: #fff; color: var(--rhythm-ink); font: inherit; font-size: 14px; }
+
+.choir-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.choir-chips button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; line-height: 1.2; min-height: 38px; padding: 0 16px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 14px; white-space: nowrap; transition: background .2s, border-color .2s, color .2s; }
+.choir-chips button small { color: var(--rhythm-ink-3); font-size: 12px; }
+.choir-chips button:hover { border-color: var(--rhythm-pine); }
+.choir-chips button.is-active { border-color: var(--rhythm-pine); background: var(--rhythm-pine); color: #fff; font-weight: 600; }
+.choir-chips button.is-active small { color: rgb(255 255 255 / 82%); }
+
+.choir-setup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; }
+.choir-card { min-width: 0; padding: 14px 18px 16px; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #fff; }
+.choir-step-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 0 10px; }
+.choir-step-title b { font: 600 19px/1.4 var(--font-display); letter-spacing: .08em; color: var(--rhythm-pine); }
+.choir-step-title span { color: var(--rhythm-ink-2); font-size: 13px; }
+.choir-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.choir-steps button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 10px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 14.5px; white-space: nowrap; }
+.choir-steps button:hover { border-color: var(--rhythm-pine); }
+.choir-steps button.is-active { border-color: var(--rhythm-pine); background: var(--rhythm-pine); color: #fff; font-weight: 600; }
+.choir-step-number { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--rhythm-pine-soft); color: var(--rhythm-pine); font-size: 12.5px; font-weight: 600; }
+.choir-steps button.is-active .choir-step-number { background: rgb(255 255 255 / 22%); color: #fff; }
+
+.choir-score { margin-top: 14px; }
+.choir-mic { margin-top: 14px; }
+.choir-mic-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.choir-mic-head .choir-step-title { margin: 0; }
+.choir-mic-button { min-height: 42px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--rhythm-pine); color: #fff; font-size: 14.5px; font-weight: 600; letter-spacing: .04em; box-shadow: 0 8px 18px -10px rgb(25 77 53 / 70%); }
+.choir-mic-button:hover:not(:disabled) { background: #194D35; }
+.choir-mic-button.is-on { border: 1px solid var(--rhythm-seal); background: #fff; color: var(--rhythm-seal); box-shadow: none; }
+.choir-mic-button:disabled { background: #C9D6CE; box-shadow: none; }
+.choir-mic-live { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; margin: 12px 0 4px; color: var(--rhythm-ink-2); font-size: 14px; }
+.choir-mic-live b { display: inline-block; min-width: 2.2em; color: var(--rhythm-ink); font: 600 22px/1 var(--font-display); }
+.choir-meter { padding: 6px 16px; border-radius: 999px; background: #F1F4F2; color: var(--rhythm-ink-3); font-weight: 600; }
+.choir-meter.is-ok { background: #E3F2E8; color: #23744A; }
+.choir-meter.is-off { background: #FBEBDD; color: #B4621C; }
+.choir-trace { display: block; width: 100%; height: 190px; margin-top: 10px; border-radius: 14px; background: #F8FAF9; }
+.choir-summary { margin: 10px 0 0; color: var(--rhythm-ink-2); font-size: 14px; line-height: 1.8; text-wrap: pretty; }
+.choir-summary .is-ok { color: #23744A; }
+.choir-summary .is-off { color: #B4621C; }
+.choir-mic-tip { margin: 10px 0 0; color: var(--rhythm-ink-3); font-size: 12.5px; line-height: 1.7; text-wrap: pretty; }
+
+@media (max-width: 760px) {
+  .choir-setup { grid-template-columns: minmax(0, 1fr); }
+  .choir-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .choir-steps button { font-size: 13.5px; }
+}
+
+/* ---- 自己编合唱 ---- */
+/* 借用旋律创编的时值、节奏卡、音块和提示样式，它们读 --c-* 这几个颜色。 */
+.choir-lab { --c-ink: var(--rhythm-ink); --c-ink-2: var(--rhythm-ink-2); --c-ink-3: var(--rhythm-ink-3); --c-pine: var(--rhythm-pine); --c-pine-soft: var(--rhythm-pine-soft); --c-seal: var(--rhythm-seal); --c-line: var(--rhythm-line); --c-paper: #FBFCFA; }
+.choir-lab .choir-mic-button { color: #fff; }
+.choir-lab .choir-mic-button.is-on { color: var(--rhythm-seal); }
+
+.choir-modes { display: inline-flex; gap: 2px; padding: 3px; border-radius: 16px; background: #EEF2EF; }
+.choir-modes button { display: grid; justify-items: center; padding: 6px 18px; border: 0; border-radius: 13px; background: transparent; color: var(--rhythm-ink-2); line-height: 1.35; white-space: nowrap; transition: background .2s, color .2s, box-shadow .2s; }
+.choir-modes button span { font-size: 14.5px; font-weight: 600; }
+.choir-modes button small { color: var(--rhythm-ink-3); font-size: 11.5px; }
+.choir-modes button.is-active { background: #fff; color: var(--rhythm-pine); box-shadow: 0 1px 3px rgb(23 34 28 / 12%); }
+
+.choir-compose-row { display: flex; flex-wrap: wrap; gap: 12px 28px; }
+.choir-editor { display: grid; gap: 14px; margin-top: 14px; padding: clamp(14px, 2.2vw, 24px); }
+
+.choir-voice-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 6px; }
+.choir-voice-tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 12px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 15px; white-space: nowrap; transition: border-color .2s, background .2s; }
+.choir-voice-tabs button i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--voice); }
+.choir-voice-tabs button small { color: var(--rhythm-ink-3); font-size: 12px; }
+.choir-voice-tabs button:hover { border-color: var(--voice); }
+.choir-voice-tabs button.is-active { border-color: var(--voice); background: color-mix(in srgb, var(--voice) 10%, #fff); font-weight: 600; box-shadow: inset 0 0 0 1px var(--voice); }
+
+.choir-score-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; }
+.choir-score-tip { color: var(--rhythm-ink-3); font-size: 12.5px; text-wrap: pretty; }
+.choir-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 14px; }
+.choir-grid.is-wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.choir-bar { display: grid; align-content: start; gap: 3px; min-width: 0; padding: 0 4px; border-right: 1.5px solid var(--rhythm-ink-2); }
+.choir-grid:not(.is-wide) .choir-bar:nth-child(4n + 1), .choir-grid.is-wide .choir-bar:nth-child(2n + 1) { box-shadow: -1.5px 0 0 var(--rhythm-ink-2); }
+.choir-bar.is-final { border-right: 4px double var(--rhythm-ink); }
+.choir-bar-label { padding: 0 6px; color: var(--rhythm-ink-3); font-size: 11px; letter-spacing: .06em; white-space: nowrap; }
+.choir-bar-row { display: flex; align-items: stretch; gap: 1px; min-height: 52px; padding: 0 4px; border-left: 3px solid color-mix(in srgb, var(--voice) 45%, transparent); border-radius: 3px; background: #FAFBFA; opacity: .62; transition: opacity .2s, background .2s; }
+.choir-bar-row.is-active { border-left-color: var(--voice); background: color-mix(in srgb, var(--voice) 7%, #fff); opacity: 1; }
+.choir-bar-row.is-cursor { background: color-mix(in srgb, var(--voice) 13%, #fff); }
+.choir-note { display: flex; flex-basis: 0; align-items: center; justify-content: center; min-width: 0; padding: 0; border: 2px solid transparent; border-radius: 10px; background: transparent; }
+.choir-note:hover { background: rgb(255 255 255 / 90%); }
+.choir-note.is-selected { border-color: var(--rhythm-seal); background: #fff; }
+.choir-room { display: flex; flex-basis: 0; align-items: center; justify-content: center; min-width: 0; color: color-mix(in srgb, var(--voice) 55%, #fff); font-size: 18px; }
+
+.choir-figure { display: inline-flex; align-items: center; justify-content: space-around; gap: 6px; width: 100%; }
+.choir-digit { position: relative; display: inline-block; padding: 9px 1px 10px; font: 600 clamp(18px, 1.9vw, 24px)/1 var(--serif, "Songti SC", serif); }
+.choir-digit.is-eighth::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: 7px; border-bottom: 2px solid currentColor; }
+.choir-dots { position: absolute; left: 50%; font-style: normal; font-size: 9px; line-height: 1; letter-spacing: -1px; transform: translateX(-50%); }
+.choir-dots.is-high { top: 0; }
+.choir-dots.is-low { bottom: -1px; }
+.choir-digit.is-eighth .choir-dots.is-low { bottom: -3px; }
+.choir-aug { position: absolute; right: -7px; top: 50%; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.choir-dash { font: 600 20px/1 var(--serif, "Songti SC", serif); }
+
+.choir-tools { display: grid; gap: 12px; }
+.choir-rhythm-row { display: flex; align-items: flex-start; gap: 12px; }
+.choir-rhythm-row > .choir-label { padding-top: 11px; }
+.choir-follow { font-size: 13.5px; font-weight: 600; }
+.choir-tool-tip { margin: -4px 0 0; color: var(--rhythm-pine); font-size: 12.5px; text-wrap: pretty; }
+.choir-now { margin: 0; color: var(--rhythm-ink-2); font-size: 13.5px; }
+.choir-now b { margin: 0 2px; color: var(--rhythm-pine); font-weight: 600; }
+.choir-palette { margin-top: -4px; }
+.choir-palette .compose-block { flex: 0 1 62px; min-width: 50px; padding-top: calc(8px + var(--step, 0) * 26px); }
+.choir-palette .compose-block-digit .choir-figure { display: inline-block; width: auto; }
+.choir-palette .compose-block-digit .choir-digit { padding: 8px 1px; font-size: 24px; }
+.choir-palette .compose-block-digit .choir-dots { font-size: 10px; }
+.choir-palette .compose-block-digit .choir-dots.is-high { top: -1px; }
+.choir-palette .compose-block-digit .choir-dots.is-low { bottom: -2px; }
+.choir-lab .compose-duration .choir-figure { width: auto; }
+.choir-lab .compose-duration .choir-digit { padding: 4px 1px 8px; font-size: 18px; }
+.choir-lab .compose-duration .choir-digit.is-eighth::after { bottom: 3px; }
+.choir-lab .compose-duration .choir-dash { font-size: 16px; }
+.choir-lab .compose-duration .choir-digit:has(.choir-aug) { margin-right: 8px; }
+.choir-lab .compose-actions button { color: var(--rhythm-ink-2); }
+
+.choir-work { display: grid; gap: 12px; margin-top: 14px; }
+.choir-work-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; }
+.choir-work-head input, .choir-lyrics input { border: 0; border-bottom: 1px solid var(--rhythm-line); border-radius: 0; background: transparent; color: var(--rhythm-ink); }
+.choir-work-head input:focus, .choir-lyrics input:focus { border-bottom-color: var(--rhythm-pine); outline: none; }
+.choir-work-head input:first-child { flex: 1 1 240px; min-width: 0; padding: 2px 0; font: 400 clamp(21px, 2.2vw, 26px)/1.4 var(--font-display); }
+.choir-work-head input:last-child { width: 130px; padding: 2px 0; font-size: 14px; }
+.choir-lyrics { display: grid; gap: 2px; color: var(--rhythm-ink-3); font-size: 12.5px; }
+.choir-lyrics input { min-height: 34px; font-size: 15px; }
+.choir-work-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+
+.choir-gallery { margin-top: 14px; }
+.choir-gallery h3 { margin: 0 0 10px; font: 500 19px/1.4 var(--font-display); letter-spacing: .04em; }
+.choir-gallery h3 small { margin-left: 8px; color: var(--rhythm-ink-3); font: 12px var(--ui, sans-serif); letter-spacing: 0; }
+.choir-gallery ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.choir-gallery li { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--rhythm-line); border-radius: 14px; }
+.choir-gallery li > div:first-child { display: grid; gap: 2px; min-width: 0; }
+.choir-gallery li span { color: var(--rhythm-ink-3); font-size: 12px; }
+.choir-gallery-actions { display: flex; gap: 8px; }
+.choir-gallery-actions button { min-height: 32px; padding: 0 14px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .choir-grid:not(.is-wide) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .choir-grid:not(.is-wide) .choir-bar:nth-child(4n + 1) { box-shadow: none; }
+  .choir-grid .choir-bar:nth-child(2n + 1) { box-shadow: -1.5px 0 0 var(--rhythm-ink-2); }
+  .choir-rhythm-row { flex-direction: column; gap: 6px; }
+  .choir-rhythm-row > .choir-label { padding-top: 0; }
+}
+@media (max-width: 640px) {
+  .choir-modes { width: 100%; }
+  .choir-modes button { flex: 1; padding: 6px 8px; }
+  .choir-grid.is-wide { grid-template-columns: minmax(0, 1fr); }
+  .choir-grid.is-wide .choir-bar { box-shadow: -1.5px 0 0 var(--rhythm-ink-2); }
+  .choir-voice-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .choir-palette { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .choir-palette .compose-block { min-width: 0; padding-top: calc(8px + var(--step, 0) * 10px); }
+}
+
+/* 填词：每个声部一行，左边声部名，中间填词，右边字数和音数。 */
+.choir-words { display: grid; gap: 8px; }
+.choir-words .choir-step-title { margin: 0 0 2px; }
+.choir-words-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 4px 12px; border-left: 3px solid var(--voice); border-radius: 4px; background: color-mix(in srgb, var(--voice) 5%, #fff); }
+.choir-words-voice { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.choir-words-voice i { width: 9px; height: 9px; border-radius: 50%; background: var(--voice); }
+.choir-words-row input { min-width: 0; min-height: 38px; border: 0; border-bottom: 1px solid var(--rhythm-line); background: transparent; color: var(--rhythm-ink); font-size: 16px; letter-spacing: .08em; }
+.choir-words-row input::placeholder { color: #A3AEA7; font-size: 13px; letter-spacing: 0; }
+.choir-words-row input:focus { border-bottom-color: var(--voice); outline: none; }
+.choir-words-row small { color: var(--rhythm-ink-3); font-size: 12px; white-space: nowrap; }
+.choir-words-row small.is-ok { color: #23744A; }
+.choir-words-row small.is-off { color: #B4621C; }
+
+/* 投屏：谱子这一块铺满屏幕。 */
+.choir-score-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 8px; }
+.choir-score-bar .choir-step-title { margin: 0; }
+.choir-project { min-height: 38px; padding: 0 18px; border: 1px solid var(--rhythm-pine); border-radius: 999px; background: #fff; color: var(--rhythm-pine) !important; font-size: 14px; font-weight: 600; }
+.choir-project:hover { background: var(--rhythm-pine-soft); }
+.choir-score:fullscreen { overflow: auto; padding: 2.4vw 3vw; border-radius: 0; background: #fff; }
+.choir-score:fullscreen .melody-player { font-size: clamp(18px, 1.6vw, 26px); }
+
+@media (max-width: 640px) {
+  .choir-words-row { grid-template-columns: minmax(0, 1fr) auto; padding: 6px 10px; }
+  .choir-words-row input { grid-column: 1 / -1; grid-row: 2; }
+}
+.choir-score-order { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: -2px 0 10px; color: var(--rhythm-ink-3); font-size: 13px; }
+.choir-score-order span { padding: 1px 10px; border-radius: 999px; background: #F1F4F2; color: var(--rhythm-ink-2); white-space: nowrap; }
+.choir-score-order span.is-mine { background: var(--rhythm-pine-soft); color: var(--rhythm-pine); font-weight: 600; }
+.choir-score:fullscreen .choir-score-order { font-size: 16px; }

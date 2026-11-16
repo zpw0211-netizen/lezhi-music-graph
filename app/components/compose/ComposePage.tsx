@@ -16,7 +16,7 @@ const emptyBars = (count: number) => Array.from({ length: count }, () => [] as C
 
 let previewOut: GainNode | null = null;
 /** 试听一个音；连点时先收掉上一个音，只听清这一次。 */
-async function soundNote(note: Pick<ComposeNote, "d" | "o">) {
+export async function soundNote(note: Pick<ComposeNote, "d" | "o">) {
   try {
     const ctx = getPianoAudioContext();
     await ctx.resume();
@@ -49,7 +49,7 @@ function NoteFigure({ note, plain }: { note: ComposeNote; plain?: boolean }) {
 }
 
 /** A rhythm card drawn as jianpu "X" figures, with underlines for half beats. */
-function RhythmGlyph({ card }: { card: number[] }) {
+export function RhythmGlyph({ card }: { card: number[] }) {
   return <span className="compose-rhythm-glyph" aria-hidden="true">
     {card.map((b, k) => {
       const shape = noteShape(b);
@@ -57,7 +57,7 @@ function RhythmGlyph({ card }: { card: number[] }) {
     })}
   </span>;
 }
-const cardLabel = (card: number[], meter: Meter) => card.map((b) => formatBeats(b, meter)).join("、");
+export const cardLabel = (card: number[], meter: Meter) => card.map((b) => formatBeats(b, meter)).join("、");
 
 export function ComposePage() {
   const [level, setLevel] = useState<Level>("low");
