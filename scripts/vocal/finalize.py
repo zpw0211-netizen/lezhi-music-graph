@@ -52,7 +52,7 @@ for key, mel in todo.items():
     os.remove(tmp)
     # 绮萱 entries stay [offset, leadBeats]; other voices name themselves ([offset, leadBeats, "ria"])
     manifest[key] = [meta["offset"], meta["leadBeats"]] + ([meta["voice"]] if meta.get("voice", "qixuan") != "qixuan" else [])
-    published.append(f"{label}: {med:.2f}st")
+    published.append(f"{label}: {med:.2f}st" if med is not None else f"{label}: accepted (no long notes to check)")
 manifest = dict(sorted(manifest.items()))
 with open(MANIFEST, "w", encoding="utf-8") as f:
     json.dump(manifest, f, separators=(",", ":"))
