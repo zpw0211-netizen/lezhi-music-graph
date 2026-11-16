@@ -14,6 +14,7 @@ import { splitPhrases, type PhraseMode } from "../../lib/lesson/phrases";
 import { findVocal, vocalCredit, type Vocal } from "../../lib/lesson/vocal";
 import { loadPercussionStrokes, percussionKind, playPercussion } from "../../lib/lesson/percussion";
 import { sharedAssetUrl } from "../../lib/app/assets";
+import { ACC_STYLES, accompaniment, type AccStyle } from "../../lib/lesson/accompany";
 
 type Line = { label: string; bars: MelodyNote[][] };
 type BeamRun = { start: number; end: number; level: number };
@@ -124,6 +125,8 @@ const CHOIR_LABEL = "人声（女声＋男声）";
 const MALE_LABEL = "人声（男声）";
 /** Seconds of the recording played before a phrase's first beat, so its opening consonant is not clipped. */
 const VOCAL_PREROLL = 0.15;
+/** 人声伴奏的音量：实测比人声低约 9 dB，听得清又不盖过人声。 */
+const ACC_GAIN = 2.6;
 // Voice colours: main line in green, second voice in blue so parts stay distinct.
 const TIMBRES = [
   { wave: "triangle" as OscillatorType, overtone: 0.5, level: 1 },
@@ -218,6 +221,18 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
   /** Sampled instrument for everything the recorded voices do not sing (other parts, cues). */
   const sampleInstrument: InstrumentId = instrument === "vocal" || instrument === "choir" ? "piano" : instrument;
   const singing = instrument === "vocal" && anyVocal;
+  /** 人声伴奏: a piano accompaniment under the recording (single-line songs); its style is picked from the song or chosen. */
+  const [accChoice, setAccChoice] = useState<AccStyle | "auto" | "off">("auto");
+  const autoAccomp = useMemo(() => (anyVocal ? accompaniment(melody) : null), [anyVocal, melody]);
+  const accomp = useMemo(() => (accChoice === "auto" || accChoice === "off" ? autoAccomp : accompaniment(melody, accChoice)), [accChoice, autoAccomp, melody]);
+  const accompany = accChoice !== "off";
+  const accompanyRef = useRef(accompany);
+  const accGain = useRef<{ ctx: AudioContext; node: GainNode } | null>(null);
+  useEffect(() => {
+    accompanyRef.current = accompany;
+    const gain = accGain.current;
+    if (gain) gain.node.gain.setTargetAtTime(accompany ? ACC_GAIN : 0, gain.ctx.currentTime, 0.05);
+  }, [accompany]);
   const [loadingSampler, setLoadingSampler] = useState(false);
   const [audioMode, setAudioMode] = useState<"unknown" | "sampled" | "synth">("unknown");
   const [current, setCurrent] = useState<number[]>([]);
@@ -501,10 +516,24 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     const voiced = voices.some(Boolean);
 
     const beat = 60 / playTempo;
-    const start = ctx.currentTime + (voiced ? 0.12 + VOCAL_PREROLL : 0.12);
+    const acc = singing && voiced && sampler ? accomp : null;
+    // The intro is played only when the accompaniment is on at the start.
+    const lead = acc && accompanyRef.current ? acc.intro * beat : 0;
+    const start = ctx.currentTime + (voiced ? 0.12 + VOCAL_PREROLL : 0.12) + lead;
     const master = ctx.createGain();
     master.gain.value = lines.length > 1 ? 0.24 : 0.34;
     master.connect(ctx.destination);
+    accGain.current = null;
+    if (acc && sampler) {
+      const accOut = ctx.createGain();
+      accOut.gain.value = accompanyRef.current ? ACC_GAIN : 0;
+      accOut.connect(master);
+      accGain.current = { ctx, node: accOut };
+      for (const note of acc.notes) {
+        if (note.at < 0 && !lead) continue;
+        playInstrumentSample(ctx, "piano", sampler, note.midi, start + note.at * beat, note.length * beat, accOut, note.level);
+      }
+    }
     const outs = lines.map((_, part) => {
       const gain = ctx.createGain();
       gain.gain.value = partLevelsRef.current?.[part] ?? 1;
@@ -526,6 +555,8 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       return scheduled.times;
     });
     voices.forEach((buffer, part) => { if (buffer && on(part)) scheduleVocal(ctx, outs[part], buffer, 0, start, beat, undefined, vocals[part]); });
+    // Let the closing chord ring out.
+    if (acc) end += 1.2;
     playbackCallback.current?.({ ctx, start, secondsPerBeat: beat });
     let raf = 0;
     let previousNotes = "";
@@ -695,6 +726,13 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
           {timbres.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
         </select>
       </label>
+      {singing && autoAccomp && <label className="melody-instrument melody-accomp">伴奏
+        <select value={accChoice} disabled={playing || loadingSampler} onChange={(event) => setAccChoice(event.target.value as AccStyle | "auto" | "off")}>
+          <option value="auto">自动：{ACC_STYLES[autoAccomp.style]}</option>
+          {(Object.keys(ACC_STYLES) as AccStyle[]).map((style) => <option key={style} value={style}>{ACC_STYLES[style]}</option>)}
+          <option value="off">不要伴奏（清唱）</option>
+        </select>
+      </label>}
       {lines.length > 1 && !partLevels && <span className="melody-voices" role="group" aria-label="选择声部">
         {lines.map((line, k) => <label key={line.label} className={`voice-${k}`}>
           <input type="checkbox" checked={enabled[k]} disabled={playing || loadingSampler} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
