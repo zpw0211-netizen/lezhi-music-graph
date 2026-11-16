@@ -59,8 +59,9 @@
 .reflect-editable:focus { outline-style: solid; background: #fff; }
 
 /* 标题：楷体 + 一笔阶段色的“笔触” */
-.reflect h2 { position: relative; margin-bottom: 3.2vh; padding-bottom: 1.2vh; font-family: var(--kai); font-weight: 400; font-size: clamp(34px, 3.6vw, 58px); letter-spacing: .06em; color: var(--brand-ink); text-wrap: balance; }
-.reflect h2::after { content: ""; position: absolute; left: 0; bottom: 0; width: 2.4em; height: 6px; border-radius: 6px 2px 6px 2px; background: linear-gradient(90deg, var(--stage), color-mix(in srgb, var(--stage) 25%, transparent)); transform: rotate(-1.2deg); }
+/* 课件标题样式不带进「课堂工具」里的探索工具页（:where 不加权重）。 */
+.reflect h2:where(:not(.present-tools h2)) { position: relative; margin-bottom: 3.2vh; padding-bottom: 1.2vh; font-family: var(--kai); font-weight: 400; font-size: clamp(34px, 3.6vw, 58px); letter-spacing: .06em; color: var(--brand-ink); text-wrap: balance; }
+.reflect h2:where(:not(.present-tools h2))::after { content: ""; position: absolute; left: 0; bottom: 0; width: 2.4em; height: 6px; border-radius: 6px 2px 6px 2px; background: linear-gradient(90deg, var(--stage), color-mix(in srgb, var(--stage) 25%, transparent)); transform: rotate(-1.2deg); }
 /* 课件里所有文字都避免最后一行只剩一个字（标题另用 balance） */
 .reflect .present-fit, .reflect p, .reflect li { text-wrap: pretty; }
 .reflect-lead, .reflect-wide > p, .reflect-scene-copy > p, .reflect-wonder > p { margin: 0 0 2.6vh; font-size: clamp(20px, 2vw, 32px); line-height: 1.65; color: var(--brand-ink); }
@@ -345,7 +346,7 @@
   .reflect .present-fit { zoom: 1 !important; }
   .reflect .present-stage.has-art .present-fit { width: auto; padding-left: 14px; }
   .reflect-art { height: 38%; opacity: .2; }
-  .reflect h2 { margin-bottom: 18px; padding-bottom: 10px; font-size: 30px; }
+  .reflect h2:where(:not(.present-tools h2)) { margin-bottom: 18px; padding-bottom: 10px; font-size: 30px; }
   .reflect-cover-copy { padding: 28px 20px 20px; }
   .reflect-cover h1 { font-size: min(44px, calc(78vw / var(--len, 6))); }
   .reflect-roadmap:not(.is-done) { gap: 8px; padding: 0 20px 84px; }
