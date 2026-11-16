@@ -39,7 +39,49 @@ load_phrases_dict({
     "重新": [["chóng"], ["xīn"]], "银行": [["yín"], ["háng"]], "一行": [["yì"], ["háng"]],
     "调皮": [["tiáo"], ["pí"]], "曲调": [["qǔ"], ["diào"]], "歌曲": [["gē"], ["qǔ"]],
     "山歌": [["shān"], ["gē"]], "了解": [["liǎo"], ["jiě"]], "得到": [["dé"], ["dào"]],
+    # 2026-11-16 pronunciation audit of every published vocal
+    "万里长": [["wàn"], ["lǐ"], ["cháng"]], "蜀道长": [["shǔ"], ["dào"], ["cháng"]], "遄行": [["chuán"], ["xíng"]],
+    "长途": [["cháng"], ["tú"]], "长向": [["cháng"], ["xiàng"]], "长蓝": [["cháng"], ["lán"]], "江水长": [["jiāng"], ["shuǐ"], ["cháng"]],
+    "细又长": [["xì"], ["yòu"], ["cháng"]], "清又长": [["qīng"], ["yòu"], ["cháng"]], "长又长": [["cháng"], ["yòu"], ["cháng"]],
+    "线儿长": [["xiàn"], ["er"], ["cháng"]], "长路": [["cháng"], ["lù"]], "长刀": [["cháng"], ["dāo"]], "绳长": [["shéng"], ["cháng"]],
+    "长竹竿": [["cháng"], ["zhú"], ["gān"]], "三尺长": [["sān"], ["chǐ"], ["cháng"]], "长海中": [["cháng"], ["hǎi"], ["zhōng"]],
+    "沂水长": [["yí"], ["shuǐ"], ["cháng"]], "绿水长": [["lǜ"], ["shuǐ"], ["cháng"]], "长涧": [["cháng"], ["jiàn"]],
+    "辫子长": [["biàn"], ["zi"], ["cháng"]], "辫子长长": [["biàn"], ["zi"], ["cháng"], ["cháng"]],"长梭镖": [["cháng"], ["suō"], ["biāo"]],
+    "搏击着": [["bó"], ["jī"], ["zhe"]], "开着": [["kāi"], ["zhe"]], "迎着": [["yíng"], ["zhe"]], "寻找着": [["xún"], ["zhǎo"], ["zhe"]],
+    "眨着": [["zhǎ"], ["zhe"]], "托着": [["tuō"], ["zhe"]], "牵着": [["qiān"], ["zhe"]], "拉着": [["lā"], ["zhe"]],
+    "上了当": [["shàng"], ["le"], ["dàng"]], "都会": [["dōu"], ["huì"]], "落下": [["luò"], ["xià"]], "画中行": [["huà"], ["zhōng"], ["xíng"]],
+    "可曾": [["kě"], ["céng"]], "朝雨": [["zhāo"], ["yǔ"]], "明朝": [["míng"], ["zhāo"]], "上朝霞": [["shàng"], ["zhāo"], ["xiá"]],
+    "重享": [["chóng"], ["xiǎng"]], "重见": [["chóng"], ["jiàn"]], "千重": [["qiān"], ["chóng"]], "重重的": [["zhòng"], ["zhòng"], ["de"]],
+    "乘凉": [["chéng"], ["liáng"]], "风调雨": [["fēng"], ["tiáo"], ["yǔ"]], "声咽": [["shēng"], ["yè"]],
+    "薄于": [["bó"], ["yú"]], "终不还": [["zhōng"], ["bù"], ["huán"]], "报还": [["bào"], ["huán"]], "阿勒泰": [["ā"], ["lè"], ["tài"]],
+    "扎成": [["zā"], ["chéng"]], "蔓儿": [["wàn"], ["er"]],
 })
+# 地 after an adverb is the particle de (自由地飞翔), unless it starts 地方/地球…
+ADVERB_DE = {"自由", "永远", "深深", "快乐", "满满", "多么", "愉快", "忧愁", "一样", "认真", "这样", "好好", "快活", "辛勤", "冰冷",
+             "声声", "甜蜜", "尽情", "一步", "不停", "默默", "吞吞", "欢乐", "实实", "真心", "隆隆", "留恋", "如愿", "啦啦"}
+
+
+def fix_readings(han, readings):
+    """Context rules pypinyin's phrase table cannot express."""
+    out = list(readings)
+    for i, ch in enumerate(han):
+        prev2, nxt = han[max(0, i - 2):i], han[i + 1:i + 2]
+        if ch == "地" and nxt not in ("方", "球", "区", "图", "带", "域", "盘", "位", "上", "下", "里") and (
+                prev2 in ADVERB_DE or (len(prev2) == 2 and prev2[0] == prev2[1])):
+            out[i] = "de"
+        elif ch == "似" and nxt != "的":
+            out[i] = "si"
+        elif ch == "弹" and han[i - 1:i] not in ("子", "炮", "枪", "导", "炸"):
+            out[i] = "tan"
+        elif ch == "咳" and nxt != "嗽":
+            out[i] = "hai"
+        elif ch == "呱" and nxt != "坠":
+            out[i] = "gua"
+        elif ch == "乘" and han[i - 1:i] not in ("千", "万"):
+            out[i] = "cheng"
+        elif ch == "咱":
+            out[i] = "zan"
+    return out
 SOLFEGE = {"do": "duo", "re": "lai", "mi": "mi", "fa": "fa", "sol": "suo", "so": "suo", "la": "la", "si": "xi", "ti": "xi"}
 
 def session(path):
@@ -233,7 +275,7 @@ def syllables(notes):
             chars.append(("H", ch))
             owner.append(i)
     han = "".join(c for kind, c in chars if kind == "H")
-    readings = iter(lazy_pinyin(han, style=Style.NORMAL, errors="ignore", v_to_u=False, neutral_tone_with_five=False))
+    readings = iter(fix_readings(han, lazy_pinyin(han, style=Style.NORMAL, errors="ignore", v_to_u=False, neutral_tone_with_five=False)))
     per_note = {}
     for (kind, c), i in zip(chars, owner):
         py = next(readings) if kind == "H" else c
