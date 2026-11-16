@@ -3,7 +3,6 @@
 import {
   SigmaContainer,
   useRegisterEvents,
-  useSetSettings,
   useSigma,
 } from "@react-sigma/core";
 import { MultiDirectedGraph } from "graphology";
@@ -11,7 +10,7 @@ import { EdgeArrowProgram, EdgeLineProgram } from "sigma/rendering";
 import { animateNodes } from "sigma/utils";
 import type { NodeHoverDrawingFunction } from "sigma/rendering";
 import { NodeRingProgram, drawLabelBelow } from "../../lib/graph/node-ring-program";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { CanvasPerformanceMetrics } from "../FullGraphCanvas";
 import { schemaCategoryFor, schemaCategoryMeta } from "../../graph-schema";
 import { LABEL_BUDGETS, RELATION_STYLES, RELATION_VISIBILITY, relationFamily, semanticZoomTier } from "../../lib/graph/constellation-style";
@@ -69,8 +68,36 @@ type EdgeAttributes = {
   label: string;
   type: "arrow" | "line";
   relationship: GraphRelationship;
+  /** Worked out once when the graph is built: the reducers run over all 13,000 edges on every refresh. */
+  family: ReturnType<typeof relationFamily>;
+  /** Both ends sit in the same island of the layout. */
+  island: boolean;
 };
 let graphBuildSequence = 0;
+
+/** Everything the node and edge reducers read. Kept in a ref so the reducers are registered once. */
+type ReducerState = {
+  focus: ReturnType<typeof focusNeighborhood>;
+  explicitNodes: Set<string>;
+  explicitEdges: Set<string>;
+  selectedId: string | null | undefined;
+  focusSuppressed: boolean;
+  hoveredNode: string | null;
+  hoverNeighbors: Set<string>;
+  hoverEdges: Set<string>;
+  zoomTier: 0 | 1 | 2 | 3;
+  shownNodeIds: Set<string>;
+  labelIds: Set<string>;
+  relationLabels: Record<string, string>;
+  visibleRelationshipIds: Set<string>;
+  showLabels: boolean;
+  structuralEdges: Set<string>;
+};
+
+const sameSet = (a: Set<string>, b: Set<string>) => a === b || (a.size === b.size && [...a].every((id) => b.has(id)));
+// The label set is rebuilt each time the camera rests; when its contents did not change, nothing on screen does.
+const sameReducerState = (a: ReducerState, b: ReducerState) =>
+  (Object.keys(a) as (keyof ReducerState)[]).every((key) => key === "labelIds" ? sameSet(a.labelIds, b.labelIds) : a[key] === b[key]);
 
 const drawConstellationHalo: NodeHoverDrawingFunction = (context, data, settings) => {
   context.save();
@@ -89,13 +116,85 @@ const drawConstellationHalo: NodeHoverDrawingFunction = (context, data, settings
 // channels must be premultiplied or translucent edges remain bright white.
 const rgba = (r: number, g: number, b: number, alpha: number) =>
   `rgba(${Math.round(r * alpha)}, ${Math.round(g * alpha)}, ${Math.round(b * alpha)}, ${alpha})`;
+// Only a few dozen colour/alpha pairs occur, but the reducers ask for one per node and edge on each refresh.
+const alphaColors = new Map<string, string>();
 const withAlpha = (hex: string, alpha: number) => {
-  const value = hex.replace("#", "");
-  const [r, g, b] = [0, 2, 4].map((offset) =>
-    Number.parseInt(value.slice(offset, offset + 2), 16),
-  );
-  return rgba(r, g, b, alpha);
+  const key = `${hex}/${alpha}`;
+  let color = alphaColors.get(key);
+  if (!color) {
+    const value = hex.replace("#", "");
+    const [r, g, b] = [0, 2, 4].map((offset) =>
+      Number.parseInt(value.slice(offset, offset + 2), 16),
+    );
+    color = rgba(r, g, b, alpha);
+    alphaColors.set(key, color);
+  }
+  return color;
 };
+const GREY_EDGE = "#8a97a4";
+const DIM_EDGE = "#8192a3";
+const CROSS_BOOK_EDGE = "#6e8297";
+
+function reduceNode<E extends GraphEntity>(s: ReducerState, node: string, data: NodeAttributes<E>) {
+  const depth = s.focus.depthByNode.get(node);
+  const explicit = s.explicitNodes.size > 0;
+  const dimmed = explicit
+    ? !s.explicitNodes.has(node)
+    : s.focus.depthByNode.size > 0 && depth == null;
+  const selected = node === s.selectedId && !s.focusSuppressed;
+  const hovered = node === s.hoveredNode;
+  const hoverDimmed = s.hoveredNode !== null && !hovered && !s.hoverNeighbors.has(node) && !selected;
+  const overviewCore = data.visualRank <= [70, 200, 550, 1337][s.zoomTier] || (data.entity.textbookCount ?? 1) >= 3;
+  const alpha = dimmed ? .05 : hoverDimmed ? .12 : depth === 2 ? .3 : s.focus.depthByNode.size || overviewCore ? 1 : [.62, .74, .86, 1][s.zoomTier];
+  return {
+    ...data,
+    hidden: !s.shownNodeIds.has(node),
+    color: selected ? "#16834F" : alpha < 1 ? withAlpha(data.color, alpha) : data.color,
+    size: data.size,
+    label:
+      selected || hovered || (!dimmed && (s.labelIds.has(node) || (depth === 1 && s.focus.depthByNode.size <= 40))) ? data.label : "",
+    // Only the selection is forced; neighbours go through Sigma's label grid so they never overlap.
+    // A small focused neighbourhood (the orbit) always shows its names.
+    forceLabel: selected || hovered || s.labelIds.has(node) || (depth === 1 && !dimmed && s.focus.depthByNode.size <= 40),
+    highlighted: selected,
+    zIndex: selected ? 20 : depth === 1 ? 12 : depth === 2 ? 7 : 1,
+  };
+}
+
+function reduceEdge(s: ReducerState, hoveredEdge: string | null, edge: string, data: EdgeAttributes) {
+  const direct = s.focus.directEdges.has(edge);
+  const secondary = s.focus.secondaryEdges.has(edge);
+  const explicit = s.explicitEdges.size > 0;
+  const highlighted = s.explicitEdges.has(edge);
+  const dimmed = explicit
+    ? !highlighted
+    : s.focus.depthByNode.size > 0 && !direct && !secondary;
+  const hovered = edge === hoveredEdge || s.hoverEdges.has(edge);
+  const hoverDimmed = s.hoveredNode !== null && !hovered && !highlighted && !direct;
+  const relationship = data.relationship;
+  const familyColor = RELATION_STYLES[data.family].color;
+  const label = s.relationLabels[relationship.predicate] ?? relationship.label ?? relationship.predicate;
+  return {
+    ...data,
+    hidden: !s.visibleRelationshipIds.has(edge) || !s.shownNodeIds.has(relationship.subject) || !s.shownNodeIds.has(relationship.objectId ?? ""),
+    color: highlighted ? withAlpha(familyColor, 1)
+      : direct || hovered ? withAlpha(familyColor, RELATION_VISIBILITY.focus.direct)
+      : hoverDimmed ? withAlpha(DIM_EDGE, .08)
+      : dimmed ? withAlpha(DIM_EDGE, RELATION_VISIBILITY.focus.unrelated)
+      : secondary ? withAlpha(familyColor, RELATION_VISIBILITY.focus.secondary)
+      : relationship.provenance ? withAlpha(GREY_EDGE, RELATION_VISIBILITY.overview.provenance)
+      : relationship.crossBook ? withAlpha(CROSS_BOOK_EDGE, RELATION_VISIBILITY.overview.crossBook)
+      : data.island ? withAlpha(familyColor, s.zoomTier >= 2 ? .42 : .3)
+      : s.structuralEdges.has(edge) ? withAlpha(GREY_EDGE, RELATION_VISIBILITY.overview.structural)
+      : withAlpha(GREY_EDGE, s.zoomTier >= 2 ? .1 : RELATION_VISIBILITY.overview.ordinary),
+    size: highlighted ? 2.7 : direct || hovered ? 2.1 : secondary ? 1 : relationship.crossBook ? .85 : .6,
+    label:
+      edge === hoveredEdge || highlighted || (direct && s.labelIds.has(relationship.subject === s.selectedId ? relationship.objectId ?? "" : relationship.subject)) || (s.showLabels && s.zoomTier === 3 && secondary && s.labelIds.has(relationship.subject) && s.labelIds.has(relationship.objectId ?? ""))
+        ? label
+        : "",
+    zIndex: direct || hovered ? 15 : secondary || highlighted ? 8 : 1,
+  };
+}
 
 function SigmaController<E extends GraphEntity>({
   dataGraph,
@@ -126,9 +225,13 @@ function SigmaController<E extends GraphEntity>({
 }) {
   const sigma = useSigma<NodeAttributes<E>, EdgeAttributes>();
   const registerEvents = useRegisterEvents<NodeAttributes<E>, EdgeAttributes>();
-  const setSettings = useSetSettings<NodeAttributes<E>, EdgeAttributes>();
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
+  // The hovered edge only changes that edge's own look, so it bypasses React and repaints just that edge.
+  const hoveredEdgeRef = useRef<string | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const reducerState = useRef<ReducerState | null>(null);
+  /** The Sigma instance the reducers were registered on (a new instance needs them again). */
+  const reducersOn = useRef<unknown>(null);
   const [zoomTier, setZoomTier] = useState<0 | 1 | 2 | 3>(0);
   const [viewportTick, setViewportTick] = useState(0);
   const [suppressedSelectionId, setSuppressedSelectionId] = useState<string | null>(null);
@@ -184,10 +287,6 @@ function SigmaController<E extends GraphEntity>({
       if (!current || rank(entity) > rank(current)) best.set(island, entity);
     }
     return new Set([...best.values()].map(entity => entity.id));
-  }, [indexes]);
-  const sameIsland = useCallback((relationship: GraphRelationship) => {
-    const a = indexes.entityMap.get(relationship.subject)?.community;
-    return !!a && a !== "core" && a === indexes.entityMap.get(relationship.objectId ?? "")?.community;
   }, [indexes]);
   const labelIds = useMemo(() => {
     const { width, height } = sigma.getDimensions();
@@ -283,93 +382,51 @@ function SigmaController<E extends GraphEntity>({
   // SigmaContainer graph prop kills its previous instance before child effects
   // receive the new context, so a selection update can target disposed programs.
   useEffect(() => {
+    hoveredEdgeRef.current = null;
     sigma.setGraph(dataGraph);
   }, [dataGraph, sigma]);
 
+  // Every refresh runs the reducers over all ~2,600 nodes and ~13,000 edges. Registering them through
+  // useSetSettings costs one such pass per key, plus the explicit refresh: three passes per hover.
+  // The reducers are registered once and read the latest state from a ref; a change costs one pass,
+  // and a camera rest that leaves the labels as they were costs none.
   useEffect(() => {
-    setSettings({
-      nodeReducer: (node, data) => {
-        const depth = focus.depthByNode.get(node);
-        const explicit = explicitNodes.size > 0;
-        const dimmed = explicit
-          ? !explicitNodes.has(node)
-          : focus.depthByNode.size > 0 && depth == null;
-        const selected = node === selectedId && !focusSuppressed;
-        const hovered = node === hoveredNode;
-        const hoverDimmed = hoveredNode !== null && !hovered && !hoverNeighbors.has(node) && !selected;
-        const overviewCore = data.visualRank <= [70, 200, 550, 1337][zoomTier] || (data.entity.textbookCount ?? 1) >= 3;
-        const alpha = dimmed ? .05 : hoverDimmed ? .12 : depth === 2 ? .3 : focus.depthByNode.size || overviewCore ? 1 : [.62, .74, .86, 1][zoomTier];
-        return {
-          ...data,
-          hidden: !shownNodeIds.has(node),
-          color: selected ? "#16834F" : alpha < 1 ? withAlpha(data.color, alpha) : data.color,
-          size: data.size,
-          label:
-            selected || hovered || (!dimmed && (labelIds.has(node) || (depth === 1 && focus.depthByNode.size <= 40))) ? data.label : "",
-          // Only the selection is forced; neighbours go through Sigma's label grid so they never overlap.
-          // A small focused neighbourhood (the orbit) always shows its names.
-          forceLabel: selected || hovered || labelIds.has(node) || (depth === 1 && !dimmed && focus.depthByNode.size <= 40),
-          highlighted: selected,
-          zIndex: selected ? 20 : depth === 1 ? 12 : depth === 2 ? 7 : 1,
-        };
-      },
-      edgeReducer: (edge, data) => {
-        const direct = focus.directEdges.has(edge);
-        const secondary = focus.secondaryEdges.has(edge);
-        const explicit = explicitEdges.size > 0;
-        const highlighted = explicitEdges.has(edge);
-        const dimmed = explicit
-          ? !highlighted
-          : focus.depthByNode.size > 0 && !direct && !secondary;
-        const hovered = edge === hoveredEdge || hoverEdges.has(edge);
-        const hoverDimmed = hoveredNode !== null && !hovered && !highlighted && !direct;
-        const relationship = data.relationship;
-        const label = relationLabels[relationship.predicate] ?? relationship.label ?? relationship.predicate;
-        return {
-          ...data,
-          hidden: !visibleRelationshipIds.has(edge) || !shownNodeIds.has(data.relationship.subject) || !shownNodeIds.has(data.relationship.objectId ?? ""),
-          color: highlighted ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, 1)
-            : direct || hovered ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.direct)
-            : hoverDimmed ? rgba(129, 146, 163, .08)
-            : dimmed ? rgba(129, 146, 163, RELATION_VISIBILITY.focus.unrelated)
-            : secondary ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, RELATION_VISIBILITY.focus.secondary)
-            : relationship.provenance ? rgba(138, 151, 164, RELATION_VISIBILITY.overview.provenance)
-            : relationship.crossBook ? rgba(110, 130, 151, RELATION_VISIBILITY.overview.crossBook)
-            : sameIsland(relationship) ? withAlpha(RELATION_STYLES[relationFamily(relationship)].color, zoomTier >= 2 ? .42 : .3)
-            : structuralEdges.has(edge) ? rgba(138, 151, 164, RELATION_VISIBILITY.overview.structural)
-            : rgba(138, 151, 164, zoomTier >= 2 ? .1 : RELATION_VISIBILITY.overview.ordinary),
-          size: highlighted ? 2.7 : direct || hovered ? 2.1 : secondary ? 1 : relationship.crossBook ? .85 : .6,
-          label:
-            edge === hoveredEdge || highlighted || (direct && labelIds.has(relationship.subject === selectedId ? relationship.objectId ?? "" : relationship.subject)) || (showLabels && zoomTier === 3 && secondary && labelIds.has(relationship.subject) && labelIds.has(relationship.objectId ?? ""))
-              ? label
-              : "",
-          zIndex: direct || hovered ? 15 : secondary || highlighted ? 8 : 1,
-        };
-      },
+    const next: ReducerState = {
+      focus, explicitNodes, explicitEdges, selectedId, focusSuppressed, hoveredNode, hoverNeighbors, hoverEdges,
+      zoomTier, shownNodeIds, labelIds, relationLabels, visibleRelationshipIds, showLabels, structuralEdges,
+    };
+    const previous = reducerState.current;
+    const registered = reducersOn.current === sigma;
+    if (registered && previous && sameReducerState(previous, next)) return;
+    reducerState.current = next;
+    if (registered) {
+      sigma.refresh();
+      return;
+    }
+    reducersOn.current = sigma;
+    sigma.setSettings({
+      nodeReducer: (node, data) => reduceNode(reducerState.current ?? next, node, data),
+      edgeReducer: (edge, data) => reduceEdge(reducerState.current ?? next, hoveredEdgeRef.current, edge, data),
     });
-    sigma.refresh();
   }, [
     explicitEdges,
     explicitNodes,
     focus,
     focusSuppressed,
-    hoveredEdge,
     hoveredNode,
     hoverEdges,
     hoverNeighbors,
     labelIds,
-    sameIsland,
     structuralEdges,
     zoomTier,
     relationLabels,
     selectedId,
-    setSettings,
     showLabels,
     sigma,
     shownNodeIds,
-    visibleNodeIds,
     visibleRelationshipIds,
   ]);
+  useEffect(() => () => clearTimeout(hoverTimer.current), []);
 
   useEffect(() => {
     if (!focusSelectionToken || !selectedId || !sigma.getGraph().hasNode(selectedId)) return;
@@ -459,6 +516,28 @@ function SigmaController<E extends GraphEntity>({
       draggedNode.current = null;
       dragMoved.current = false;
     };
+    const queueNodeHover = (node: string | null) => {
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = setTimeout(() => {
+        if (node && sigma.getMouseCaptor().isMouseDown) return;
+        setHoveredNode(node);
+      }, node ? 90 : 60);
+    };
+    const setEdgeHover = (edge: string | null) => {
+      const previous = hoveredEdgeRef.current;
+      if (previous === edge) return;
+      hoveredEdgeRef.current = edge;
+      const graph = sigma.getGraph();
+      const edges = [previous, edge].filter((id): id is string => !!id && graph.hasEdge(id));
+      if (!edges.length) return;
+      try {
+        // Scheduled: a fast pointer crosses several edges per frame, and each would otherwise draw the whole frame.
+        sigma.refresh({ partialGraph: { edges }, skipIndexation: true, schedule: true });
+      } catch {
+        // An edge hidden by a filter since it was hovered has no slot to repaint in: redraw everything.
+        sigma.refresh();
+      }
+    };
     let cameraSyncTimer: ReturnType<typeof setTimeout> | undefined;
     // While the wheel or a drag is still moving the camera, do nothing but let Sigma draw.
     // The label tier (which re-runs the reducers over every node and edge) and the minimap
@@ -501,10 +580,13 @@ function SigmaController<E extends GraphEntity>({
         );
       },
       clickStage: () => { if (performance.now() < suppressClickUntil.current) return; setSuppressedSelectionId(selectedId ?? null); onClearFocus(); },
-      enterNode: ({ node }) => setHoveredNode(node),
-      leaveNode: () => setHoveredNode(null),
-      enterEdge: ({ edge }) => setHoveredEdge(edge),
-      leaveEdge: () => setHoveredEdge(null),
+      // Hovering a node dims the rest of the map, which repaints everything. Sigma draws the hover ring at
+      // once; the dimming waits until the pointer rests, so sweeping across the map or dragging it does
+      // not repaint the whole graph for every node passed on the way.
+      enterNode: ({ node }) => queueNodeHover(node),
+      leaveNode: () => queueNodeHover(null),
+      enterEdge: ({ edge }) => setEdgeHover(edge),
+      leaveEdge: () => setEdgeHover(null),
       downNode: ({ node, preventSigmaDefault }) => {
         // Freeze normalization during drag so moving an outer node cannot shift the mental map.
         if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
@@ -612,6 +694,7 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
   );
   const graph = useMemo(() => {
     const value = new MultiDirectedGraph<NodeAttributes<E>, EdgeAttributes>();
+    const communityOf = new Map(nodes.map((node) => [node.entity.id, node.entity.community]));
     for (const node of nodes) {
       const category = schemaCategoryFor(node.entity.type);
       value.addNode(node.entity.id, {
@@ -629,7 +712,10 @@ function SigmaGraphSceneInner<E extends GraphEntity>({
     }
     for (const edge of relationships) {
       if (!edge.objectId || !value.hasNode(edge.subject) || !value.hasNode(edge.objectId)) continue;
+      const island = communityOf.get(edge.subject);
       value.addDirectedEdgeWithKey(edge.id, edge.subject, edge.objectId, {
+        family: relationFamily(edge),
+        island: !!island && island !== "core" && island === communityOf.get(edge.objectId),
         size: edge.crossBook ? 1.2 : 0.75,
         color: edge.provenance ? rgba(126, 139, 151, .14) : rgba(138, 151, 164, .2),
         label: edge.label ?? edge.predicate,
