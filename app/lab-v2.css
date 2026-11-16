@@ -113,7 +113,17 @@
 .lupan-v2 .lupan-side { min-width: 0; }
 .lupan-v2 .lupan-side .lupan-inspector { margin: 0; padding: 0; border: 0; }
 .lupan-v2 .lupan-side .lupan-inspector > :not(.lupan-card-close) { border-radius: 16px; }
-.lupan-v2 .lupan-side-hint { margin: 0; padding: 16px 18px; border: 1px dashed #C4D3CA; border-radius: 16px; color: var(--lupan-ink-3); font: 13px/1.8 var(--ui, "Microsoft YaHei", sans-serif); }
+/* 还没点音时，左栏是一张「认识律盘」：三圈各是什么，点一点就打开对应的说明卡。 */
+.lupan-v2 .lupan-guide { border-radius: 16px; animation: none; }
+.lupan-v2 .lupan-guide .lupan-card-title { font-size: 28px; }
+.lupan-v2 .lupan-guide .lupan-card-facts div { grid-template-columns: 1fr; gap: 0; }
+.lupan-v2 .lupan-guide .lupan-card-facts dd { text-wrap: pretty; }
+.lupan-guide-try { margin: 14px 0 8px; color: var(--lupan-ink-3); font: 12px/1.6 var(--ui, "Microsoft YaHei", sans-serif); letter-spacing: .1em; }
+.lupan-guide-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.lupan-guide-chips button { min-width: 40px; min-height: 34px; padding: 0 10px; border: 1px solid var(--lupan-line); border-radius: 999px; background: #FFFFFF; color: var(--lupan-pine); font: 500 14px/1 var(--kai, "LXGW WenKai", "KaiTi", serif); white-space: nowrap; cursor: pointer; }
+.lupan-guide-chips button:first-child { padding: 0 12px; background: var(--lupan-pine); border-color: var(--lupan-pine); color: #FFFFFF; }
+.lupan-guide-chips button:hover { border-color: var(--lupan-pine); }
+.lupan-guide-chips button:focus-visible { outline: 3px solid rgb(39 99 68 / 30%); outline-offset: 2px; }
 @media (max-width: 1100px) {
   .lupan-v2 .lupan-side { order: 3; }
   .lupan-v2 .lupan-side:not(.has-card) { display: none; }

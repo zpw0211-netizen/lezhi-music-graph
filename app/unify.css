@@ -100,3 +100,8 @@ input[type="checkbox"] { accent-color: var(--pine, #1E7A4A); }
 .kmap-legend { gap: 6px 18px; }
 .kmap-legend-item { display: inline-flex; align-items: baseline; gap: 8px; min-width: 0; }
 .kmap-legend-item > :is(.dot, .square, .pill) { flex: none; margin-left: 0; align-self: center; }
+
+/* 四、上课模式的课堂工具：工具页不贴屏幕边，和正常页面一样居中留白。 */
+@media (min-width: 881px) {
+  .present-tools-body > .exploration-shell { box-sizing: border-box; width: min(1344px, 100%); margin-inline: auto; padding: 0 32px 24px; }
+}

@@ -89,6 +89,7 @@ export function RhythmPage() {
   const [listens, setListens] = useState(0);
   const [questionNo, setQuestionNo] = useState(1);
   const [records, setRecords] = useState<DictationRecord[]>([]);
+  const [projecting, setProjecting] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const playbackRef = useRef<RhythmPlayback | null>(null);
   const tapsRef = useRef<number[]>([]);
@@ -408,6 +409,13 @@ export function RhythmPage() {
     };
   }, [shownBars, answerBars, revealed, meter, mode, result, countdown]);
 
+  // The stage may leave full screen by Esc as well as by the button.
+  useEffect(() => {
+    const sync = () => setProjecting(!!stageRef.current && document.fullscreenElement === stageRef.current);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
   const fullscreen = () => {
     const stage = stageRef.current;
     if (!stage) return;
@@ -615,7 +623,7 @@ export function RhythmPage() {
                 ))}
               </div>
             )}
-            <button type="button" className="rhythm-ghost rhythm-fullscreen" onClick={fullscreen}>投屏全屏</button>
+            <button type="button" className="rhythm-ghost rhythm-fullscreen" onClick={fullscreen}>{projecting ? "退出全屏" : "投屏全屏"}</button>
           </div>
           {!dictating && <div className="rhythm-drum-wrap">
             <button

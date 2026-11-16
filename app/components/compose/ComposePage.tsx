@@ -315,9 +315,17 @@ export function ComposePage() {
     storeWorks(next);
   };
 
+  const [projecting, setProjecting] = useState(false);
+  // Esc leaves full screen too, so follow the document rather than the button.
+  useEffect(() => {
+    const sync = () => setProjecting(!!stageRef.current && document.fullscreenElement === stageRef.current);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
   const showcase = () => {
     const stage = stageRef.current;
-    if (stage?.requestFullscreen) void stage.requestFullscreen().catch(() => undefined);
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+    else if (stage?.requestFullscreen) void stage.requestFullscreen().catch(() => undefined);
   };
 
   return <div className="compose-lab">
@@ -497,7 +505,7 @@ export function ComposePage() {
       </ul>
       <div className="compose-save">
         <button type="button" className="compose-primary" onClick={save} disabled={!complete}>{complete ? "保存作品" : "写满后可以保存"}</button>
-        <button type="button" onClick={showcase} disabled={!hasNotes}>投屏展示</button>
+        <button type="button" onClick={showcase} disabled={!hasNotes && !projecting}>{projecting ? "退出全屏" : "投屏展示"}</button>
       </div>
       <div className="compose-next">
         <button type="button" className="compose-next-button" onClick={toVary} disabled={!complete || !canVary}>

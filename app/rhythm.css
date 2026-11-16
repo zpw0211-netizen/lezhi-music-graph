@@ -341,14 +341,14 @@
 .rhythm-record li.is-low strong { color: var(--rhythm-seal); }
 .rhythm-record li.is-paper strong { color: var(--rhythm-ink-2); font-weight: 400; }
 
-/* 手机：四种玩法平分一行；听写的答题区两小节一行，空格够大，好点。 */
+/* 手机：四种玩法平分一行；节奏谱两小节一行，音符和空格够大，看得清、好点。 */
 @media (max-width: 560px) {
   .rhythm-mode { display: grid; width: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .rhythm-mode button { padding: 0 4px; font-size: 13px; }
 }
 @container (max-width: 560px) {
-  .rhythm-dictation .rhythm-score.is-four { font-size: min(44px, calc(100cqw / (var(--bar-beats, 2) * 5.8 + 3))); }
-  .rhythm-dictation .rhythm-score.is-four .rhythm-bars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rhythm-stage .rhythm-score.is-four { font-size: min(44px, calc(100cqw / (var(--bar-beats, 2) * 5.8 + 3))); }
+  .rhythm-stage .rhythm-score.is-four .rhythm-bars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* 长提示换行时不留单独一个字。 */

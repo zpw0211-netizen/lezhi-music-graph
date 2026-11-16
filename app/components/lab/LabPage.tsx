@@ -916,7 +916,22 @@ export function LabPage({ graph, books, stage, onStageChange, onOpenWork }: {
         {inspect ? <aside className="lupan-inspector" aria-live="polite" aria-label="说明">
           <button type="button" className="lupan-card-close" aria-label="关闭说明" onClick={() => setInspect(null)}>×</button>
           {renderInspectCard()}
-        </aside> : <p className="lupan-side-hint">点律盘上的一个音，或者中间的圆心，这里会出现它的说明。</p>}
+        </aside> : <aside className="lupan-card lupan-guide" aria-label="认识律盘">
+          <p className="lupan-card-kicker">认识律盘</p>
+          <h2 className="lupan-card-title">三圈一个盘心</h2>
+          <dl className="lupan-card-facts">
+            <div><dt>外圈 · 音名</dt><dd>C、D、E……一圈十二个半音，音高固定不变。拖动外圈或按 ↑ ↓ 可以移调。</dd></div>
+            <div><dt>内圈 · 音阶</dt><dd>{scaleTitle}的 {scaleNotes.length} 个音，各自对着外圈此刻的音高。</dd></div>
+            <div><dt>盘心 · 调式</dt><dd>现在是 <b>{keyName} {modeRoot}调式</b>，1={gongKeyName}。</dd></div>
+          </dl>
+          <p className="lupan-guide-try">点一点，看说明</p>
+          <div className="lupan-guide-chips">
+            <button type="button" onClick={inspectHub}>盘心</button>
+            {scaleNotes.map((note) => (
+              <button key={note.name} type="button" onClick={() => playDialNote(note, normalizePitchClass(modeTonicPitchClass + note.semitone))}>{note.name}</button>
+            ))}
+          </div>
+        </aside>}
       </div>
       <div className="lupan-center-column">
         <LupanWheel
