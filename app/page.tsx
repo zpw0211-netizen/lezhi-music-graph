@@ -9,6 +9,7 @@ import { designTokenCssVariables } from "./design-tokens";
 import { semanticPaletteCssVariables } from "./semantic-palette";
 import { AppTopNav, type NavView } from "./components/AppTopNav";
 import { StageBookPicker } from "./components/StageBookPicker";
+import { ViewLoading } from "./components/ViewLoading";
 import type { AssistantPage as AssistantPageComponent } from "./components/assistant/AssistantPage";
 import type { LabPage as LabPageComponent } from "./components/lab/LabPage";
 import type {
@@ -51,11 +52,7 @@ import { bareWorkName, isWorkType, type BookDirectory, type Entity } from "./lib
 // Only the home page ships in the first script. Every other page is its own
 // chunk, loaded when opened and prefetched in the background once the data is in.
 type PropsOf<C> = C extends (props: infer P) => unknown ? P : never;
-const viewLoading = () => (
-  <div className="app-view-status" role="status">
-    正在载入…
-  </div>
-);
+const viewLoading = ({ error }: { error?: Error | null }) => <ViewLoading error={error} />;
 
 function initialBookStage(): BookStage {
   const fallback = defaultBookStage(PUBLISHED_BOOKS);
@@ -138,7 +135,7 @@ const ExplorerSidebar = nextDynamic<PropsOf<typeof ExplorerSidebarComponent>>(
 );
 const WorkLibrary = nextDynamic<PropsOf<typeof WorkLibraryComponent>>(
   () => import("./components/records/WorkLibrary").then((module) => module.WorkLibrary),
-  { loading: () => <RecordsStartup /> },
+  { loading: ({ error }) => error ? <ViewLoading error={error} /> : <RecordsStartup /> },
 );
 const LessonPage = nextDynamic<PropsOf<typeof LessonPageComponent>>(
   () => import("./components/lesson/LessonPage").then((module) => module.LessonPage),
@@ -198,12 +195,13 @@ const ImportView = nextDynamic(
 );
 /** Warm the page chunks so the first switch to a page is instant. */
 const prefetchPages = () => {
-  void import("./components/records/WorkLibrary");
-  void import("./components/lesson/LessonPage");
-  void import("./components/explorer/GraphExplorer");
-  void import("./components/records/WorkGraph");
-  void import("./components/assistant/AssistantPage");
-  void import("./components/ResearchAnalysis");
+  // A failed warm-up is harmless: the page fetches its code again when it is opened.
+  void import("./components/records/WorkLibrary").catch(() => undefined);
+  void import("./components/lesson/LessonPage").catch(() => undefined);
+  void import("./components/explorer/GraphExplorer").catch(() => undefined);
+  void import("./components/records/WorkGraph").catch(() => undefined);
+  void import("./components/assistant/AssistantPage").catch(() => undefined);
+  void import("./components/ResearchAnalysis").catch(() => undefined);
 };
 
 const EMPTY_BOOKS: BookDirectory[] = [];

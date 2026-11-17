@@ -23,6 +23,7 @@ import { AppTopNav } from "../AppTopNav";
 import { SITE_NAME } from "../../lib/app/brand";
 import type { MelodyPlayer as MelodyPlayerComponent } from "../lesson/MelodyPlayer";
 import { fetchWithRetry } from "../../lib/app/fetch-retry";
+import { ViewLoading } from "../ViewLoading";
 type PortalEntity = { id: string; name: string; type: string; category?: string; textbookCount?: number; degree?: number; bookKeys?: string[] };
 type PortalRelationship = { subject: string; objectId?: string | null; predicate: string; label?: string };
 type PortalBook = { key: string; title: string; grade: number; semester: string; entityCount: number; tripleCount: number; workCount: number; pages: number };
@@ -86,7 +87,7 @@ const splitBookTitle = (book: { title: string }): [string, string] => {
 };
 const MelodyPlayer = dynamic<PropsOf<typeof MelodyPlayerComponent>>(
   () => import("../lesson/MelodyPlayer").then(module => module.MelodyPlayer),
-  { loading: () => <span role="status">钢琴音色准备中…</span> },
+  { loading: ({ error }) => <ViewLoading error={error} inline label="钢琴音色准备中…" /> },
 );
 function subscribeToHomeLastRead(onChange: () => void) {
   window.addEventListener(HOME_LAST_READ_CHANGE_EVENT, onChange);

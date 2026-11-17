@@ -1,4 +1,5 @@
 import { publicAssetUrl } from "../app/assets";
+import { fetchWithRetry } from "../app/fetch-retry";
 
 const SAMPLE_MIDIS = Array.from({ length: 22 }, (_, index) => 36 + index * 3);
 const NOTE_NAMES = ["C", "Cs", "D", "Ds", "E", "F", "Fs", "G", "Gs", "A", "As", "B"];
@@ -9,6 +10,8 @@ export type PianoSampler = {
 };
 
 const samplerByContext = new WeakMap<AudioContext, Promise<PianoSampler>>();
+/** Downloaded sample files, shared by every context; a failed download is dropped so the next try fetches again. */
+const bytesByUrl = new Map<string, Promise<ArrayBuffer>>();
 let sharedContext: AudioContext | null = null;
 
 /** Call only from a user gesture; all piano interfaces share this context. */
@@ -25,16 +28,39 @@ function sampleFileName(midi: number) {
   return `${note}${octave}.mp3`;
 }
 
+function sampleUrl(midi: number) {
+  return publicAssetUrl(`media/instruments/piano/${sampleFileName(midi)}`);
+}
+
+function sampleBytes(url: string) {
+  const existing = bytesByUrl.get(url);
+  if (existing) return existing;
+  const loading = fetchWithRetry(url).then((response) => {
+    if (!response.ok) throw new Error(`Piano sample request failed (${response.status})`);
+    return response.arrayBuffer();
+  });
+  loading.catch(() => { if (bytesByUrl.get(url) === loading) bytesByUrl.delete(url); });
+  bytesByUrl.set(url, loading);
+  return loading;
+}
+
+/**
+ * Download the piano bank in the background (no AudioContext or user gesture needed), so the first
+ * press of a play button only has to decode: on the live host the 22 files took 5–6 s to arrive.
+ */
+export function preloadPianoSamples() {
+  for (const midi of SAMPLE_MIDIS) void sampleBytes(sampleUrl(midi)).catch(() => undefined);
+}
+
 /** Load and decode the piano bank once for each AudioContext. */
 export function loadPianoSampler(context: AudioContext): Promise<PianoSampler> {
   const existing = samplerByContext.get(context);
   if (existing) return existing;
 
   const loading = Promise.all(SAMPLE_MIDIS.map(async (midi) => {
-    const url = publicAssetUrl(`media/instruments/piano/${sampleFileName(midi)}`);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Piano sample request failed (${response.status})`);
-    const buffer = await context.decodeAudioData(await response.arrayBuffer());
+    // decodeAudioData takes over the buffer it is given, so decode a copy and keep the download for other contexts.
+    const bytes = await sampleBytes(sampleUrl(midi));
+    const buffer = await context.decodeAudioData(bytes.slice(0));
     return { midi, buffer };
   })).then((samples) => ({ samples })).catch((error: unknown) => {
     samplerByContext.delete(context);

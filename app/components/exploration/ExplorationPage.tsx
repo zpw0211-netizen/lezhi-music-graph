@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { publicAssetUrl } from "../../lib/app/assets";
+import { preloadPianoSamples } from "../../lib/lesson/piano-sampler";
 import type { AppView } from "../../lib/app/routing";
 import { ExplorationNavContext } from "./exploration-tools";
 
@@ -47,7 +48,7 @@ export function ExplorationPage({
 }) {
   const tabRefs = useRef<Partial<Record<ExplorationView, HTMLButtonElement | null>>>({});
 
-  // Once the open tab has had its turn, fetch the other three (code, data, art) in the background:
+  // Once the open tab has had its turn, fetch the other tools (code, art, piano samples) in the background:
   // every request to the host costs a long round trip, so a tab fetched on click keeps the class waiting.
   useEffect(() => {
     const preload = () => {
@@ -59,6 +60,8 @@ export function ExplorationPage({
       void import("../compose/ComposePage").catch(() => undefined);
       void import("../choir/ChoirPage").catch(() => undefined);
       new Image().src = publicAssetUrl("art/rhythm/drum.webp");
+      // Almost every tool plays the piano: fetch its 1.6 MB now so the first 播放 does not wait for it (skipped on data saver).
+      if (!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) preloadPianoSamples();
     };
     const idle = window.requestIdleCallback?.(preload, { timeout: 2500 });
     const timer = idle === undefined ? window.setTimeout(preload, 1200) : undefined;
