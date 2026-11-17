@@ -41,6 +41,8 @@
   background: transparent;
   color: var(--ink);
   box-sizing: border-box;
+  /* 问题气泡弹出、漂移、悬停放大时会伸出屏幕边缘几像素，手机上整页会左右晃；横向裁掉（clip 不产生滚动容器，不影响吸顶） */
+  overflow-x: clip;
 }
 
 /* 主舞台 */
