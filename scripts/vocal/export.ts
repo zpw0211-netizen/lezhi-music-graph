@@ -33,7 +33,7 @@ const visit = (book: string, name: string, melody: Melody, index: number) => {
   if (keys ? !keys.has(key) : SKIP.has(key) || (mode === "voiced") !== !!findVocal(melody)) return;
   out.push({
     key, book, name, index, bpm: melody.bpm, meter: melody.meter,
-    notes: notes.map((note) => ({ d: note.d, b: note.b, midi: note.d > 0 && note.d < 8 ? midiOf(melody, note) : null, lyric: note.lyric ?? null, slur: !!note.slur, tie: !!note.tie })),
+    notes: notes.map((note) => ({ d: note.d, b: note.b, midi: note.d > 0 && note.d < 8 && !note.inst ? midiOf(melody, note) : null, lyric: note.lyric ?? null, slur: !!note.slur, tie: !!note.tie })),
   });
 };
 const sungWord = (note: MelodyNote) => !!note.lyric && /[\p{Script=Han}A-Za-z]/u.test(note.lyric);
