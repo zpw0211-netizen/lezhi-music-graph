@@ -67,3 +67,44 @@ export function unitWorksAnswer(question: string, units: UnitCatalog[], books: R
   }));
   return answerFromDirectory(`${unit.name}（${bookTitle}）按教材单元目录共收录 ${works.length} 首作品：${listed}。`, evidence);
 }
+
+const EDITION_WORDS = /人民音乐出版社|人民教育出版社|湖南文艺出版社|花城出版社|(?:人音|人教|湘艺|花城|高中)版?|简谱|五线谱/g;
+const VOLUME_WORDS = /[一二三四五六七八九1-9](?:年级)?(?:[上下](?:册|学期)?)?|年级/g;
+
+/** “三年级上册有哪些作品？”：只问某一册（或某年级）收了哪些作品，不带拍号、单元等其他条件。 */
+export const isVolumeWorksQuestion = (question: string) => {
+  const text = question.normalize("NFKC").replace(/\s+/g, "");
+  if (!requestedVolumes(text).length || isUnitWorksQuestion(text)) return false;
+  const rest = text.replace(EDITION_WORDS, "").replace(VOLUME_WORDS, "").replace(/[\s,，、。？?！!()（）《》「」·・-]/g, "");
+  return /^(?:的|教材|课本|音乐|音乐书|里|里面|中|上|一共|总共|共|都|收录了?|学|要学)*(?:有|是)?(?:哪些|哪几首|什么)(?:作品|歌曲|曲目|乐曲|歌)(?:呢|啊|吗)?$/.test(rest);
+};
+
+/** Lists every unit's works of the requested volume(s), straight from the course directory. */
+export function volumeWorksAnswer(question: string, units: UnitCatalog[], books: RagGraph["books"]): AnswerResult | null {
+  if (!isVolumeWorksQuestion(question)) return null;
+  const volumes = requestedVolumes(question);
+  const order = new Map(books.map((book, index) => [book.key, index]));
+  const scoped = units.filter((unit) => order.has(unit.bookKey) && matchesVolume(unit.bookKey, volumes));
+  if (!scoped.length) return answerFromDirectory("当前版本的教材目录里没有这一册。请核对年级和上下册。");
+  const bookTitleOf = (key: string) => books.find((book) => book.key === key)?.title ?? key;
+  const bookKeys = [...new Set(scoped.map((unit) => unit.bookKey))].sort((a, b) => order.get(a)! - order.get(b)!);
+  const evidence: Citation[] = [];
+  const parts = bookKeys.map((bookKey) => {
+    const bookTitle = bookTitleOf(bookKey);
+    const seen = new Set<string>();
+    const lines = scoped.filter((unit) => unit.bookKey === bookKey && unit.works.length).map((unit) => {
+      const names = unit.works.filter((work) => {
+        if (seen.has(work.name)) return false;
+        seen.add(work.name);
+        evidence.push({
+          id: `unit:${unit.id}:${work.id}`, bookKey, bookTitle, pdfPage: work.pdfPage ?? null,
+          textbookPage: work.page == null ? "" : String(work.page), summary: work.summary ?? "", sourceType: "textbook_explicit",
+        });
+        return true;
+      }).map((work) => work.name);
+      return names.length ? `${unit.name}：${names.join("、")}` : "";
+    }).filter(Boolean);
+    return `${bookTitle}按教材单元目录共收录 ${seen.size} 首作品。${lines.join("；")}。`;
+  });
+  return answerFromDirectory(parts.join(""), evidence);
+}

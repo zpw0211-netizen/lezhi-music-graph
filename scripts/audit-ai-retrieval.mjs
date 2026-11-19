@@ -89,6 +89,16 @@ const missingUnit = unitWorksAnswer(`八上${unitName}单元有哪些作品？`,
 assert.match(missingUnit.answer, /找不到你指定的单元/);
 assert.equal(missingUnit.evidence.length, 0);
 assert.equal(unitWorksAnswer("哪些作品用了 2/4 拍？", catalog, directoryBooks), null);
+const { volumeWorksAnswer, isVolumeWorksQuestion } = await compile("app/lib/ai/unit-works.ts");
+for (const q of ["八年级下册有哪些作品？", "湘艺版八下有哪些歌曲", "八下一共有哪些作品？", "湘艺版 8 年级下册的教材里有哪些作品？"]) {
+  const volume = volumeWorksAnswer(q, catalog, directoryBooks);
+  assert.match(volume.answer, /^湘艺版八年级下册按教材单元目录共收录 2 首作品。.*《久久不见久久见》、《下四川》。$/, q);
+  assert.doesNotMatch(volume.answer, /黄河船夫曲/);
+  assert.deepEqual(volume.evidence.map((item) => item.bookKey), ["xy-g8s2", "xy-g8s2"]);
+}
+for (const q of ["八下有哪些作品用了 2/4 拍？", "八下有哪些作品适合合唱？", "哪些作品用了 2/4 拍？", "八下第一单元有哪些作品？", "《久久不见久久见》在八下吗？"])
+  assert.equal(isVolumeWorksQuestion(q), false, q);
+assert.match(volumeWorksAnswer("三上有哪些作品？", catalog, directoryBooks).answer, /没有这一册/);
 
 const index = JSON.parse(await readFile("public/data/graph-index.json", "utf8"));
 const graph = index.canonicalGraph;

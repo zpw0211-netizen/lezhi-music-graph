@@ -2,7 +2,7 @@
 import { useRef, useState, useEffect, type CSSProperties, type KeyboardEvent } from "react";
 import { enrichGraph, graphAnswer, type RagGraph, type EvidencePayload, type AnswerResult } from "../../lib/ai/graph-rag";
 import { questionEdition, saveEditionQuestion, takeEditionQuestion } from "../../lib/ai/edition-scope";
-import { isUnitWorksQuestion, unitWorksAnswer, type UnitCatalog } from "../../lib/ai/unit-works";
+import { isUnitWorksQuestion, isVolumeWorksQuestion, unitWorksAnswer, volumeWorksAnswer, type UnitCatalog } from "../../lib/ai/unit-works";
 import { meterAnswerFromScores, textbookQuestion } from "../../lib/ai/textbook-facts";
 import { PendingKnowledge } from "./PendingKnowledge";
 import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
@@ -134,7 +134,8 @@ export function AssistantPage({
         }
         return;
       }
-      let result = isUnitWorksQuestion(q) ? unitWorksAnswer(q, await loadUnits(), graph.books) : null;
+      let result = isUnitWorksQuestion(q) ? unitWorksAnswer(q, await loadUnits(), graph.books)
+        : isVolumeWorksQuestion(q) ? volumeWorksAnswer(q, await loadUnits(), graph.books) : null;
       if (!result) {
         const retrieval = await enrichGraph(graph, q, [], loadEvidence);
         const base = graphAnswer(retrieval, q);
