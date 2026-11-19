@@ -106,8 +106,8 @@ for (const key of keys) {
   const entityByKey = new Map();
   const workByName = new Map();
   const entity = (name, type, extra = {}) => {
-    // 花城版有些作品名本身以书名号开头（《卡门》序曲），不再外套一层。其他版本暂不改，免得线上课程名变动。
-    const titled = /^《.*》$/.test(name) || (key.startsWith("hc-") && name.startsWith("《"));
+    // 作品名本身以书名号开头的（《卡门》序曲、《辛德勒名单》主题曲），不再外套一层。
+    const titled = name.startsWith("《");
     const display = WORK_TYPES.has(type) && !titled ? `《${name}》` : name;
     const lookupKey = `${categoryOf(type)}|${display}`;
     let found = entityByKey.get(lookupKey) ?? (WORK_TYPES.has(type) ? workByName.get(normalizeWorkName(name)) : undefined);

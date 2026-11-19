@@ -192,7 +192,7 @@ function findMelodies(bookKey: string | undefined, names: string[]): { melodies:
   if (bookKey?.startsWith("xy-") || bookKey?.startsWith("wx-xy-") || bookKey?.startsWith("hs-") || bookKey?.startsWith("hc-")) {
     const book = BOOK_MELODIES[bookKey] ?? {};
     for (const name of names) {
-      // 名字本身带书名号的花城版作品（《卡门》序曲），键去掉外层《》后正好是这个名字。
+      // 名字本身以书名号开头的作品（《卡门》序曲），键去掉外层《》后正好是这个名字。
       if (book[name]?.length) return { melodies: book[name], name };
       const bare = name.replace(/^《|》$/g, "");
       if (book[bare]?.length) return { melodies: book[bare], name };
