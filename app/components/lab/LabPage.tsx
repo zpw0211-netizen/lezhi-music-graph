@@ -6,7 +6,7 @@ import { PUBLISHED_BOOK_SHORT_NAMES, availableBookStages, booksForStage, type Bo
 import { BOOK_MELODIES, MELODIES, melodiesFor, type Melody } from "../../lib/lesson/melodies";
 
 /** 湘艺版只用本册录的旋律，不借别的版本同名歌的谱。 */
-const labMelodies = (name: string, bookKey?: string): Melody[] => (bookKey && /^(wx-)?xy-/.test(bookKey) ? melodiesFor(bookKey, name) : MELODIES[name] ?? []);
+const labMelodies = (name: string, bookKey?: string): Melody[] => (bookKey && /^((wx-)?xy|hc)-/.test(bookKey) ? melodiesFor(bookKey, name) : MELODIES[name] ?? []);
 import { getPianoAudioContext, loadPianoSampler, playPianoSample, type PianoSampler } from "../../lib/lesson/piano-sampler";
 import { MELODY_PLAYBACK_STARTED, VOCAL_PLAYBACK_STARTED } from "../../lib/lesson/recordings";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";

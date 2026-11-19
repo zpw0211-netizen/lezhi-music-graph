@@ -29,8 +29,8 @@ Module._extensions[".ts"] = (module, filename) => {
 const { isWorkType } = require(path.join(ROOT, "app/lib/app/types.ts"));
 const { getPrintedPage, getScoreMedia, hasMelody, isStarredWork, parseUnitTask } = require(path.join(ROOT, "app/lib/app/unit-data.ts"));
 const { MELODIES, melodiesFor } = require(path.join(ROOT, "app/lib/lesson/melodies.ts"));
-// 人教版 and 湘艺版 books only use their own transcriptions; never another edition's melody of the same title.
-const workHasMelody = (bookKey, name) => (/^(pep|xy|hs)-/.test(bookKey)
+// 人教版, 湘艺版, 高中 and 花城版 books only use their own transcriptions; never another edition's melody of the same title.
+const workHasMelody = (bookKey, name) => (/^(pep|xy|hs|hc)-/.test(bookKey)
   ? melodiesFor(bookKey, name.replace(/^《|》$/g, ""), name).length > 0
   : hasMelody(name, MELODIES));
 
@@ -73,7 +73,8 @@ const SUMMARY_PREDICATES = [
   "创作背景", "历史背景", "时代背景",
 ];
 // 湘艺版的署名照书分得更细（配歌、译配、译词、收集、集体创作、音乐署名），一并显示；其他版本保持原样。
-const CREATOR_PREDICATES = ["作曲", "作词", "词曲作者", "编曲", "改编", ...(EDITION.key === "xiangyi" ? ["配歌", "译配", "译词", "收集", "集体创作", "音乐署名"] : [])];
+const HUACHENG_CREDITS = ["填词", "配词", "改词", "原词", "编词", "编词配歌", "配歌", "译配", "译词", "原曲", "整理", "收集整理", "搜集整理", "采编", "记谱", "记录", "记谱记词", "记谱填词", "编配", "简编", "整理改编", "编合唱", "改编合唱", "作者"];
+const CREATOR_PREDICATES = ["作曲", "作词", "词曲作者", "编曲", "改编", ...(EDITION.key === "xiangyi" ? ["配歌", "译配", "译词", "收集", "集体创作", "音乐署名"] : EDITION.key === "huacheng" ? HUACHENG_CREDITS : [])];
 const FINANCIAL_DIGITS = ["零", "壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖"];
 
 const valueOf = (triple, entityById) => {

@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "edition": {
+    "key": "huacheng",
+    "label": "花城版",
+    "press": "广东教育出版社、花城出版社",
+    "basePath": "/huacheng",
+    "unitActivities": true,
+    "hotSearches": [
+      "国旗国旗真美丽",
+      "中国娃",
+      "布谷叫，春天到",
+      "咏鹅",
+      "行花街"
+    ]
+  },
+  "books": [
+    {
+      "key": "hc-g1s1",
+      "stage": "小学",
+      "grade": 1,
+      "semester": "上册",
+      "shortName": "一上",
+      "fullName": "一年级上册",
+      "title": "花城版一年级上册",
+      "pages": 74,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": 9
+    },
+    {
+      "key": "hc-g1s2",
+      "stage": "小学",
+      "grade": 1,
+      "semester": "下册",
+      "shortName": "一下",
+      "fullName": "一年级下册",
+      "title": "花城版一年级下册",
+      "pages": 74,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": 8
+    },
+    {
+      "key": "hc-g2s1",
+      "stage": "小学",
+      "grade": 2,
+      "semester": "上册",
+      "shortName": "二上",
+      "fullName": "二年级上册",
+      "title": "花城版二年级上册",
+      "pages": 74,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": 9
+    },
+    {
+      "key": "hc-g2s2",
+      "stage": "小学",
+      "grade": 2,
+      "semester": "下册",
+      "shortName": "二下",
+      "fullName": "二年级下册",
+      "title": "花城版二年级下册",
+      "pages": 78,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": 9
+    },
+    {
+      "key": "hc-g3s1",
+      "stage": "小学",
+      "grade": 3,
+      "semester": "上册",
+      "shortName": "三上",
+      "fullName": "三年级上册",
+      "title": "花城版三年级上册",
+      "pages": 74,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": 8
+    },
+    {
+      "key": "hc-g3s2",
+      "stage": "小学",
+      "grade": 3,
+      "semester": "下册",
+      "shortName": "三下",
+      "fullName": "三年级下册",
+      "title": "花城版三年级下册",
+      "pages": 74,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": [
+        1,
+        3,
+        4,
+        6,
+        7
+      ]
+    },
+    {
+      "key": "hc-g4s1",
+      "stage": "小学",
+      "grade": 4,
+      "semester": "上册",
+      "shortName": "四上",
+      "fullName": "四年级上册",
+      "title": "花城版四年级上册",
+      "pages": 70,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": [
+        3,
+        4,
+        5,
+        6,
+        8
+      ]
+    },
+    {
+      "key": "hc-g5s1",
+      "stage": "小学",
+      "grade": 5,
+      "semester": "上册",
+      "shortName": "五上",
+      "fullName": "五年级上册",
+      "title": "花城版五年级上册",
+      "pages": 70,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8
+      ]
+    },
+    {
+      "key": "hc-g6s1",
+      "stage": "小学",
+      "grade": 6,
+      "semester": "上册",
+      "shortName": "六上",
+      "fullName": "六年级上册",
+      "title": "花城版六年级上册",
+      "pages": 70,
+      "pdfOffset": 5,
+      "published": true,
+      "unitArt": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9
+      ]
+    },
+    {
+      "key": "hc-g7s1",
+      "stage": "初中",
+      "grade": 7,
+      "semester": "上册",
+      "shortName": "七上",
+      "fullName": "七年级上册",
+      "title": "花城版七年级上册",
+      "pages": 82,
+      "pdfOffset": 5,
+      "published": true
+    },
+    {
+      "key": "hc-g7s2",
+      "stage": "初中",
+      "grade": 7,
+      "semester": "下册",
+      "shortName": "七下",
+      "fullName": "七年级下册",
+      "title": "花城版七年级下册",
+      "pages": 78,
+      "pdfOffset": 5,
+      "published": true
+    },
+    {
+      "key": "hc-g8s1",
+      "stage": "初中",
+      "grade": 8,
+      "semester": "上册",
+      "shortName": "八上",
+      "fullName": "八年级上册",
+      "title": "花城版八年级上册",
+      "pages": 82,
+      "pdfOffset": 5,
+      "published": true
+    },
+    {
+      "key": "hc-g8s2",
+      "stage": "初中",
+      "grade": 8,
+      "semester": "下册",
+      "shortName": "八下",
+      "fullName": "八年级下册",
+      "title": "花城版八年级下册",
+      "pages": 78,
+      "pdfOffset": 5,
+      "published": true
+    },
+    {
+      "key": "hc-g9s1",
+      "stage": "初中",
+      "grade": 9,
+      "semester": "上册",
+      "shortName": "九上",
+      "fullName": "九年级上册",
+      "title": "花城版九年级上册",
+      "pages": 78,
+      "pdfOffset": 5,
+      "published": true
+    }
+  ]
+}

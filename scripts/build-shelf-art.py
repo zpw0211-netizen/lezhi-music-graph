@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-BOOK_ART = re.compile(r"^(?:(?:pep-|xy-)?g\d+s\d|hs-m\d+)\.webp$")
+BOOK_ART = re.compile(r"^(?:(?:pep-|xy-|hc-)?g\d+s\d|hs-m\d+)\.webp$")
 SIZE = (600, 375)
 
 

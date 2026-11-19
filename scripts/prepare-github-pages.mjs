@@ -63,7 +63,7 @@ for (const relativePath of excludedGraphFiles) {
 // still shows, from the full file, but costs visitors ~200KB more on their first visit, so stop the build.
 {
   const artRoot = path.join(siteRoot, "art");
-  const covers = (await exists(artRoot)) ? (await readdir(artRoot)).filter((name) => /^(?:(?:pep-|xy-)?g\d+s\d|hs-m\d+)\.webp$/.test(name)) : [];
+  const covers = (await exists(artRoot)) ? (await readdir(artRoot)).filter((name) => /^(?:(?:pep-|xy-|hc-)?g\d+s\d|hs-m\d+)\.webp$/.test(name)) : [];
   const missing = [];
   for (const name of covers) if (!(await exists(path.join(artRoot, "shelf", name)))) missing.push(name);
   if (missing.length) throw new Error(`首页书架缺少封面小图：${missing.join("、")}。请运行 python scripts/build-shelf-art.py 后提交 art/shelf/ 里的新文件。`);

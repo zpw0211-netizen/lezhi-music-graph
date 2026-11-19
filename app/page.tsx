@@ -338,7 +338,9 @@ export default function Home() {
     return () => cancel(handle);
   }, [index.status]);
   useEffect(() => {
-    const page = view === "lesson" || view === "work" ? (route.work ? `《${route.work}》 · ${VIEW_TITLES[view]}` : "") : VIEW_TITLES[view];
+    // 作品名本身以书名号开头时（《卡门》序曲），路由里去掉的只有开头那个《，补回来就行，不再加结尾的》。
+    const workTitle = route.work && /^[^《]*》/.test(route.work) ? `《${route.work}` : `《${route.work}》`;
+    const page = view === "lesson" || view === "work" ? (route.work ? `${workTitle} · ${VIEW_TITLES[view]}` : "") : VIEW_TITLES[view];
     document.title = page ? `${page} · ${BRAND_NAME}` : SITE_TITLE;
   }, [route.work, view]);
   useLayoutEffect(() => {

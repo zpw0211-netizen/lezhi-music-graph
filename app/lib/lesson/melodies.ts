@@ -75,6 +75,20 @@ import XY_G8S2 from "./melodies-xy-g8s2";
 import XY_G9S1 from "./melodies-xy-g9s1";
 import HS_M1 from "./melodies-hs-m1";
 import HS_M4 from "./melodies-hs-m4";
+import HC_G1S1 from "./melodies-hc-g1s1";
+import HC_G1S2 from "./melodies-hc-g1s2";
+import HC_G2S1 from "./melodies-hc-g2s1";
+import HC_G2S2 from "./melodies-hc-g2s2";
+import HC_G3S1 from "./melodies-hc-g3s1";
+import HC_G3S2 from "./melodies-hc-g3s2";
+import HC_G4S1 from "./melodies-hc-g4s1";
+import HC_G5S1 from "./melodies-hc-g5s1";
+import HC_G6S1 from "./melodies-hc-g6s1";
+import HC_G7S1 from "./melodies-hc-g7s1";
+import HC_G7S2 from "./melodies-hc-g7s2";
+import HC_G8S1 from "./melodies-hc-g8s1";
+import HC_G8S2 from "./melodies-hc-g8s2";
+import HC_G9S1 from "./melodies-hc-g9s1";
 import { DRAFT_MELODIES } from "./melodies-draft";
 import { STAFF_KEYS } from "./staff-key-data";
 import { STAFF_PLACEMENT } from "./staff-placement-data";
@@ -110,6 +124,8 @@ const WX_PEP_BOOKS: Array<[string, Record<string, Melody[]>]> = ([
 const XY_BOOKS: Array<[string, Record<string, Melody[]>]> = ([["xy-g1s1", XY_G1S1], ["xy-g1s2", XY_G1S2], ["xy-g2s1", XY_G2S1], ["xy-g2s2", XY_G2S2], ["xy-g3s1", XY_G3S1], ["xy-g3s2", XY_G3S2], ["xy-g4s1", XY_G4S1], ["xy-g5s1", XY_G5S1], ["xy-g6s1", XY_G6S1], ["xy-g7s1", XY_G7S1], ["xy-g7s2", XY_G7S2], ["xy-g8s1", XY_G8S1], ["xy-g8s2", XY_G8S2], ["xy-g9s1", XY_G9S1]] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
 // 高中各册自己的转写，同样按册分开存放，键去掉《》。
 const HS_BOOKS: Array<[string, Record<string, Melody[]>]> = ([["hs-m1", HS_M1], ["hs-m4", HS_M4]] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
+// 花城版各册自己的转写，同样按册分开存放，键去掉《》。
+const HC_BOOKS: Array<[string, Record<string, Melody[]>]> = ([["hc-g1s1", HC_G1S1], ["hc-g1s2", HC_G1S2], ["hc-g2s1", HC_G2S1], ["hc-g2s2", HC_G2S2], ["hc-g3s1", HC_G3S1], ["hc-g3s2", HC_G3S2], ["hc-g4s1", HC_G4S1], ["hc-g5s1", HC_G5S1], ["hc-g6s1", HC_G6S1], ["hc-g7s1", HC_G7S1], ["hc-g7s2", HC_G7S2], ["hc-g8s1", HC_G8S1], ["hc-g8s2", HC_G8S2], ["hc-g9s1", HC_G9S1]] as Array<[string, Record<string, Melody[]>]>).map(([key, book]) => [key, pepKeys(book)]);
 const GRADE_LABELS: Record<string, string> = { "1": "一年级", "2": "二年级", "3": "三年级", "4": "四年级", "5": "五年级", "6": "六年级", "7": "七年级", "8": "八年级", "9": "九年级" };
 export const PEP_MELODY_BOOKS = PEP_BOOKS.map(([key]) => {
   const match = key.match(/^pep-g(\d+)s([12])$/);
@@ -119,7 +135,7 @@ export const PEP_MELODY_BOOKS = PEP_BOOKS.map(([key]) => {
   return { key, grade: Number(grade), semester: term, title: `${GRADE_LABELS[grade]}${term}` };
 });
 /** Each book's own transcriptions. A work printed in several books (国歌, 草原上…) keeps each book's version apart. */
-export const BOOK_MELODIES: Record<string, Record<string, Melody[]>> = Object.fromEntries([...BOOKS, ...PEP_BOOKS, ...WX_BOOKS, ...WX_PEP_BOOKS, ...XY_BOOKS, ...HS_BOOKS]);
+export const BOOK_MELODIES: Record<string, Record<string, Melody[]>> = Object.fromEntries([...BOOKS, ...PEP_BOOKS, ...WX_BOOKS, ...WX_PEP_BOOKS, ...XY_BOOKS, ...HS_BOOKS, ...HC_BOOKS]);
 /** Book-agnostic lookup (律坊, fallbacks): the key melody plus the first book that prints the work. */
 export const MELODIES: Record<string, Melody[]> = Object.fromEntries(Object.entries(KEY_MELODIES).map(([name, melody]) => [name, [melody]]));
 const fromBook = new Set<string>();
@@ -172,10 +188,12 @@ export function melodiesFor(bookKey: string | undefined, ...names: string[]): Me
 const STAFF_OMIT = new Set(["g8s2|水调歌头·明月几时有|1"]);
 
 function findMelodies(bookKey: string | undefined, names: string[]): { melodies: Melody[]; name?: string } {
-  // 湘艺版、高中各册只用本册自己录的旋律：同名歌在别的版本里印的谱不一定一样，不借用。
-  if (bookKey?.startsWith("xy-") || bookKey?.startsWith("wx-xy-") || bookKey?.startsWith("hs-")) {
+  // 湘艺版、高中、花城版各册只用本册自己录的旋律：同名歌在别的版本里印的谱不一定一样，不借用。
+  if (bookKey?.startsWith("xy-") || bookKey?.startsWith("wx-xy-") || bookKey?.startsWith("hs-") || bookKey?.startsWith("hc-")) {
     const book = BOOK_MELODIES[bookKey] ?? {};
     for (const name of names) {
+      // 名字本身带书名号的花城版作品（《卡门》序曲），键去掉外层《》后正好是这个名字。
+      if (book[name]?.length) return { melodies: book[name], name };
       const bare = name.replace(/^《|》$/g, "");
       if (book[bare]?.length) return { melodies: book[bare], name };
       // The graph's shared name can omit a comma printed in this book.
