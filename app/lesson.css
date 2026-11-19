@@ -311,7 +311,7 @@
 .melody-tempo-note { padding:2px 8px; border-radius:999px; background:var(--accent-soft, rgba(46,160,90,.12)); color:var(--accent); font-size:11px; white-space:nowrap; }
 .melody-tempo:has(.melody-tempo-note) input { opacity:.45; }
 /* 谱子：小节排成等宽网格（每行 8/4/2/1 小节），小节线上下对齐；小节内按拍分配宽度，各声部同拍对齐。 */
-.melody-score { display:grid; grid-template-columns:repeat(var(--bars,4), minmax(min-content,1fr)); overflow-x:auto; row-gap:18px; margin-top:16px; padding:20px 14px 14px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
+.melody-score { position:relative; display:grid; grid-template-columns:repeat(var(--bars,4), minmax(min-content,1fr)); overflow-x:auto; row-gap:18px; margin-top:16px; padding:20px 14px 14px; border-radius:14px; background:#FAFCFB; border:1px solid var(--border);
   font-family:var(--font-score); }
 .melody-bar { display:flex; min-width:0; align-items:stretch; flex-direction:column; padding:0 12px; border-right:1.5px solid #9AA7A0; }
 .melody-bar:last-child { border-right:3px double #6B7771; }
@@ -330,8 +330,8 @@
 /* 附点：画成与高低音点同样的小圆点，紧贴本音右侧、居数字中线（「·」字形的盒子有一整个字宽，圆点会落到下一个音前面）。 */
 .melody-dot { position:absolute; top:.44em; left:calc(100% + .05em); width:.13em; height:.13em; overflow:hidden; border-radius:50%; background:currentColor; font-style:normal; text-indent:1em; white-space:nowrap; margin:0; pointer-events:none; }
 .melody-dash { position:absolute; top:.4em; font-size:inherit; color:#3C4742; line-height:1; }
-.melody-note.is-tie .melody-digit { color:#8A968F; }
-.melody-head-cell.is-tie .melody-digit { color:#8A968F; }
+/* 简谱延音线、圆滑线：按排好的数字位置画在上方（MelodyPlayer 量出来）。 */
+.melody-arcs { position:absolute; left:0; top:0; width:1px; height:1px; overflow:visible; pointer-events:none; fill:#3C4742; }
 .melody-lyric { margin-top:4px; font-size:14px; color:var(--text-secondary); white-space:nowrap; font-family:var(--font-ui); }
 .melody-lyric-cell.is-active .melody-lyric { color:var(--accent); font-weight:700; }
 .melody-note.is-active .melody-digit, .melody-head-cell.is-active .melody-digit,

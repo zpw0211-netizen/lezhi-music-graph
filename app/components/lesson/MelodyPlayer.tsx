@@ -102,7 +102,8 @@ function getBeamRuns(notes: MelodyNote[], meter: string): BeamRun[] {
     notes.forEach((note, index) => {
       const lines = notation(note).lines;
       const beatIndex = noteBeats[index];
-      const canBeam = lines >= level && note.d !== 0 && beatIndex >= 0;
+      // Rests share the underline with the notes of their beat, as in the textbooks (「0 5」 under one line).
+      const canBeam = lines >= level && beatIndex >= 0;
       if (!canBeam || (runStart >= 0 && beatIndex !== runBeat)) flush(index);
       if (canBeam && runStart < 0) {
         runStart = index;
@@ -337,6 +338,70 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     observer.observe(score);
     return () => observer.disconnect();
   }, [notationStyle, melody.bars.length, widestBar, view]);
+
+  // Jianpu ties and slurs: measured from the laid-out digits, so they follow the row wrapping.
+  const [arcs, setArcs] = useState<string[]>([]);
+  useEffect(() => {
+    const score = scoreRef.current;
+    if (!score || notationStyle === "staff" || view !== "score") { setArcs([]); return; }
+    let frame = 0;
+    const measure = () => {
+      const box = score.getBoundingClientRect();
+      const at = (el: Element) => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left - box.left + score.scrollLeft, right: r.right - box.left + score.scrollLeft, top: r.top - box.top + score.scrollTop, height: r.height };
+      };
+      const digits = new Map<string, Element>();
+      score.querySelectorAll("[data-arc]").forEach((el) => digits.set(el.getAttribute("data-arc")!, el));
+      const bars = [...score.querySelectorAll(".melody-bar")].map(at);
+      const paths: string[] = [];
+      const curve = (x1: number, x2: number, y: number, em: number) => {
+        const h = Math.min(em * 0.42, 2.5 + (x2 - x1) * 0.06);
+        const mx = (x1 + x2) / 2;
+        paths.push(`M${x1.toFixed(1)} ${y.toFixed(1)}Q${mx.toFixed(1)} ${(y - h - em * 0.07).toFixed(1)} ${x2.toFixed(1)} ${y.toFixed(1)}Q${mx.toFixed(1)} ${(y - h).toFixed(1)} ${x1.toFixed(1)} ${y.toFixed(1)}Z`);
+      };
+      const draw = (voice: number, notes: MelodyNote[], from: number, to: number, raise: number) => {
+        const a = digits.get(`${voice}:${from}`);
+        const b = digits.get(`${voice}:${to}`);
+        if (!a || !b) return;
+        const p = at(a);
+        const q = at(b);
+        const em = p.height || 16;
+        const high = notes.slice(from, to + 1).some((note) => (note.o ?? 0) > 0);
+        const lift = em * (0.12 + (high ? 0.3 : 0) + raise);
+        const x1 = (p.left + p.right) / 2 + em * 0.1;
+        const x2 = (q.left + q.right) / 2 - em * 0.1;
+        if (Math.abs(p.top - q.top) < em / 2) { curve(x1, x2, Math.min(p.top, q.top) - lift, em); return; }
+        // Across a row break: one half runs out of the first row, the other comes into the next.
+        const rowEnd = Math.max(...bars.filter((bar) => bar.top <= p.top && bar.top + bar.height >= p.top).map((bar) => bar.right));
+        const rowStart = Math.min(...bars.filter((bar) => bar.top <= q.top && bar.top + bar.height >= q.top).map((bar) => bar.left));
+        curve(x1, rowEnd - em * 0.2, p.top - lift, em);
+        curve(rowStart + em * 0.2, x2, q.top - lift, em);
+      };
+      lines.forEach((line, voice) => {
+        const notes = line.bars.flat();
+        for (let i = 1; i < notes.length; i += 1) if (notes[i].tie && notes[i - 1].d) draw(voice, notes, i - 1, i, 0);
+        // A slur spans the syllable's note and every new pitch sung on it (ties inside it included).
+        for (let i = 1; i < notes.length; i += 1) {
+          if (!notes[i].slur) continue;
+          let start = i - 1;
+          while (start > 0 && (notes[start].slur || notes[start].tie)) start -= 1;
+          let end = i;
+          while (end + 1 < notes.length && (notes[end + 1].slur || notes[end + 1].tie)) end += 1;
+          const ties = notes.slice(start + 1, end + 1).some((note) => note.tie);
+          draw(voice, notes, start, end, ties ? 0.28 : 0);
+          i = end;
+        }
+      });
+      setArcs((old) => (old.length === paths.length && old.every((d, k) => d === paths[k]) ? old : paths));
+    };
+    const schedule = () => { clearTimeout(frame); frame = window.setTimeout(measure, 30); };
+    schedule();
+    void document.fonts?.ready.then(schedule);
+    const observer = new ResizeObserver(schedule);
+    observer.observe(score);
+    return () => { clearTimeout(frame); observer.disconnect(); };
+  }, [notationStyle, view, lines, barsPerRow, noteFit]);
 
   /** Unlock audio and load the chosen instrument; null when the request was superseded. */
   const prepareAudio = async (request: number) => {
@@ -681,13 +746,13 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     setAnnouncement(`跟唱开始，第 ${first + 1} 句`);
   };
 
-  const renderNoteHead = (note: MelodyNote, key: number | string, active: boolean, beamSegments?: BeamFragment[]) => {
+  const renderNoteHead = (note: MelodyNote, key: number | string, active: boolean, beamSegments?: BeamFragment[], arcId?: string) => {
     const { lines: underlines, dotted, dots, dashes } = notation(note);
     const fragments = beamSegments ?? Array.from({ length: underlines }, (_, index) => ({ level: index + 1, edge: "single" as const }));
     const octave = note.o ?? 0;
     const hasAccidental = note.a != null;
     return <span key={key} aria-hidden="true" className={`melody-head-cell ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""} ${hasAccidental ? "has-accidental" : ""}`}>
-      <span className="melody-digit">
+      <span className="melody-digit" data-arc={arcId}>
         <span className="melody-digit-highlight" />
         {hasAccidental ? <sup className="melody-accidental">{note.a === 0 ? "♮" : note.a! > 0 ? "♯" : "♭"}</sup> : null}
         {note.d === 9 ? "×" : note.d || "0"}
@@ -704,9 +769,9 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     return <span key={key} aria-hidden="true" className={`melody-lyric-cell ${active ? "is-active" : ""} ${hasAccidental ? "has-accidental" : ""}`}><span className="melody-lyric">{note.lyric || " "}</span></span>;
   };
   // Every note or beam group takes room in proportion to its beats, so parallel voices line up.
-  const renderNote = (note: MelodyNote, key: number, active: boolean) =>
+  const renderNote = (note: MelodyNote, key: number, active: boolean, arcId?: string) =>
     <span key={key} aria-hidden="true" className={`melody-note ${active ? "is-active" : ""} ${note.tie ? "is-tie" : ""}`} style={{ flex: `${note.b} 1 0%`, minWidth: `${(note.a != null ? 1.5 : 1.1) + notation(note).dashes * 1.1}em` }}>
-      {renderNoteHead(note, `head-${key}`, active)}
+      {renderNoteHead(note, `head-${key}`, active, undefined, arcId)}
       {renderNoteLyric(note, active, `lyric-${key}`)}
     </span>;
 
@@ -802,7 +867,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
                   level: run.level,
                   edge: run.start === run.end ? "single" : run.start === index ? "start" : run.end === index ? "end" : "middle",
                 }));
-                return renderNoteHead(note, `head-${index}`, active, noteBeams);
+                return renderNoteHead(note, `head-${index}`, active, noteBeams, `${voice}:${offsets[voice][barIndex] + index}`);
               })}
               {groupNotes.map((note, offset) => renderNoteLyric(note, offsets[voice][barIndex] + start + offset === current[voice], `lyric-${start + offset}`))}
             </span>;
@@ -815,13 +880,14 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
               noteIndex = run.end + 1;
             } else {
               const note = notes[noteIndex];
-              rendered.push(renderNote(note, noteIndex, offsets[voice][barIndex] + noteIndex === current[voice]));
+              rendered.push(renderNote(note, noteIndex, offsets[voice][barIndex] + noteIndex === current[voice], `${voice}:${offsets[voice][barIndex] + noteIndex}`));
               noteIndex += 1;
             }
           }
           return <span key={voice} className={`melody-voice voice-${voice}`} style={{ "--melody-head-height": `${headHeights[voice]}em` } as CSSProperties}>{rendered}</span>;
         })}
       </span>)}
+      {notationStyle !== "staff" && arcs.length > 0 && <svg className="melody-arcs" aria-hidden="true">{arcs.map((d, k) => <path key={k} d={d} />)}</svg>}
     </div>}
     {/* Source notes and sample credits live in the home page footer; only a fallback warning shows here. */}
     {!rhythmOnly && audioMode === "synth" && <p className="melody-source">所选音色未能载入，暂用电子音色示范。</p>}
