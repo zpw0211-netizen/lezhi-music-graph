@@ -22,6 +22,16 @@ assert.equal(questionEdition("人音版简谱七上有哪些作品？", "renyin-
 assert.equal(questionEdition("比较人音版和人教版四上有哪些作品？", "renyin").kind, "clarify");
 assert.equal(questionEdition("湘艺版五线谱八上有哪些作品？", "xiangyi").kind, "clarify");
 assert.deepEqual(questionEdition("别人教我怎么看五线谱？", "renyin"), { kind: "current", explicit: false });
+assert.deepEqual(questionEdition("花城版三上有哪些作品？", "renyin"),
+  { kind: "switch", key: "huacheng", label: "花城版", path: "/huacheng/" });
+assert.deepEqual(questionEdition("花城出版社的教材有哪些合唱曲目？", "xiangyi"),
+  { kind: "switch", key: "huacheng", label: "花城版", path: "/huacheng/" });
+assert.deepEqual(questionEdition("花城版八上有哪些 2/4 拍的作品？", "huacheng"), { kind: "current", explicit: true });
+assert.equal(questionEdition("花城版五线谱八上有哪些作品？", "huacheng").kind, "clarify");
+assert.deepEqual(questionEdition("高中版必修有哪些作品？", "renyin"),
+  { kind: "switch", key: "gaozhong", label: "高中版", path: "/gaozhong/" });
+assert.deepEqual(questionEdition("人音版必修有哪些作品？", "gaozhong"), { kind: "current", explicit: true });
+assert.deepEqual(questionEdition("我在读高中，四分音符是什么？", "renyin"), { kind: "current", explicit: false });
 
 const { meterAnswerFromScores } = await compile("app/lib/ai/textbook-facts.ts");
 const scoreCatalog = [

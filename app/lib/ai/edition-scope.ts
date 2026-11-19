@@ -2,13 +2,18 @@ const PUBLISHERS = {
   人音: "renyin", 人民音乐出版社: "renyin",
   人教: "renjiao", 人民教育出版社: "renjiao",
   湘艺: "xiangyi", 湖南文艺出版社: "xiangyi",
+  花城: "huacheng", 花城出版社: "huacheng",
+  高中: "gaozhong",
 } as const;
 
 const EDITION_LABELS = {
   renyin: "人音版", "renyin-staff": "人音版五线谱",
   renjiao: "人教版", "renjiao-staff": "人教版五线谱", xiangyi: "湘艺版",
+  huacheng: "花城版", gaozhong: "高中版",
 } as const;
 type EditionKey = keyof typeof EDITION_LABELS;
+const HAS_STAFF = (key: string): key is "renyin" | "renjiao" => key === "renyin" || key === "renjiao";
+const SIMPLE_ONLY = new Set<string>(["xiangyi", "huacheng"]);
 type EditionScope =
   | { kind: "current"; explicit: boolean }
   | { kind: "switch"; key: EditionKey; label: string; path: string }
@@ -17,15 +22,16 @@ type EditionScope =
 /** Resolve a named textbook edition without treating a generic mention of 五线谱 as a switch. */
 export function questionEdition(question: string, currentEdition: string): EditionScope {
   const text = question.normalize("NFKC");
-  const mentions = text.matchAll(/(人民音乐出版社|人民教育出版社|湖南文艺出版社|(?:人音|人教|湘艺)(?:版|(?=\s*(?:[一二三四五六七八九1-9](?:年级|[上下])|教材|简谱|五线谱))))(?:\s*(?:[·・(-]|的)?\s*(简谱|五线谱))?/g);
+  const mentions = text.matchAll(/(人民音乐出版社|人民教育出版社|湖南文艺出版社|花城出版社|高中版|(?:人音|人教|湘艺|花城)(?:版|(?=\s*(?:[一二三四五六七八九1-9](?:年级|[上下])|教材|简谱|五线谱))))(?:\s*(?:[·・(-]|的)?\s*(简谱|五线谱))?/g);
   const keys = new Set<EditionKey>();
   for (const [, name, notation] of mentions) {
     const publisher = PUBLISHERS[name.replace(/版$/, "") as keyof typeof PUBLISHERS];
-    let key: EditionKey = publisher;
+    // 高中版是人音版普通高中教材：在高中版里说“人音版”仍指高中版。
+    let key: EditionKey = publisher === "renyin" && currentEdition === "gaozhong" && notation !== "五线谱" ? "gaozhong" : publisher;
     if (notation === "五线谱") {
-      if (publisher === "xiangyi") return { kind: "clarify", message: "湘艺版目前提供简谱教材，请改用湘艺版简谱提问。" };
-      key = `${publisher}-staff`;
-    } else if (!notation && publisher !== "xiangyi" && currentEdition === `${publisher}-staff`) {
+      if (SIMPLE_ONLY.has(publisher)) return { kind: "clarify", message: `${EDITION_LABELS[publisher]}目前提供简谱教材，请改用${EDITION_LABELS[publisher]}简谱提问。` };
+      if (HAS_STAFF(publisher)) key = `${publisher}-staff`;
+    } else if (!notation && HAS_STAFF(publisher) && currentEdition === `${publisher}-staff`) {
       key = `${publisher}-staff`;
     }
     keys.add(key);
