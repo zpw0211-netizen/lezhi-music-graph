@@ -57,6 +57,24 @@ load_phrases_dict({
     "扎成": [["zā"], ["chéng"]], "蔓儿": [["wàn"], ["er"]],
     # 2026-11-17 T119 follow-up
     "藏羚羊": [["zàng"], ["líng"], ["yáng"]], "藏家": [["zàng"], ["jiā"]], "剥开": [["bāo"], ["kāi"]], "听朝": [["tīng"], ["zhāo"]],
+    # T127 Huacheng lyrics: phrase-specific readings, without changing the singing style.
+    "乐声": [["yuè"], ["shēng"]], "不得了": [["bù"], ["dé"], ["liǎo"]],
+    "自在地": [["zì"], ["zài"], ["de"]], "传送着": [["chuán"], ["sòng"], ["zhe"]],
+    "嫩绿地刚发芽": [["nèn"], ["lǜ"], ["de"], ["gāng"], ["fā"], ["yá"]],
+    "背着重重": [["bēi"], ["zhe"], ["zhòng"], ["zhòng"]], "重来": [["chóng"], ["lái"]],
+    "弯又长": [["wān"], ["yòu"], ["cháng"]], "万年长": [["wàn"], ["nián"], ["cháng"]],
+    "长万年长": [["cháng"], ["wàn"], ["nián"], ["cháng"]],
+    "热烈地": [["rè"], ["liè"], ["de"]], "顽强地": [["wán"], ["qiáng"], ["de"]],
+    "呜咽地": [["wū"], ["yè"], ["de"]], "月亮地": [["yuè"], ["liang"], ["de"]],
+    "再还妈妈": [["zài"], ["huán"], ["mā"], ["ma"]], "情长": [["qíng"], ["cháng"]],
+    "准确地": [["zhǔn"], ["què"], ["de"]], "打鱼的": [["dǎ"], ["yú"], ["de"]],
+    "端的": [["duān"], ["dì"]], "万重": [["wàn"], ["chóng"]],
+    "手榴弹": [["shǒu"], ["liú"], ["dàn"]],
+    "都古": [["dū"], ["gǔ"]],
+    "莲花儿落": [["lián"], ["huā"], ["er"], ["lào"]],
+    "战还是降": [["zhàn"], ["hái"], ["shì"], ["xiáng"]],
+    "洪洞县": [["hóng"], ["tóng"], ["xiàn"]],
+    "把卜着": [["bǎ"], ["bǔ"], ["zhe"]],
 })
 # 地 after an adverb is the particle de (自由地飞翔), unless it starts 地方/地球…
 ADVERB_DE = {"自由", "永远", "深深", "快乐", "满满", "多么", "愉快", "忧愁", "一样", "认真", "这样", "好好", "快活", "辛勤", "冰冷",
@@ -73,6 +91,8 @@ def fix_readings(han, readings):
             out[i] = "de"
         elif ch == "似" and nxt != "的":
             out[i] = "si"
+        elif ch == "弹" and han[max(0, i - 2):i + 1] == "手榴弹":
+            out[i] = "dan"
         elif ch == "弹" and han[i - 1:i] not in ("子", "炮", "枪", "导", "炸"):
             out[i] = "tan"
         elif ch == "咳" and nxt != "嗽":
