@@ -621,7 +621,10 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, curr
       if (!slurStart) continue;
       let to = index;
       while (to + 1 < flat.length && (flat[to + 1].note.slur || !flat[to + 1].first)) to += 1;
-      const from = index > 0 ? flat[index - 1] : null;
+      // After a breath (「源 0 1 2 3」) the slur starts on the first note after the rest; one note alone gets none.
+      const breath = index > 0 && flat[index - 1].rest;
+      if (breath && to === index) continue;
+      const from = breath ? glyph : index > 0 ? flat[index - 1] : null;
       const startGlyph = from ?? glyph;
       const end = flat[to];
       const below = startGlyph.up && end.up;

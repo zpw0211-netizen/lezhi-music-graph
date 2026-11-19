@@ -347,6 +347,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     let frame = 0;
     const measure = () => {
       const box = score.getBoundingClientRect();
+      if (!box.width) return; // on a closed page of the book: measured again when it opens (the observer sees the size change)
       const at = (el: Element) => {
         const r = el.getBoundingClientRect();
         return { left: r.left - box.left + score.scrollLeft, right: r.right - box.left + score.scrollLeft, top: r.top - box.top + score.scrollTop, height: r.height };
@@ -360,37 +361,43 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         const mx = (x1 + x2) / 2;
         paths.push(`M${x1.toFixed(1)} ${y.toFixed(1)}Q${mx.toFixed(1)} ${(y - h - em * 0.07).toFixed(1)} ${x2.toFixed(1)} ${y.toFixed(1)}Q${mx.toFixed(1)} ${(y - h).toFixed(1)} ${x1.toFixed(1)} ${y.toFixed(1)}Z`);
       };
+      const rowOf = (top: number) => bars.filter((bar) => bar.top <= top && bar.top + bar.height >= top);
+      /** `from` -1: the line comes in from before the excerpt (a tie or slur carried over from the previous one). */
       const draw = (voice: number, notes: MelodyNote[], from: number, to: number, raise: number) => {
-        const a = digits.get(`${voice}:${from}`);
+        const a = from >= 0 ? digits.get(`${voice}:${from}`) : undefined;
         const b = digits.get(`${voice}:${to}`);
-        if (!a || !b) return;
-        const p = at(a);
+        if (!b || (from >= 0 && !a)) return;
         const q = at(b);
-        const em = p.height || 16;
-        const high = notes.slice(from, to + 1).some((note) => (note.o ?? 0) > 0);
+        const em = q.height || 16;
+        const high = notes.slice(Math.max(0, from), to + 1).some((note) => (note.o ?? 0) > 0);
         const lift = em * (0.12 + (high ? 0.3 : 0) + raise);
-        const x1 = (p.left + p.right) / 2 + em * 0.1;
         const x2 = (q.left + q.right) / 2 - em * 0.1;
+        const rowStart = () => Math.min(...rowOf(q.top).map((bar) => bar.left)) + em * 0.2;
+        if (!a) { curve(rowStart(), x2, q.top - lift, em); return; }
+        const p = at(a);
+        const x1 = (p.left + p.right) / 2 + em * 0.1;
         if (Math.abs(p.top - q.top) < em / 2) { curve(x1, x2, Math.min(p.top, q.top) - lift, em); return; }
         // Across a row break: one half runs out of the first row, the other comes into the next.
-        const rowEnd = Math.max(...bars.filter((bar) => bar.top <= p.top && bar.top + bar.height >= p.top).map((bar) => bar.right));
-        const rowStart = Math.min(...bars.filter((bar) => bar.top <= q.top && bar.top + bar.height >= q.top).map((bar) => bar.left));
-        curve(x1, rowEnd - em * 0.2, p.top - lift, em);
-        curve(rowStart + em * 0.2, x2, q.top - lift, em);
+        curve(x1, Math.max(...rowOf(p.top).map((bar) => bar.right)) - em * 0.2, p.top - lift, em);
+        curve(rowStart(), x2, q.top - lift, em);
       };
       lines.forEach((line, voice) => {
         const notes = line.bars.flat();
-        for (let i = 1; i < notes.length; i += 1) if (notes[i].tie && notes[i - 1].d) draw(voice, notes, i - 1, i, 0);
+        // A tie after a rest has nothing to hold: no line.
+        for (let i = 0; i < notes.length; i += 1) if (notes[i].tie && (i === 0 || notes[i - 1].d)) draw(voice, notes, i - 1, i, 0);
         // A slur spans the syllable's note and every new pitch sung on it (ties inside it included).
-        for (let i = 1; i < notes.length; i += 1) {
+        for (let i = 0; i < notes.length; i += 1) {
           if (!notes[i].slur) continue;
           let start = i - 1;
-          while (start > 0 && (notes[start].slur || notes[start].tie)) start -= 1;
+          while (start >= 0 && (notes[start].slur || notes[start].tie)) start -= 1;
           let end = i;
           while (end + 1 < notes.length && (notes[end + 1].slur || notes[end + 1].tie)) end += 1;
+          i = end;
+          // After a breath (「源 0 1 2 3」) the slur starts on the first note after the rest.
+          if (start >= 0 && notes[start].d === 0) start += 1;
+          if (start === end) continue;
           const ties = notes.slice(start + 1, end + 1).some((note) => note.tie);
           draw(voice, notes, start, end, ties ? 0.28 : 0);
-          i = end;
         }
       });
       setArcs((old) => (old.length === paths.length && old.every((d, k) => d === paths[k]) ? old : paths));
