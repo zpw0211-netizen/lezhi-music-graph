@@ -2,11 +2,16 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { formatRoute, HOME_ROUTE, parseRoute, type AppRoute } from "../lib/app/routing";
+import { captureShared } from "../lib/share/share-codec";
 
 type HistoryState = { yapuIndex?: number } | null;
 const historyIndex = () => (window.history.state as HistoryState)?.yapuIndex ?? 0;
 const hrefFor = (route: AppRoute) => `${window.location.pathname}${formatRoute(route)}`;
-const currentRoute = () => parseRoute(window.location.hash, window.location.search);
+const currentRoute = () => {
+  // 分享的作品（#/compose/s/…）先记下来，路由随后会把网址规整成 #/compose。
+  captureShared(window.location.hash);
+  return parseRoute(window.location.hash, window.location.search);
+};
 
 /**
  * Keeps the current page in the URL hash. Pushing a new page scrolls to the

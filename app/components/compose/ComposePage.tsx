@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { useExplorationNav } from "../exploration/exploration-tools";
+import { SharePanel } from "../share/SharePanel";
+import { SHARED_EVENT, takeShared } from "../../lib/share/share-codec";
+import { melodyNotes } from "../../lib/share/render-audio";
+import { decodeCompose, encodeCompose } from "./compose-share";
 import { HANDOFF_STORE, isVaryMeter } from "../vary/vary-model";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
@@ -287,8 +291,8 @@ export function ComposePage() {
     setMessage(storeWorks(next) ? `《${work.title}》已保存在这台电脑上。` : "这台电脑不允许保存，请截图留存作品。");
   };
 
-  const open = (work: SavedWork) => {
-    if (hasOwnNotes && !window.confirm(`打开《${work.title}》会替换现在正在写的旋律，确定吗？`)) return;
+  const open = (work: SavedWork, shared = false) => {
+    if (hasOwnNotes && !window.confirm(shared ? `收到分享的《${work.title}》，打开它会替换现在正在写的旋律，确定吗？` : `打开《${work.title}》会替换现在正在写的旋律，确定吗？`)) return;
     const setup = setupOf(work);
     setLevel(setup.level);
     setPitchSet(setup.pitchSet);
@@ -305,9 +309,28 @@ export function ComposePage() {
     setAccompaniment(Boolean(work.accompaniment) && LEVELS[setup.level].accompaniment);
     setBassStyle(work.bassStyle && work.bassStyle in BASS_STYLES ? work.bassStyle : "broken");
     setSelected(null);
-    setMessage(`已打开《${work.title}》。`);
+    setMessage(shared ? `这是分享来的《${work.title}》${work.author ? `（${work.author}）` : ""}，可以播放，也可以接着改。` : `已打开《${work.title}》。`);
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  // 扫码或点分享链接打开的作品。
+  const openRef = useRef(open);
+  useEffect(() => { openRef.current = open; });
+  useEffect(() => {
+    const receive = () => {
+      const work = decodeCompose(takeShared("compose"));
+      if (work) openRef.current(work, true);
+    };
+    receive();
+    window.addEventListener(SHARED_EVENT, receive);
+    return () => window.removeEventListener(SHARED_EVENT, receive);
+  }, []);
+  const workName = title.trim() || "我的旋律";
+  const sharePayload = () => encodeCompose({ title: workName, author: author.trim(), meter, bars, lyrics, accompaniment, bassStyle, level, pitchSet });
+  const shareImage = () => ({
+    title: workName, author: author.trim() ? `作者：${author.trim()}` : undefined, keyText: "1=C", meter,
+    lines: [{ bars: melody.bars }], note: "芽谱AI · 旋律创编",
+  });
 
   const remove = (id: string) => {
     const next = works.filter((item) => item.id !== id);
@@ -507,6 +530,8 @@ export function ComposePage() {
         <button type="button" className="compose-primary" onClick={save} disabled={!complete}>{complete ? "保存作品" : "写满后可以保存"}</button>
         <button type="button" onClick={showcase} disabled={!hasNotes && !projecting}>{projecting ? "退出全屏" : "投屏展示"}</button>
       </div>
+      <SharePanel tool="compose" name={workName} ready={complete} payload={sharePayload} audio={() => melodyNotes(melody)} image={shareImage}
+        hint="用平板或手机扫码，在那台设备上打开这条旋律。" />
       <div className="compose-next">
         <button type="button" className="compose-next-button" onClick={toVary} disabled={!complete || !canVary}>
           <b>下一步：拿去变奏 →</b>
