@@ -18,7 +18,7 @@ export function ChoirCanon() {
   const own = useMemo(() => (typeof window === "undefined" ? [] : loadWorks().flatMap((work) => workAsCanon(work) ?? [])), []);
   const sources = useMemo(() => [...CANON_SONGS, ...own], [own]);
   const [sourceId, setSourceId] = useState(CANON_SONGS[0].id);
-  const source: CanonSource = sources.find((item) => item.id === sourceId) ?? CANON_SONGS[0];
+  const source: CanonSource = useMemo(() => sources.find((item) => item.id === sourceId) ?? CANON_SONGS[0], [sources, sourceId]);
   const entries = entriesFor(source);
   const [chosenEntry, setEntry] = useState(source.entry);
   const entry = entries.includes(chosenEntry) ? chosenEntry : entries.includes(source.entry) ? source.entry : entries[0];
@@ -29,10 +29,11 @@ export function ChoirCanon() {
   const [ending, setEnding] = useState<CanonEnding>("each");
   const [notation, setNotation] = useState<"jianpu" | "staff">(EDITION.notation === "staff" ? "staff" : "jianpu");
 
+  // 这几步交给 React Compiler 记住结果，不手写 useMemo。
   const setup = { voices, entry, times, ending };
-  const layout = useMemo(() => buildCanon(source, { voices, entry, times, ending }), [source, voices, entry, times, ending]);
-  const piece = useMemo(() => canonPiece(source, { voices, entry, times, ending }, layout), [source, voices, entry, times, ending, layout]);
-  const harmony = useMemo(() => canonHarmony(layout), [layout]);
+  const layout = buildCanon(source, setup);
+  const piece = canonPiece(source, setup, layout);
+  const harmony = canonHarmony(layout);
   const phrases = Math.ceil(source.bars.length / entry);
 
   const choose = (id: string) => {
@@ -115,6 +116,6 @@ export function ChoirCanon() {
       </div>
     </section>
 
-    <ChoirPractice piece={piece} playerKey={`${piece.id}|${notation}|${JSON.stringify(setup)}`} notation={notation} storeKey="yapu-choir-canon" />
+    <ChoirPractice piece={piece} playerKey={`${piece.id}|${notation}`} notation={notation} storeKey="yapu-choir-canon" />
   </div>;
 }
