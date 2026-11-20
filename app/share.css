@@ -1,0 +1,67 @@
+/* 作品的下载与分享：一行小按钮，二维码和扫码用居中的卡片。 */
+.share-panel, .share-dialog { --s-ink: #17221C; --s-ink-2: #44544B; --s-ink-3: #7A877F; --s-pine: #276344; --s-pine-soft: #EAF3ED; --s-line: #E1E8E3; }
+.share-panel { margin-top: 14px; }
+.share-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.share-label { margin-right: 4px; color: var(--s-ink-3); font-size: 12px; letter-spacing: .08em; }
+.share-panel button { min-height: 36px; padding: 0 14px; border: 1px solid var(--s-line); border-radius: 10px; background: #fff; color: var(--s-ink-2); font: inherit; font-size: 14px; cursor: pointer; }
+.share-panel button:hover:not(:disabled) { border-color: var(--s-pine); color: var(--s-pine); }
+.share-panel button:disabled { opacity: .45; cursor: default; }
+.share-panel button.is-qr { border-color: var(--s-pine); color: var(--s-pine); font-weight: 600; }
+.share-panel .share-scan { margin-left: auto; border-style: dashed; color: var(--s-ink-3); font-size: 13px; }
+.share-message { margin: 8px 0 0; color: var(--s-ink-2); font-size: 13px; }
+
+.share-dialog { position: fixed; z-index: 80; inset: 0; display: grid; place-items: center; padding: 16px; background: rgb(23 34 28 / 46%); }
+.share-card { display: grid; justify-items: center; gap: 12px; width: min(460px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 26px 26px 22px; border-radius: 20px; background: #FFFDF8; box-shadow: 0 20px 60px rgb(0 0 0 / 22%); text-align: center; }
+.share-card.is-scan { width: min(720px, 100%); }
+.share-card-title { margin: 0; color: var(--s-ink); font: 400 24px/1.3 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .06em; }
+.share-qr { width: min(320px, 78vw); aspect-ratio: 1; padding: 10px; border-radius: 12px; background: #fff; }
+.share-qr svg { display: block; width: 100%; height: 100%; }
+.share-card-tip { margin: 0; color: var(--s-ink-2); font-size: 14px; line-height: 1.7; text-align: left; }
+.share-link { max-width: 100%; margin: 0; overflow: hidden; color: var(--s-ink-3); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.share-card-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.share-card-actions button { min-height: 40px; padding: 0 20px; border: 1px solid var(--s-line); border-radius: 12px; background: #fff; color: var(--s-ink-2); font: inherit; font-size: 15px; cursor: pointer; }
+.share-card-actions button.is-primary { border-color: var(--s-pine); background: var(--s-pine); color: #fff; font-weight: 600; }
+.share-video { width: 100%; aspect-ratio: 4 / 3; border-radius: 14px; background: #17221C; object-fit: cover; }
+
+@media (max-width: 520px) {
+  .share-panel .share-scan { margin-left: 0; }
+}
+
+/* 老师出题：设置栏右端一个按钮；出题卡片；学生那边的任务卡和逐条打勾。 */
+.compose-settings .task-open { margin-left: auto; min-height: 34px; padding: 0 16px; border: 1px dashed #276344; border-radius: 999px; background: #F4F9F5; color: #276344; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.compose-settings .task-open:hover { background: #EAF3ED; }
+.task-form { width: min(560px, 100%); justify-items: stretch; text-align: left; }
+.task-form .share-card-title { text-align: center; }
+.task-summary { display: grid; gap: 4px; margin: 0; padding: 10px 14px; border-radius: 12px; background: #F4F9F5; color: #276344; font-size: 14px; text-align: left; }
+.task-summary b { color: #17221C; font-size: 16px; }
+.task-summary small { color: #7A877F; font-size: 12px; }
+.task-row { display: grid; grid-template-columns: 64px 1fr; align-items: start; gap: 10px; color: #44544B; font-size: 14px; }
+.task-row > span { padding-top: 8px; color: #7A877F; font-size: 13px; }
+.task-row input[type="text"], .task-row > input { min-height: 38px; padding: 0 12px; border: 1px solid #E1E8E3; border-radius: 10px; font: inherit; font-size: 14px; }
+.task-options { display: grid; gap: 8px; padding-top: 6px; }
+.task-options label { display: flex; align-items: center; gap: 6px; }
+.task-options select { min-height: 30px; margin: 0 4px; border: 1px solid #E1E8E3; border-radius: 8px; font: inherit; }
+.task-cards { display: flex; flex-wrap: wrap; gap: 6px; }
+.task-cards button { min-width: 52px; min-height: 40px; padding: 0 10px; border: 1px solid #E1E8E3; border-radius: 10px; background: #fff; color: #44544B; font: inherit; font-size: 13px; cursor: pointer; }
+.task-cards button.is-active { border-color: #276344; background: #EAF3ED; color: #276344; font-weight: 600; }
+
+.task-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 10px 24px; margin-bottom: 16px; padding: 16px 20px; border: 1.5px solid #276344; border-radius: 16px; background: #F7FBF8; }
+.task-card-head { display: grid; align-content: start; gap: 4px; }
+.task-kicker { color: #276344; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.task-card-head b { color: #17221C; font: 400 22px/1.35 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+.task-card-head small { color: #44544B; font-size: 13px; }
+.task-checks { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.task-checks li { display: flex; align-items: center; gap: 8px; color: #44544B; font-size: 14px; }
+.task-checks li i { display: inline-grid; flex: none; place-items: center; width: 20px; height: 20px; border: 1.5px solid #B9C7BE; border-radius: 50%; color: #fff; font-size: 12px; font-style: normal; font-weight: 700; }
+.task-checks li.is-ok { color: #17221C; }
+.task-checks li.is-ok i { border-color: #276344; background: #276344; }
+.task-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.task-card-foot { display: flex; grid-column: 1 / -1; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: 1px dashed #D5E2D9; }
+.task-card-foot p { margin: 0; color: #7A877F; font-size: 13px; }
+.task-card-foot p.is-done { color: #276344; font-size: 15px; font-weight: 700; }
+.task-card-foot button { min-height: 32px; padding: 0 14px; border: 1px solid #E1E8E3; border-radius: 999px; background: #fff; color: #7A877F; font: inherit; font-size: 13px; cursor: pointer; }
+
+@media (max-width: 720px) {
+  .task-card { grid-template-columns: 1fr; }
+  .compose-settings .task-open { margin-left: 0; }
+}

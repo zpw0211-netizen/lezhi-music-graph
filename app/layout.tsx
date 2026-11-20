@@ -31,6 +31,7 @@ import "./exploration.css";
 import "./rhythm.css";
 import "./compose.css";
 import "./ear.css";
+import "./share.css";
 import "./graph-compact.css";
 import "./account.css";
 import "./beat.css";

@@ -2,12 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
-import { loadPercussionStrokes, playPercussion, type PercussionKind } from "../../lib/lesson/percussion";
+import { loadPercussionStrokes, type PercussionKind } from "../../lib/lesson/percussion";
+import { softOutput, voiceBus } from "../../lib/lesson/percussion-mix";
 import {
   METER_BY_ID, RHYTHM_PATTERNS, fitsMeter, generateRhythm, packBars, timeline,
   type MeterId, type RhythmBar, type TimedToken,
 } from "../../lib/rhythm/patterns";
 import { PatternGlyph, RhythmScore } from "../rhythm/RhythmScore";
+import { SharePanel } from "../share/SharePanel";
+import { SHARED_EVENT, cleanText, encodePayload, takeShared } from "../../lib/share/share-codec";
+import type { RenderNote } from "../../lib/share/render-audio";
+import type { ImageNote } from "../../lib/share/jianpu-image";
 
 /** 节奏创编：两三件打击乐器，各编一行节奏，合起来听。 */
 
@@ -24,55 +29,6 @@ const INSTRUMENTS: Array<{ kind: PercussionKind; label: string; caption: string 
   { kind: "smallCymbal", label: "小镲", caption: "响亮，偶尔敲一下就很出彩" },
   { kind: "bigGong", label: "大锣", caption: "余音长，一小节敲一下就够" },
 ];
-/** 合奏里每件乐器的音量、高频上限（Hz），和要不要在下一击之前收住余音。锣和镲的录音本来很亮，这里压一压。 */
-const MIX: Partial<Record<PercussionKind, { level: number; cut: number; choke: boolean }>> = {
-  roundDrum: { level: 0.95, cut: 4200, choke: false },
-  woodBlock: { level: 0.5, cut: 5200, choke: false },
-  shaker: { level: 0.55, cut: 9000, choke: false },
-  triangle: { level: 0.5, cut: 9000, choke: true },
-  tambourine: { level: 0.6, cut: 9000, choke: false },
-  smallGong: { level: 0.42, cut: 3600, choke: true },
-  smallCymbal: { level: 0.36, cut: 5200, choke: true },
-  bigGong: { level: 0.5, cut: 3000, choke: true },
-};
-const softOutputs = new WeakMap<AudioContext, AudioNode>();
-/** 总输出：先削一点高频，再过压限，几件乐器同时敲也不会爆音。 */
-function softOutput(context: AudioContext): AudioNode {
-  let input = softOutputs.get(context);
-  if (!input) {
-    const shelf = context.createBiquadFilter();
-    shelf.type = "highshelf"; shelf.frequency.value = 4500; shelf.gain.value = -5;
-    const limiter = context.createDynamicsCompressor();
-    limiter.threshold.value = -16; limiter.knee.value = 10; limiter.ratio.value = 8; limiter.attack.value = 0.002; limiter.release.value = 0.18;
-    const out = context.createGain();
-    out.gain.value = 0.85;
-    shelf.connect(limiter).connect(out).connect(context.destination);
-    softOutputs.set(context, shelf);
-    input = shelf;
-  }
-  return input;
-}
-/** 一件乐器自己的通道：音量、低通，外加一个用来收余音的闸。 */
-function voiceBus(context: AudioContext, out: AudioNode, kind: PercussionKind) {
-  const mix = MIX[kind] ?? { level: 0.6, cut: 5000, choke: false };
-  const gate = context.createGain();
-  const filter = context.createBiquadFilter();
-  filter.type = "lowpass"; filter.frequency.value = mix.cut; filter.Q.value = 0.5;
-  const level = context.createGain();
-  level.gain.value = mix.level;
-  gate.connect(filter).connect(level).connect(out);
-  let struck = false;
-  return {
-    hit(at: number, accent: number) {
-      if (mix.choke && struck) {
-        gate.gain.setTargetAtTime(0.0001, Math.max(context.currentTime, at - 0.035), 0.008);
-        gate.gain.setValueAtTime(1, at);
-      }
-      struck = true;
-      playPercussion(context, gate, kind, at, accent);
-    },
-  };
-}
 const LABEL_OF = new Map(INSTRUMENTS.map((item) => [item.kind, item.label]));
 const METER_IDS: MeterId[] = ["2/4", "3/4", "4/4"];
 const BAR_COUNTS = [2, 4, 8];
@@ -114,6 +70,25 @@ function readSaved(): Saved | null {
   } catch { return null; }
 }
 
+/** 分享链接：拍号、小节数、速度，每行乐器和它排的节奏型编号。 */
+function encodeBeat(saved: Saved) {
+  return encodePayload({ k: "b", m: saved.meterId, n: saved.barCount, s: saved.bpm, v: saved.voices.map((voice) => [voice.kind, voice.ids.join(","), voice.muted ? 1 : 0]) });
+}
+function decodeBeat(data: Record<string, unknown> | null): Saved | null {
+  if (!data || data.k !== "b" || !METER_IDS.includes(data.m as MeterId) || !BAR_COUNTS.includes(data.n as number) || !Array.isArray(data.v)) return null;
+  const meter = METER_BY_ID.get(data.m as MeterId)!;
+  const voices: Voice[] = [];
+  for (const item of data.v.slice(0, MAX_VOICES)) {
+    if (!Array.isArray(item) || !LABEL_OF.has(item[0] as PercussionKind)) return null;
+    const ids = cleanText(item[1], 400).split(",").filter(Boolean);
+    if (ids.some((id) => !PALETTE.some((pattern) => pattern.id === id && fitsMeter(pattern, meter)))) return null;
+    if (packBars(ids, meter).length > (data.n as number)) return null;
+    voices.push({ id: voices.length + 1, kind: item[0] as PercussionKind, ids, muted: item[2] === 1 });
+  }
+  if (!voices.length) return null;
+  return { meterId: data.m as MeterId, barCount: data.n as number, bpm: Math.min(132, Math.max(56, Number(data.s) || 88)), voices };
+}
+
 export function BeatPage() {
   const [meterId, setMeterId] = useState<MeterId>("2/4");
   const [barCount, setBarCount] = useState(4);
@@ -140,6 +115,26 @@ export function BeatPage() {
     }
     /* eslint-enable react-hooks/set-state-in-effect */
     loaded.current = true;
+  }, []);
+  // 扫码或点分享链接打开的合奏。
+  const busyRef = useRef(false);
+  useEffect(() => { busyRef.current = voices.some((voice) => voice.ids.length > 0); });
+  useEffect(() => {
+    const receive = () => {
+      const work = decodeBeat(takeShared("beat"));
+      if (!work) return;
+      if (busyRef.current && !window.confirm("打开分享来的合奏会替换现在正在编的，确定吗？")) return;
+      stopRef.current?.();
+      stopRef.current = null;
+      setPlaying(false); setActiveKeys({});
+      setMeterId(work.meterId); setBarCount(work.barCount); setBpm(work.bpm); setVoices(work.voices);
+      setCurrent(work.voices[0].id);
+      nextId.current = work.voices.length + 1;
+      setMessage("这是分享来的合奏，点“播放合奏”听一听，也可以接着改。");
+    };
+    receive();
+    window.addEventListener(SHARED_EVENT, receive);
+    return () => window.removeEventListener(SHARED_EVENT, receive);
   }, []);
   useEffect(() => {
     if (!loaded.current) return;
@@ -223,6 +218,27 @@ export function BeatPage() {
   };
 
   const hasNotes = scores.some((item) => item.voice.ids.length > 0);
+
+  // 导出：出声的各行按时间排成击打，和播放一样有强弱；图片用 X 记谱，一件乐器一行。
+  const shareAudio = (): RenderNote[] => scores.filter((item) => !item.voice.muted).flatMap((item) =>
+    item.tokens.filter((token) => token.sounding).map((token) => ({ percussion: item.voice.kind, at: token.start * 60 / bpm, level: accentOf(token.start, meter.beats), voice: item.voice.id })));
+  const shareImage = () => ({
+    title: "打击乐合奏", keyText: "", meter: meterId, note: `芽谱AI · 节奏创编 · ♩=${bpm}`,
+    lines: scores.map(({ voice, bars }) => ({
+      label: LABEL_OF.get(voice.kind),
+      bars: bars.map((bar) => {
+        const notes: ImageNote[] = [];
+        for (const group of bar.groups) {
+          for (const token of group.pattern.tokens) {
+            if (token.g === "–" && notes.length) notes[notes.length - 1] = { ...notes[notes.length - 1], b: notes[notes.length - 1].b + token.dur };
+            else notes.push({ d: token.g === "X" ? 9 : 0, b: token.dur });
+          }
+        }
+        for (let left = bar.empty; left > 1e-6; left -= 1) notes.push({ d: 0, b: Math.min(1, left) });
+        return notes;
+      }),
+    })),
+  });
 
   const play = async () => {
     if (playing) { stop(); return; }
@@ -377,6 +393,9 @@ export function BeatPage() {
           {message && <p className="beat-message" role="status">{message}</p>}
         </div>}
 
+        <SharePanel tool="beat" name="打击乐合奏" ready={hasNotes}
+          payload={() => encodeBeat({ meterId, barCount, bpm, voices })} audio={shareAudio} image={shareImage}
+          hint="用平板或手机扫码，在那台设备上打开这段合奏。" />
         <ul className="beat-hints" aria-label="创编提示">
           {hints.map((hint) => <li key={hint}>{hint}</li>)}
         </ul>
