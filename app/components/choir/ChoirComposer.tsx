@@ -45,6 +45,8 @@ export function ChoirComposer() {
   const [selected, setSelected] = useState<{ bar: number; index: number } | null>(null);
   const [message, setMessage] = useState("");
   const [notation, setNotation] = useState<"jianpu" | "staff">(EDITION.notation === "staff" ? "staff" : "jianpu");
+  /** 宽屏一屏放不下「写」和「唱」：分成两步切换（手机上照常上下排）。 */
+  const [view, setView] = useState<"write" | "sing">("write");
   const top = useRef<HTMLDivElement | null>(null);
   useEffect(() => { storeDraft(work); }, [work]);
 
@@ -253,7 +255,9 @@ export function ChoirComposer() {
   const rowsWritten = writtenRows(work).length;
   const followLabel = guide >= 0 ? VOICES[voices[guide]].label : "";
 
-  return <div className="choir-compose" ref={top}>
+  const canSing = !!(piece || solo);
+  const shownView = canSing ? view : "write";
+  return <div className={`choir-compose is-${shownView}`} ref={top}>
     <div className="choir-pick choir-compose-settings">
       {Object.keys(ENSEMBLES).length > 1 && <div className="choir-field">
         <span className="choir-label">声部组合</span>
@@ -277,6 +281,11 @@ export function ChoirComposer() {
           </div>
         </div>
       </div>
+    </div>
+
+    <div className="choir-compose-switch" role="tablist" aria-label="写还是唱">
+      <button type="button" role="tab" aria-selected={shownView === "write"} className={shownView === "write" ? "is-active" : ""} onClick={() => setView("write")}><b>1</b>写合唱</button>
+      <button type="button" role="tab" aria-selected={shownView === "sing"} className={shownView === "sing" ? "is-active" : ""} disabled={!canSing} title={canSing ? undefined : "先写几个音"} onClick={() => setView("sing")}><b>2</b>分声部唱</button>
     </div>
 
     <section className="choir-card choir-editor" aria-label="写合唱">

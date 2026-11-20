@@ -55,3 +55,29 @@ export function useFitToCanvas(stageRef: RefObject<HTMLElement | null>, run: (st
 export function useShrinkToCanvas(stageRef: RefObject<HTMLElement | null>, selector: string, deps: unknown[], minSize = 18) {
   useFitToCanvas(stageRef, (stage) => shrinkToCanvas(stage, [...stage.querySelectorAll<HTMLElement>(selector)], minSize), deps);
 }
+
+/**
+ * 一屏放不下的长谱子放在一个框里：播放时跟着正在唱的音走，
+ * 当前音跑出框外，就把它那一行滚到框的上面三分之一处，不用手去拖。
+ */
+export function useFollowActive(rootRef: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    let timer = 0;
+    const follow = () => {
+      const box = root.querySelector<HTMLElement>(".melody-score");
+      if (!box || box.scrollHeight <= box.clientHeight + 4) return;
+      const active = box.querySelector<Element>(".melody-note.is-active, .melody-head-cell.is-active, .staff-note.is-active");
+      if (!active) return;
+      const outer = box.getBoundingClientRect();
+      const scale = outer.height / (box.offsetHeight || 1) || 1;
+      const note = active.getBoundingClientRect();
+      if (note.top >= outer.top + 8 * scale && note.bottom <= outer.bottom - 8 * scale) return;
+      box.scrollTo({ top: box.scrollTop + (note.top - outer.top) / scale - box.clientHeight / 3, behavior: "smooth" });
+    };
+    const observer = new MutationObserver(() => { window.clearTimeout(timer); timer = window.setTimeout(follow, 40); });
+    observer.observe(root, { subtree: true, attributes: true, attributeFilter: ["class"] });
+    return () => { window.clearTimeout(timer); observer.disconnect(); };
+  }, [rootRef]);
+}

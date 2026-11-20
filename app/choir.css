@@ -209,3 +209,111 @@
   .canon-row { grid-template-columns: 56px minmax(0, 1fr); }
   .canon-voice { font-size: 12px; }
 }
+
+/* ===== 一屏画布（课本合唱）：左边选歌、声部、分步练、音准，右边合唱谱占满整列；谱子长了在框里跟着唱的位置走。 ===== */
+.is-fitted .choir-lab { padding-bottom: 12px; }
+.is-fitted .choir-intro { margin: 4px 0 10px; }
+.is-fitted .choir-lab:has(> .choir-score) { display: grid; grid-template-columns: 410px minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); gap: 10px 18px; align-content: stretch; }
+.is-fitted .choir-lab:has(> .choir-score) > .choir-intro { grid-column: 1 / -1; margin-bottom: 0; }
+.is-fitted .choir-lab:has(> .choir-score) > :is(.choir-pick, .choir-setup, .choir-mic) { grid-column: 1; margin: 0; }
+.is-fitted .choir-lab:has(> .choir-score) > .choir-score { display: flex; flex-direction: column; grid-column: 2; grid-row: 2 / -1; height: 0; min-height: 100%; margin: 0; }
+.is-fitted .choir-lab > .choir-pick { gap: 8px; padding: 10px 14px; }
+.is-fitted .choir-lab > .choir-setup { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.is-fitted .choir-lab > .choir-setup > .choir-card { padding: 10px 14px 12px; }
+.is-fitted .choir-lab > .choir-mic { padding: 10px 14px 12px; }
+.is-fitted .choir-lab > .choir-mic .choir-trace { height: 110px; margin-top: 8px; }
+.is-fitted .choir-lab > .choir-mic .choir-mic-tip { margin-top: 6px; font-size: 12px; line-height: 1.55; }
+.is-fitted .choir-lab > .choir-mic .choir-mic-button { min-height: 36px; padding: 0 16px; }
+.is-fitted .choir-score .melody-player { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+.is-fitted .choir-score .melody-score { flex: 1 1 auto; min-height: 0; overflow-y: auto; scroll-behavior: smooth; }
+.is-fitted .choir-intro h2 { font-size: 25px; }
+.is-fitted .choir-lab > .choir-mic .choir-trace { height: 88px; }
+.is-fitted .choir-lab > .choir-mic .choir-mic-tip { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.is-fitted .choir-lab > :is(.choir-pick, .choir-setup) .choir-chips { gap: 6px; }
+.is-fitted .choir-lab > :is(.choir-pick, .choir-setup) .choir-chips button { min-height: 32px; padding-inline: 12px; }
+.is-fitted .choir-lab > .choir-setup .choir-step-title, .is-fitted .choir-lab > .choir-mic .choir-step-title { margin-bottom: 6px; }
+.is-fitted .choir-lab > .choir-setup .choir-steps button { min-height: 34px; font-size: 14px; }
+.is-fitted .choir-lab > :is(.choir-pick, .choir-setup) .choir-chips button { min-height: 30px; }
+.is-fitted .choir-lab > .choir-mic .choir-mic-head .choir-step-title span { overflow: hidden; max-width: 210px; text-overflow: ellipsis; white-space: nowrap; }
+.is-fitted .choir-lab > .choir-mic .choir-mic-head { flex-wrap: nowrap; }
+
+/* 音准图只在开麦克风（或唱完有结果）时展开，平时只留一行标题和按钮。 */
+.is-fitted .choir-mic:not(.is-live) :is(.choir-trace, .choir-mic-tip, .choir-summary) { display: none; }
+
+/* 写合唱 / 分声部唱：宽屏上分两步切换。手机上不显示这个切换。 */
+.choir-compose-switch { display: none; }
+.is-fitted .choir-compose-switch { display: inline-flex; align-self: center; justify-self: end; gap: 4px; padding: 4px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; }
+.is-fitted .choir-compose-switch button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 18px 0 8px; border: 0; border-radius: 999px; background: transparent; color: var(--rhythm-ink-2); font-size: 14.5px; white-space: nowrap; }
+.is-fitted .choir-compose-switch button b { display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; background: var(--rhythm-pine-soft); color: var(--rhythm-pine); font-size: 12px; }
+.is-fitted .choir-compose-switch button.is-active { background: var(--rhythm-pine); color: #fff; font-weight: 600; }
+.is-fitted .choir-compose-switch button.is-active b { background: rgb(255 255 255 / 22%); color: #fff; }
+
+.is-fitted .choir-compose { display: grid; gap: 10px 18px; align-content: start; }
+.is-fitted .choir-compose > * { margin: 0 !important; min-width: 0; }
+.is-fitted .choir-compose.is-write { grid-template-columns: minmax(0, 1fr) 470px; grid-template-areas: "settings switch" "editor work" "editor gallery"; grid-template-rows: auto auto 1fr; }
+.is-fitted .choir-compose.is-write > .choir-compose-settings { grid-area: settings; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 8px 14px; }
+.is-fitted .choir-compose.is-write > .choir-compose-switch { grid-area: switch; }
+.is-fitted .choir-compose.is-write > .choir-editor { grid-area: editor; padding: 12px 16px; }
+.is-fitted .choir-compose.is-write > .choir-work { grid-area: work; align-self: start; padding: 12px 16px; }
+.is-fitted .choir-compose.is-write > .choir-gallery { grid-area: gallery; align-self: start; }
+.is-fitted .choir-compose.is-write > :is(.choir-setup, .choir-mic, .choir-score) { display: none; }
+.is-fitted .choir-compose.is-sing { grid-template-columns: 410px minmax(0, 1fr); grid-template-areas: "switch score" "setup score" "mic score" ". score"; grid-template-rows: auto auto auto minmax(0, 1fr); }
+.is-fitted .choir-compose.is-sing > :is(.choir-compose-settings, .choir-editor, .choir-work, .choir-gallery) { display: none; }
+.is-fitted .choir-compose.is-sing > .choir-compose-switch { grid-area: switch; justify-self: start; }
+.is-fitted .choir-compose.is-sing > .choir-setup { grid-area: setup; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.is-fitted .choir-compose.is-sing > .choir-setup > .choir-card { padding: 10px 14px 12px; }
+.is-fitted .choir-compose.is-sing > .choir-mic { grid-area: mic; padding: 10px 14px 12px; }
+.is-fitted .choir-compose.is-sing > .choir-score { grid-area: score; display: flex; flex-direction: column; height: 0; min-height: 100%; }
+.is-fitted .choir-compose { flex: 1 1 auto; }
+.is-fitted .choir-lab:has(> .choir-compose.is-sing) { display: flex; flex-direction: column; }
+
+/* 轮唱与卡农：左边选歌、声部、音准，右边上方是进入顺序图，下方是合唱谱。 */
+.is-fitted .canon { display: grid; grid-template-columns: 410px minmax(0, 1fr); grid-template-areas: "pick map" "setup score" "mic score" ". score"; grid-template-rows: auto auto auto minmax(0, 1fr); gap: 10px 18px; }
+.is-fitted .choir-lab:has(> .canon) { display: flex; flex-direction: column; }
+.is-fitted .canon { flex: 1 1 auto; }
+.is-fitted .canon > * { margin: 0 !important; min-width: 0; }
+.is-fitted .canon > .choir-pick { grid-area: pick; gap: 8px; padding: 10px 14px; }
+.is-fitted .canon > .canon-map { grid-area: map; padding: 10px 16px; }
+.is-fitted .canon > .canon-map .canon-hints { display: none; }
+.is-fitted .canon > .choir-setup { grid-area: setup; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.is-fitted .canon > .choir-setup > .choir-card { padding: 10px 14px 12px; }
+.is-fitted .canon > .choir-mic { grid-area: mic; padding: 10px 14px 12px; }
+.is-fitted .canon > .choir-score { grid-area: score; display: flex; flex-direction: column; height: 0; min-height: 100%; }
+.is-fitted :is(.choir-compose, .canon) .choir-mic .choir-mic-head { flex-wrap: nowrap; }
+.is-fitted :is(.choir-compose, .canon) .choir-mic .choir-mic-head .choir-step-title span { overflow: hidden; max-width: 210px; text-overflow: ellipsis; white-space: nowrap; }
+.is-fitted :is(.choir-compose, .canon) .choir-mic .choir-trace { height: 88px; }
+.is-fitted :is(.choir-compose, .canon) .choir-setup .choir-steps button { min-height: 34px; font-size: 14px; }
+/* 写合唱的工具区压扁：节奏一行排完，音高台阶矮一点，空的提示行不占地方。 */
+.is-fitted .choir-compose .choir-tools { gap: 8px; }
+.is-fitted .choir-compose .compose-durations { flex-wrap: nowrap; align-items: center; }
+.is-fitted .choir-compose .compose-divider { flex: 0 0 1px; width: 1px; height: 28px; margin: 0 4px; background: var(--rhythm-line); }
+.is-fitted .choir-compose .choir-palette .compose-block { padding-top: calc(4px + var(--step, 0) * 8px); }
+.is-fitted .choir-compose .compose-message:empty { display: none; }
+.is-fitted .choir-compose .choir-voice-tabs button { min-height: 38px; }
+.is-fitted .choir-compose .choir-tools { grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 18px; }
+.is-fitted .choir-compose .choir-tools > :not(.choir-now, .choir-label) { grid-column: 1 / -1; }
+.is-fitted .choir-compose .choir-tools > .choir-label { grid-column: 2; grid-row: 2; }
+.is-fitted .choir-compose .choir-score-tip { display: none; }
+.is-fitted .choir-compose .choir-editor { display: grid; gap: 8px; }
+.is-fitted .choir-compose .choir-editor > * { margin-block: 0; }
+.is-fitted .choir-intro { margin-top: 0; }
+.is-fitted .choir-intro .choir-modes button { min-height: 0; }
+.is-fitted .choir-compose .choir-work { display: grid; gap: 8px; }
+.is-fitted .choir-compose .choir-work > * { margin-block: 0; }
+.is-fitted .choir-compose .choir-words { gap: 6px; }
+.is-fitted .canon { grid-template-areas: "pick pick" "setup map" "mic score" ". score"; }
+.is-fitted .canon > .choir-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
+.is-fitted .canon > .canon-map { align-self: start; }
+.is-fitted .canon { grid-template-areas: "pick pick" "setup score" "map score" "mic score" ". score"; grid-template-rows: auto auto auto auto minmax(0, 1fr); }
+.is-fitted .canon > .canon-map { padding: 10px 14px 12px; }
+.is-fitted .canon > .canon-map .choir-step-title span { display: none; }
+.is-fitted .choir-mic .choir-mic-button { flex: none; white-space: nowrap; }
+.is-fitted :is(.choir-lab, .choir-compose, .canon) > .choir-setup .choir-chips small { display: none; }
+.is-fitted .canon > .canon-map .canon-notation { margin-top: 8px; }
+.is-fitted .canon { grid-template-areas: "pick pick" "setup map" "mic score" ". score"; grid-template-rows: auto auto auto minmax(0, 1fr); }
+.is-fitted .canon > .canon-map { position: relative; align-self: start; }
+.is-fitted .canon > .canon-map .canon-notation { position: absolute; top: 8px; right: 14px; margin: 0; }
+.is-fitted .canon > .canon-map .canon-notation button { min-height: 28px; }
+.is-fitted .canon > .canon-map .choir-step-title { margin-bottom: 6px; }
+.is-fitted .canon > .choir-pick .choir-chips small { display: none; }
+.is-fitted .canon > .choir-pick .choir-chips button { min-height: 32px; padding-inline: 12px; }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFollowActive } from "../../lib/app/fit-canvas";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { IN_TUNE_CENTS, centsOff, detectPitch, hzToMidi, noteName } from "../../lib/lesson/pitch";
 import { MelodyPlayer, type PlaybackClock } from "../lesson/MelodyPlayer";
@@ -201,18 +202,9 @@ export function ChoirPractice({ piece, playerKey, notation, preferVocal, storeKe
     return () => { cancelAnimationFrame(frame); observer.disconnect(); };
   }, [notes, verdicts, playing]);
 
-  // 投屏：谱子这一块铺满屏幕，字放大，合唱队照着唱。
+  // 谱子框：一屏放不下时跟着正在唱的音往下走（投屏用探索页顶上的「投屏」）。
   const scoreCard = useRef<HTMLDivElement | null>(null);
-  const [projecting, setProjecting] = useState(false);
-  useEffect(() => {
-    const sync = () => setProjecting(document.fullscreenElement === scoreCard.current && !!scoreCard.current);
-    document.addEventListener("fullscreenchange", sync);
-    return () => document.removeEventListener("fullscreenchange", sync);
-  }, []);
-  const toggleProjection = () => {
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
-    else void scoreCard.current?.requestFullscreen?.().catch(() => undefined);
-  };
+  useFollowActive(scoreCard);
 
   const counts = verdicts?.some(Boolean) ? { ok: verdicts.filter((v) => v === "ok").length, high: verdicts.filter((v) => v === "high").length, low: verdicts.filter((v) => v === "low").length, none: verdicts.filter((v) => v === "none").length } : null;
   const myLabel = piece.labels[myPart];
@@ -237,7 +229,7 @@ export function ChoirPractice({ piece, playerKey, notation, preferVocal, storeKe
       </div>
     </div>
 
-    <div className="choir-card choir-mic">
+    <div className={`choir-card choir-mic${mic === "on" || counts ? " is-live" : ""}`}>
       <div className="choir-mic-head">
         <p className="choir-step-title"><b>音准</b><span>打开麦克风，边唱边看{myLabel}唱得准不准</span></p>
         {mic === "on"
@@ -258,13 +250,12 @@ export function ChoirPractice({ piece, playerKey, notation, preferVocal, storeKe
       <p className="choir-mic-tip">戴耳机唱最准：外放时麦克风会听到音箱里的其他声部。男生低八度唱同一个声部，也算唱准。声音只在这台电脑上分析，不录音、不上传。</p>
     </div>
 
-    <div className={`choir-card choir-score${projecting ? " is-projecting" : ""}`} ref={scoreCard}>
+    <div className="choir-card choir-score" ref={scoreCard}>
       <div className="choir-score-bar">
-        <p className="choir-step-title"><b>合唱谱</b><span>{projecting ? "按 Esc 退出投屏" : "投到大屏上，合唱队照着谱子和歌词一起唱"}</span></p>
-        <button type="button" className="choir-project" onClick={toggleProjection}>{projecting ? "退出投屏" : "投屏给合唱队"}</button>
+        <p className="choir-step-title"><b>合唱谱</b><span>点上面的「投屏」，合唱队照着谱子和歌词一起唱</span></p>
       </div>
       {piece.labels.length > 1 && <p className="choir-score-order">谱子从上到下：{piece.labels.map((label, index) => <span key={index} className={index === myPart ? "is-mine" : ""}>{label}</span>)}</p>}
-      <MelodyPlayer key={playerKey} melody={piece.melody} notationStyle={notation} partLevels={partLevels} onPlayback={onPlayback} preferVocal={preferVocal} partColors={piece.colors} large={projecting} />
+      <MelodyPlayer key={playerKey} melody={piece.melody} notationStyle={notation} partLevels={partLevels} onPlayback={onPlayback} preferVocal={preferVocal} partColors={piece.colors} />
     </div>
   </>;
 }
