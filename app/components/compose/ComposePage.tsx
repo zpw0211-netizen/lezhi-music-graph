@@ -11,6 +11,7 @@ import { checkTask, decodeTask, taskSetup, type ComposeTask } from "./compose-ta
 import { ComposeTaskDialog } from "./ComposeTaskDialog";
 import { HANDOFF_STORE, isVaryMeter } from "../vary/vary-model";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
+import { useFollowActive } from "../../lib/app/fit-canvas";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import {
   BASS_STYLES, LEVELS, PITCH_SETS, RHYTHM_CARDS, barBeats, beatsOf, colorOf, composeHints, durationsFor, formatBeats, inspireBar, noteShape,
@@ -91,6 +92,7 @@ export function ComposePage() {
   // 本页只在浏览器里载入（主页面水合之后），可以直接读取本机作品集。
   const [works, setWorks] = useState<SavedWork[]>(() => (typeof window === "undefined" ? [] : loadWorks()));
   const stageRef = useRef<HTMLDivElement | null>(null);
+  useFollowActive(stageRef);
 
   const levelInfo = LEVELS[level];
   const beats = beatsOf(meter);
@@ -383,19 +385,6 @@ export function ComposePage() {
     storeWorks(next);
   };
 
-  const [projecting, setProjecting] = useState(false);
-  // Esc leaves full screen too, so follow the document rather than the button.
-  useEffect(() => {
-    const sync = () => setProjecting(!!stageRef.current && document.fullscreenElement === stageRef.current);
-    document.addEventListener("fullscreenchange", sync);
-    return () => document.removeEventListener("fullscreenchange", sync);
-  }, []);
-  const showcase = () => {
-    const stage = stageRef.current;
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
-    else if (stage?.requestFullscreen) void stage.requestFullscreen().catch(() => undefined);
-  };
-
   return <div className="compose-lab">
     <header className="compose-intro">
       <div>
@@ -591,7 +580,6 @@ export function ComposePage() {
       </ul>
       <div className="compose-save">
         <button type="button" className="compose-primary" onClick={save} disabled={!complete}>{complete ? "保存作品" : "写满后可以保存"}</button>
-        <button type="button" onClick={showcase} disabled={!hasNotes && !projecting}>{projecting ? "退出全屏" : "投屏展示"}</button>
       </div>
       <SharePanel tool="compose" name={workName} ready={complete} payload={sharePayload} audio={() => melodyNotes(melody)} image={shareImage}
         hint="用平板或手机扫码，在那台设备上打开这条旋律。" />
