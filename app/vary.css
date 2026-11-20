@@ -114,3 +114,73 @@
   .vary-form-play { flex: 1 1 100%; }
   .vary-form-head .vary-primary { flex: 1 1 100%; }
 }
+
+/* ===== 一屏画布：主题和变奏在左，变奏手法在中，「我的三部曲」在右；整首谱在框里跟着播放走。 ===== */
+.is-fitted .vary-lab { display: grid; grid-template-columns: minmax(0, 1fr) 370px; grid-template-areas: "intro intro" "settings settings" "work form"; grid-template-rows: auto auto 1fr; column-gap: 16px; align-content: start; padding-bottom: 12px; }
+.is-fitted .vary-lab > .vary-intro { grid-area: intro; padding-block: 4px 8px; }
+.is-fitted .vary-lab > .vary-settings { grid-area: settings; margin: 0 0 10px; padding-block: 6px; }
+.is-fitted .vary-lab > .vary-workbench { grid-area: work; grid-template-columns: minmax(0, 1fr) 350px; gap: 14px; margin: 0; }
+.is-fitted .vary-lab > .vary-form { grid-area: form; align-self: start; align-content: start; gap: 10px; margin: 0; padding: 14px 16px; }
+.is-fitted .vary-scores, .is-fitted .vary-side { gap: 10px; }
+.is-fitted .vary-card { padding: 12px 16px; }
+.is-fitted .vary-techniques { gap: 6px; }
+.is-fitted .vary-technique { min-height: 0; padding: 6px 10px; border-radius: 12px; }
+.is-fitted .vary-form-head { flex-direction: column; align-items: stretch; gap: 8px; }
+.is-fitted .vary-form-head h3 { font-size: 22px; }
+.is-fitted .vary-form-head p { font-size: 12.5px; line-height: 1.6; }
+.is-fitted .vary-sections { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.is-fitted .vary-whole .melody-score { max-height: 170px; overflow-y: auto; }
+.is-fitted .vary-lab { grid-template-columns: minmax(0, 1fr) 330px; }
+.is-fitted .vary-lab > .vary-workbench { grid-template-columns: minmax(0, 1fr) 470px; }
+.is-fitted .vary-techniques { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.is-fitted .vary-technique span { font-size: 12px; line-height: 1.45; }
+.is-fitted .vary-group { gap: 4px; }
+.is-fitted .vary-form-head p { display: none; }
+/* 手法卡只写名字（说明放在鼠标提示里），用不了的那张留一行原因。 */
+.is-fitted .vary-technique { min-height: 40px; align-content: center; }
+.is-fitted .vary-technique span { display: none; }
+.is-fitted .vary-technique.is-blocked span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.is-fitted .vary-section-main { padding: 2px 4px; }
+.is-fitted .vary-section { min-height: 0; }
+/* 主题、变奏左右并排对照；手法排成下面一条；三部曲在右。 */
+.is-fitted .vary-lab { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 330px; grid-template-areas: "intro intro intro" "settings settings settings" "theme result form" "palette palette form"; grid-template-rows: auto auto auto 1fr; gap: 0 14px; }
+.is-fitted .vary-lab > .vary-workbench, .is-fitted .vary-lab .vary-scores, .is-fitted .vary-lab .vary-side { display: contents; }
+.is-fitted .vary-lab .vary-card:not(.vary-card-result) { grid-area: theme; }
+.is-fitted .vary-lab .vary-card-result { grid-area: result; }
+.is-fitted .vary-lab .vary-palette { grid-area: palette; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 10px; padding: 10px 14px; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #fff; }
+.is-fitted .vary-lab .vary-palette > .vary-label { flex-basis: 100%; margin: 0; }
+.is-fitted .vary-lab .vary-group { display: flex; align-items: center; gap: 6px; }
+.is-fitted .vary-lab .vary-group + .vary-group { padding-left: 14px; border-left: 1px solid var(--rhythm-line); }
+.is-fitted .vary-lab .vary-techniques { display: flex; flex-wrap: wrap; gap: 6px; }
+.is-fitted .vary-lab .vary-technique { min-height: 36px; padding: 4px 12px; }
+.is-fitted .vary-lab .vary-message { flex-basis: 100%; margin: 0; }
+.is-fitted .vary-lab > .vary-form { grid-row: 3 / -1; }
+.is-fitted .vary-card .melody-score { max-height: 150px; overflow-y: auto; }
+.is-fitted .vary-whole { display: none; }
+.is-fitted .vary-compare { gap: 4px 12px; font-size: 12.5px; }
+.is-fitted .vary-card .melody-title { display: none; }
+.is-fitted .vary-card .melody-controls { gap: 6px 10px; }
+.is-fitted .vary-card .melody-controls :is(.melody-play, .melody-follow-toggle) { min-height: 34px; }
+.is-fitted .vary-card .melody-score { margin-top: 8px; padding-block: 10px 8px; }
+.is-fitted .vary-lab .vary-palette > .vary-label { flex-basis: auto; }
+.is-fitted .vary-lab .vary-palette { row-gap: 6px; }
+.is-fitted .vary-lab .vary-group-name { letter-spacing: .1em; white-space: nowrap; }
+.is-fitted .vary-card-result .vary-actions { margin-top: 8px; }
+.is-fitted .vary-card-result .vary-compare { margin-top: 6px; }
+.is-fitted .vary-lab { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 300px; }
+.is-fitted .vary-card .melody-score { max-height: 124px; }
+.is-fitted .vary-lab > .vary-settings { margin-bottom: 8px; }
+.is-fitted .vary-lab .vary-palette > .vary-label { display: none; }
+.is-fitted .vary-lab .vary-technique { min-height: 32px; padding: 3px 10px; font-size: 13px; }
+.is-fitted .vary-lab .vary-technique b { font-size: 13.5px; }
+.is-fitted .vary-lab .vary-palette { padding: 8px 12px; column-gap: 10px; }
+.is-fitted .vary-lab .vary-group + .vary-group { padding-left: 10px; }
+.is-fitted .vary-lab .vary-techniques { gap: 4px; }
+.is-fitted .vary-form-head { gap: 6px; }
+.is-fitted .vary-form-play { flex-wrap: nowrap; gap: 8px; }
+.is-fitted .vary-form-play .melody-tempo input { width: 90px; }
+.is-fitted .vary-form-play .vary-primary { min-height: 34px; padding-inline: 14px; white-space: nowrap; }
+.is-fitted .vary-section-main b { width: 34px; height: 34px; font-size: 18px; }
+.is-fitted .vary-section-main { gap: 10px; }
+.is-fitted .vary-section-main small { font-size: 12px; }
+.is-fitted .vary-lab > .vary-palette, .is-fitted .vary-lab .vary-palette { align-self: start; }
