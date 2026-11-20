@@ -107,6 +107,10 @@ export function takeShared(tool: ShareTool) {
   if (!pending || pending.tool !== tool) return null;
   const { payload } = pending;
   pending = null;
+  // 取走后把网址改回工具本身，刷新或后退时不会再导入一遍、盖掉接着改的内容。
+  if (typeof window !== "undefined" && SHARED.test(window.location.hash)) {
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}#/${tool}`);
+  }
   return decodePayload(payload);
 }
 

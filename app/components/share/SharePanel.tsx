@@ -6,6 +6,42 @@ import { MAX_PAYLOAD, sharedLinkTarget, shareUrl, type ShareTool } from "../../l
 import type { RenderNote } from "../../lib/share/render-audio";
 import type { ImageScore } from "../../lib/share/jianpu-image";
 
+/** 网址 → 二维码 SVG（纠错等级 L，装得下更长的作品）。 */
+export async function qrSvg(url: string) {
+  const { default: qrcode } = await import("qrcode-generator");
+  const code = qrcode(0, "L");
+  code.addData(url, "Byte");
+  code.make();
+  return code.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+}
+/** 读二维码的函数（jsQR），用到时才载入。 */
+export async function loadQrReader() {
+  const { default: jsQR } = await import("jsqr");
+  return jsQR;
+}
+
+/** 居中的二维码卡片：标题、码、说明、网址、复制链接。 */
+export function QrCard({ title, url, svg, tip, onClose, children }: { title: string; url: string; svg: string; tip: string; onClose: () => void; children?: React.ReactNode }) {
+  const [copied, setCopied] = useState("");
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); setCopied("链接已复制。"); } catch { setCopied("这台电脑不允许复制，请手动选中链接。"); }
+  };
+  return <div className="share-dialog" role="dialog" aria-modal="true" aria-label={title} onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="share-card">
+      <p className="share-card-title">{title}</p>
+      {children}
+      <div className="share-qr" dangerouslySetInnerHTML={{ __html: svg }} />
+      <p className="share-card-tip">{tip}</p>
+      <p className="share-link">{url}</p>
+      {copied && <p className="share-card-tip" role="status">{copied}</p>}
+      <div className="share-card-actions">
+        <button type="button" onClick={copy}>复制链接</button>
+        <button type="button" className="is-primary" onClick={onClose}>关闭</button>
+      </div>
+    </div>
+  </div>;
+}
+
 type Props = {
   tool: ShareTool;
   /** 作品名，用作文件名。 */
@@ -62,20 +98,11 @@ export function SharePanel({ tool, name, ready, payload, audio, image, hint }: P
     if (data.length > MAX_PAYLOAD) { setMessage("作品太长，二维码装不下。可以下载图片或音频来分享。"); return; }
     const url = shareUrl(tool, data);
     try {
-      const { default: qrcode } = await import("qrcode-generator");
-      const code = qrcode(0, "L");
-      code.addData(url, "Byte");
-      code.make();
-      setQr({ url, svg: code.createSvgTag({ cellSize: 4, margin: 2, scalable: true }) });
+      setQr({ url, svg: await qrSvg(url) });
       setMessage("");
     } catch {
       setMessage("二维码没生成出来，请再试一次。");
     }
-  };
-
-  const copy = async () => {
-    if (!qr) return;
-    try { await navigator.clipboard.writeText(qr.url); setMessage("链接已复制。"); } catch { setMessage("这台电脑不允许复制，请长按或手动选中链接。"); }
   };
 
   return <div className="share-panel">
@@ -87,18 +114,8 @@ export function SharePanel({ tool, name, ready, payload, audio, image, hint }: P
       <button type="button" className="share-scan" onClick={() => setScanning(true)} title="老师在大屏上用摄像头扫学生的二维码">扫码收作品</button>
     </div>
     {message && <p className="share-message" role="status">{message}</p>}
-    {qr && <div className="share-dialog" role="dialog" aria-modal="true" aria-label="作品二维码" onClick={(event) => { if (event.target === event.currentTarget) setQr(null); }}>
-      <div className="share-card">
-        <p className="share-card-title">《{name}》</p>
-        <div className="share-qr" dangerouslySetInnerHTML={{ __html: qr.svg }} />
-        <p className="share-card-tip">{hint ?? "用手机或平板扫码，在那台设备上打开这件作品。"}老师也可以在大屏上点「扫码收作品」，把这个码对着摄像头。</p>
-        <p className="share-link">{qr.url}</p>
-        <div className="share-card-actions">
-          <button type="button" onClick={copy}>复制链接</button>
-          <button type="button" className="is-primary" onClick={() => setQr(null)}>关闭</button>
-        </div>
-      </div>
-    </div>}
+    {qr && <QrCard title={`《${name}》`} url={qr.url} svg={qr.svg} onClose={() => setQr(null)}
+      tip={`${hint ?? "用手机或平板扫码，在那台设备上打开这件作品。"}老师也可以在大屏上点「扫码收作品」，把这个码对着摄像头。`} />}
     {scanning && <ScanDialog onClose={() => setScanning(false)} />}
   </div>;
 }
@@ -120,7 +137,7 @@ export function ScanDialog({ onClose }: { onClose: () => void }) {
       try {
         if (!navigator.mediaDevices?.getUserMedia) throw new Error("no camera api");
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } }, audio: false });
-        const { default: jsQR } = await import("jsqr");
+        const jsQR = await loadQrReader();
         if (!alive) return;
         const video = videoRef.current!;
         video.srcObject = stream;

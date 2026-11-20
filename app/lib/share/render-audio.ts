@@ -12,15 +12,15 @@ export type RenderNote =
 
 const RATE = 44100;
 
-/** Melody（主旋律加各声部）按时间排成要演奏的音：主旋律钢琴，其他声部按 colors 或木吉他。 */
+/** Melody（主旋律加各声部）按时间排成要演奏的音：和播放器一样，默认都用钢琴、副声部轻一些；给了 colors 就按各声部的音色。 */
 export function melodyNotes(melody: Melody, colors?: Array<PartColor | undefined>, tempo = melody.bpm): RenderNote[] {
   const beat = 60 / tempo;
   const lines: MelodyNote[][] = [melody.bars.flat(), ...(melody.voices ?? []).map((voice) => voice.bars.flat())];
   const notes: RenderNote[] = [];
   lines.forEach((line, part) => {
     const color = colors?.[part];
-    const instrument: InstrumentId = color?.timbre ?? (part === 0 ? "piano" : "guitar");
-    const level = (color?.level ?? 1) * (part === 0 ? 1 : 0.7);
+    const instrument: InstrumentId = color?.timbre ?? "piano";
+    const level = color ? color.level ?? 1 : [1, 0.7][part] ?? 0.58;
     let t = 0;
     line.forEach((note, index) => {
       if (note.d > 0 && note.d !== 9 && !note.tie) {

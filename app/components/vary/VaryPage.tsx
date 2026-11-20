@@ -90,10 +90,12 @@ export function VaryPage() {
     loaded.current = true;
   }, []);
   // 扫码或点分享链接打开的三部曲：自己写的主题放进“我刚写的”，三段手法照原样摆好。
+  const busyRef = useRef(false);
   useEffect(() => {
     const receive = () => {
       const work = decodeVary(takeShared("vary"));
       if (!work) return;
+      if (busyRef.current && !window.confirm(`打开分享来的《${work.theme.title}》三部曲会替换现在正在做的，确定吗？`)) return;
       stopRef.current?.();
       stopRef.current = null;
       setPlayingIndex(null);
@@ -115,6 +117,7 @@ export function VaryPage() {
   useEffect(() => () => { stopRef.current?.(); }, []);
 
   const theme = themes.find((item) => item.id === themeId) ?? themes[0];
+  useEffect(() => { busyRef.current = Boolean(sectionB) || recipe.length > 0; });
   const variation = useMemo(() => applyAll(theme, recipe), [theme, recipe]);
   const withBass = useCallback((tune: Tune) => (bass === "none" ? undefined : bassOf(tune, bass)), [bass]);
   const themeMelody = useMemo(() => toMelody(theme, theme.title, theme.source, withBass(theme)), [theme, withBass]);
@@ -354,7 +357,7 @@ export function VaryPage() {
       {wholeMelody && <div className="vary-player vary-whole"><MelodyPlayer key={`whole-${theme.id}-${sectionB?.join()}-${sectionA2.join()}-${notation}-${bass}`} melody={wholeMelody} notationStyle={notation} /></div>}
       <SharePanel tool="vary" name={workName} ready={Boolean(wholeMelody)}
         payload={() => encodeVary({ theme, recipe, b: sectionB, a2: sectionA2, bass, tempo })}
-        audio={() => (wholeMelody ? melodyNotes(wholeMelody, [undefined, { timbre: "piano", level: 0.75 }], tempo ?? bpmOf(theme.meter)) : null)}
+        audio={() => (wholeMelody ? melodyNotes(wholeMelody, undefined, tempo ?? bpmOf(theme.meter)) : null)}
         image={shareImage}
         hint="用平板或手机扫码，在那台设备上打开这首三部曲。" />
     </section>

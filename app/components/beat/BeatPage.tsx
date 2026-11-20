@@ -117,10 +117,13 @@ export function BeatPage() {
     loaded.current = true;
   }, []);
   // 扫码或点分享链接打开的合奏。
+  const busyRef = useRef(false);
+  useEffect(() => { busyRef.current = voices.some((voice) => voice.ids.length > 0); });
   useEffect(() => {
     const receive = () => {
       const work = decodeBeat(takeShared("beat"));
       if (!work) return;
+      if (busyRef.current && !window.confirm("打开分享来的合奏会替换现在正在编的，确定吗？")) return;
       stopRef.current?.();
       stopRef.current = null;
       setPlaying(false); setActiveKeys({});

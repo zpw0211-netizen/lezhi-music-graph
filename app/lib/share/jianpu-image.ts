@@ -40,6 +40,10 @@ export function scoreSvg(score: ImageScore) {
   const top = score.marks ? 176 : 150;
   const height = top + rows * systemHeight + (score.note ? 50 : 20) + 30;
   const parts: string[] = [];
+  /** 每个声部上一个音画在哪里：tie 表示“接着上一个音”，延音线从上一个音连过来，可以跨小节、跨行。 */
+  const lastNote: Array<{ x: number; base: number; rowRight: number; row: number } | null> = score.lines.map(() => null);
+  const arc = (x1: number, x2: number, base: number) =>
+    parts.push(`<path d="M${x1 + 2} ${base - DIGIT - 4} Q${(x1 + x2) / 2} ${base - DIGIT - 18} ${x2 - 2} ${base - DIGIT - 4}" fill="none" stroke="${INK}" stroke-width="1.8"/>`);
 
   parts.push(`<rect width="${WIDTH}" height="${height}" fill="#FFFDF8"/>`);
   parts.push(`<text x="${WIDTH / 2}" y="64" text-anchor="middle" font-family="${KAI}" font-size="40" fill="${INK}">${esc(score.title)}</text>`);
@@ -119,10 +123,12 @@ export function scoreSvg(score: ImageScore) {
             const open = beams.find((beam) => beam.level === level && beam.group === g && beam.to === index - 1);
             if (open) open.to = index; else beams.push({ group: g, level, from: index, to: index });
           }
-          if (note.tie && index + 1 < notes.length) {
-            const x2 = xAt(bar, Number((t + note.b).toFixed(4)));
-            parts.push(`<path d="M${x - 2} ${base - DIGIT - 4} Q${(x + x2) / 2} ${base - DIGIT - 18} ${x2 + 2} ${base - DIGIT - 4}" fill="none" stroke="${INK}" stroke-width="1.8"/>`);
+          const previous = lastNote[k];
+          if (note.tie && previous) {
+            if (previous.row === row) arc(previous.x, x, base);
+            else { arc(previous.x, previous.rowRight, previous.base); arc(x - 40, x, base); }
           }
+          lastNote[k] = { x, base, rowRight: barLefts[barLefts.length - 1] - 4, row };
           if (note.lyric && lineHasLyrics[k]) parts.push(`<text x="${x}" y="${base + 40}" text-anchor="middle" font-family="${KAI}" font-size="22" fill="${INK}">${esc(note.lyric)}</text>`);
           t += note.b;
         });
