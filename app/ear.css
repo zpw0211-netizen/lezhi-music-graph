@@ -67,6 +67,7 @@
 .ear-chips button small { color: var(--e-ink-3); font-size: 11px; }
 .ear-chips button.is-active { border-color: var(--e-pine); background: var(--e-pine); color: #fff; font-weight: 600; }
 .ear-chips button.is-active small { color: rgb(255 255 255 / 75%); }
+.ear-credit { align-self: center; margin-left: 4px; color: var(--e-ink-3); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
 
 /* 练习台 */
 .ear-stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(18px, 2.4vw, 32px); min-height: 440px; margin-top: 16px; padding: clamp(18px, 2.6vw, 32px); border: 1px solid var(--e-line); border-radius: 20px; background: var(--e-paper); }

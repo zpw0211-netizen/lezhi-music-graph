@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { publicAssetUrl } from "../../lib/app/assets";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import { PITCH_SETS, colorOf, midiOfNote, type PitchSet } from "../compose/compose-model";
@@ -378,6 +379,7 @@ export function EarPage({ bookKeys }: { bookKeys?: string[] } = {}) {
         {timbreSets.map((set) => <Chip key={set.id} active={options.timbreSet === set.id} onClick={() => changeOptions({ timbreSet: set.id })}>
           {set.label}<small>{timbresIn(set.id).map((item) => item.label).join(" ")}</small>
         </Chip>)}
+        <a className="ear-credit" href={publicAssetUrl("media/timbre/SOURCES.md")} target="_blank" rel="noreferrer">录音来源</a>
       </Field>}
       {level === "chord" && <Field label="和弦">
         {(Object.keys(CHORD_SETS) as ChordSet[]).map((key) =>
