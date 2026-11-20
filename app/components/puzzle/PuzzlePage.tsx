@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent } from "react";
 import { EDITION } from "../../lib/app/books";
+import { fitToCanvas, useFitToCanvas } from "../../lib/app/fit-canvas";
 import { midiOf, type Melody, type MelodyNote } from "../../lib/lesson/jianpu";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
@@ -141,6 +142,9 @@ export function PuzzlePage() {
   const [message, setMessage] = useState("");
   const [stars, setStars] = useState<Record<string, number>>(() => saved.stars ?? {});
   const boardRef = useRef<HTMLDivElement | null>(null);
+  const labRef = useRef<HTMLElement | null>(null);
+  // 一屏画布里放不下（句子多、谱子长）时，纸条上的谱子一起缩小一点。
+  useFitToCanvas(labRef, (lab) => fitToCanvas(lab, (k) => lab.style.setProperty("--pz-zoom", String(k)), 0.62), [songId, level, solved, pool.length, slots.join(), message, wrong.join()]);
 
   useEffect(() => () => { stopCurrent?.(); }, []);
 
@@ -217,7 +221,7 @@ export function PuzzlePage() {
       setStars(best);
       writeSaved({ stars: best });
       setMessage("");
-      window.setTimeout(() => boardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+      if (!boardRef.current?.closest(".is-fitted")) window.setTimeout(() => boardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
       return;
     }
     // 错的卡片退回下面，对的留着。
@@ -265,7 +269,7 @@ export function PuzzlePage() {
   const totalBeats = song.phrases.reduce((sum, phrase) => sum + phrase.endBeat - phrase.startBeat, 0);
   const starCount = count3(checks);
 
-  return <section className="rhythm-lab puzzle-lab" aria-labelledby="puzzle-title">
+  return <section ref={labRef} className={`rhythm-lab puzzle-lab${solved ? " is-solved" : ""}`} aria-labelledby="puzzle-title">
     <header className="pz-intro">
       <div>
         <p className="pz-kicker">乐句拼图</p>

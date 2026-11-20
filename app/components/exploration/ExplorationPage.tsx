@@ -79,10 +79,9 @@ export function ExplorationPage({
   useLayoutEffect(() => {
     const outer = outerRef.current;
     if (!outer) return;
-    let frame = 0;
+    // 同步量：后台标签页里 requestAnimationFrame 不跑，第一次就会量不到。
     const measure = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
+      {
         const width = outer.clientWidth;
         if (window.innerWidth <= 880 || !width) { setFit(null); return; }
         const box = scrollBoxOf(outer);
@@ -93,13 +92,13 @@ export function ExplorationPage({
         const scale = Math.min(1.9, Math.max(0.6, Math.min(width / CANVAS_W, avail / CANVAS_H)));
         const next = { scale, width: width / scale, minHeight: avail / scale };
         setFit((current) => (current && Math.abs(current.scale - next.scale) < 1e-3 && Math.abs(current.width - next.width) < 0.5 && Math.abs(current.minHeight - next.minHeight) < 0.5 ? current : next));
-      });
+      }
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(outer);
     window.addEventListener("resize", measure);
-    return () => { cancelAnimationFrame(frame); observer.disconnect(); window.removeEventListener("resize", measure); };
+    return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
   }, [projecting]);
 
   useLayoutEffect(() => {

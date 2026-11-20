@@ -201,3 +201,39 @@
   .puzzle-lab *, .puzzle-lab *::before, .puzzle-lab *::after { animation: none !important; transition: none !important; }
   .pz-card { transform: none; }
 }
+
+/* ===== 一屏画布：歌名一行（难度挪到右边），卷轴在左、桌上的纸条在右；拼好后结果占右边。
+   纸条上的谱子和空位按 --pz-zoom 一起缩，八句的歌也能一屏放下。 ===== */
+.is-fitted .puzzle-lab { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 12px 26px; padding-bottom: 12px; }
+.is-fitted .puzzle-lab::after { order: 1; flex-basis: 100%; height: 0; content: ""; }
+.is-fitted .puzzle-lab > .pz-stage { order: 0; flex: 1 1 0; min-width: 0; margin: 0; padding: 8px 18px; gap: 8px 18px; }
+.is-fitted .puzzle-lab > .pz-intro { order: 0; flex: 0 0 auto; align-self: center; margin: 0; }
+.is-fitted .pz-intro > div:first-child { display: none; }
+.is-fitted .puzzle-lab > .pz-board { order: 2; flex: 1 1 100%; min-width: 0; }
+.is-fitted .puzzle-lab.is-solved > .pz-board { flex: 1.12 1 0; max-width: none; margin: 0; }
+.is-fitted .puzzle-lab.is-solved > .pz-result { order: 2; flex: 1 1 0; min-width: 0; align-self: flex-start; margin: 0; }
+.is-fitted .pz-card-face { zoom: var(--pz-zoom, 1); }
+.is-fitted .pz-big-play { width: 54px; height: 54px; }
+.is-fitted .pz-stage-title { margin: 0 0 4px; font-size: 23px; }
+.is-fitted .pz-stage-kicker { display: none; }
+.is-fitted .pz-board { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 26px; }
+.is-fitted .pz-column-title { margin-bottom: 6px; }
+.is-fitted .pz-slots { padding: 6px 14px; }
+.is-fitted .pz-slot { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 4px 0; }
+.is-fitted .pz-seal { width: 28px; height: 28px; font-size: 15px; }
+.is-fitted .pz-slot-empty { min-height: calc(62px * var(--pz-zoom, 1)); font-size: 15px; }
+.is-fitted .pz-card { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; min-height: 0; padding: 4px 12px 3px 8px; }
+.is-fitted .pz-card-play { width: 30px; height: 30px; }
+/* 桌上的纸条按自己的长短排，短的两张并一行。 */
+.is-fitted .pz-pool { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 10px 12px; padding: 12px; }
+.is-fitted .pz-pool-item { flex: 1 1 auto; max-width: 100%; }
+.is-fitted .pz-pool-item:nth-child(odd), .is-fitted .pz-pool-item:nth-child(even) { padding: 0; }
+.is-fitted .pz-pool-empty { flex-basis: 100%; }
+.is-fitted .pz-actions { margin-top: 2px; }
+/* 拼好了：结果在右边，一屏看完；整首谱就是左边排好的纸条，不再另印一遍。 */
+.is-fitted .pz-result { gap: 12px; padding: 18px 20px; }
+.is-fitted .pz-result-title { font-size: 28px; }
+.is-fitted .pz-form-block { height: 56px; }
+.is-fitted .pz-notes { gap: 4px; font-size: 14px; }
+.is-fitted .pz-score { display: none; }
+.is-fitted .pz-board.is-solved { grid-template-columns: minmax(0, 1fr); grid-template-areas: "slots"; }

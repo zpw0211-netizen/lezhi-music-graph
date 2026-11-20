@@ -106,9 +106,7 @@ export function EarPage({ bookKeys }: { bookKeys?: string[] } = {}) {
   const [modeClips, setModeClips] = useState<ModeClip[]>([]);
   const [classMode, setClassMode] = useState(false);
   const [scores, setScores] = useState<number[]>([0, 0]);
-  const [projecting, setProjecting] = useState(false);
   const advanceTimer = useRef<number | undefined>(undefined);
-  const stageRef = useRef<HTMLElement>(null);
   /** 同一题只记一次（连按两下时第二下不再算）。 */
   const settledRef = useRef(false);
   /** 一轮里用过的课本歌曲，不重复出。 */
@@ -149,12 +147,6 @@ export function EarPage({ bookKeys }: { bookKeys?: string[] } = {}) {
     if (level !== "timbre") return;
     try { void preloadTimbres(getPianoAudioContext(), timbresIn(options.timbreSet).map((item) => item.id)).catch(() => undefined); } catch { /* 没有音频时照样能看题 */ }
   }, [level, options.timbreSet]);
-
-  useEffect(() => {
-    const sync = () => setProjecting(Boolean(stageRef.current) && document.fullscreenElement === stageRef.current);
-    document.addEventListener("fullscreenchange", sync);
-    return () => document.removeEventListener("fullscreenchange", sync);
-  }, []);
 
   const reset = () => {
     window.clearTimeout(advanceTimer.current);
@@ -277,12 +269,6 @@ export function EarPage({ bookKeys }: { bookKeys?: string[] } = {}) {
   const replay = () => { if (question) void playQuestion(question); };
   const reference = () => void playSequence(REFERENCE, 90);
 
-  const toggleProjection = () => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void stage.requestFullscreen?.().catch(() => undefined);
-  };
   const toggleClassMode = () => {
     setClassMode((on) => !on);
     window.clearTimeout(advanceTimer.current);
@@ -391,7 +377,7 @@ export function EarPage({ bookKeys }: { bookKeys?: string[] } = {}) {
       </Field>}
     </div>}
 
-    <section ref={stageRef} className={`ear-stage${projecting ? " is-projecting" : ""}${started || classMode ? " has-side" : ""}`} aria-label={`${levelInfo.name}练习`}>
+    <section className={`ear-stage${started || classMode ? " has-side" : ""}`} aria-label={`${levelInfo.name}练习`}>
       <div className="ear-main">
         <div className="ear-stage-bar">
           <span className="ear-stage-title">{levelInfo.name}</span>
@@ -399,7 +385,6 @@ export function EarPage({ bookKeys }: { bookKeys?: string[] } = {}) {
             <button type="button" className={`ear-class-toggle${classMode ? " is-on" : ""}`} aria-pressed={classMode} onClick={toggleClassMode}>
               <span aria-hidden="true">{classMode ? "●" : "○"}</span>全班模式
             </button>
-            <button type="button" className="ear-ghost is-small" onClick={toggleProjection}>{projecting ? "退出全屏" : "投屏全屏"}</button>
           </span>
         </div>
 
