@@ -14,6 +14,10 @@ import { PUZZLE_LEVELS, fits, puzzleSongs, shuffled, structureOf, type PuzzleLev
 const STORE = "yapu-puzzle";
 const ORDINAL = ["一", "二", "三", "四", "五", "六", "七", "八"];
 /** 只靠听的时候卡片上没有谱，用颜色认卡片。 */
+/** 散在桌上的纸条，各自歪一点。 */
+const TILTS = [-1.6, 1.1, -0.7, 1.8, -1.2, 0.6, -2, 1.4];
+/** 检查第几次拼对：一次三颗星，两次两颗，再多一颗。 */
+const count3 = (checks: number) => (checks <= 1 ? 3 : checks === 2 ? 2 : 1);
 const CARD_COLORS: Array<[string, string]> = [["红", "#C8553D"], ["橙", "#D98A3D"], ["绿", "#4E9A6B"], ["蓝", "#2F7FA8"], ["紫", "#7D5BA6"], ["粉", "#C2618A"], ["青", "#3C9A9A"], ["棕", "#8C6D46"]];
 function randomHues() {
   const list = CARD_COLORS.map((_, index) => index);
@@ -232,17 +236,41 @@ export function PuzzlePage() {
   const showWords = level === "words";
   const staff = EDITION.notation === "staff";
 
+  const hueOf = (card: number) => CARD_COLORS[hues[card % hues.length]];
   const cardFace = (card: number) => level === "ear"
-    ? <span className="pz-listen-only" style={{ "--card": CARD_COLORS[hues[card % hues.length]][1] } as CSSProperties}><i>{CARD_COLORS[hues[card % hues.length]][0]}</i>{CARD_COLORS[hues[card % hues.length]][0]}色卡片 · 点 ▶ 听这一句</span>
+    ? <span className="pz-listen-only"><b>{hueOf(card)[0]}</b>色纸条<small>点左边的圆钮听一听</small></span>
     : staff ? <StaffPhrase phrase={song.phrases[card]} melody={song.melody} words={showWords} />
     : <JianpuPhrase phrase={song.phrases[card]} meter={song.melody.meter} words={showWords} />;
 
   const drag = (card: number) => (event: DragEvent) => { event.dataTransfer.setData("text/plain", String(card)); event.dataTransfer.effectAllowed = "move"; setPicked(card); };
   const drop = (slot: number) => (event: DragEvent) => { event.preventDefault(); const card = Number(event.dataTransfer.getData("text/plain")); if (Number.isInteger(card)) place(card, slot); };
 
+  const playIcon = (on: boolean) => (on
+    ? <span className="pz-eq" aria-hidden="true"><i /><i /><i /></span>
+    : <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L13 8z" fill="currentColor" /></svg>);
+  /** 一张纸条：左上角贴一条彩色胶带，左边一个圆钮试听。 */
+  const paper = (card: number, where: { slot?: number; tilt?: number }) => {
+    const on = playing === `card-${card}`;
+    const slot = where.slot;
+    return <div className={`pz-card${slot !== undefined ? " is-placed" : ""}${picked === card ? " is-picked" : ""}`} draggable={!solved} onDragStart={drag(card)}
+      style={{ "--tape": hueOf(card)[1], "--tilt": `${where.tilt ?? 0}deg` } as CSSProperties}>
+      <i className="pz-tape" aria-hidden="true" />
+      <button type="button" className={`pz-card-play${on ? " is-playing" : ""}`} onClick={() => playCard(card)} aria-label={on ? "停止" : "听这一句"}>{playIcon(on)}</button>
+      {slot !== undefined
+        ? <button type="button" className="pz-card-face" onClick={() => clickSlot(slot)} disabled={solved} aria-label={`第${ORDINAL[slot]}个位置上的纸条，点一下拿回去`}>{cardFace(card)}</button>
+        : <button type="button" className="pz-card-face" aria-pressed={picked === card} onClick={() => setPicked(picked === card ? null : card)}>{cardFace(card)}</button>}
+      {solved && structure && slot !== undefined && <span className={`pz-letter is-${structure.letters[slot].charCodeAt(0) - 65}`}>{structure.letters[slot]}</span>}
+    </div>;
+  };
+  const totalBeats = song.phrases.reduce((sum, phrase) => sum + phrase.endBeat - phrase.startBeat, 0);
+  const starCount = count3(checks);
+
   return <section className="rhythm-lab puzzle-lab" aria-labelledby="puzzle-title">
     <header className="pz-intro">
-      <h2 id="puzzle-title">把打乱的乐句排回原样</h2>
+      <div>
+        <p className="pz-kicker">乐句拼图</p>
+        <h2 id="puzzle-title">把打乱的乐句排回原样</h2>
+      </div>
       <div className="pz-levels" role="radiogroup" aria-label="难度">
         {PUZZLE_LEVELS.map((item) => <button key={item.id} type="button" role="radio" aria-checked={level === item.id} className={level === item.id ? "is-active" : ""}
           onClick={() => { setLevel(item.id); writeSaved({ level: item.id }); }}>
@@ -251,75 +279,85 @@ export function PuzzlePage() {
       </div>
     </header>
 
-    <div className="pz-picker">
-      <label className="pz-field"><span>课本</span>
-        <select value={song.bookKey} onChange={(event) => { const next = songs.find((item) => item.bookKey === event.target.value); if (next) start(next); }}>
+    <div className="pz-stage">
+      <button type="button" className={`pz-big-play${playing === "whole" ? " is-playing" : ""}`} onClick={playWhole} aria-label={playing === "whole" ? "停止" : "听原曲"}>
+        {playing === "whole" ? <span className="pz-eq is-big" aria-hidden="true"><i /><i /><i /><i /></span> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>}
+      </button>
+      <div className="pz-stage-text">
+        <p className="pz-stage-kicker">{song.bookName} · 点左边听原曲</p>
+        <h3 className="pz-stage-title">{songName(song)}</h3>
+        <p className="pz-stage-meta">
+          <span>{song.phrases.length} 句</span><span>听了 {listens} 次</span><span>检查 {checks} 次</span>
+          {earned > 0 && <span className="pz-best">最好 {"★".repeat(earned)}</span>}
+        </p>
+      </div>
+      <div className="pz-stage-pick">
+        <select aria-label="课本" value={song.bookKey} onChange={(event) => { const next = songs.find((item) => item.bookKey === event.target.value); if (next) start(next); }}>
           {books.map(([key, name]) => <option key={key} value={key}>{name}</option>)}
         </select>
-      </label>
-      <label className="pz-field pz-song"><span>歌曲</span>
-        <select value={song.id} onChange={(event) => { const next = songs.find((item) => item.id === event.target.value); if (next) start(next); }}>
+        <select aria-label="歌曲" className="pz-song-select" value={song.id} onChange={(event) => { const next = songs.find((item) => item.id === event.target.value); if (next) start(next); }}>
           {bookSongs.map((item) => <option key={item.id} value={item.id}>{songName(item)}{stars[item.id] ? ` ${"★".repeat(stars[item.id])}` : ""}</option>)}
         </select>
-      </label>
-      <button type="button" className="pz-ghost" onClick={() => { const others = songs.filter((item) => item.id !== song.id); start(others[Math.floor(Math.random() * others.length)] ?? song); }}>换一首</button>
-      <div className="pz-whole">
-        <button type="button" className={`pz-play-whole${playing === "whole" ? " is-playing" : ""}`} onClick={playWhole}>{playing === "whole" ? "■ 停止" : "▶ 听原曲"}</button>
-        <span className="pz-stats">{song.phrases.length} 句 · 听了 {listens} 次 · 检查 {checks} 次</span>
+        <button type="button" className="pz-dice" onClick={() => { const others = songs.filter((item) => item.id !== song.id); start(others[Math.floor(Math.random() * others.length)] ?? song); }} title="随便换一首">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" strokeWidth="1.6" /><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" /><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor" /><circle cx="12" cy="12" r="1.4" fill="currentColor" /></svg>换一首
+        </button>
       </div>
     </div>
 
     <div className={`pz-board${solved ? " is-solved" : ""}`} ref={boardRef}>
       <section className="pz-column pz-slots-column" aria-label="排好的顺序">
-        <p className="pz-column-title"><b>排好的顺序</b><span>{solved ? "全部拼对了" : picked !== null ? "点一个位置，把选中的卡片放进去" : `已经放了 ${placed} / ${slots.length} 句`}</span></p>
-        <ol className="pz-slots">
-          {slots.map((card, slot) => <li key={slot} className={`pz-slot${card === null ? " is-empty" : ""}${wrong.includes(slot) ? " is-wrong" : ""}${playingSlot === slot ? " is-playing" : ""}${picked !== null && card === null ? " is-target" : ""}`}
-            onDragOver={(event) => event.preventDefault()} onDrop={drop(slot)}>
-            <span className="pz-slot-no">{ORDINAL[slot]}</span>
-            {card === null
-              ? <button type="button" className="pz-slot-empty" onClick={() => clickSlot(slot)}>{picked !== null ? "放在这里" : wrong.includes(slot) ? "这里原来那句不对" : `第${ORDINAL[slot]}句`}</button>
-              : <div className="pz-card is-placed" draggable={!solved} onDragStart={drag(card)}>
-                <button type="button" className={`pz-card-play${playing === `card-${card}` ? " is-playing" : ""}`} onClick={() => playCard(card)} aria-label="听这一句">{playing === `card-${card}` ? "■" : "▶"}</button>
-                <button type="button" className="pz-card-face" onClick={() => clickSlot(slot)} disabled={solved} aria-label={`第${ORDINAL[slot]}个位置上的卡片，点一下拿回去`}>{cardFace(card)}</button>
-                {solved && structure && <span className="pz-letter">{structure.letters[slot]}</span>}
-              </div>}
-          </li>)}
-        </ol>
+        <p className="pz-column-title"><b>我的拼法</b><span>{solved ? "全部拼对了" : picked !== null ? "点一个空位，把纸条放进去" : `放好 ${placed} / ${slots.length} 句`}</span></p>
+        <div className="pz-scroll">
+          <span className="pz-rod" aria-hidden="true" />
+          <ol className="pz-slots">
+            {slots.map((card, slot) => <li key={`${slot}-${wrong.includes(slot) ? checks : 0}`} className={`pz-slot${card === null ? " is-empty" : ""}${wrong.includes(slot) ? " is-wrong" : ""}${playingSlot === slot ? " is-playing" : ""}${picked !== null && card === null ? " is-target" : ""}`}
+              onDragOver={(event) => event.preventDefault()} onDrop={drop(slot)}>
+              <span className="pz-seal" aria-hidden="true">{ORDINAL[slot]}</span>
+              {card === null
+                ? <button type="button" className="pz-slot-empty" onClick={() => clickSlot(slot)} aria-label={`第${ORDINAL[slot]}句的空位`}>{picked !== null ? "放在这里" : wrong.includes(slot) ? "刚才那张不对，换一张" : `第${ORDINAL[slot]}句`}</button>
+                : paper(card, { slot })}
+            </li>)}
+          </ol>
+          <span className="pz-rod" aria-hidden="true" />
+        </div>
       </section>
 
-      {!solved && <section className="pz-column pz-pool-column" aria-label="乐句卡片">
-        <p className="pz-column-title"><b>乐句卡片</b><span>{pool.length ? "先听一听，再选一张放进空位" : "都放上去了，听一听对不对"}</span></p>
+      {!solved && <section className="pz-column pz-pool-column" aria-label="打乱的纸条">
+        <p className="pz-column-title"><b>打乱的纸条</b><span>{pool.length ? "先听一听，选一张放进空位" : "都放上去了，听听对不对"}</span></p>
         <div className="pz-pool">
-          {pool.map((card) => <div key={card} className={`pz-card${picked === card ? " is-picked" : ""}`} draggable onDragStart={drag(card)}>
-            <button type="button" className={`pz-card-play${playing === `card-${card}` ? " is-playing" : ""}`} onClick={() => playCard(card)} aria-label="听这一句">{playing === `card-${card}` ? "■" : "▶"}</button>
-            <button type="button" className="pz-card-face" aria-pressed={picked === card} onClick={() => setPicked(picked === card ? null : card)}>{cardFace(card)}</button>
-          </div>)}
-          {!pool.length && <p className="pz-pool-empty">卡片都排好了 ✓</p>}
+          {pool.map((card, index) => <div key={card} className="pz-pool-item">{paper(card, { tilt: TILTS[(card + index) % TILTS.length] })}</div>)}
+          {!pool.length && <p className="pz-pool-empty">纸条都放好了</p>}
         </div>
       </section>}
+      {!solved && <div className="pz-actions">
+          <button type="button" className={`pz-secondary${playing === "mine" ? " is-playing" : ""}`} onClick={playMine} disabled={!placed}>{playIcon(playing === "mine")}{playing === "mine" ? "停止" : "听我的拼法"}</button>
+          <button type="button" className="pz-primary" onClick={check} disabled={!full}>{full ? "检查一下" : `还差 ${slots.length - placed} 句`}</button>
+          <button type="button" className="pz-ghost" onClick={reshuffle}>重新打乱</button>
+          {message && <p className="pz-message" role="status">{message}</p>}
+        </div>}
     </div>
 
-    {!solved && <div className="pz-actions">
-      <button type="button" className={`pz-secondary${playing === "mine" ? " is-playing" : ""}`} onClick={playMine} disabled={!placed}>{playing === "mine" ? "■ 停止" : "▶ 听我的拼法"}</button>
-      <button type="button" className="pz-primary" onClick={check} disabled={!full}>{full ? "检查" : `还差 ${slots.length - placed} 句`}</button>
-      <button type="button" className="pz-ghost" onClick={reshuffle}>重新打乱</button>
-      {message && <p className="pz-message" role="status">{message}</p>}
-    </div>}
-
     {solved && structure && <section className="pz-result" aria-label="拼好了">
+      <div className="pz-confetti" aria-hidden="true">{Array.from({ length: 14 }, (_, k) => <span key={k} style={{ "--x": `${(k * 37) % 100}%`, "--d": `${(k % 7) * 0.18}s`, "--r": `${((k * 53) % 40) - 20}deg` } as CSSProperties}>{k % 3 ? "♪" : "♫"}</span>)}</div>
       <div className="pz-result-head">
         <div>
-          <p className="pz-result-title">拼好了！<span className="pz-stars" aria-label={`${earned} 颗星`}>{"★".repeat(earned)}<i>{"★".repeat(3 - earned)}</i></span></p>
+          <p className="pz-result-title">拼好了！</p>
+          <p className="pz-stars" aria-label={`${starCount} 颗星`}>{[0, 1, 2].map((k) => <span key={k} className={k < starCount ? "is-on" : ""} style={{ "--d": `${0.25 + k * 0.18}s` } as CSSProperties}>★</span>)}</p>
           <p className="pz-result-sub">检查了 {checks} 次，听了原曲 {listens} 次。</p>
         </div>
         <div className="pz-result-actions">
           <button type="button" className="pz-ghost" onClick={reshuffle}>再拼一次</button>
-          <button type="button" className="pz-primary" onClick={() => { const index = bookSongs.findIndex((item) => item.id === song.id); start(bookSongs[(index + 1) % bookSongs.length]); }}>下一首</button>
+          <button type="button" className="pz-primary" onClick={() => { const index = bookSongs.findIndex((item) => item.id === song.id); start(bookSongs[(index + 1) % bookSongs.length]); }}>下一首 →</button>
         </div>
       </div>
       <div className="pz-form">
-        <span className="pz-form-label">这首歌的样子</span>
-        <span className="pz-form-letters">{structure.letters.map((letter, index) => <b key={index} className={`pz-form-letter is-${letter.charCodeAt(0) - 65}`}>{letter}</b>)}</span>
+        <p className="pz-form-label">这首歌是这样搭起来的</p>
+        <div className="pz-form-blocks">
+          {structure.letters.map((letter, index) => <div key={index} className={`pz-form-block is-${letter.charCodeAt(0) - 65}`} style={{ flexGrow: song.phrases[index].endBeat - song.phrases[index].startBeat, "--d": `${index * 0.08}s` } as CSSProperties}
+            title={`第${ORDINAL[index]}句，占全曲 ${Math.round(((song.phrases[index].endBeat - song.phrases[index].startBeat) / totalBeats) * 100)}%`}>
+            <b>{letter}</b><small>第{ORDINAL[index]}句</small>
+          </div>)}
+        </div>
       </div>
       <ul className="pz-notes">{structure.notes.map((note) => <li key={note}>{note}</li>)}</ul>
       <div className="pz-score"><MelodyPlayer key={song.id} melody={{ ...song.melody, title: undefined }} notationStyle={staff ? "staff" : "jianpu"} /></div>
