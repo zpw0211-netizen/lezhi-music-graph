@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { publicAssetUrl } from "../../lib/app/assets";
 import { preloadPianoSamples } from "../../lib/lesson/piano-sampler";
 import type { AppView } from "../../lib/app/routing";
@@ -39,6 +39,24 @@ const groups: Array<{ label: string; tabs: Tab[] }> = [
 ];
 const tabs = groups.flatMap((group) => group.tabs);
 
+/**
+ * 每个工具都按同一块画布排版：1256 × 600。画布按屏幕等比缩放，正好放进标题栏下面剩下的地方，
+ * 所以教室里的电脑不用往下滑；投屏时铺满整个屏幕，八个工具放大的比例一样，不会时大时小。
+ * 宽屏多出来的宽度留给工具自己铺开（画布变宽，不变高）。手机上不缩放，照常往下排。
+ */
+const CANVAS_W = 1256;
+const CANVAS_H = 600;
+type Fit = { scale: number; width: number; minHeight: number };
+
+/** 页面在哪个盒子里滚动：探索页在 .workspace 里，上课模式在工具浮层里，投屏时在探索页自己里。 */
+function scrollBoxOf(element: HTMLElement): HTMLElement | null {
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    const overflow = getComputedStyle(node).overflowY;
+    if (overflow === "auto" || overflow === "scroll") return node;
+  }
+  return null;
+}
+
 export function ExplorationPage({
   activeView,
   onViewChange,
@@ -49,6 +67,72 @@ export function ExplorationPage({
   children: ReactNode;
 }) {
   const tabRefs = useRef<Partial<Record<ExplorationView, HTMLButtonElement | null>>>({});
+  const shellRef = useRef<HTMLElement>(null);
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState<Fit | null>(null);
+  const [canvasHeight, setCanvasHeight] = useState(0);
+  const [projecting, setProjecting] = useState(false);
+  /** 投屏时是不是我们把整个页面切成了全屏（上课模式本来就全屏时不动它）。 */
+  const ownFullscreen = useRef(false);
+
+  useLayoutEffect(() => {
+    const outer = outerRef.current;
+    if (!outer) return;
+    let frame = 0;
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const width = outer.clientWidth;
+        if (window.innerWidth <= 880 || !width) { setFit(null); return; }
+        const box = scrollBoxOf(outer);
+        const boxTop = box ? box.getBoundingClientRect().top - box.scrollTop : -window.scrollY;
+        const top = outer.getBoundingClientRect().top - boxTop;
+        const height = box ? box.clientHeight : window.innerHeight;
+        const avail = Math.max(360, height - top - (projecting ? 10 : 16));
+        const scale = Math.min(1.9, Math.max(0.6, Math.min(width / CANVAS_W, avail / CANVAS_H)));
+        const next = { scale, width: width / scale, minHeight: avail / scale };
+        setFit((current) => (current && Math.abs(current.scale - next.scale) < 1e-3 && Math.abs(current.width - next.width) < 0.5 && Math.abs(current.minHeight - next.minHeight) < 0.5 ? current : next));
+      });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(outer);
+    window.addEventListener("resize", measure);
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); window.removeEventListener("resize", measure); };
+  }, [projecting]);
+
+  useLayoutEffect(() => {
+    const inner = innerRef.current;
+    if (!inner) return;
+    const observer = new ResizeObserver(() => setCanvasHeight(inner.offsetHeight));
+    observer.observe(inner);
+    setCanvasHeight(inner.offsetHeight);
+    return () => observer.disconnect();
+  }, []);
+
+  // 投屏：探索页铺满屏幕（顺手把浏览器切成全屏）；按 Esc 或退出全屏就收回来。
+  useEffect(() => {
+    if (!projecting) return;
+    const onKey = (event: globalThis.KeyboardEvent) => { if (event.key === "Escape" && !document.fullscreenElement) setProjecting(false); };
+    const onFullscreen = () => { if (!document.fullscreenElement && ownFullscreen.current) { ownFullscreen.current = false; setProjecting(false); } };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("fullscreenchange", onFullscreen);
+    return () => { window.removeEventListener("keydown", onKey); document.removeEventListener("fullscreenchange", onFullscreen); };
+  }, [projecting]);
+  const toggleProjection = () => {
+    if (projecting) {
+      setProjecting(false);
+      if (ownFullscreen.current && document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+      ownFullscreen.current = false;
+      return;
+    }
+    setProjecting(true);
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      ownFullscreen.current = true;
+      void document.documentElement.requestFullscreen().catch(() => { ownFullscreen.current = false; });
+    }
+  };
 
   // Once the open tab has had its turn, fetch the other tools (code, art, piano samples) in the background:
   // every request to the host costs a long round trip, so a tab fetched on click keeps the class waiting.
@@ -91,7 +175,7 @@ export function ExplorationPage({
   };
 
   return (
-    <section className="exploration-shell" aria-labelledby="exploration-title">
+    <section ref={shellRef} className={`exploration-shell${projecting ? " is-projecting" : ""}${fit ? " is-fitted" : ""}`} aria-labelledby="exploration-title">
       <header className="exploration-heading">
         <div className="exploration-intro">
           <p className="exploration-kicker">芽谱 · 探索空间</p>
@@ -133,6 +217,12 @@ export function ExplorationPage({
               </div>
             </div>
           ))}
+          <button type="button" className="exploration-project" onClick={toggleProjection} aria-pressed={projecting} title={projecting ? "按 Esc 也能退出" : "铺满整个屏幕，给全班看"}>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              {projecting ? <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /> : <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />}
+            </svg>
+            <span>{projecting ? "退出投屏" : "投屏"}</span>
+          </button>
         </div>
       </header>
       <div
@@ -142,7 +232,11 @@ export function ExplorationPage({
         aria-labelledby={`exploration-tab-${activeView}`}
         tabIndex={-1}
       >
-        <ExplorationNavContext.Provider value={onViewChange}>{children}</ExplorationNavContext.Provider>
+        <div ref={outerRef} className="exploration-fit" style={fit ? { height: canvasHeight * fit.scale } : undefined}>
+          <div ref={innerRef} className="exploration-canvas" style={fit ? { width: fit.width, minHeight: fit.minHeight, transform: `scale(${fit.scale})` } as CSSProperties : undefined}>
+            <ExplorationNavContext.Provider value={onViewChange}>{children}</ExplorationNavContext.Provider>
+          </div>
+        </div>
       </div>
     </section>
   );

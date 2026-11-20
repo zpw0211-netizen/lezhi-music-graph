@@ -353,3 +353,57 @@
 
 /* 长提示换行时不留单独一个字。 */
 .rhythm-status, .rhythm-library-hint, .rhythm-record header p, .rhythm-result-hint.is-wrap { text-wrap: pretty; }
+
+/* ===== 一屏画布（探索页宽屏）：谱子在左，节奏型卡片收成右边一栏，闯关地图收成一行。 ===== */
+.is-fitted .rhythm-lab { padding-bottom: 12px; }
+.is-fitted .rhythm-train { display: grid; grid-template-columns: minmax(0, 1fr) 500px; grid-template-rows: auto auto 1fr; column-gap: 20px; align-content: start; }
+.is-fitted .rhythm-train.is-levels { grid-template-columns: minmax(0, 1fr); }
+.is-fitted .rhythm-train > :is(.rhythm-intro, .rhythm-settings, .rhythm-levels) { grid-column: 1 / -1; }
+.is-fitted .rhythm-train .rhythm-intro { padding: 6px 0 10px; }
+.is-fitted .rhythm-train .rhythm-intro h2 { font-size: 25px; }
+.is-fitted .rhythm-train .rhythm-settings { padding: 10px 0; }
+.is-fitted .rhythm-train .rhythm-stage { display: flex; flex-direction: column; min-width: 0; padding: 22px 28px 18px; }
+.is-fitted .rhythm-train .rhythm-play-row { margin-top: 0; padding-top: 14px; }
+.is-fitted .rhythm-train .rhythm-stage > .rhythm-score, .is-fitted .rhythm-train .rhythm-dictation { margin-bottom: 18px; }
+.is-fitted .rhythm-train .rhythm-drum { width: 108px; height: 108px; }
+.is-fitted .rhythm-train .rhythm-result { margin-top: 12px; padding: 10px 16px; }
+.is-fitted .rhythm-train .rhythm-result-score strong { font-size: 36px; }
+
+/* 右栏：节奏型小卡片四个一排，我的练习、听写记录跟在后面。 */
+.is-fitted .rhythm-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 14px 16px; border: 1px solid var(--rhythm-line); border-radius: 18px; background: #fff; box-shadow: 0 8px 30px rgb(23 34 28 / 4%); }
+.is-fitted .rhythm-side .rhythm-library { order: -1; margin: 0; }
+.is-fitted .rhythm-side .rhythm-library-hint { margin: 0 0 2px; font-size: 13px; line-height: 1.55; }
+.is-fitted .rhythm-side .rhythm-level { padding: 8px 0 2px; }
+.is-fitted .rhythm-side .rhythm-level > header { margin-bottom: 6px; }
+.is-fitted .rhythm-side .rhythm-level h3 { font-size: 16px; }
+.is-fitted .rhythm-side .rhythm-level > header p { display: none; }
+.is-fitted .rhythm-side .rhythm-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+.is-fitted .rhythm-side .rhythm-card { min-height: 0; gap: 0; padding: 12px 2px 5px; border-radius: 10px; }
+.is-fitted .rhythm-side .rhythm-card .rhythm-group { font-size: 19px; }
+.is-fitted .rhythm-side .rhythm-card-name { max-width: 100%; font-size: 11.5px; line-height: 1.3; text-align: center; white-space: normal; text-wrap: balance; }
+.is-fitted .rhythm-side .rhythm-card small { display: none; }
+.is-fitted .rhythm-side .rhythm-check { top: 4px; right: 4px; width: 16px; height: 16px; border-radius: 5px; font-size: 10px; }
+.is-fitted .rhythm-side :is(.rhythm-mine, .rhythm-record) { margin: 0; padding-top: 10px; border-top: 1px solid var(--rhythm-line); }
+.is-fitted .rhythm-side :is(.rhythm-mine, .rhythm-record) h3 { font-size: 16px; }
+.is-fitted .rhythm-side .rhythm-save input { width: 100%; min-width: 0; }
+.is-fitted .rhythm-side .rhythm-save { flex: 1 1 auto; }
+.is-fitted .rhythm-side .rhythm-mine-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+.is-fitted .rhythm-side .rhythm-mine-open { padding: 6px 10px; }
+.is-fitted .rhythm-side .rhythm-record ol { gap: 6px; margin-top: 8px; }
+.is-fitted .rhythm-side .rhythm-record li { min-width: 76px; padding: 4px 10px; }
+.is-fitted .rhythm-side .rhythm-record header p { flex-basis: 100%; order: 3; font-size: 13px; }
+
+/* 闯关：八关排成一行小石子，不再放大地图。 */
+.is-fitted .rhythm-levels { padding: 10px 0 12px; }
+.is-fitted .rhythm-level-path { position: static; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; aspect-ratio: auto; padding: 6px; border: 1px solid var(--rhythm-line); border-radius: 999px; background: #fff; }
+.is-fitted .rhythm-level-path li { position: relative; left: auto; top: auto; width: auto; height: auto; }
+.is-fitted .rhythm-level-path li + li::before { position: absolute; top: 50%; left: -6px; width: 6px; height: 2px; background: var(--rhythm-line); content: ""; }
+.is-fitted .rhythm-level-path .rhythm-stop { position: static; translate: none; display: flex; width: 100%; min-height: 40px; align-items: center; justify-content: center; gap: 7px; padding: 4px 10px 4px 5px; border-radius: 999px; }
+.is-fitted .rhythm-level-path .rhythm-stop-number { width: 30px; height: 30px; flex: 0 0 auto; font-size: 14px; box-shadow: inset 0 0 0 1.5px #27634433; }
+.is-fitted .rhythm-level-path .rhythm-stop-name { overflow: hidden; margin: 0; padding: 0; background: transparent; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.is-fitted .rhythm-level-path .rhythm-stop-stars { min-height: 0; font-size: 12px; }
+.is-fitted .rhythm-level-path .rhythm-stop-stars:empty, .is-fitted .rhythm-level-path .rhythm-stop:not(.is-cleared) .rhythm-stop-stars { display: none; }
+.is-fitted .rhythm-level-path .rhythm-stop.is-active { background: var(--rhythm-pine-soft); }
+.is-fitted .rhythm-level-path .rhythm-stop.is-active .rhythm-stop-number { box-shadow: 0 0 0 3px #27634426; }
+.is-fitted .rhythm-level-path .rhythm-stop.is-active .rhythm-stop-name { background: transparent; }
+.is-fitted .rhythm-level-info { margin-top: 10px; }

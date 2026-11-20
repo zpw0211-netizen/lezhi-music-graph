@@ -15,6 +15,7 @@ import {
   type RhythmLevel,
   type RhythmPattern,
 } from "../../lib/rhythm/patterns";
+import { useShrinkToCanvas } from "../../lib/app/fit-canvas";
 import { dictationPool, dictationQuestion, gradeDictation } from "../../lib/rhythm/dictation";
 import { drumThump, playRhythm, prepareRhythmAudio, type RhythmPlayback } from "../../lib/rhythm/rhythm-audio";
 import { judgeTaps, WINDOW, type ScoreResult } from "../../lib/rhythm/scoring";
@@ -89,7 +90,6 @@ export function RhythmPage() {
   const [listens, setListens] = useState(0);
   const [questionNo, setQuestionNo] = useState(1);
   const [records, setRecords] = useState<DictationRecord[]>([]);
-  const [projecting, setProjecting] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const playbackRef = useRef<RhythmPlayback | null>(null);
   const tapsRef = useRef<number[]>([]);
@@ -385,43 +385,8 @@ export function RhythmPage() {
   };
   const deletePractice = (id: string) => setMine((current) => current.filter((p) => p.id !== id));
 
-  // Projected full screen: shrink the score until the whole stage (every bar, the controls) fits on one screen.
-  useEffect(() => {
-    const stage = stageRef.current;
-    const scores = [...(stage?.querySelectorAll<HTMLElement>(".rhythm-score") ?? [])];
-    if (!stage || !scores.length) return;
-    // 节奏听写 shows the answer and the question together: both shrink alike.
-    const fit = () => {
-      scores.forEach((score) => { score.style.fontSize = ""; });
-      if (document.fullscreenElement !== stage) return;
-      let size = parseFloat(getComputedStyle(scores[0]).fontSize);
-      for (let i = 0; i < 24 && stage.scrollHeight > stage.clientHeight && size > 18; i += 1) {
-        size *= 0.92;
-        scores.forEach((score) => { score.style.fontSize = `${size}px`; });
-      }
-    };
-    fit();
-    document.addEventListener("fullscreenchange", fit);
-    window.addEventListener("resize", fit);
-    return () => {
-      document.removeEventListener("fullscreenchange", fit);
-      window.removeEventListener("resize", fit);
-    };
-  }, [shownBars, answerBars, revealed, meter, mode, result, countdown]);
-
-  // The stage may leave full screen by Esc as well as by the button.
-  useEffect(() => {
-    const sync = () => setProjecting(!!stageRef.current && document.fullscreenElement === stageRef.current);
-    document.addEventListener("fullscreenchange", sync);
-    return () => document.removeEventListener("fullscreenchange", sync);
-  }, []);
-
-  const fullscreen = () => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void stage.requestFullscreen?.().catch(() => undefined);
-  };
+  // 一屏画布里放不下时，谱子缩小一点（节奏听写的答案和题目一起缩）。
+  useShrinkToCanvas(stageRef, ".rhythm-score", [shownBars, answerBars, revealed, meter, mode, result, countdown]);
 
   const familyPatterns = RHYTHM_PATTERNS.filter((p) => p.family === meter.family);
   const lastBar = bars[bars.length - 1];
@@ -439,7 +404,7 @@ export function RhythmPage() {
   const tempoMark = meter.bottom === 8 ? "♪" : "♩";
 
   return (
-    <section className="rhythm-lab" aria-labelledby="rhythm-title">
+    <section className={`rhythm-lab rhythm-train${mode === "levels" ? " is-levels" : ""}`} aria-labelledby="rhythm-title">
       <header className="rhythm-intro">
         <h2 id="rhythm-title">{dictating ? "听一听，写下来" : "听一听，拍一拍"}</h2>
         <div className="rhythm-mode" role="radiogroup" aria-label="练习方式">
@@ -623,7 +588,6 @@ export function RhythmPage() {
                 ))}
               </div>
             )}
-            <button type="button" className="rhythm-ghost rhythm-fullscreen" onClick={fullscreen}>{projecting ? "退出全屏" : "投屏全屏"}</button>
           </div>
           {!dictating && <div className="rhythm-drum-wrap">
             <button
@@ -685,6 +649,7 @@ export function RhythmPage() {
         {mode === "random" && !familyPatterns.some((p) => allowed.includes(p.id)) && <p className="rhythm-status">这个拍号下还没有勾选节奏型，暂时只用{meter.family === "compound" ? "三个八分音符" : "四分音符"}出题。</p>}
       </div>
 
+      {mode !== "levels" && <aside className="rhythm-side">
       {mode === "edit" && (
         <section className="rhythm-mine" aria-labelledby="rhythm-mine-title">
           <header>
@@ -730,7 +695,7 @@ export function RhythmPage() {
         </section>
       )}
 
-      {mode !== "levels" && (
+      {(
         <div className="rhythm-library">
           <p className="rhythm-library-hint">
             {mode === "random" ? "勾选要练的节奏型，「换一条」只会用到勾选的这些。"
@@ -789,6 +754,7 @@ export function RhythmPage() {
           })}
         </div>
       )}
+      </aside>}
     </section>
   );
 }
