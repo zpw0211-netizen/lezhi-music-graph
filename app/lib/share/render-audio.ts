@@ -2,11 +2,13 @@
 // 只导出乐器音色；人声（绮萱、狸安）不导出，见声库条款。
 import { midiOf, type Melody, type MelodyNote } from "../lesson/jianpu";
 import { loadInstrumentSampler, playInstrumentSample, type InstrumentId, type InstrumentSampler, type PartColor } from "../lesson/instrument-sampler";
-import { loadPercussionStrokes, playPercussion, type PercussionKind } from "../lesson/percussion";
+import { loadPercussionStrokes, type PercussionKind } from "../lesson/percussion";
+import { softOutput, voiceBus } from "../lesson/percussion-mix";
 
 export type RenderNote =
   | { instrument: InstrumentId; midi: number; at: number; length: number; level?: number; pan?: number }
-  | { percussion: PercussionKind; at: number; level?: number };
+  /** voice：同一行的击打共用一个通道（锣、镲在下一击前收住余音）。 */
+  | { percussion: PercussionKind; at: number; level?: number; voice?: number };
 
 const RATE = 44100;
 
@@ -51,11 +53,16 @@ export async function renderToWav(notes: RenderNote[]): Promise<Blob> {
   master.gain.value = 0.5;
   master.connect(ctx.destination);
   const lead = 0.15;
+  // 打击乐走和节奏创编一样的混音通道，按时间先后敲。
+  const buses = new Map<string, ReturnType<typeof voiceBus>>();
+  const strokes = notes.filter((note): note is Extract<RenderNote, { percussion: PercussionKind }> => "percussion" in note).sort((a, b) => a.at - b.at);
+  for (const note of strokes) {
+    const key = `${note.voice ?? 0}:${note.percussion}`;
+    if (!buses.has(key)) buses.set(key, voiceBus(live, softOutput(live), note.percussion));
+    buses.get(key)!.hit(lead + note.at, note.level ?? 1);
+  }
   for (const note of notes) {
-    if ("percussion" in note) {
-      playPercussion(live, master, note.percussion, lead + note.at, note.level ?? 1);
-      continue;
-    }
+    if ("percussion" in note) continue;
     let out: AudioNode = master;
     if (note.pan) {
       const panner = ctx.createStereoPanner();

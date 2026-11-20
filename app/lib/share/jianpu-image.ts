@@ -3,7 +3,8 @@
 
 export type ImageNote = { d: number; o?: number; b: number; tie?: boolean; lyric?: string };
 export type ImageLine = { label?: string; bars: ImageNote[][] };
-export type ImageScore = { title: string; author?: string; keyText: string; meter: string; lines: ImageLine[]; note?: string };
+/** marks：在第几小节（从 0 数）开头标段落名，例如 A、B、A′。拍号不统一时 meter 留空，各小节按实际拍数排。 */
+export type ImageScore = { title: string; author?: string; keyText: string; meter: string; lines: ImageLine[]; note?: string; marks?: Record<number, string> };
 
 const WIDTH = 1200;
 const MARGIN = 64;
@@ -13,7 +14,7 @@ const KAI = "'LXGW WenKai','KaiTi','STKaiti',serif";
 const INK = "#17221C";
 
 const esc = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const barBeats = (meter: string) => Number(meter.split("/")[0]) * 4 / Number(meter.split("/")[1]);
+const barBeats = (meter: string) => (/^\d+\/\d+$/.test(meter) ? Number(meter.split("/")[0]) * 4 / Number(meter.split("/")[1]) : 0);
 const groupLength = (meter: string) => (meter.endsWith("/8") ? 1.5 : 1);
 
 /** 一个音要画几条减时线、几个附点。 */
@@ -24,33 +25,37 @@ function shape(b: number) {
 }
 
 export function scoreSvg(score: ImageScore) {
-  const beats = barBeats(score.meter);
+  const meterBeats = barBeats(score.meter);
+  /** 这一小节有几拍：拍号给出的拍数，或者各声部实际写了几拍（取大的）。 */
+  const beatsIn = (bar: number) => Math.max(meterBeats, ...score.lines.map((line) => (line.bars[bar] ?? []).reduce((sum, note) => sum + note.b, 0)), 1);
   const group = groupLength(score.meter);
   const barCount = Math.max(...score.lines.map((line) => line.bars.length));
   const perRow = barCount <= 4 ? barCount : barCount % 3 === 0 && barCount <= 6 ? 3 : 4;
   const multi = score.lines.length > 1;
   const labelWidth = multi ? 92 : 0;
-  const barWidth = (WIDTH - MARGIN * 2 - labelWidth) / perRow;
   const lineHasLyrics = score.lines.map((line) => line.bars.some((bar) => bar.some((note) => note.lyric)));
   const lineHeight = (k: number) => 78 + (lineHasLyrics[k] ? 34 : 0);
   const systemHeight = score.lines.reduce((sum, _, k) => sum + lineHeight(k), 0) + 30;
   const rows = Math.ceil(barCount / perRow);
-  const top = 150;
+  const top = score.marks ? 176 : 150;
   const height = top + rows * systemHeight + (score.note ? 50 : 20) + 30;
   const parts: string[] = [];
 
   parts.push(`<rect width="${WIDTH}" height="${height}" fill="#FFFDF8"/>`);
   parts.push(`<text x="${WIDTH / 2}" y="64" text-anchor="middle" font-family="${KAI}" font-size="40" fill="${INK}">${esc(score.title)}</text>`);
-  parts.push(`<text x="${MARGIN}" y="122" font-family="${SERIF}" font-size="22" fill="${INK}">${esc(score.keyText)}  ${esc(score.meter)}</text>`);
+  parts.push(`<text x="${MARGIN}" y="122" font-family="${SERIF}" font-size="22" fill="${INK}">${esc([score.keyText, score.meter].filter(Boolean).join("  "))}</text>`);
   if (score.author) parts.push(`<text x="${WIDTH - MARGIN}" y="122" text-anchor="end" font-family="${KAI}" font-size="22" fill="${INK}">${esc(score.author)}</text>`);
 
   for (let row = 0; row < rows; row += 1) {
     const y0 = top + row * systemHeight;
     const first = row * perRow;
     const last = Math.min(barCount, first + perRow);
-    // 每小节的时间格：所有声部的起音点和每一拍，按时间比例排开，太挤的地方撑开。
-    const grids: Array<{ times: number[]; xs: number[] }> = [];
+    // 每小节的时间格：所有声部的起音点和每一拍。短音按开方比例占位，避免挤在一起；
+    // 一行里各小节按内容多少分宽度，最后一行不满时不拉伸。
+    const rowWidth = (WIDTH - MARGIN * 2 - labelWidth) * (last - first) / perRow;
+    const cells: Array<{ times: number[]; units: number[] }> = [];
     for (let bar = first; bar < last; bar += 1) {
+      const beats = beatsIn(bar);
       const set = new Set<number>([0, beats]);
       for (let k = 0; k <= beats; k += 1) set.add(k);
       for (const line of score.lines) {
@@ -58,24 +63,34 @@ export function scoreSvg(score: ImageScore) {
         for (const note of line.bars[bar] ?? []) { set.add(Number(t.toFixed(4))); t += note.b; }
       }
       const times = [...set].filter((t) => t <= beats + 1e-6).sort((a, b) => a - b);
-      const gaps = times.slice(1).map((t, i) => Math.max(28, (t - times[i]) * (barWidth / beats)));
-      const total = gaps.reduce((sum, gap) => sum + gap, 0);
-      const inner = barWidth - 34;
-      const xs = [0];
-      gaps.forEach((gap) => xs.push(xs[xs.length - 1] + gap * inner / total));
-      const left = MARGIN + labelWidth + (bar - first) * barWidth + 22;
-      grids.push({ times, xs: xs.map((x) => left + x) });
+      cells.push({ times, units: times.slice(1).map((t, i) => 0.45 + 0.55 * Math.sqrt(t - times[i])) });
     }
+    const pad = 34;
+    const unitTotal = cells.reduce((sum, cell) => sum + cell.units.reduce((a, b) => a + b, 0), 0);
+    const unitWidth = (rowWidth - pad * cells.length) / unitTotal;
+    const barLefts: number[] = [];
+    const grids: Array<{ times: number[]; xs: number[] }> = [];
+    let left = MARGIN + labelWidth;
+    for (const cell of cells) {
+      barLefts.push(left);
+      const xs = [left + 22];
+      cell.units.forEach((unit) => xs.push(xs[xs.length - 1] + unit * unitWidth));
+      grids.push({ times: cell.times, xs });
+      left += cell.units.reduce((a, b) => a + b, 0) * unitWidth + pad;
+    }
+    barLefts.push(left);
     const xAt = (barIndex: number, t: number) => {
       const grid = grids[barIndex - first];
       const i = grid.times.findIndex((time) => Math.abs(time - t) < 1e-3);
-      return i >= 0 ? grid.xs[i] : grid.xs[0] + (t / beats) * (grid.xs[grid.xs.length - 1] - grid.xs[0]);
+      return i >= 0 ? grid.xs[i] : grid.xs[0] + (t / beatsIn(barIndex)) * (grid.xs[grid.xs.length - 1] - grid.xs[0]);
     };
 
+    for (let bar = first; bar < last; bar += 1) {
+      const mark = score.marks?.[bar];
+      if (mark) parts.push(`<text x="${barLefts[bar - first] + 8}" y="${y0 - 6}" font-family="${KAI}" font-size="20" font-weight="700" fill="#276344">${esc(mark)}</text>`);
+    }
     let y = y0;
-    const lineTops: number[] = [];
     score.lines.forEach((line, k) => {
-      lineTops.push(y);
       const base = y + 44;
       if (multi && line.label) parts.push(`<text x="${MARGIN}" y="${base - 2}" font-family="${KAI}" font-size="18" fill="#44544B">${esc(line.label)}</text>`);
       for (let bar = first; bar < last; bar += 1) {
@@ -126,7 +141,7 @@ export function scoreSvg(score: ImageScore) {
     const barTop = y0 + 8;
     const barBottom = y0 + score.lines.reduce((sum, _, k) => sum + lineHeight(k), 0) - (lineHasLyrics[score.lines.length - 1] ? 30 : 0) - 14;
     for (let bar = first; bar < last; bar += 1) {
-      const x = MARGIN + labelWidth + (bar - first + 1) * barWidth;
+      const x = barLefts[bar - first + 1];
       if (bar === barCount - 1) {
         parts.push(`<rect x="${x - 9}" y="${barTop}" width="1.6" height="${barBottom - barTop}" fill="${INK}"/><rect x="${x - 4}" y="${barTop}" width="4.5" height="${barBottom - barTop}" fill="${INK}"/>`);
       } else {
@@ -134,7 +149,6 @@ export function scoreSvg(score: ImageScore) {
       }
     }
     if (multi) parts.push(`<rect x="${MARGIN + labelWidth}" y="${barTop}" width="1.6" height="${barBottom - barTop}" fill="${INK}"/>`);
-    void lineTops;
   }
   if (score.note) parts.push(`<text x="${MARGIN}" y="${height - 28}" font-family="${KAI}" font-size="16" fill="#7A877F">${esc(score.note)}</text>`);
   return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}">${parts.join("")}</svg>`, width: WIDTH, height };

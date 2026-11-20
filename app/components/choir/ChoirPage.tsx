@@ -5,6 +5,7 @@ import { EDITION } from "../../lib/app/books";
 import { ChoirComposer } from "./ChoirComposer";
 import { ChoirPractice } from "./ChoirPractice";
 import { choirPieces } from "./choir-model";
+import { SHARED_EVENT, hasShared } from "../../lib/share/share-codec";
 
 /** 声部和鸣（原名合唱训练）：练课本里的合唱歌，或者自己编一首二声部合唱，再分声部练。 */
 
@@ -21,7 +22,13 @@ export function ChoirPage() {
   // 这个工具只在浏览器里载入，直接读上次的选择。
   const [saved] = useState(() => (typeof window === "undefined" ? {} : readSaved()));
   const [pieceId, setPieceId] = useState(() => (pieces.some((item) => item.id === saved.piece) ? saved.piece! : pieces[0]?.id ?? ""));
-  const [chosenMode, setMode] = useState<Mode>(() => (saved.mode === "mine" ? "mine" : "book"));
+  const [chosenMode, setMode] = useState<Mode>(() => (saved.mode === "mine" || (typeof window !== "undefined" && hasShared("choir")) ? "mine" : "book"));
+  // 分享来的合唱在“自己编合唱”里打开。
+  useEffect(() => {
+    const receive = () => { if (hasShared("choir")) setMode("mine"); };
+    window.addEventListener(SHARED_EVENT, receive);
+    return () => window.removeEventListener(SHARED_EVENT, receive);
+  }, []);
   // 这个版本的课本里没有可以分声部练的合唱歌时，只能自己编。
   const mode: Mode = pieces.length ? chosenMode : "mine";
   useEffect(() => {

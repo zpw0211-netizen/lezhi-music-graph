@@ -6,6 +6,10 @@ import { MelodyPlayer } from "../lesson/MelodyPlayer";
 import { RhythmGlyph, cardLabel, soundNote } from "../compose/ComposePage";
 import { RHYTHM_CARDS, barBeats, beatsOf, durationsFor, formatBeats, lyricSyllables, noteShape, type ComposeNote, type Meter } from "../compose/compose-model";
 import { ChoirPractice } from "./ChoirPractice";
+import { SharePanel } from "../share/SharePanel";
+import { SHARED_EVENT, takeShared } from "../../lib/share/share-codec";
+import { melodyNotes } from "../../lib/share/render-audio";
+import { decodeChoir, encodeChoir } from "./choir-share";
 import {
   CHOIR_BAR_COUNTS, CHOIR_METERS, ENSEMBLES, VOICES, blankWork, blocksFor, choirHints, emptyRows, loadChoirWorks, loadDraft, nearestBlock, notesIn,
   storeChoirWorks, storeDraft, toChoirMelody, toChoirPiece, wordsFor, writtenRows, type ChoirWork, type EnsembleId,
@@ -196,6 +200,43 @@ export function ChoirComposer() {
     setMessage(`已打开《${saved.title}》。`);
     top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  // 扫码或点分享链接打开的合唱。
+  const hasNotesRef = useRef(hasNotes);
+  useEffect(() => { hasNotesRef.current = hasNotes; });
+  useEffect(() => {
+    const receive = () => {
+      const shared = decodeChoir(takeShared("choir"));
+      if (!shared) return;
+      const title = shared.title || "分享的合唱";
+      if (hasNotesRef.current && !window.confirm(`打开分享来的《${title}》会替换现在正在写的合唱，确定吗？`)) return;
+      setWork(shared);
+      setVoiceIndex(0);
+      setSelected(null);
+      setCard(null);
+      setDuration(durationsFor(shared.meter)[0].b);
+      setMessage(`这是分享来的《${title}》${shared.author ? `（${shared.author}）` : ""}，可以播放、分声部练，也可以接着改。`);
+      top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    receive();
+    window.addEventListener(SHARED_EVENT, receive);
+    return () => window.removeEventListener(SHARED_EVENT, receive);
+  }, []);
+  const workName = work.title.trim() || "我的合唱";
+  const shareMelody = () => toChoirMelody(music);
+  const shareAudio = () => {
+    const melody = shareMelody();
+    return melody ? melodyNotes(melody, writtenRows(music).map((row) => VOICES[row.voice].sound)) : null;
+  };
+  const shareImage = () => {
+    const melody = shareMelody();
+    if (!melody) return null;
+    const labels = writtenRows(music).map((row) => VOICES[row.voice].label);
+    return {
+      title: workName, author: work.author.trim() ? `作者：${work.author.trim()}` : undefined, keyText: "1=C", meter: work.meter, note: "芽谱AI · 自编合唱",
+      lines: [melody.bars, ...(melody.voices ?? []).map((voice) => voice.bars)].map((bars, index) => ({ label: labels[index], bars })),
+    };
+  };
+
   const remove = (id: string) => {
     const next = works.filter((item) => item.id !== id);
     setWorks(next);
@@ -369,6 +410,8 @@ export function ChoirComposer() {
         </div>
         <button type="button" className="choir-mic-button" onClick={save} disabled={!rowsWritten}>保存作品</button>
       </div>
+      <SharePanel tool="choir" name={workName} ready={rowsWritten > 0} payload={() => encodeChoir({ ...work, title: workName })}
+        audio={shareAudio} image={shareImage} hint="用平板或手机扫码，在那台设备上打开这首合唱。" />
     </section>
 
     {piece

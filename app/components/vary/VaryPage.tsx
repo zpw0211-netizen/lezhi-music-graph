@@ -6,6 +6,10 @@ import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
 import { BASS_STYLES, loadWorks, type BassStyle } from "../compose/compose-model";
 import { useExplorationNav } from "../exploration/exploration-tools";
+import { SharePanel } from "../share/SharePanel";
+import { SHARED_EVENT, takeShared } from "../../lib/share/share-codec";
+import { melodyNotes } from "../../lib/share/render-audio";
+import { decodeVary, encodeVary } from "./vary-share";
 import {
   HANDOFF_STORE, SAMPLE_THEMES, TECHNIQUES, TECHNIQUE_BY_ID, applicable, applyAll, bassOf, bpmOf, compare, isAccompaniment, isTheme, isVaryMeter, midiOf, toMelody,
   type Accompaniment, type TechniqueId, type Theme, type Tune,
@@ -84,6 +88,22 @@ export function VaryPage() {
     else if (saved && all.some((theme) => theme.id === saved.themeId)) { setThemeId(saved.themeId); setRecipe(saved.recipe); setSectionB(saved.b); setSectionA2(saved.a2); }
     /* eslint-enable react-hooks/set-state-in-effect */
     loaded.current = true;
+  }, []);
+  // 扫码或点分享链接打开的三部曲：自己写的主题放进“我刚写的”，三段手法照原样摆好。
+  useEffect(() => {
+    const receive = () => {
+      const work = decodeVary(takeShared("vary"));
+      if (!work) return;
+      stopRef.current?.();
+      stopRef.current = null;
+      setPlayingIndex(null);
+      if (work.theme.id === "custom") setThemes((list) => [work.theme, ...list.filter((item) => item.id !== "custom")]);
+      setThemeId(work.theme.id); setRecipe(work.recipe); setSectionB(work.b); setSectionA2(work.a2); setBass(work.bass); setTempo(work.tempo);
+      setMessage(`这是分享来的《${work.theme.title}》三部曲，可以听整首，也可以接着改。`);
+    };
+    receive();
+    window.addEventListener(SHARED_EVENT, receive);
+    return () => window.removeEventListener(SHARED_EVENT, receive);
   }, []);
   const custom = themes.find((item) => item.id === "custom");
   useEffect(() => {
@@ -198,6 +218,16 @@ export function VaryPage() {
   const openSection = (key: string) => {
     stop();
     setRecipe(key === "b" ? sectionB ?? [] : key === "a2" ? sectionA2 : []);
+  };
+  const workName = `${theme.title} · 三部曲`;
+  const sharePieces = tuneB ? [theme, tuneB, tuneA2] : [];
+  const shareImage = () => {
+    if (!wholeMelody) return null;
+    const mixed = sharePieces.some((piece) => piece.meter !== theme.meter);
+    const marks: Record<number, string> = {};
+    let at = 0;
+    sharePieces.forEach((piece, index) => { marks[at] = ["A", "B", "A′"][index] + (mixed ? ` ${piece.meter}` : ""); at += piece.bars.length; });
+    return { title: workName, keyText: "1=C", meter: mixed ? "" : theme.meter, marks, lines: [{ bars: wholeMelody.bars }], note: "芽谱AI · 旋律变奏 · 单三部曲式" };
   };
   const samples = themes.filter((item) => item.id.startsWith("sample-"));
   const works = themes.filter((item) => item.id.startsWith("work:"));
@@ -322,6 +352,11 @@ export function VaryPage() {
       {!tuneB && <p className="vary-empty">B 段还空着。变出一段和主题对比明显的旋律（比如换调式、倒影、拉宽），点“放进 B 段”。</p>}
       {tuneB && sectionB && sectionB.join() === sectionA2.join() && <p className="vary-message">B 段和 A′ 段用了同样的变法。A′ 段是“回家”，让它更像主题会更好。</p>}
       {wholeMelody && <div className="vary-player vary-whole"><MelodyPlayer key={`whole-${theme.id}-${sectionB?.join()}-${sectionA2.join()}-${notation}-${bass}`} melody={wholeMelody} notationStyle={notation} /></div>}
+      <SharePanel tool="vary" name={workName} ready={Boolean(wholeMelody)}
+        payload={() => encodeVary({ theme, recipe, b: sectionB, a2: sectionA2, bass, tempo })}
+        audio={() => (wholeMelody ? melodyNotes(wholeMelody, [undefined, { timbre: "piano", level: 0.75 }], tempo ?? bpmOf(theme.meter)) : null)}
+        image={shareImage}
+        hint="用平板或手机扫码，在那台设备上打开这首三部曲。" />
     </section>
   </section>;
 }

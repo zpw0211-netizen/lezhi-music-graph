@@ -99,6 +99,9 @@ export function captureShared(hash: string) {
   if (typeof window !== "undefined") window.setTimeout(() => window.dispatchEvent(new Event(SHARED_EVENT)), 0);
 }
 
+/** 有没有发给这个工具、还没被取走的作品（不取走）。 */
+export const hasShared = (tool: ShareTool) => pending?.tool === tool;
+
 /** 工具页取走发给自己的作品（只取一次）。 */
 export function takeShared(tool: ShareTool) {
   if (!pending || pending.tool !== tool) return null;
