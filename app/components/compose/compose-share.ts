@@ -1,13 +1,16 @@
 // 旋律创编作品 ⇄ 分享链接里的数据。解码时逐项检查，不合规矩的链接返回 null。
 import { cleanText, decodeBars, encodeBars, encodePayload, oneOf } from "../../lib/share/share-codec";
+import { taskForWork, type ComposeTask } from "./compose-task";
 import { BASS_STYLES, LEVELS, PITCH_SETS, type BassStyle, type ComposeNote, type Level, type Meter, type PitchSet, type SavedWork } from "./compose-model";
 
 export const METERS: Meter[] = ["2/4", "3/4", "4/4", "3/8", "6/8"];
 
-export function encodeCompose(work: Pick<SavedWork, "title" | "author" | "meter" | "bars" | "lyrics" | "accompaniment" | "bassStyle" | "level" | "pitchSet">) {
+/** task：学生按老师的任务写的，把任务一起带上。 */
+export function encodeCompose(work: Pick<SavedWork, "title" | "author" | "meter" | "bars" | "lyrics" | "accompaniment" | "bassStyle" | "level" | "pitchSet">, task?: ComposeTask | null) {
   return encodePayload({
     k: "c", n: work.title, a: work.author, m: work.meter, b: encodeBars(work.bars), l: work.lyrics,
     v: work.level, p: work.pitchSet, c: work.accompaniment ? work.bassStyle ?? "broken" : 0,
+    ...(task ? { t: taskForWork(task) } : {}),
   });
 }
 

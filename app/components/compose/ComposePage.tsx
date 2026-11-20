@@ -7,6 +7,8 @@ import { SharePanel } from "../share/SharePanel";
 import { SHARED_EVENT, takeShared } from "../../lib/share/share-codec";
 import { melodyNotes } from "../../lib/share/render-audio";
 import { decodeCompose, encodeCompose } from "./compose-share";
+import { checkTask, decodeTask, taskSetup, type ComposeTask } from "./compose-task";
+import { ComposeTaskDialog } from "./ComposeTaskDialog";
 import { HANDOFF_STORE, isVaryMeter } from "../vary/vary-model";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadInstrumentSampler, playInstrumentSample } from "../../lib/lesson/instrument-sampler";
@@ -81,6 +83,11 @@ export function ComposePage() {
   const [notation, setNotation] = useState<"jianpu" | "staff">("jianpu");
   const [accompaniment, setAccompaniment] = useState(false);
   const [bassStyle, setBassStyle] = useState<BassStyle>("broken");
+  /** 扫老师的二维码进来时的任务：设置锁定，要求逐条打勾。 */
+  const [task, setTask] = useState<ComposeTask | null>(null);
+  const [taskOpen, setTaskOpen] = useState(false);
+  /** 老师打开学生交来的作品：任务卡只用来看结果。 */
+  const [reviewing, setReviewing] = useState(false);
   // 本页只在浏览器里载入（主页面水合之后），可以直接读取本机作品集。
   const [works, setWorks] = useState<SavedWork[]>(() => (typeof window === "undefined" ? [] : loadWorks()));
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -309,24 +316,62 @@ export function ComposePage() {
     setAccompaniment(Boolean(work.accompaniment) && LEVELS[setup.level].accompaniment);
     setBassStyle(work.bassStyle && work.bassStyle in BASS_STYLES ? work.bassStyle : "broken");
     setSelected(null);
+    setTask(null);
     setMessage(shared ? `这是分享来的《${work.title}》${work.author ? `（${work.author}）` : ""}，可以播放，也可以接着改。` : `已打开《${work.title}》。`);
     stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // 扫码或点分享链接打开的作品。
+  /** 学生扫了老师的任务码：按任务的设置重新开始，设置锁住。 */
+  const startTask = (next: ComposeTask) => {
+    if (hasOwnNotes && !window.confirm("收到老师的创编任务，开始任务会清空现在正在写的旋律，确定吗？")) return;
+    setLevel(next.level);
+    setPitchSet(next.pitchSet);
+    setMeter(next.meter);
+    setDuration(durationsFor(next.meter)[0].b);
+    setCard(null);
+    setMode(next.mode);
+    setQuestionIndex(next.question);
+    setAccompaniment(false);
+    setLyrics("");
+    setTitle(next.text ? next.text.slice(0, 16) : "");
+    reset({ mode: next.mode, meter: next.meter, question: next.question, count: next.bars, pitchSet: next.pitchSet });
+    setTask(next);
+    setReviewing(false);
+    setMessage("老师布置了创编任务，按上面的要求写，写到一条就打一个勾。");
+  };
+
+  // 扫码或点分享链接打开的作品或老师的任务（链接只取一次，按 k 分开）。
   const openRef = useRef(open);
-  useEffect(() => { openRef.current = open; });
+  const startRef = useRef(startTask);
+  useEffect(() => { openRef.current = open; startRef.current = startTask; });
   useEffect(() => {
     const receive = () => {
-      const work = decodeCompose(takeShared("compose"));
-      if (work) openRef.current(work, true);
+      const data = takeShared("compose");
+      if (data?.k === "t") {
+        const next = decodeTask(data);
+        if (next) startRef.current(next);
+        return;
+      }
+      const work = decodeCompose(data);
+      if (!work) return;
+      openRef.current(work, true);
+      // 学生按任务写的作品：老师打开时也看到逐条的结果。
+      const done = decodeTask(data?.t as Record<string, unknown> | undefined);
+      if (done && done.meter === work.meter) {
+        setTask(done);
+        setReviewing(true);
+        setMode(done.mode);
+        setQuestionIndex(done.question);
+      }
     };
     receive();
     window.addEventListener(SHARED_EVENT, receive);
     return () => window.removeEventListener(SHARED_EVENT, receive);
   }, []);
   const workName = title.trim() || "我的旋律";
-  const sharePayload = () => encodeCompose({ title: workName, author: author.trim(), meter, bars, lyrics, accompaniment, bassStyle, level, pitchSet });
+  const sharePayload = () => encodeCompose({ title: workName, author: author.trim(), meter, bars, lyrics, accompaniment, bassStyle, level, pitchSet }, task);
+  const checks = task ? checkTask(task, bars, lyrics) : [];
+  const taskDone = checks.length > 0 && checks.every((check) => check.ok);
   const shareImage = () => ({
     title: workName, author: author.trim() ? `作者：${author.trim()}` : undefined, keyText: "1=C", meter,
     lines: [{ bars: melody.bars }], note: "芽谱AI · 旋律创编",
@@ -358,13 +403,28 @@ export function ComposePage() {
       </div>
       <div className="compose-levels" role="radiogroup" aria-label="年级">
         {(Object.keys(LEVELS) as Level[]).map((key) =>
-          <button key={key} type="button" role="radio" aria-checked={level === key} className={level === key ? "is-active" : ""} onClick={() => chooseLevel(key)}>
+          <button key={key} type="button" role="radio" aria-checked={level === key} className={level === key ? "is-active" : ""} onClick={() => chooseLevel(key)} disabled={Boolean(task) && level !== key}>
             <span>{LEVELS[key].label}</span><small>{LEVELS[key].caption}</small>
           </button>)}
       </div>
     </header>
 
-    <div className="compose-settings">
+    {task ? <section className="task-card" aria-label="老师布置的任务">
+      <div className="task-card-head">
+        <span className="task-kicker">{reviewing ? "交上来的作品 · 任务" : "老师布置的任务"}</span>
+        {task.text && <b>{task.text}</b>}
+        <small>{taskSetup(task)}</small>
+      </div>
+      <ul className="task-checks">
+        {checks.map((check) => <li key={check.label} className={check.ok ? "is-ok" : ""}><i aria-hidden="true">{check.ok ? "✓" : ""}</i>{check.label}<span className="task-sr">{check.ok ? "，已做到" : "，还没做到"}</span></li>)}
+      </ul>
+      <div className="task-card-foot">
+        <p className={taskDone ? "is-done" : ""}>{reviewing
+          ? taskDone ? "这件作品做到了任务的每一条要求。" : `这件作品还有 ${checks.filter((check) => !check.ok).length} 条没做到。`
+          : taskDone ? "任务完成！在「我的作品」里点「二维码」交作品。" : "写到一条就打一个勾。"}</p>
+        <button type="button" onClick={() => { if (window.confirm("退出任务后就可以自由换设置，写好的旋律留着。确定吗？")) setTask(null); }}>退出任务</button>
+      </div>
+    </section> : <div className="compose-settings">
       <div className="compose-field">
         <span className="compose-field-label">玩法</span>
         <div className="compose-chips">
@@ -406,7 +466,10 @@ export function ComposePage() {
               onClick={() => chooseQuestion(i)}>{q.label}</button>)}
         </div>
       </div>}
-    </div>
+      <button type="button" className="task-open" onClick={() => setTaskOpen(true)} title="按现在的设置出一道创编题，全班扫码就能做">老师出题</button>
+    </div>}
+    {taskOpen && <ComposeTaskDialog level={level} pitchSet={pitchSet} meter={meter} bars={barCount} mode={mode} question={questionIndex}
+      glyph={(item) => <RhythmGlyph card={item} />} onClose={() => setTaskOpen(false)} />}
 
     <div className="compose-workbench">
     <section className="compose-editor" aria-label="写旋律">
