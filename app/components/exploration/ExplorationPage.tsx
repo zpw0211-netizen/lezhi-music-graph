@@ -6,7 +6,7 @@ import { preloadPianoSamples } from "../../lib/lesson/piano-sampler";
 import type { AppView } from "../../lib/app/routing";
 import { ExplorationNavContext } from "./exploration-tools";
 
-type ExplorationView = Extract<AppView, "compose" | "vary" | "beat" | "ear" | "lab" | "rhythm" | "choir">;
+type ExplorationView = Extract<AppView, "compose" | "vary" | "beat" | "ear" | "lab" | "rhythm" | "choir" | "puzzle">;
 
 type Tab = { view: ExplorationView; label: string; caption: string; icon: ReactNode };
 
@@ -18,10 +18,11 @@ const ICONS: Record<ExplorationView, ReactNode> = {
   lab: <><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="3" /><path d="M12 3.5v3M20.5 12h-3M12 20.5v-3M3.5 12h3" /></>,
   ear: <><path d="M4.5 15.5V12a7.5 7.5 0 0 1 15 0v3.5" /><rect x="3.5" y="14" width="4.2" height="6.5" rx="1.6" /><rect x="16.3" y="14" width="4.2" height="6.5" rx="1.6" /></>,
   rhythm: <><ellipse cx="12" cy="10" rx="8" ry="3" /><path d="M4 10v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V10" /><path d="M7.5 3.5l3.2 5M16.5 3.5l-3.2 5" /></>,
+  puzzle: <><path d="M4 4.5h6.5v3a1.8 1.8 0 1 0 3.6 0v-3H20v6.5h-3a1.8 1.8 0 1 0 0 3.6h3V20h-6.5" /><path d="M4 4.5V20h9.5" /><path d="M7.5 13.5l2 2 3.5-4" /></>,
   choir: <><circle cx="8" cy="8.2" r="2.6" /><circle cx="16" cy="8.2" r="2.6" /><path d="M3.5 19a4.5 4.5 0 0 1 9 0M11.5 19a4.5 4.5 0 0 1 9 0" /></>,
 };
 
-/** Two groups: making music, then training the ear, the beat and the voice. Arrow keys run through all seven in this order. */
+/** Two groups: making music, then training the ear, the beat and the voice. Arrow keys run through all eight in this order. */
 const groups: Array<{ label: string; tabs: Tab[] }> = [
   { label: "创编", tabs: [
     { view: "compose", label: "旋律创编", caption: "写一段旋律", icon: ICONS.compose },
@@ -32,6 +33,7 @@ const groups: Array<{ label: string; tabs: Tab[] }> = [
   { label: "训练", tabs: [
     { view: "ear", label: "听音训练", caption: "练练小耳朵", icon: ICONS.ear },
     { view: "rhythm", label: "节奏训练", caption: "拍节奏、听写节奏", icon: ICONS.rhythm },
+    { view: "puzzle", label: "乐句拼图", caption: "把打乱的乐句排回原样", icon: ICONS.puzzle },
     { view: "choir", label: "声部和鸣", caption: "唱好一个声部，再合在一起", icon: ICONS.choir },
   ] },
 ];
@@ -59,6 +61,7 @@ export function ExplorationPage({
       void import("../vary/VaryPage").catch(() => undefined);
       void import("../compose/ComposePage").catch(() => undefined);
       void import("../choir/ChoirPage").catch(() => undefined);
+      void import("../puzzle/PuzzlePage").catch(() => undefined);
       new Image().src = publicAssetUrl("art/rhythm/drum.webp");
       // Almost every tool plays the piano: fetch its 1.6 MB now so the first 播放 does not wait for it (skipped on data saver).
       if (!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) preloadPianoSamples();
@@ -93,7 +96,7 @@ export function ExplorationPage({
         <div className="exploration-intro">
           <p className="exploration-kicker">芽谱 · 探索空间</p>
           <h1 id="exploration-title">音乐探索与创造</h1>
-          <p><span>写旋律、变主题、编节奏、转律盘，</span><span>再练耳朵、打节奏、唱声部。</span></p>
+          <p><span>写旋律、变主题、编节奏、转律盘，</span><span>再练耳朵、打节奏、拼乐句、唱声部。</span></p>
         </div>
         <div
           className="exploration-tabs"

@@ -21,6 +21,7 @@ export type AppView =
   | "beat"
   | "vary"
   | "choir"
+  | "puzzle"
   | "plan"
   | "kmap";
 
@@ -51,6 +52,7 @@ const VIEWS = new Set<AppView>([
   "beat",
   "vary",
   "choir",
+  "puzzle",
   "plan",
   "kmap",
 ]);
