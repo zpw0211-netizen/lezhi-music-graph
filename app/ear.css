@@ -25,8 +25,17 @@
 .ear-intro h2 { margin: 0; font: 400 clamp(22px, 2.3vw, 28px)/1.3 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .06em; }
 .ear-intro-tip { margin: 0; color: var(--e-ink-3); font-size: 12px; }
 
+/* 学段 */
+.ear-groups { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; padding: 4px; border: 1px solid var(--e-line); border-radius: 14px; background: #fff; }
+.ear-groups button { display: inline-flex; align-items: baseline; gap: 8px; min-height: 38px; padding: 0 16px; border: 0; border-radius: 10px; background: transparent; color: var(--e-ink-2); font-size: 15px; }
+.ear-groups button small { color: var(--e-ink-3); font-size: 11px; }
+.ear-groups button.is-active { background: var(--e-pine); color: #fff; font-weight: 600; }
+.ear-groups button.is-active small { color: rgb(255 255 255 / 78%); }
+
 /* 关卡卡片 */
 .ear-levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.ear-levels.is-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ear-levels.is-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ear-level { display: grid; gap: 2px; align-content: start; padding: 14px 16px 12px; border: 1px solid var(--e-line); border-radius: 16px; background: #fff; text-align: left; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
 .ear-level:hover { border-color: #C3D3C8; transform: translateY(-1px); }
 .ear-level.is-active { border-color: var(--e-pine); box-shadow: inset 0 0 0 1px var(--e-pine); background: var(--e-pine-soft); }
@@ -43,6 +52,14 @@
 
 /* 设置 */
 .ear-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 16px 0 0; }
+.ear-stage-tools { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.ear-team-count { display: inline-flex; gap: 2px; }
+.ear-lab .ear-team-count button { min-height: 26px; padding: 0 8px; border: 1px solid var(--e-line); border-radius: 7px; background: #fff; color: var(--e-ink-3); font-size: 12px; }
+.ear-lab .ear-team-count button.is-active { border-color: var(--e-ink-2); color: var(--e-ink); font-weight: 600; }
+.ear-class-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 30px; padding: 0 14px; border: 1px solid var(--e-line); border-radius: 999px; background: #fff; color: var(--e-ink-2); font-size: 14px; }
+.ear-class-toggle span { color: var(--e-ink-3); font-size: 12px; }
+.ear-class-toggle.is-on { border-color: var(--e-seal); background: var(--e-seal-soft); color: var(--e-seal); font-weight: 600; }
+.ear-class-toggle.is-on span { color: var(--e-seal); }
 .ear-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .ear-field-label { color: var(--e-ink-3); font-size: 12px; letter-spacing: .08em; white-space: nowrap; }
 .ear-chips { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -52,7 +69,12 @@
 .ear-chips button.is-active small { color: rgb(255 255 255 / 75%); }
 
 /* 练习台 */
-.ear-stage { display: grid; min-height: 360px; margin-top: 16px; padding: clamp(18px, 3vw, 36px); border: 1px solid var(--e-line); border-radius: 20px; background: var(--e-paper); }
+.ear-stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(18px, 2.4vw, 32px); min-height: 440px; margin-top: 16px; padding: clamp(18px, 2.6vw, 32px); border: 1px solid var(--e-line); border-radius: 20px; background: var(--e-paper); }
+.ear-stage.has-side { grid-template-columns: minmax(0, 1fr) 252px; }
+.ear-main { display: grid; grid-template-rows: auto 1fr; gap: 18px; min-width: 0; }
+.ear-stage-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ear-stage-title { display: inline-flex; align-items: center; gap: 10px; font: 400 18px/1.3 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .08em; }
+.ear-stage-title em { padding: 1px 9px; border-radius: 999px; background: var(--e-seal-soft); color: var(--e-seal); font: 600 12px/1.6 var(--ui, sans-serif); font-style: normal; letter-spacing: .04em; }
 .ear-start, .ear-result { display: grid; place-content: center; justify-items: center; gap: 10px; text-align: center; }
 .ear-start-title { margin: 0; font: 400 30px/1.3 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .1em; }
 .ear-start-tip { max-width: 34em; margin: 0; color: var(--e-ink-2); font-size: 14px; }
@@ -67,29 +89,29 @@
 .ear-result-score b { color: var(--e-ink); font: 600 44px/1 var(--serif, "Songti SC", serif); }
 .ear-result-praise { margin: 0; color: var(--e-pine); font-size: 15px; }
 
-.ear-play { display: grid; gap: 22px; align-content: start; }
-.ear-progress { display: flex; gap: 6px; }
-.ear-progress span { flex: 1; height: 6px; border-radius: 3px; background: #E6ECE8; transition: background .2s ease; }
-.ear-progress .is-current { background: #B9CEC0; }
-.ear-progress .is-right { background: var(--e-pine); }
-.ear-progress .is-wrong { background: var(--e-seal); }
+.ear-play { display: grid; gap: 26px; align-content: start; }
 
 .ear-listen { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 26px; }
-.ear-replay { display: grid; place-items: center; align-content: center; width: 104px; height: 104px; border: 0; border-radius: 50%; background: var(--e-pine); color: #fff !important; box-shadow: 0 0 0 8px var(--e-pine-soft), 0 4px 0 #1B4A32; transition: transform .1s ease; }
+.ear-replay { display: grid; place-items: center; align-content: center; width: 128px; height: 128px; border: 0; border-radius: 50%; background: var(--e-pine); color: #fff !important; box-shadow: 0 0 0 8px var(--e-pine-soft), 0 4px 0 #1B4A32; transition: transform .1s ease; }
 .ear-replay:active { transform: scale(.96); }
-.ear-replay span { font-size: 36px; line-height: 1; }
-.ear-lab .ear-replay small { color: #fff; font-size: 12px; opacity: .92; }
+.ear-replay span { font-size: 44px; line-height: 1; }
+.ear-lab .ear-replay small { color: #fff; font-size: 13px; opacity: .92; }
 .ear-question { display: grid; gap: 4px; justify-items: start; }
-.ear-question-number { margin: 0; color: var(--e-ink-3); font-size: 12px; letter-spacing: .1em; }
-.ear-question-text { margin: 0; font: 400 clamp(20px, 2.2vw, 26px)/1.4 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+.ear-question-number { margin: 0; color: var(--e-ink-3); font-size: 13px; letter-spacing: .1em; }
+.ear-question-text { margin: 0; font: 400 clamp(24px, 2.7vw, 34px)/1.35 var(--kai, "LXGW WenKai", "KaiTi", serif); }
 
 /* 作答按钮 */
 .ear-answers { display: flex; flex-wrap: wrap; gap: 10px; }
-.ear-answer { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-width: 120px; min-height: 64px; padding: 0 22px; border: 1px solid var(--e-line); border-radius: 16px; background: #fff; font-size: 18px; font-weight: 600; box-shadow: 0 3px 0 #E1E8E3; transition: border-color .15s ease, background .15s ease, opacity .15s ease, transform .08s ease; }
+.ear-answer { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-width: 140px; min-height: 80px; padding: 0 26px; border: 1px solid var(--e-line); border-radius: 18px; background: #fff; font-size: 22px; font-weight: 600; box-shadow: 0 3px 0 #E1E8E3; transition: border-color .15s ease, background .15s ease, opacity .15s ease, transform .08s ease; }
 .ear-answer:hover:not(:disabled) { border-color: var(--e-pine); }
 .ear-answer:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
 .ear-answer-icon { font-size: 24px; line-height: 1; }
-.ear-answers.is-interval .ear-answer { min-width: 96px; font: 400 22px/1 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+.ear-answers.is-interval .ear-answer { min-width: 104px; font: 400 26px/1 var(--kai, "LXGW WenKai", "KaiTi", serif); }
+.ear-answers.is-choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.ear-answers.is-choice .ear-answer { justify-content: flex-start; min-width: 0; padding: 12px 18px; text-align: left; }
+.ear-answer-key { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--e-pine-soft); color: var(--e-pine); font: 600 14px/1 var(--serif, "Songti SC", serif); }
+.ear-answer-label { display: grid; gap: 2px; font: 400 24px/1.25 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .04em; }
+.ear-lab .ear-answer-label small { color: var(--e-ink-2); font: 400 13px/1.4 var(--ui, sans-serif); letter-spacing: 0; }
 .ear-answer.is-right, .ear-block.is-right { border-color: var(--e-pine); background: var(--e-pine-soft); color: var(--e-pine); box-shadow: inset 0 0 0 2px var(--e-pine); }
 .ear-answer.is-wrong { border-color: var(--e-seal); background: var(--e-seal-soft); color: var(--e-seal); }
 .ear-answer.is-dim, .ear-block.is-dim { opacity: .35; }
@@ -120,17 +142,72 @@
 .ear-feedback p { margin: 0; font-size: 16px; font-weight: 600; }
 .ear-feedback .is-right { color: var(--e-pine); }
 .ear-feedback .is-wrong { color: var(--e-seal); }
+.ear-feedback .is-reveal { color: var(--e-ink); }
+.ear-feedback p { max-width: 36em; font-size: 18px; }
+
+/* 右侧：本轮记录、各组得分 */
+.ear-side { display: grid; gap: 16px; align-content: start; padding-left: clamp(16px, 2vw, 26px); border-left: 1px solid var(--e-line); }
+.ear-side-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 8px; font: 400 16px/1.4 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .06em; }
+.ear-side-title span { color: var(--e-ink-3); font: 12px/1.4 var(--ui, sans-serif); letter-spacing: 0; }
+.ear-round-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.ear-round-list li { display: grid; grid-template-columns: 22px 18px minmax(0, 1fr); align-items: center; gap: 6px; min-height: 30px; padding: 0 8px; border-radius: 9px; color: var(--e-ink-3); font-size: 13px; }
+.ear-round-number { font: 12px/1 var(--serif, "Songti SC", serif); text-align: right; }
+.ear-round-mark { font-weight: 700; text-align: center; }
+.ear-round-text { overflow: hidden; color: var(--e-ink-2); text-overflow: ellipsis; white-space: nowrap; }
+.ear-round-list .is-current { background: var(--e-pine-soft); color: var(--e-pine); }
+.ear-round-list .is-current .ear-round-text { color: var(--e-pine); }
+.ear-round-list .is-right .ear-round-mark { color: var(--e-pine); }
+.ear-round-list .is-wrong .ear-round-mark { color: var(--e-seal); }
+.ear-teams { display: grid; gap: 8px; }
+.ear-team { --team: #276344; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name actions" "score actions"; align-items: center; gap: 0 10px; padding: 10px 12px; border: 1px solid var(--e-line); border-left: 5px solid var(--team); border-radius: 12px; background: #fff; }
+.is-team-1 { --team: #AF4236; }
+.is-team-2 { --team: #2F6FA3; }
+.is-team-3 { --team: #C08A1E; }
+.ear-team-name { grid-area: name; color: var(--e-ink-2); font-size: 13px; }
+.ear-team-score { grid-area: score; color: var(--team); font: 600 30px/1.1 var(--serif, "Songti SC", serif); }
+.ear-team-actions { display: flex; grid-area: actions; gap: 6px; }
+.ear-team-actions button { min-width: 38px; min-height: 38px; border: 1px solid var(--e-line); border-radius: 10px; background: #fff; font-weight: 600; }
+.ear-team-actions button.is-plus { min-width: 52px; border-color: var(--team); background: var(--team); color: #fff !important; }
+.ear-team-actions button:disabled { opacity: .35; }
+.ear-teams-reset { justify-self: start; }
+.ear-result-teams { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; margin: 0; font-size: 16px; }
+.ear-result-teams span { --team: #276344; color: var(--team); }
+.ear-result-teams b { font: 600 30px/1 var(--serif, "Songti SC", serif); }
+
+/* 投屏全屏：字和按钮都放大，白底铺满 */
+.ear-stage.is-projecting { align-content: stretch; min-height: 100vh; margin: 0; padding: 3vw 4vw; border: 0; border-radius: 0; overflow: auto; }
+.ear-stage.is-projecting.has-side { grid-template-columns: minmax(0, 1fr) 300px; }
+.ear-stage.is-projecting .ear-replay { width: 168px; height: 168px; }
+.ear-stage.is-projecting .ear-replay span { font-size: 60px; }
+.ear-stage.is-projecting .ear-question-text { font-size: clamp(34px, 3.4vw, 52px); }
+.ear-stage.is-projecting .ear-answer { min-height: 104px; font-size: 30px; }
+.ear-stage.is-projecting .ear-answer-label { font-size: 34px; }
+.ear-stage.is-projecting .ear-feedback p { font-size: 26px; }
+.ear-stage.is-projecting .ear-start-title { font-size: 48px; }
+.ear-stage.is-projecting .ear-start-tip { font-size: 22px; }
+.ear-stage.is-projecting .ear-team-score { font-size: 44px; }
+.ear-stage.is-projecting .ear-round-list li { min-height: 38px; font-size: 16px; }
 .ear-keys { margin: 12px 0 0; color: var(--e-ink-3); font-size: 12px; text-align: right; }
 
+@media (max-width: 1100px) {
+  .ear-stage.has-side:not(.is-projecting) { grid-template-columns: minmax(0, 1fr); }
+  .ear-stage:not(.is-projecting) .ear-side { padding: 16px 0 0; border-top: 1px solid var(--e-line); border-left: 0; }
+  .ear-stage:not(.is-projecting) .ear-round-list { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
 @media (max-width: 900px) {
-  .ear-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ear-levels, .ear-levels.is-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ear-keys { display: none; }
 }
 @media (max-width: 520px) {
   .ear-levels { gap: 8px; }
   .ear-level { padding: 12px; }
-  .ear-replay { width: 84px; height: 84px; }
-  .ear-answer { flex: 1 1 90px; min-width: 0; padding: 0 12px; }
+  .ear-groups { display: flex; }
+  .ear-groups button { flex: 1 1 auto; justify-content: center; padding: 0 8px; }
+  .ear-groups button small { display: none; }
+  .ear-replay { width: 96px; height: 96px; }
+  .ear-answer { flex: 1 1 90px; min-width: 0; min-height: 64px; padding: 0 12px; font-size: 18px; }
+  .ear-answers.is-choice { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ear-answer-label { font-size: 20px; }
   .ear-block { flex: 1 1 52px; }
   .ear-slot { width: 52px; height: 66px; }
 }

@@ -427,7 +427,7 @@ export default function Home() {
       if (entity) openLessonPage(entity);
       else navigate({ view: "lesson", work });
     }} />}
-    {tool === "ear" && <EarPage />}
+    {tool === "ear" && <EarPage bookKeys={books.map((book) => book.key)} />}
     {tool === "rhythm" && <RhythmPage />}
     {tool === "beat" && <BeatPage />}
     {tool === "vary" && <VaryPage />}
