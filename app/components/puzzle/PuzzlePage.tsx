@@ -287,7 +287,7 @@ export function PuzzlePage() {
         <p className="pz-stage-kicker">{song.bookName} · 点左边听原曲</p>
         <h3 className="pz-stage-title">{songName(song)}</h3>
         <p className="pz-stage-meta">
-          <span>{song.phrases.length} 句</span><span>听了 {listens} 次</span><span>检查 {checks} 次</span>
+          <span>{song.phrases.length} 句</span>{song.firstBars && <span title="这首歌比较长，先拼前半首">只拼前 {song.firstBars} 小节</span>}<span>听了 {listens} 次</span><span>检查 {checks} 次</span>
           {earned > 0 && <span className="pz-best">最好 {"★".repeat(earned)}</span>}
         </p>
       </div>
