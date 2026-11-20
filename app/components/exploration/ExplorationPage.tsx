@@ -75,31 +75,31 @@ export function ExplorationPage({
   const [projecting, setProjecting] = useState(false);
   /** 投屏时是不是我们把整个页面切成了全屏（上课模式本来就全屏时不动它）。 */
   const ownFullscreen = useRef(false);
+  /** 五声律坊保持原来的大律盘：不进一屏画布，照常往下排。 */
+  const unscaled = activeView === "lab";
 
   useLayoutEffect(() => {
     const outer = outerRef.current;
     if (!outer) return;
     // 同步量：后台标签页里 requestAnimationFrame 不跑，第一次就会量不到。
     const measure = () => {
-      {
-        const width = outer.clientWidth;
-        if (window.innerWidth <= 880 || !width) { setFit(null); return; }
-        const box = scrollBoxOf(outer);
-        const boxTop = box ? box.getBoundingClientRect().top - box.scrollTop : -window.scrollY;
-        const top = outer.getBoundingClientRect().top - boxTop;
-        const height = box ? box.clientHeight : window.innerHeight;
-        const avail = Math.max(360, height - top - (projecting ? 10 : 16));
-        const scale = Math.min(1.9, Math.max(0.6, Math.min(width / CANVAS_W, avail / CANVAS_H)));
-        const next = { scale, width: width / scale, minHeight: avail / scale };
-        setFit((current) => (current && Math.abs(current.scale - next.scale) < 1e-3 && Math.abs(current.width - next.width) < 0.5 && Math.abs(current.minHeight - next.minHeight) < 0.5 ? current : next));
-      }
+      const width = outer.clientWidth;
+      if (unscaled || window.innerWidth <= 880 || !width) { setFit(null); return; }
+      const box = scrollBoxOf(outer);
+      const boxTop = box ? box.getBoundingClientRect().top - box.scrollTop : -window.scrollY;
+      const top = outer.getBoundingClientRect().top - boxTop;
+      const height = box ? box.clientHeight : window.innerHeight;
+      const avail = Math.max(360, height - top - (projecting ? 10 : 16));
+      const scale = Math.min(1.9, Math.max(0.6, Math.min(width / CANVAS_W, avail / CANVAS_H)));
+      const next = { scale, width: width / scale, minHeight: avail / scale };
+      setFit((current) => (current && Math.abs(current.scale - next.scale) < 1e-3 && Math.abs(current.width - next.width) < 0.5 && Math.abs(current.minHeight - next.minHeight) < 0.5 ? current : next));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(outer);
     window.addEventListener("resize", measure);
     return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
-  }, [projecting]);
+  }, [projecting, unscaled]);
 
   useLayoutEffect(() => {
     const inner = innerRef.current;
