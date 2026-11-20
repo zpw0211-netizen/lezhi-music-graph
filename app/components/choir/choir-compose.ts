@@ -72,7 +72,7 @@ export function blankWork(ensemble: EnsembleId = "duet", meter: Meter = "2/4", b
  * The rest of a bar from beat `from` as rests a score can draw: a whole beat (a dotted quarter in 3/8 and 6/8)
  * wherever one starts on the beat, half beats to reach it.
  */
-function restsFor(from: number, to: number, meter: Meter): MelodyNote[] {
+export function restsFor(from: number, to: number, meter: Meter): MelodyNote[] {
   const beat = meter.endsWith("/8") ? 1.5 : 1;
   const rests: MelodyNote[] = [];
   let at = from;

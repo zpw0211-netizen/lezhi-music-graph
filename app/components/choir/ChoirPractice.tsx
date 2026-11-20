@@ -223,7 +223,7 @@ export function ChoirPractice({ piece, playerKey, notation, preferVocal, storeKe
         <p className="choir-step-title"><b>我唱</b><span>先选好自己的声部</span></p>
         <div className="choir-chips" role="radiogroup" aria-label="我的声部">
           {piece.parts.map((item) => <button key={item.index} type="button" role="radio" aria-checked={item.index === myPart} className={item.index === myPart ? "is-active" : ""} onClick={() => setPart(item.index)}>
-            {item.label}<small>{item.sung ? "有范唱" : "钢琴示范"}</small>
+            {item.label}<small>{item.sung ? "有范唱" : piece.colors?.[item.index]?.timbre === "guitar" ? "木吉他示范" : "钢琴示范"}</small>
           </button>)}
         </div>
       </div>
