@@ -13,6 +13,8 @@ export type BookRecord = {
   coverArt?: boolean;
   /** Units 1..n (or just the listed unit orders) have an illustration at public/art/units/<key>-u<n>.webp. */
   unitArt?: number | number[];
+  /** Works with their own lesson illustration: 作品名（带书名号）→ 本册作品 id; the picture is public/art/works/<key>/<id>.webp (上课模式导入、问题墙、小结页). */
+  workArt?: Record<string, string>;
   fullGraphPosition?: { x: number; y: number };
   explorerPosition?: { x: number; y: number };
 };

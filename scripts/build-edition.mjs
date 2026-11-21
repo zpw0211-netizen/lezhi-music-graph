@@ -44,6 +44,7 @@ for (const { key } of primary.books) {
   await rm(path.join(work, "public", "art", `${key}.webp`), { force: true });
   await rm(path.join(work, "public", "art", "shelf", `${key}.webp`), { force: true });
   await rm(path.join(work, "public", "media", "scores", key), { recursive: true, force: true });
+  await rm(path.join(work, "public", "art", "works", key), { recursive: true, force: true });
   for (const dir of ["books", "evidence"]) await rm(path.join(work, "public", "data", dir, `${key}.json`), { force: true });
 }
 const unitArtDir = path.join(work, "public", "art", "units");

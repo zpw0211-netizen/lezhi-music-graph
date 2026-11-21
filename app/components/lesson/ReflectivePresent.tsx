@@ -20,12 +20,13 @@ import { SKIN_NAMES, SKIN_SLOTS, isSkinKey, skinOf, type SkinKey } from "../../l
 import { REGULAR_STAGES, regularScript } from "../../lib/lesson/regular";
 import { STANDARD } from "../../lib/lesson/curriculum";
 import { EDITION } from "../../lib/app/books";
+import { workArtPath } from "../../lib/app/unit-art";
 
 type ScoreAsset = { url: string; title?: string };
 type Question = { id: string; prompt: string; options: string[]; answer: string };
 // art：这一页右侧的课件插画（public/art/lesson/<art>.webp，人教版由 editions/renjiao 覆盖成剪纸风格的同名图）。
 type Slide = { key: string; stage: StageKey; step: string; title: string; steps: number; art?: string; render: (step: number) => ReactNode };
-// skin：老师在备课里指定的主题图；"none" 是不用主题图，不写就按本课数据自动选。
+// skin：老师在备课里指定的主题图；"none" 是不用主题图，不写就自动：有本课专属插图用专属插图，没有按本课数据选主题图。
 type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string>; skin?: SkinKey | "none" };
 
 const STORAGE_PREFIX = "yapu-reflective:";
@@ -141,7 +142,10 @@ export function ReflectivePresent({
   const [model, setModelState] = useState<Model>(readModel);
   const kind = saved.kind ?? lessonKindOf(mode, workType, workName);
   const autoSkin = useMemo(() => skinOf({ workName, workType, kind, facts }), [facts, kind, workName, workType]);
-  const skin = saved.skin === "none" ? null : isSkinKey(saved.skin) ? saved.skin : autoSkin;
+  const workArt = workArtPath(bookKey, workName);
+  const skin = saved.skin === "none" ? null : isSkinKey(saved.skin) ? saved.skin : workArt ? null : autoSkin;
+  // 导入、问题墙、小结三页右侧的图：老师选的主题图 > 本课专属插图 > 自动主题图；都没有就用通用插画。
+  const slotArt = skin ? `art/skin/${skin}.webp` : saved.skin === "none" ? null : workArt;
   const script = useMemo(() => reflectiveScript({ workName, kind, grade, facts }), [facts, grade, kind, workName]);
   const regular = useMemo(() => regularScript({ workName, kind, grade, facts, melody: melody?.[0] }), [facts, grade, kind, melody, workName]);
   const stages = model === "regular" ? REGULAR_STAGES : STAGES;
@@ -512,7 +516,7 @@ export function ReflectivePresent({
 
   // 进入上课模式就把各页要用的图（谱例、情境图、主题图）先取回来，翻到那一页时图已在手，版面不会先矮后高地跳一下。
   const preloadList = [artUrl, ...scores.map((score) => assetUrl(score.url)),
-    ...slides.map((item) => (item.art ? assetUrl(skin && SKIN_SLOTS.has(item.art) ? `art/skin/${skin}.webp` : `art/lesson/${item.art}.webp`) : ""))].filter(Boolean).join("\n");
+    ...slides.map((item) => (item.art ? assetUrl(slotArt && SKIN_SLOTS.has(item.art) ? slotArt : `art/lesson/${item.art}.webp`) : ""))].filter(Boolean).join("\n");
   const preloaded = useRef<HTMLImageElement[]>([]);
   useEffect(() => {
     preloaded.current = [...new Set(preloadList.split("\n").filter(Boolean))].map((url) => { const image = new Image(); image.decoding = "async"; image.src = url; return image; });
@@ -563,7 +567,7 @@ export function ReflectivePresent({
         </label>
         <label>主题图
           <select value={saved.skin ?? "auto"} onChange={(event) => update({ skin: event.target.value === "auto" ? undefined : event.target.value as SkinKey | "none" })}>
-            <option value="auto">{autoSkin ? `自动（${SKIN_NAMES[autoSkin]}）` : "自动（通用插画）"}</option>
+            <option value="auto">{workArt ? "自动（本课插图）" : autoSkin ? `自动（${SKIN_NAMES[autoSkin]}）` : "自动（通用插画）"}</option>
             <option value="none">不用主题图</option>
             {(Object.keys(SKIN_NAMES) as SkinKey[]).map((key) => <option key={key} value={key}>{SKIN_NAMES[key]}</option>)}
           </select>
@@ -590,8 +594,8 @@ export function ReflectivePresent({
       </aside>
     </div>}
     <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}-${model}`} ref={stageRef}>
-      {slide.art && (skin && SKIN_SLOTS.has(slide.art)
-        ? <Picture className="reflect-art is-skin" src={assetUrl(`art/skin/${skin}.webp`)} art={skin} />
+      {slide.art && (slotArt && SKIN_SLOTS.has(slide.art)
+        ? <Picture className="reflect-art is-skin" src={assetUrl(slotArt)} art={skin ?? `work-${workId}`} />
         : <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />)}
       <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
     </div>

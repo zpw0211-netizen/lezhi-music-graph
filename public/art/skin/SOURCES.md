@@ -5,3 +5,4 @@
 
 已验收使用：folk-han、folk-grassland、folk-plateau、folk-xinjiang、folk-southwest、folk-world、ins-erhu、ins-piano、ins-guoyue、ins-orchestra、opera-jingju、opera-stage、solemn。
 2026-11-15 验收补入 17 张单件乐器：ins-guzheng、ins-pipa、ins-dizi、ins-suona、ins-matouqin、ins-guqin、ins-bianzhong、ins-sheng、ins-violin、ins-cello、ins-flute、ins-trumpet、ins-clarinet、ins-guitar、ins-melodica、ins-recorder、ins-percussion。
+2026-11-22 验收补入 30 张题材图（任务 T148，三轮验收，见 T148-skin-art-more.review1–3.md）：nature-spring、nature-rain、nature-snow、nature-night、nature-autumn、animals-farm、animals-wild、birds、insects、kids-games、school、family-home、labor、newyear、hometown、red-history、new-era、march-band、poem-ancient、western-dance、folk-coast、folk-korea、fairytale、myth-monkey、train、boat-lake、clock-time、quyi-teahouse、dream-future、together。
