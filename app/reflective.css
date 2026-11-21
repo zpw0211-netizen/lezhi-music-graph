@@ -143,8 +143,8 @@
 /* 难点突破页给外框一个确定的宽度：否则外框跟着谱面缩、谱面又按外框算大小，两边互相追着一像素一像素地收，画面会抖。 */
 .reflect .present-fit:has(.is-practice) { width: 100%; }
 .reflect-wide.is-practice { width: min(1560px, 100%); margin-inline: auto; }
-/* 右下角的「工具」圆钮会压住谱子最右一小节：两边各让出一点。 */
-@media (min-width: 641px) { .reflect-wide.is-practice { width: min(1560px, calc(100% - 96px)); } }
+/* 右下角的「工具」圆钮会压住谱子最右一小节：只在右边让出一点（两边都让会让短歌从一行 8 小节掉到 4 小节）。 */
+@media (min-width: 641px) { .reflect-wide.is-practice { padding-right: 36px; } }
 /* 难点突破：长谱子（如国歌）不再整页缩小，谱面在自己的框里上下滚动，播放时跟着当前音走 */
 .reflect-wide.is-practice .melody-score { max-height: calc(100vh - 380px); min-height: 180px; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; }
 
