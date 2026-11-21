@@ -97,6 +97,7 @@
 .choir-figure { display: inline-flex; align-items: center; justify-content: space-around; gap: 6px; width: 100%; }
 .choir-digit { position: relative; display: inline-block; padding: 9px 1px 10px; font: 600 clamp(18px, 1.9vw, 24px)/1 var(--serif, "Songti SC", serif); }
 .choir-digit.is-eighth::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: 7px; border-bottom: 2px solid currentColor; }
+.choir-digit.is-sixteenth::before { content: ""; position: absolute; left: -2px; right: -2px; bottom: 2.5px; border-bottom: 2px solid currentColor; }
 .choir-dots { position: absolute; left: 50%; font-style: normal; font-size: 9px; line-height: 1; letter-spacing: -1px; transform: translateX(-50%); }
 .choir-dots.is-high { top: 0; }
 .choir-dots.is-low { bottom: -1px; }
@@ -211,7 +212,7 @@
 }
 
 /* ===== 一屏画布（课本合唱）：左边选歌、声部、分步练、音准，右边合唱谱占满整列；谱子长了在框里跟着唱的位置走。 ===== */
-.is-fitted .choir-lab { padding-bottom: 12px; }
+.is-fitted .choir-lab { padding-bottom: 2px; }
 .is-fitted .choir-intro { margin: 4px 0 10px; }
 .is-fitted .choir-lab:has(> .choir-score) { display: grid; grid-template-columns: 410px minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); gap: 10px 18px; align-content: stretch; }
 .is-fitted .choir-lab:has(> .choir-score) > .choir-intro { grid-column: 1 / -1; margin-bottom: 0; }
@@ -253,7 +254,7 @@
 .is-fitted .choir-compose.is-write { grid-template-columns: minmax(0, 1fr) 470px; grid-template-areas: "settings switch" "editor work" "editor gallery"; grid-template-rows: auto auto 1fr; }
 .is-fitted .choir-compose.is-write > .choir-compose-settings { grid-area: settings; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 8px 14px; }
 .is-fitted .choir-compose.is-write > .choir-compose-switch { grid-area: switch; }
-.is-fitted .choir-compose.is-write > .choir-editor { grid-area: editor; padding: 12px 16px; }
+.is-fitted .choir-compose.is-write > .choir-editor { grid-area: editor; gap: 10px; padding: 12px 16px; }
 .is-fitted .choir-compose.is-write > .choir-work { grid-area: work; align-self: start; padding: 12px 16px; }
 .is-fitted .choir-compose.is-write > .choir-gallery { grid-area: gallery; align-self: start; }
 .is-fitted .choir-compose.is-write > :is(.choir-setup, .choir-mic, .choir-score) { display: none; }
@@ -284,10 +285,15 @@
 .is-fitted :is(.choir-compose, .canon) .choir-mic .choir-trace { height: 88px; }
 .is-fitted :is(.choir-compose, .canon) .choir-setup .choir-steps button { min-height: 34px; font-size: 14px; }
 /* 写合唱的工具区压扁：节奏一行排完，音高台阶矮一点，空的提示行不占地方。 */
-.is-fitted .choir-compose .choir-tools { gap: 8px; }
-.is-fitted .choir-compose .compose-durations { flex-wrap: nowrap; align-items: center; }
-.is-fitted .choir-compose .compose-divider { flex: 0 0 1px; width: 1px; height: 28px; margin: 0 4px; background: var(--rhythm-line); }
+.is-fitted .choir-compose .choir-tools { gap: 6px; }
+/* 节奏分两排：上排时值，下排节奏卡。 */
+.is-fitted .choir-compose .compose-cards { flex-wrap: nowrap; }
+.is-fitted .choir-compose .compose-cards.is-long { flex-wrap: wrap; }
+.is-fitted .choir-compose :is(.compose-duration, .compose-card) { min-height: 34px; }
 .is-fitted .choir-compose .choir-palette .compose-block { padding-top: calc(4px + var(--step, 0) * 8px); }
+/* 音域宽时十几个音块一排放下，不折成两排把编辑卡撑出一屏。 */
+.is-fitted .choir-compose .choir-palette { flex-wrap: nowrap; gap: 6px; }
+.is-fitted .choir-compose .choir-palette .compose-block { flex: 1 1 0; min-width: 0; padding-bottom: 6px; }
 .is-fitted .choir-compose .compose-message:empty { display: none; }
 .is-fitted .choir-compose .choir-voice-tabs button { min-height: 38px; }
 .is-fitted .choir-compose .choir-tools { grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 18px; }
