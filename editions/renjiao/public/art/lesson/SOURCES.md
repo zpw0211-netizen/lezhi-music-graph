@@ -77,18 +77,51 @@ Keep exactly four schoolchildren and keep every one visible. Do not add objects,
 
 ## stage-conflict.webp
 
-- 风格参照：E:/Projects/.tmp/pep-art/home-sprouts.webp；已通过样图 E:/Projects/.tmp/lesson-art/renjiao/stage-motivate.webp、stage-construct.webp
-- 原始生成 PNG：E:/codex-state/codex-home/generated_images/01a14fcb-723e-7362-b669-fd64df9b1f96/exec-84515d2e-936e-4e00-bd89-4b41cf356757.png
-- 保留 PNG：E:/Projects/.tmp/lesson-art/renjiao/raw/stage-conflict.png
-- 最终 WebP：E:/Projects/.tmp/lesson-art/renjiao/stage-conflict.webp（1600×900，27,532 字节）
-- 生成与导出：image_gen 出图后，Sharp 裁取右侧场景、缩放至右侧 640px 版心并渐隐左缘；WebP quality=70、effort=6。
-- 重画次数与原因：2 次；首次成功生成误加突出弦乐器，第二版又缺少装饰性音乐提示，第三版移除乐器并加入少量装饰剪纸音符和抽象疑问声带。
+- 重画：T143（2026-11-20/21），Codex 内置 image_gen；Claude 验收通过（T143 review1–4）。以下为 Codex 报告中本图的记录与提示词，原样照录；固定风格段、规格段见本文件开头的 2026-11-20 修订版。
 
-### 完整提示词（实际提交）
 
-~~~text
-Wide 16:9 1600x900 Chinese layered paper-cut illustration in the same handmade contemporary style as the approved Renjiao sample: stacked coloured card, crisp edges, visible fibres, soft paper shadows, vermilion, yellow, blue, fresh green, teal and cream. At the far right, two small Chinese primary-school children in plain clothes in profile; one sits with cheek resting on one hand, thoughtfully puzzled and curious, while the other listens. Add only a few small decorative cut-paper note shapes and two abstract curling sound ribbons; one curl suggests a question but is not a punctuation mark. No instrument, furniture, plants or architecture. Keep every object and shadow beyond x=68%; left 68% is uninterrupted warm cream #FAF7EE with faint fibre only. No text, symbols that look like writing, real musical notation, logos or watermark.
-~~~
+- **依据与规格：**依照 `editions/renjiao/public/art/lesson/SOURCES.md` 的原版 16:9 课堂图规格，导出 1600×900；左半保留暖色素纸。T141 重写段要求两名孩子组团放在最右侧40%，侧面或背面、脚贴底边，并在两人之间放一条卷曲纸带。
+- **旧图/新图：**原图 1600×900、27,532 B；重画图 1600×900、73,576 B；最终原始生成稿 1672×941。共 4 轮：首轮生成、两轮人物比例修正、一轮脚底贴边修正。
+- **最终人物测量：**原始出图按颜色区域估计，男孩约占画高 27.7%，女孩约占 26.9%，低于三分之一并接近四分之一；两人完整坐姿，鞋底接触下边缘且没有截掉脚部。两人均为侧影，男孩与女孩的侧脸眼睛/眉毛清楚。左侧约三分之二保持素纸；右侧只有两名孩子和一条卷曲纸带。
+- **模板自检：**1) 纸层、纸纤维、切边与留用参考一致；2) 暖奶油、红、黄、蓝绿配色一致；3) 无文字、水印、伪文字；4) 两名孩子约27–28%、完整入框，原尺寸裁脸已检查；5) 课堂情境无需乐器；6) 左半素纸是版式要求，右侧组团贴底，不存在悬空近景正脸；7) 听音停顿与卷曲纸带对应 T141 重写段。无裁切、压字或变形。
+- **原图大小局部检查：**男孩侧脸 `E:\Projects\.tmp\pep-redraw\work\faces\stage-conflict-boy-profile.png`（255×230）；女孩侧脸 `E:\Projects\.tmp\pep-redraw\work\faces\stage-conflict-girl-profile.png`（235×230）；下缘鞋部 `E:\Projects\.tmp\pep-redraw\work\faces\stage-conflict-feet.png`（610×151）。裁片来自原始 1672×941 出图、未放大，已查看眼睛和鞋底。
+
+**统一固定风格段：**
+
+```text
+Style: layered paper-cut art — a real handmade paper sculpture photographed in soft, even daylight. EVERYTHING in the scene is cut paper, including sky, clouds, mountains, water, trees, rocks and people: many stacked layers of coloured card with crisp hand-cut edges, gentle cast shadows between layers, visible paper-fibre texture. Delicate Chinese window-flower (chuanghua) cut-out patterns inside clouds, sun, leaves, feathers and decorative ribbons. Musical notes and sound are shown as flowing cut-paper ribbons with small cut-out notes.
+Palette: vermilion #E4573D, warm yellow #F2C14E, sky blue #8EC5E6, fresh greens #4FA66A and #2E8B57, deep teal #1F6E78, cream #FFF6E5. Bright, contemporary, joyful, warm; not retro, not woodblock, not ink-wash.
+People: two or three Chinese primary-school children, seen from behind or in profile, simple everyday clothes, small in the scene: each person at most one third of the picture height, part of the landscape rather than a portrait; adults such as teachers or parents also seen from behind or in profile; every visible profile or three-quarter face shows one clear small dark eye and an eyebrow, never a blank face; no close-up faces.
+Instruments must be drawn with correct real-world structure (string count, body shape, how it is held).
+Never: text, letters, numbers, pseudo-writing, watermark, logo, seal stamps, the textbook's cartoon characters (麦芽, 谷风, 麒麒, 小九, 伶伦), cartoon mascots, emoji, clip art, 3D CGI render, photorealistic people, glossy plastic, neon, glow effects, lens flare, bokeh, sci-fi, network lines, woodblock print, ink-wash painting.
+```
+
+**首轮完整提示词（固定风格段 + 场景段）：**
+
+```text
+Format: wide 16:9 lesson illustration, final delivery 1600x900. Use the first reference image only to understand the original page layout and plain warm paper; redesign the children and scene scale. Use the second reference image only for the layered handmade paper-cut craft, paper fibre, soft shadows, cutout edges and palette.
+Scene: Keep two Chinese primary-school children in a compact group entirely within the far-right 40% of the canvas (x=60% to 100%), seen from the side or back rather than close frontal faces. One child pauses to listen thoughtfully and the other listens with them. Their feet meet the bottom edge while remaining fully visible; show each child head-to-foot with all limbs inside the frame. Place one single curled paper ribbon between them to suggest a listening pause. Leave the entire left half as uninterrupted plain warm cream paper #FAF7EE with only faint paper fibre.
+Must include: exactly two children in side or back view; a quiet listening pause; exactly one curled paper ribbon between them.
+Mood: curious and reassured.
+Scale and framing: each child should occupy about one quarter of the full image height, target 22–25%, never above one third. The children must be small full-body figures and fully inside the frame, with no clipped heads, hands, legs or feet. If a profile is visible, give it one clear small dark eye and eyebrow. Keep every object and shadow to the right of x=60%; preserve at least the entire left half as clean, empty warm paper.
+Composition: two seated children seen from side/back at far right, feet touching the lower edge but not cut off; their heads and bodies spaced clearly apart. Keep the single ribbon between them small and gentle, not shaped like a question mark. No other music notes, symbols, objects or decoration.
+No furniture, plants, architecture, instruments, text, letters, numbers, pseudo-writing, logos, watermark, seal, symbols resembling punctuation or writing. Maintain the exact layered Chinese paper-cut style and palette from the fixed style prompt.
+```
+**第 1 次尺寸修正：**
+
+```text
+Edit the supplied wide paper-cut illustration. Preserve its exact 16:9 composition, warm paper texture, palette, simple right-side listening scene and left plain-paper area. The two children are much too large. Scale each child down to about 58% of their current size, so each complete seated child measures 22–25% of the full canvas height (never above one third). Keep both children at the far right, with feet touching the bottom edge but still wholly visible. Show full seated bodies from hair to shoes, no clipping; keep the boy in visible side profile with one small clear eye and eyebrow and the girl from the side or back. Preserve their calm listening pause. Keep exactly one small curled paper ribbon between them; keep it a gentle curved strip, not a question mark. Preserve the entire left half as uninterrupted warm cream paper. Do not add any new object or decoration. Maintain crisp layered cut-paper shapes, visible paper fibre, soft shadows and the reference palette; no text, notes, watermark or logos.
+```
+**第 2 次比例修正：**
+
+```text
+Edit the supplied image and make a large, unmistakable scale correction: reduce BOTH children to one half of their current height and width, keeping their bottom position at the lower canvas edge. At 16:9 final size 1600x900, from head to the lowest shoe each child must be only about 210–225 pixels tall (23–25% of canvas height), and never exceed 300 pixels. They must still be complete seated figures with both legs and shoes fully inside the frame, shoes touching but not clipped by the bottom edge. Do not enlarge the curled ribbon. Preserve two children in profile/back view, with a clear small eye and eyebrow on the visible boy profile, and a gentle listening expression. Keep the figures compact and separated at the far right. Preserve the exact wide 16:9 framing, the single small curled paper ribbon between them, the original warm cream paper field across the entire left half, paper-cut layers, paper grain and soft shadows. Add or change nothing else. No text, notes, punctuation-like shapes, props, watermark or logo.
+```
+**第 3 次脚底定位修正：**
+
+```text
+Keep this image otherwise unchanged. In the far-right scene, move the two complete seated children slightly downward so their shoe soles meet the bottom edge of the canvas. Do not crop any part of their bodies or shoes: keep every shoe fully visible just inside the bottom boundary. Preserve each child's current small scale (about one quarter of the canvas height, never above one third), side profiles and visible eyes, quiet listening pose, and the one small curled paper ribbon between them. Keep the full left half uninterrupted warm cream paper. Do not change the 16:9 framing, palette, paper-cut craft, or add anything.
+```
 
 ## stage-transfer.webp
 
