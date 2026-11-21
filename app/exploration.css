@@ -117,7 +117,7 @@
 }
 
 /* 页面分块与律坊数据载入时的占位，留在面板里，标题与标签不再被推动。 */
-.exploration-panel > .app-view-status { display: grid; min-height: min(640px, calc(100dvh - 240px)); place-items: center; align-content: center; max-width: none; margin: 0; border: 0; background: transparent; color: var(--ink-2, #44544B); }
+.exploration-panel > .app-view-status, .exploration-canvas > .app-view-status { display: grid; min-height: min(640px, calc(100dvh - 240px)); place-items: center; align-content: center; max-width: none; margin: 0; border: 0; background: transparent; color: var(--ink-2, #44544B); }
 
 /* 手机上探索页两侧不再留双层边距。 */
 @media (max-width: 520px) {

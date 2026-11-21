@@ -317,3 +317,7 @@
 .is-fitted .canon > .canon-map .choir-step-title { margin-bottom: 6px; }
 .is-fitted .canon > .choir-pick .choir-chips small { display: none; }
 .is-fitted .canon > .choir-pick .choir-chips button { min-height: 32px; padding-inline: 12px; }
+/* 曲目多的版本（花城一册七首、高中九首）：没选中的曲目不写声部数，排得更密；再多就在列表里滚动，不把下面的卡片挤出一屏。 */
+.is-fitted .choir-lab > .choir-pick .choir-chips button:not(.is-active) small { display: none; }
+.is-fitted .choir-lab > .choir-pick .choir-chips button { padding-inline: 10px; font-size: 13px; }
+.is-fitted .choir-lab > .choir-pick .choir-chips { max-height: 140px; overflow-y: auto; align-content: flex-start; }
