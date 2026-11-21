@@ -1,9 +1,10 @@
 // 核心知识点图：一册书里“知识点—作品”的网。
 // 节点只有三种：要素（节拍、节奏、速度…）、知识点（教材里的概念、术语、体裁、演唱演奏形式）、作品。
-// 连线全部来自教材数据（作品的拍号、速度、曲式…指向哪个知识点），另加从已转写乐谱里认出的节奏型（标为“谱面”）。
+// 连线来自教材数据（作品的拍号、速度、曲式…指向哪个知识点）、从已转写乐谱里认出的节奏型（标为“谱面”），以及各版本共用的乐理关系表（kmap-relations.ts）。
 import { matchesBookScope } from "../app/unit-data";
 import type { CanonicalGraph, Entity, Triple } from "../app/types";
 import type { Melody, MelodyNote } from "../lesson/jianpu";
+import { KMAP_RELATIONS } from "./kmap-relations";
 
 export type KGroup = "meter" | "rhythm" | "tempo" | "dynamics" | "mode" | "melody" | "harmony" | "form" | "genre" | "opera" | "perform" | "sign";
 export const GROUPS: Record<KGroup, { name: string; hue: "pine" | "ochre" | "brick" | "ink" | "teal" }> = {
@@ -45,7 +46,24 @@ export type KMap = { nodes: KNode[]; edges: KEdge[]; works: Map<string, KWork>; 
 
 const KTYPES = new Set(["音乐概念", "节奏型", "拍号", "速度术语", "音乐体裁", "表演形式"]);
 // 教材里同一个知识点的两种写法：作品写 2/4，知识页讲“二拍子”。
-const ALIAS: Record<string, string> = { "2/4": "二拍子", "3/4": "三拍子", "4/4": "四拍子", "6/8": "六拍子", "ABA三部曲式": "三部曲式", "两段体": "二段体" };
+const ALIAS: Record<string, string> = {
+  "2/4": "二拍子", "2/2": "二拍子", "四二拍": "二拍子", "四二拍子": "二拍子",
+  "3/4": "三拍子", "3/8": "三拍子", "3/2": "三拍子", "四三拍": "三拍子", "八三拍": "三拍子",
+  "4/4": "四拍子", "四四拍": "四拍子",
+  "6/8": "六拍子", "6/4": "六拍子", "八六拍": "六拍子",
+  "1/4": "一拍子",
+  "变拍子": "变换拍子", "ABA三部曲式": "三部曲式", "两段体": "二段体",
+};
+// 一首作品写了几个拍号（“4/4、2/4”）：拆开分别连到各个拍子上。
+const METER_LIST = /^\d+\/\d+(?:\s*[、，,]\s*\d+\/\d+)+$/;
+const SYNONYMS = new Map<string, string[]>();
+for (const [a, predicate, targets] of KMAP_RELATIONS) {
+  if (predicate !== "又称") continue;
+  for (const b of Array.isArray(targets) ? targets : [targets]) {
+    SYNONYMS.set(a, [...(SYNONYMS.get(a) ?? []), b]);
+    SYNONYMS.set(b, [...(SYNONYMS.get(b) ?? []), a]);
+  }
+}
 const DYNAMICS = /^(?:p{1,3}|f{1,3}|mf|mp|sf|sfz|fp)(?:（[^）]*）)?$/;
 const DEF_PREDICATES = ["定义为", "含义", "特点", "作用", "记法", "强弱规律", "典型节奏"];
 // 只是谱面上的字样或太宽泛的总称，不单独成点。
@@ -152,20 +170,25 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
   }
   const hubNames = new Map((Object.keys(GROUPS) as KGroup[]).map((group) => [GROUPS[group].name, group]));
   const nodeIdOf = new Map<string, string>(); // 实体 id → 节点 id
+  const meterLists = new Map<string, string[]>(); // 实体 id → 拆开的拍号
+  const nodeNamed = new Map<string, KNode>();
   for (const entity of candidates) {
     if (SKIP.has(entity.name)) continue;
+    if (METER_LIST.test(entity.name)) { meterLists.set(entity.id, entity.name.split(/\s*[、，,]\s*/)); continue; }
     const hub = hubNames.get(entity.name);
     if (hub) { nodeIdOf.set(entity.id, hubId(hub)); continue; }
     const target = canon(entity);
     const group = groupOf(target);
     if (!group) continue;
-    nodeIdOf.set(entity.id, target.id);
-    let node = nodes.get(target.id);
+    // 全套教材都只写 2/4、2/2 的版本，点的名字仍叫“二拍子”，几种写法并成一个点。
+    const name = ALIAS[target.name] ?? target.name;
+    let node = nodes.get(target.id) ?? nodeNamed.get(name);
     if (!node) {
-      // 全套教材都只写 2/4 的版本，点的名字仍叫“二拍子”。
-      node = { id: target.id, name: ALIAS[target.name] ?? target.name, kind: "point", group, core: false, aliases: [], defs: [], books: [...(target.bookKeys ?? [])], works: [] };
+      node = { id: target.id, name, kind: "point", group, core: false, aliases: [], defs: [], books: [...(target.bookKeys ?? [])], works: [] };
       nodes.set(target.id, node);
+      nodeNamed.set(name, node);
     }
+    nodeIdOf.set(entity.id, node.id);
     if (node.name !== entity.name && !node.aliases.includes(entity.name)) node.aliases.push(entity.name);
     for (const key of entity.bookKeys ?? []) if (!node.books.includes(key)) node.books.push(key);
   }
@@ -177,6 +200,23 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     if (!edges.has(key)) edges.set(key, { a, b, label, source });
   };
   const parents = new Map<string, string[]>(); // 知识点 → 上级知识点
+  const pointByName = new Map<string, KNode>();
+  for (const node of nodes.values()) if (node.kind === "point" && !pointByName.has(node.name)) pointByName.set(node.name, node);
+  // 作品连到某个拍子：本册没有这个点就新建一个。
+  const linkMeter = (work: KWork, meter: string, source: KEdge["source"]) => {
+    const name = ALIAS[meter];
+    if (!name || !/拍子$/.test(name)) return;
+    let node = pointByName.get(name);
+    if (!node) {
+      node = { id: `kp:${name}`, name, kind: "point", group: "meter", core: false, aliases: [meter], defs: [], books: [bookKey], works: [] };
+      nodes.set(node.id, node);
+      pointByName.set(name, node);
+    }
+    if (!node.aliases.includes(meter) && node.name !== meter) node.aliases.push(meter);
+    if (node.works.includes(work.id)) return;
+    link(work.id, node.id, "拍号", source);
+    node.works.push(work.id);
+  };
   for (const relation of relations) {
     const subject = byId.get(relation.subject);
     if (!subject) continue;
@@ -185,6 +225,12 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     if (from && relation.literal && DEF_PREDICATES.includes(relation.predicate)) {
       const node = nodes.get(from)!;
       if (!node.defs.some((def) => def.text === relation.literal)) node.defs.push({ label: relation.predicate === "定义为" ? "定义" : relation.predicate, text: relation.literal });
+    }
+    const meters = relation.objectId ? meterLists.get(relation.objectId) : undefined;
+    if (meters) {
+      const work = works.get(subject.id);
+      if (work) for (const meter of meters) linkMeter(work, meter, "text");
+      continue;
     }
     const to = relation.objectId ? nodeIdOf.get(relation.objectId) : undefined;
     if (!to) continue;
@@ -199,23 +245,10 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     }
   }
   // 谱面里认出的拍号和节奏型。
-  const pointByName = new Map([...nodes.values()].filter((node) => node.kind === "point").map((node) => [node.name, node]));
   for (const work of works.values()) {
     const melodies = melodiesOf(work.name);
     if (!melodies.length) continue;
-    for (const meter of new Set(melodies.flatMap((melody) => melody.meter.split(/[、，,\s]+/)))) {
-      const name = ALIAS[meter];
-      if (!name || !/拍子$/.test(name)) continue;
-      let node = pointByName.get(name);
-      if (!node) {
-        node = { id: `kp:${name}`, name, kind: "point", group: "meter", core: false, aliases: [meter], defs: [], books: [bookKey], works: [] };
-        nodes.set(node.id, node);
-        pointByName.set(name, node);
-      }
-      if (node.works.includes(work.id)) continue;
-      link(work.id, node.id, "拍号", "score");
-      node.works.push(work.id);
-    }
+    for (const meter of new Set(melodies.flatMap((melody) => melody.meter.split(/[、，,\s]+/)))) linkMeter(work, meter, "score");
     for (const pointName of SCORE_POINTS) {
       const entity = nameToEntity.get(pointName);
       const id = entity && inBook(entity) ? nodeIdOf.get(entity.id) : undefined;
@@ -223,6 +256,24 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
       link(work.id, id, "谱面出现", "score");
       const node = nodes.get(id)!;
       if (!node.works.includes(work.id)) node.works.push(work.id);
+    }
+  }
+  // 知识点之间的乐理关系（各版本共用的表）：两头都在本册才连。
+  const pointNamed = new Map<string, KNode>();
+  for (const node of nodes.values()) {
+    if (node.kind !== "point") continue;
+    for (const name of [node.name, ...node.aliases]) if (!pointNamed.has(name)) pointNamed.set(name, node);
+  }
+  // 表里“又称”的两个名字互为别名：本册只写了其中一个，另一个名字下的关系也算它的。
+  const findPoint = (name: string) => pointNamed.get(name) ?? (SYNONYMS.get(name) ?? []).map((other) => pointNamed.get(other)).find(Boolean);
+  for (const [from, predicate, targets] of KMAP_RELATIONS) {
+    const a = findPoint(from);
+    if (!a) continue;
+    for (const target of Array.isArray(targets) ? targets : [targets]) {
+      const b = predicate === "又称" ? pointNamed.get(target) : findPoint(target);
+      if (!b || a === b) continue;
+      link(a.id, b.id, predicate, "text");
+      if (predicate === "包含") parents.set(b.id, [...(parents.get(b.id) ?? []), a.id]);
     }
   }
   // 没有上级知识点的，挂到所属要素上。
@@ -241,6 +292,15 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
       node.core = true;
       coreCount += 1;
     }
+  }
+  // 核心知识点下面分出的知识点（五声调式→宫商角徵羽）本册也讲到了，一起显示；每册最多显示到 44 个，免得太乱。
+  const theoryChildren = points
+    .filter((node) => !node.core && (parents.get(node.id) ?? []).some((parent) => nodes.get(parent)?.core))
+    .sort((a, b) => b.works.length - a.works.length);
+  for (const node of theoryChildren) {
+    if (coreCount >= 44) break;
+    node.core = true;
+    coreCount += 1;
   }
   for (const node of nodes.values()) {
     if (node.kind !== "point") continue;
