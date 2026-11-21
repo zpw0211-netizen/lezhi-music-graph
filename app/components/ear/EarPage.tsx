@@ -11,7 +11,7 @@ import {
   type ChordQuality, type ChordSet, type EarGroup, type EarLevel, type EarOptions, type IntervalSet, type Loudness,
   type ModeClip, type ModeId, type ModeSet, type Question, type SoundNote, type Tone, type UpDown,
 } from "./ear-model";
-import { TIMBRES, availableTimbreSets, playTimbre, preloadTimbres, timbreLabel, timbresIn } from "./ear-timbre";
+import { TIMBRES, availableTimbreSets, playTimbre, preloadTimbres, timbreLabel, timbreSetSummary, timbresIn } from "./ear-timbre";
 
 let currentOut: GainNode | null = null;
 /** 停掉正在响的题目（换关、换设置、离开本页时）。 */
@@ -363,7 +363,7 @@ export function EarPage({ bookKeys }: { bookKeys?: string[] } = {}) {
       </>}
       {level === "timbre" && <Field label="乐器">
         {timbreSets.map((set) => <Chip key={set.id} active={options.timbreSet === set.id} onClick={() => changeOptions({ timbreSet: set.id })}>
-          {set.label}<small>{timbresIn(set.id).map((item) => item.label).join(" ")}</small>
+          {set.label}<small>{timbreSetSummary(set.id)}</small>
         </Chip>)}
         <a className="ear-credit" href={publicAssetUrl("media/timbre/SOURCES.md")} target="_blank" rel="noreferrer">录音来源</a>
       </Field>}
