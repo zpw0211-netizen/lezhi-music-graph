@@ -864,6 +864,9 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} height={staffHeight} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${melody.marks?.[barIndex] ? " has-mark" : ""}${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
         {melody.marks?.[barIndex] && <b className="melody-mark">{melody.marks[barIndex]}</b>}
         {lines.map((line, voice) => {
+          const rowStart = Math.floor(barIndex / barsPerRow) * barsPerRow;
+          const rowEnd = Math.min(melody.bars.length, rowStart + barsPerRow);
+          if (voice > 0 && line.bars.slice(rowStart, rowEnd).flat().every((note) => note.d === 0)) return null;
           const notes = line.bars[barIndex] ?? [];
           const runsByLevel = beamRuns[voice]?.[barIndex] ?? new Map<number, Map<number, BeamRun>>();
           const rendered: ReturnType<typeof renderNote>[] = [];

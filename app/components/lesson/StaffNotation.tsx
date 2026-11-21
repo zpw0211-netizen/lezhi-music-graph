@@ -409,7 +409,9 @@ type SystemProps = {
 };
 
 function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, current, offsets, activePhrase }: SystemProps) {
-  const grand = isGrandStaff(plan);
+  const visibleVoices = lines.map((line, voice) => voice === 0 || !line.bars.slice(start, end).flat().every((note) => note.d === 0));
+  const fullGrandStaff = isGrandStaff(plan);
+  const grand = fullGrandStaff && visibleVoices.every(Boolean);
   const label = labelRoom(lines, plan);
   const signature = keySignature(melody.staffSignature ?? melody.key);
   const meter = meterAt(melody, start);
@@ -445,6 +447,7 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, curr
   // Each voice: place glyphs, then draw.
   const staves: Array<{ above: number; below: number; body: ReactElement[]; lyricY: number }> = [];
   lines.forEach((line, voice) => {
+    if (!visibleVoices[voice]) return;
     const { clef } = plan.placements[voice];
     const rhythm = clef === "percussion";
     const body: ReactElement[] = [];
@@ -511,7 +514,7 @@ function StaffSystem({ melody, lines, plan, start, end, width, scale, grid, curr
     // Staff lines.
     if (rhythm) body.push(<line key="rule" x1={label} x2={endX} y1={SPACE * 2} y2={SPACE * 2} className="staff-rule" />);
     else for (let i = 0; i < 5; i += 1) body.push(<line key={`rule-${i}`} x1={label} x2={endX} y1={i * SPACE} y2={i * SPACE} className="staff-rule" />);
-    if (label && !grand) body.push(<text key="label" x={0} y={SPACE * 2 + 4} className="staff-voice-label">{line.label}</text>);
+    if (label && !fullGrandStaff) body.push(<text key="label" x={0} y={SPACE * 2 + 4} className="staff-voice-label">{line.label}</text>);
 
     // Clef, key signature, time signature.
     const clefX = HEADER_PAD + label;
