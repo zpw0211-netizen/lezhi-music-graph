@@ -234,16 +234,22 @@
 
 /* ===== 一屏画布：标题行收紧；左边写旋律的工具压扁（节奏一行、音高台阶矮一点），右边作品卡不再吸顶。 ===== */
 .is-fitted .compose-lab { padding-bottom: 12px; }
-.is-fitted .compose-intro { padding: 4px 0 8px; }
+.is-fitted .compose-intro { padding: 0 0 6px; }
 .is-fitted .compose-settings { margin-bottom: 10px; padding: 6px 14px; }
 .is-fitted .compose-workbench { gap: 16px; }
 .is-fitted .compose-workbench .compose-stage { position: static; gap: 8px; padding: 16px 20px; }
 .is-fitted .compose-editor { gap: 10px; padding: 16px 22px; }
 .is-fitted .compose-workbench .compose-bar-notes { min-height: 86px; }
 /* 小节排成两行以上（3/4、4/4、x/8 或 8 小节）时每行矮一点，音高台阶也收小，不把编辑卡撑出一屏。 */
-.is-fitted .compose-workbench .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-bar-notes { min-height: 62px; }
-.is-fitted .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-note .compose-figure { transform: translateY(calc((0.5 - var(--step, 0.5)) * 20px)); }
-.is-fitted .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-note .compose-digit { font-size: 28px; }
+.is-fitted .compose-workbench .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-bar-notes { min-height: 56px; }
+.is-fitted .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) { row-gap: 6px; }
+.is-fitted .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-note .compose-figure { transform: translateY(calc((0.5 - var(--step, 0.5)) * 18px)); }
+.is-fitted .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-note .compose-digit { font-size: 26px; }
+/* 小节两行、节奏卡也两排时（中年级 3/4、4/4）：按钮矮一点、行距紧一点、音块台阶收小，整块放进一屏。 */
+.is-fitted .compose-editor:has(.compose-cards.is-long) { gap: 8px; padding-block: 12px; }
+.is-fitted .compose-editor:has(.compose-cards.is-long) .compose-tools { gap: 6px; }
+.is-fitted .compose-editor:has(.compose-cards.is-long) :is(.compose-duration, .compose-card) { min-height: 34px; }
+.is-fitted .compose-editor:has(.compose-cards.is-long) .compose-palette .compose-block { padding-top: calc(3px + var(--step, 0) * 6px); padding-bottom: 6px; }
 .is-fitted .compose-tools { gap: 8px; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 18px; }
 .is-fitted .compose-tools > :not(.compose-now, .compose-palette-label) { grid-column: 1 / -1; }
 .is-fitted .compose-tools > .compose-palette-label { grid-column: 2; grid-row: 2; margin: 0; }
