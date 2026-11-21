@@ -174,3 +174,6 @@
 .exploration-shell.is-projecting .exploration-heading { margin: 0 0 8px; padding: 4px 8px 4px 22px; }
 .exploration-shell.is-projecting .exploration-intro h1 { font-size: 20px; }
 .exploration-shell.is-projecting .exploration-tabs button { min-height: 36px; }
+
+/* 一屏模式：画布已经按窗口算好高度，外层不再撑满 100dvh（否则导航栏的外边距会多出十来像素滚动）。 */
+.route-view-exploration:has(> .exploration-shell.is-fitted) { min-height: 0; }

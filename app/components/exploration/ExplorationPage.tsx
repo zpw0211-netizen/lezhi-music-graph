@@ -88,8 +88,9 @@ export function ExplorationPage({
       const box = scrollBoxOf(outer);
       const boxTop = box ? box.getBoundingClientRect().top - box.scrollTop : -window.scrollY;
       const top = outer.getBoundingClientRect().top - boxTop;
-      const height = box ? box.clientHeight : window.innerHeight;
-      const avail = Math.max(360, height - top - (projecting ? 10 : 16));
+      const height = Math.min(box ? box.clientHeight : window.innerHeight, window.innerHeight);
+      const bottomPad = box ? parseFloat(getComputedStyle(box).paddingBottom) || 0 : 0;
+      const avail = Math.max(360, height - top - bottomPad - (projecting ? 6 : 10));
       const scale = Math.min(1.9, Math.max(0.6, Math.min(width / CANVAS_W, avail / CANVAS_H)));
       const next = { scale, width: width / scale, minHeight: avail / scale };
       setFit((current) => (current && Math.abs(current.scale - next.scale) < 1e-3 && Math.abs(current.width - next.width) < 0.5 && Math.abs(current.minHeight - next.minHeight) < 0.5 ? current : next));

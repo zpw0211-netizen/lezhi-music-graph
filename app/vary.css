@@ -184,3 +184,11 @@
 .is-fitted .vary-section-main { gap: 10px; }
 .is-fitted .vary-section-main small { font-size: 12px; }
 .is-fitted .vary-lab > .vary-palette, .is-fitted .vary-lab .vary-palette { align-self: start; }
+/* 矮屏时三部曲一栏再紧一点：段落行、提示、下载分享按钮都收小。 */
+.is-fitted .vary-form .vary-section-main { padding-block: 0; }
+.is-fitted .vary-form .vary-section-main b { width: 30px; height: 30px; font-size: 16px; }
+.is-fitted .vary-form .vary-empty { margin: 0; font-size: 12px; line-height: 1.55; }
+.is-fitted .vary-form .share-panel { margin-top: 2px; }
+.is-fitted .vary-form .share-actions { gap: 6px; }
+.is-fitted .vary-form .share-panel button { min-height: 30px; padding: 0 10px; border-radius: 9px; font-size: 12.5px; }
+.is-fitted .vary-form .share-label { flex-basis: 100%; }
