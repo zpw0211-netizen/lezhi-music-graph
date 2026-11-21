@@ -42,14 +42,15 @@ export const colorOf = (note: Pick<ComposeNote, "d" | "o">) =>
 export function durationsFor(meter: Meter) {
   return meter.endsWith("/8")
     ? [{ b: 0.5, name: "八分音符" }, { b: 1, name: "四分音符" }, { b: 1.5, name: "附点四分音符" }]
-    : [{ b: 1, name: "四分音符" }, { b: 0.5, name: "八分音符" }, { b: 2, name: "二分音符" }];
+    : [{ b: 1, name: "四分音符" }, { b: 0.5, name: "八分音符" }, { b: 0.25, name: "十六分音符" }, { b: 2, name: "二分音符" }];
 }
 
 /** 节奏卡：先定一个小节的节奏，再一个个填音高。 */
 export const RHYTHM_CARDS: Record<Meter, number[][]> = {
-  "2/4": [[1, 1], [0.5, 0.5, 1], [1, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5], [2]],
-  "3/4": [[1, 1, 1], [0.5, 0.5, 1, 1], [1, 0.5, 0.5, 1], [2, 1], [1, 2]],
-  "4/4": [[1, 1, 1, 1], [0.5, 0.5, 1, 1, 1], [1, 1, 2], [0.5, 0.5, 0.5, 0.5, 2], [2, 2]],
+  // 四十六、前八后十六、前十六后八各一张（只在四分音符为一拍的拍子里）。
+  "2/4": [[1, 1], [0.5, 0.5, 1], [1, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5], [2], [0.25, 0.25, 0.25, 0.25, 1], [0.5, 0.25, 0.25, 1], [0.25, 0.25, 0.5, 1]],
+  "3/4": [[1, 1, 1], [0.5, 0.5, 1, 1], [1, 0.5, 0.5, 1], [2, 1], [1, 2], [0.25, 0.25, 0.25, 0.25, 1, 1], [0.5, 0.25, 0.25, 1, 1], [0.25, 0.25, 0.5, 1, 1]],
+  "4/4": [[1, 1, 1, 1], [0.5, 0.5, 1, 1, 1], [1, 1, 2], [0.5, 0.5, 0.5, 0.5, 2], [2, 2], [0.25, 0.25, 0.25, 0.25, 1, 2], [0.5, 0.25, 0.25, 1, 2], [0.25, 0.25, 0.5, 1, 2]],
   "3/8": [[0.5, 0.5, 0.5], [1, 0.5], [0.5, 1], [1.5]],
   "6/8": [[0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [1, 0.5, 1, 0.5], [1, 0.5, 1.5], [0.5, 0.5, 0.5, 1.5], [1.5, 1.5]],
 };
@@ -340,15 +341,18 @@ export function composeHints(bars: ComposeNote[][], meter: Meter, mode: ComposeM
 export function formatBeats(quarters: number, meter: Meter = "2/4") {
   const beats = quarters / unitOf(meter);
   const whole = Math.floor(beats + 1e-6);
-  const half = beats - whole > 0.25;
-  const words = ["", "一", "两", "三", "四", "五", "六"];
+  const part = Math.round((beats - whole) * 4);
+  const words = ["", "一", "两", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二", "十三", "十四", "十五", "十六"];
+  const name = words[whole] ?? String(whole);
+  // 十六分音符是四分之一拍；剩下一拍又四分之一这类说成“一又四分之一拍”。
+  if (part === 1 || part === 3) return `${whole ? `${whole === 2 ? "二" : name}又` : ""}四分之${part === 1 ? "一" : "三"}拍`;
   if (!whole) return "半拍";
-  return `${words[whole] ?? whole}拍${half ? "半" : ""}`;
+  return `${name}拍${part === 2 ? "半" : ""}`;
 }
 
 /** How a note is written in jianpu text: dashes for long notes, a dot for dotted ones. */
 export function noteShape(b: number) {
-  return { eighth: b < 1, dotted: Math.abs(b - 1.5) < 1e-6 || Math.abs(b - 0.75) < 1e-6, dashes: b >= 2 ? Math.round(b) - 1 : 0 };
+  return { eighth: b < 1, sixteenth: b < 0.5 - 1e-6, dotted: Math.abs(b - 1.5) < 1e-6 || Math.abs(b - 0.75) < 1e-6, dashes: b >= 2 ? Math.round(b) - 1 : 0 };
 }
 
 export type SavedWork = { id: string; title: string; author: string; meter: Meter; bars: ComposeNote[][]; lyrics: string; savedAt: number; accompaniment?: boolean; bassStyle?: BassStyle; level?: Level; pitchSet?: PitchSet };

@@ -46,7 +46,7 @@ export async function soundNote(note: Pick<ComposeNote, "d" | "o">) {
 function NoteFigure({ note, plain }: { note: ComposeNote; plain?: boolean }) {
   const shape = noteShape(note.b);
   return <span className="compose-figure">
-    <span className={`compose-digit${shape.eighth ? " is-eighth" : ""}`} style={{ color: plain || !note.d ? undefined : colorOf(note) }}>
+    <span className={`compose-digit${shapeClass(note.b)}`} style={{ color: plain || !note.d ? undefined : colorOf(note) }}>
       {note.o > 0 && <i className="compose-dot-high" aria-hidden="true" />}
       {note.d}
       {shape.dotted && <i className="compose-aug" aria-hidden="true" />}
@@ -55,13 +55,30 @@ function NoteFigure({ note, plain }: { note: ComposeNote; plain?: boolean }) {
   </span>;
 }
 
-/** A rhythm card drawn as jianpu "X" figures, with underlines for half beats. */
-export function RhythmGlyph({ card }: { card: number[] }) {
+/** 节奏卡一排：音不多的拍子（2/4、3/8、6/8）八张以内排成一排；音多的（3/4、4/4）一排四张，排两排。 */
+export const cardRowClass = (cards: number[][]) => `compose-cards${cards.reduce((sum, card) => sum + card.length, 0) > 26 ? " is-long" : ""}`;
+
+const shapeClass = (b: number) => { const shape = noteShape(b); return shape.sixteenth ? " is-eighth is-sixteenth" : shape.eighth ? " is-eighth" : ""; };
+
+/** A rhythm card drawn as jianpu "X" figures: notes shorter than a beat are grouped by beat under one joined underline (two for sixteenths).
+ *  `meter` decides the beat: a quarter in x/4, a dotted quarter (three eighths) in x/8. */
+export function RhythmGlyph({ card, meter }: { card: number[]; meter: Meter }) {
+  const beat = meter.endsWith("/8") ? 1.5 : 1;
+  const groups: number[][] = [];
+  let open = 0;
+  for (const b of card) {
+    if (b < beat && open > 1e-6) groups.at(-1)!.push(b);
+    else groups.push([b]);
+    open = b < beat ? (open + b) % beat : 0;
+    if (Math.abs(open - beat) < 1e-6) open = 0;
+  }
   return <span className="compose-rhythm-glyph" aria-hidden="true">
-    {card.map((b, k) => {
-      const shape = noteShape(b);
-      return <span key={k} className={`compose-rhythm-unit${shape.eighth ? " is-eighth" : ""}`}>X{shape.dotted && "·"}{shape.dashes > 0 && <i>{" –".repeat(shape.dashes)}</i>}</span>;
-    })}
+    {groups.map((group, g) => <span key={g} className="compose-rhythm-beat">
+      {group.map((b, k) => {
+        const shape = noteShape(b);
+        return <span key={k} className={`compose-rhythm-unit${shapeClass(b)}`}>X{shape.dotted && "·"}{shape.dashes > 0 && <i>{" –".repeat(shape.dashes)}</i>}</span>;
+      })}
+    </span>)}
   </span>;
 }
 export const cardLabel = (card: number[], meter: Meter) => card.map((b) => formatBeats(b, meter)).join("、");
@@ -458,7 +475,7 @@ export function ComposePage() {
       <button type="button" className="task-open" onClick={() => setTaskOpen(true)} title="按现在的设置出一道创编题，全班扫码就能做">老师出题</button>
     </div>}
     {taskOpen && <ComposeTaskDialog level={level} pitchSet={pitchSet} meter={meter} bars={barCount} mode={mode} question={questionIndex}
-      glyph={(item) => <RhythmGlyph card={item} />} onClose={() => setTaskOpen(false)} />}
+      glyph={(item) => <RhythmGlyph card={item} meter={meter} />} onClose={() => setTaskOpen(false)} />}
 
     <div className="compose-workbench">
     <section className="compose-editor" aria-label="写旋律">
@@ -492,29 +509,31 @@ export function ComposePage() {
         <div className="compose-rhythm-row">
           <span className="compose-field-label">节奏</span>
           <div className="compose-durations" role="radiogroup" aria-label="音符时值或节奏卡">
+            <div className="compose-duration-row">
             {durationsFor(meter).filter((item) => item.b <= beats).map((item) =>
               <button key={item.b} type="button" role="radio" aria-checked={!card && duration === item.b} className={`compose-duration${!card && duration === item.b ? " is-active" : ""}`}
                 title={item.name} onClick={() => { setCard(null); setDuration(item.b); }}>
                 <NoteFigure note={{ d: 5, o: 0, b: item.b }} plain />
                 <span>{formatBeats(item.b, meter)}</span>
               </button>)}
-            <span className="compose-divider" aria-hidden="true" />
+            </div>
+            <div className={cardRowClass(RHYTHM_CARDS[meter])}>
             {RHYTHM_CARDS[meter].map((item) => {
               const active = card?.join() === item.join();
               return <button key={item.join()} type="button" role="radio" aria-checked={active} aria-label={`节奏卡：${cardLabel(item, meter)}`} title={cardLabel(item, meter)} className={`compose-card${active ? " is-active" : ""}`}
                 onClick={() => setCard(active ? null : item)}>
-                <RhythmGlyph card={item} />
+                <RhythmGlyph card={item} meter={meter} />
               </button>;
             })}
+            </div>
           </div>
         </div>
-        {card && <p className="compose-card-tip">节奏卡已选好，接下来只要点音高。再点一次节奏卡可以取消。</p>}
         <p className="compose-now" aria-live="polite">
           {selected ? <>正在改第 <b>{selected.bar + 1}</b> 小节的一个音</>
             : cursorBar < 0 ? <>{bars.length} 小节都写满了</>
             : <>正在写第 <b>{cursorBar + 1}</b> 小节 · 还剩 <b>{formatBeats(beats - barBeats(bars[cursorBar]), meter)}</b></>}
         </p>
-        <span className="compose-field-label compose-palette-label">音高 · 点一下就写进去</span>
+        <span className={`compose-field-label compose-palette-label${card ? " is-card" : ""}`}>{card ? "节奏卡选好了，点音高就行" : "音高 · 点一下就写进去"}</span>
         <div className="compose-palette" aria-label="音块">
           {blocks.map((block, index) =>
             <button key={`${block.d}${block.o}`} type="button" className="compose-block"
@@ -600,7 +619,7 @@ export function ComposePage() {
           <div>
             <strong>《{work.title}》</strong>
             <span>{work.author || "无名作者"} · {work.meter} · {work.bars.length} 小节</span>
-            <span className="compose-gallery-notes">{work.bars.map((bar) => bar.map((note) => `${note.d}${note.o > 0 ? "'" : ""}${noteShape(note.b).dotted ? "." : ""}${" -".repeat(noteShape(note.b).dashes)}${noteShape(note.b).eighth ? "_" : ""}`).join(" ")).join(" | ")} ‖</span>
+            <span className="compose-gallery-notes">{work.bars.map((bar) => bar.map((note) => `${note.d}${note.o > 0 ? "'" : ""}${noteShape(note.b).dotted ? "." : ""}${" -".repeat(noteShape(note.b).dashes)}${noteShape(note.b).sixteenth ? "=" : noteShape(note.b).eighth ? "_" : ""}`).join(" ")).join(" | ")} ‖</span>
           </div>
           <div className="compose-gallery-actions">
             <button type="button" onClick={() => open(work)}>打开</button>

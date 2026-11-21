@@ -76,8 +76,11 @@
 /* 节奏：时值与节奏卡在同一排 */
 .compose-tools { display: grid; gap: 14px; }
 .compose-rhythm-row { display: flex; align-items: center; gap: 12px; }
-.compose-durations { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.compose-divider { width: 1px; height: 26px; margin: 0 6px; background: var(--c-line); }
+/* 节奏分两排：上排是单个音的时值，下排是整小节的节奏卡。 */
+.compose-durations { display: flex; flex: 1 1 auto; flex-direction: column; align-self: stretch; gap: 6px; min-width: 0; }
+.compose-duration-row, .compose-cards { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.compose-cards .compose-card { flex: 1 1 auto; justify-content: center; padding: 0 6px; }
+.compose-cards.is-long .compose-card { flex: 0 0 calc(25% - 4.5px); }
 .compose-duration, .compose-card { display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--c-line); border-radius: 11px; background: #fff; color: var(--c-ink-2); font-size: 13px; transition: border-color .15s ease, background .15s ease; }
 .compose-duration .compose-figure { width: auto; gap: 4px; }
 .compose-duration .compose-digit { padding: 4px 1px; font-size: 19px; color: var(--c-ink-2); }
@@ -87,11 +90,15 @@
 .compose-card { border-style: dashed; border-color: #C7D6CC; }
 .compose-duration:hover, .compose-card:hover { border-color: #B5CBBC; }
 .compose-duration.is-active, .compose-card.is-active { border-style: solid; border-color: var(--c-pine); background: var(--c-pine-soft); color: var(--c-pine); box-shadow: inset 0 0 0 1px var(--c-pine); }
-.compose-rhythm-glyph { display: inline-flex; gap: 7px; font: 600 16px/1 var(--serif, "Songti SC", serif); }
-.compose-rhythm-unit { position: relative; padding-bottom: 5px; white-space: nowrap; }
-.compose-rhythm-unit.is-eighth::after { content: ""; position: absolute; left: -1px; right: -1px; bottom: 0; border-bottom: 2px solid currentColor; }
+.compose-rhythm-glyph { display: inline-flex; gap: 9px; font: 600 16px/1 var(--serif, "Songti SC", serif); }
+/* 同一拍里的短音挨在一起，减时线连成一条；十六分音符下面再加一条。 */
+.compose-rhythm-beat { display: inline-flex; }
+.compose-rhythm-unit { position: relative; padding: 0 2px 5px; white-space: nowrap; }
+.compose-rhythm-unit.is-eighth::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; border-bottom: 2px solid currentColor; }
+.compose-rhythm-unit.is-sixteenth::before { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; border-bottom: 2px solid currentColor; }
+.compose-digit.is-sixteenth::before { content: ""; position: absolute; left: -2px; right: -2px; bottom: -5.5px; border-bottom: 2.5px solid var(--c-ink); }
 .compose-rhythm-unit i { font-style: normal; }
-.compose-card-tip { margin: -6px 0 0; color: var(--c-pine); font-size: 12px; }
+.compose-palette-label.is-card { color: var(--c-pine); }
 
 /* 音块：从低到高排成台阶 */
 .compose-now { margin: 0; color: var(--c-ink-2); font-size: 13px; }
@@ -172,7 +179,6 @@
   .compose-field { flex-wrap: wrap; }
   .compose-block { flex: 1 1 52px; }
   .compose-block.is-rest { margin-left: 0; }
-  .compose-divider { display: none; }
 }
 
 /* 第二版：左边写，右边随时看到自己的乐谱。 */
@@ -203,20 +209,17 @@
 .compose-bass .compose-chips { flex-wrap: wrap; }
 .compose-bass-caption { margin: 0; color: var(--c-ink-2); font-size: 13px; line-height: 1.6; }
 
-/* 节奏一栏分两行：上一行是单个音的时值，下一行是整小节的节奏卡，不让某一张卡片单独掉到第三行。 */
-.compose-durations .compose-divider { flex: 0 0 100%; width: auto; height: 0; margin: 0; border: 0; background: none; }
 @media (max-width: 640px) {
-  .compose-durations .compose-divider { display: block; }
   /* 手机上音块排成整齐的格子，高低差收小一点。 */
   .compose-palette { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: 8px; }
   .compose-palette:has(.compose-block:nth-child(8)) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
   .compose-block { min-width: 0; padding-top: calc(8px + var(--step, 0) * 10px); }
 }
 @media (max-width: 640px) {
-  /* 手机上五张节奏卡收紧一点，排在同一行。 */
-  .compose-card { flex: 1 1 0; min-width: 0; justify-content: center; padding: 0 2px; }
+  /* 手机上节奏卡收紧一点，一行四张。 */
+  .compose-cards .compose-card, .compose-cards.is-long .compose-card { flex: 1 1 calc(25% - 5px); min-width: 0; padding: 0 2px; }
   .compose-card .compose-rhythm-glyph { gap: 3px; font-size: 14px; }
-  .compose-durations { gap: 5px; }
+  .compose-durations, .compose-duration-row, .compose-cards { gap: 5px; }
 }
 
 /* 写完旋律后的下一步：带到旋律变奏。 */
@@ -236,12 +239,21 @@
 .is-fitted .compose-workbench { gap: 16px; }
 .is-fitted .compose-workbench .compose-stage { position: static; gap: 8px; padding: 16px 20px; }
 .is-fitted .compose-editor { gap: 10px; padding: 16px 22px; }
-.is-fitted .compose-workbench .compose-bar-notes { min-height: 96px; }
+.is-fitted .compose-workbench .compose-bar-notes { min-height: 86px; }
+/* 小节排成两行以上（3/4、4/4、x/8 或 8 小节）时每行矮一点，音高台阶也收小，不把编辑卡撑出一屏。 */
+.is-fitted .compose-workbench .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-bar-notes { min-height: 62px; }
+.is-fitted .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-note .compose-figure { transform: translateY(calc((0.5 - var(--step, 0.5)) * 20px)); }
+.is-fitted .compose-bars:is(.is-wide, :has(> .compose-bar:nth-child(5))) .compose-note .compose-digit { font-size: 28px; }
 .is-fitted .compose-tools { gap: 8px; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 18px; }
 .is-fitted .compose-tools > :not(.compose-now, .compose-palette-label) { grid-column: 1 / -1; }
 .is-fitted .compose-tools > .compose-palette-label { grid-column: 2; grid-row: 2; margin: 0; }
-.is-fitted .compose-durations { flex-wrap: nowrap; align-items: center; }
-.is-fitted .compose-durations .compose-divider { flex: 0 0 1px; width: 1px; height: 28px; margin: 0 4px; background: var(--c-line); }
+/* 节奏分两排：上排单个音的时值，下排整小节的节奏卡（一排四张，多了再起一排），不挤出编辑卡。 */
+.is-fitted .compose-cards { flex-wrap: nowrap; }
+.is-fitted .compose-cards.is-long { flex-wrap: wrap; }
+.is-fitted .compose-duration, .is-fitted .compose-card { min-height: 38px; }
+.is-fitted .compose-card { padding: 0 4px; }
+.is-fitted .compose-card .compose-rhythm-glyph { gap: 7px; font-size: 15px; }
+.is-fitted .compose-workbench .compose-keys { flex-basis: auto; margin-left: auto; }
 .is-fitted .compose-palette .compose-block { padding-top: calc(4px + var(--step, 0) * 12px); }
 .is-fitted .compose-message:empty { display: none; }
 .is-fitted .compose-stage .compose-empty { padding-block: 14px; }
@@ -255,6 +267,9 @@
 .is-fitted .compose-player .melody-player { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
 .is-fitted .compose-player .melody-score { flex: 1 1 auto; min-height: 0; max-height: 250px; overflow-y: auto; }
 .is-fitted .compose-stage-kicker, .is-fitted .compose-next { display: none; }
+/* 写了音以后右边多出播放器：一屏里不再重复「我的旋律」小标题，分享一行贴近一点，不把画布撑出去。 */
+.is-fitted .compose-player .melody-title { display: none; }
+.is-fitted .compose-stage .share-panel { margin-top: 2px; }
 .is-fitted .compose-stage .compose-hints li:nth-child(n+2) { display: none; }
 .is-fitted .compose-workbench { grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); }
 .is-fitted .compose-stage .compose-lyrics, .is-fitted .compose-stage .compose-card-head { margin: 0; }

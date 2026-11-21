@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { EDITION } from "../../lib/app/books";
 import { MelodyPlayer } from "../lesson/MelodyPlayer";
-import { RhythmGlyph, cardLabel, soundNote } from "../compose/ComposePage";
+import { RhythmGlyph, cardLabel, cardRowClass, soundNote } from "../compose/ComposePage";
 import { RHYTHM_CARDS, barBeats, beatsOf, durationsFor, formatBeats, lyricSyllables, noteShape, type ComposeNote, type Meter } from "../compose/compose-model";
 import { ChoirPractice } from "./ChoirPractice";
 import { SharePanel } from "../share/SharePanel";
@@ -22,7 +22,7 @@ function Figure({ note }: { note: ComposeNote }) {
   const shape = noteShape(note.b);
   const dots = Math.abs(note.o);
   return <span className="choir-figure">
-    <span className={`choir-digit${shape.eighth ? " is-eighth" : ""}${note.o < 0 ? " is-low" : ""}`}>
+    <span className={`choir-digit${shape.sixteenth ? " is-eighth is-sixteenth" : shape.eighth ? " is-eighth" : ""}${note.o < 0 ? " is-low" : ""}`}>
       {note.d > 0 && note.o > 0 && <i className="choir-dots is-high" aria-hidden="true">{"•".repeat(dots)}</i>}
       {note.d}
       {shape.dotted && <i className="choir-aug" aria-hidden="true" />}
@@ -333,6 +333,7 @@ export function ChoirComposer() {
         <div className="choir-rhythm-row">
           <span className="choir-label">节奏</span>
           <div className="compose-durations" role="radiogroup" aria-label="音符时值或节奏卡">
+            <div className="compose-duration-row">
             {guide >= 0 && <button type="button" role="checkbox" aria-checked={followAbove} className={`compose-card choir-follow${followAbove ? " is-active" : ""}`} onClick={() => setFollowAbove((on) => !on)}>
               跟{followLabel}同节奏
             </button>}
@@ -344,14 +345,16 @@ export function ChoirComposer() {
                 <span>{formatBeats(item.b, work.meter)}</span>
               </button>;
             })}
-            <span className="compose-divider" aria-hidden="true" />
+            </div>
+            <div className={cardRowClass(RHYTHM_CARDS[work.meter])}>
             {RHYTHM_CARDS[work.meter].map((item) => {
               const on = card?.join() === item.join() && !(followAbove && guide >= 0);
               return <button key={item.join()} type="button" role="radio" aria-checked={on} aria-label={`节奏卡：${cardLabel(item, work.meter)}`} title={cardLabel(item, work.meter)} className={`compose-card${on ? " is-active" : ""}`}
                 onClick={() => { setFollowAbove(false); setCard(on ? null : item); }}>
-                <RhythmGlyph card={item} />
+                <RhythmGlyph card={item} meter={work.meter} />
               </button>;
             })}
+            </div>
           </div>
         </div>
         {followAbove && guide >= 0 && <p className="choir-tool-tip">现在跟{followLabel}一个音对一个音，只要点音高；节奏对不上的地方按右边的时值写。</p>}
