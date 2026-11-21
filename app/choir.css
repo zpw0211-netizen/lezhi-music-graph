@@ -212,7 +212,7 @@
 }
 
 /* ===== 一屏画布（课本合唱）：左边选歌、声部、分步练、音准，右边合唱谱占满整列；谱子长了在框里跟着唱的位置走。 ===== */
-.is-fitted .choir-lab { padding-bottom: 12px; }
+.is-fitted .choir-lab { padding-bottom: 2px; }
 .is-fitted .choir-intro { margin: 4px 0 10px; }
 .is-fitted .choir-lab:has(> .choir-score) { display: grid; grid-template-columns: 410px minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); gap: 10px 18px; align-content: stretch; }
 .is-fitted .choir-lab:has(> .choir-score) > .choir-intro { grid-column: 1 / -1; margin-bottom: 0; }
@@ -254,7 +254,7 @@
 .is-fitted .choir-compose.is-write { grid-template-columns: minmax(0, 1fr) 470px; grid-template-areas: "settings switch" "editor work" "editor gallery"; grid-template-rows: auto auto 1fr; }
 .is-fitted .choir-compose.is-write > .choir-compose-settings { grid-area: settings; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 8px 14px; }
 .is-fitted .choir-compose.is-write > .choir-compose-switch { grid-area: switch; }
-.is-fitted .choir-compose.is-write > .choir-editor { grid-area: editor; padding: 12px 16px; }
+.is-fitted .choir-compose.is-write > .choir-editor { grid-area: editor; gap: 10px; padding: 12px 16px; }
 .is-fitted .choir-compose.is-write > .choir-work { grid-area: work; align-self: start; padding: 12px 16px; }
 .is-fitted .choir-compose.is-write > .choir-gallery { grid-area: gallery; align-self: start; }
 .is-fitted .choir-compose.is-write > :is(.choir-setup, .choir-mic, .choir-score) { display: none; }
