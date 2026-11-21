@@ -45,7 +45,9 @@ function phrased(value: string): ReactNode {
   for (const { segment } of SEGMENTER.segment(value)) {
     if (OPENERS.test(segment)) { opener += segment; continue; }
     const last = words.length - 1;
-    if (last >= 0 && !opener && (TRAILERS.test(segment) || (ASCII_END.test(words[last]) && ASCII_START.test(segment)) || (HAN.test(words[last]) && HAN.test(segment)))) words[last] += segment;
+    // 前一个词带着开括号时（“（唱”“「跟”），去掉括号再看是不是单字，免得“唱谱”“跟唱”被拆到两行。
+    const bare = last >= 0 ? words[last].replace(/^[《“‘（(「『【〈]+/, "") : "";
+    if (last >= 0 && !opener && (TRAILERS.test(segment) || (ASCII_END.test(words[last]) && ASCII_START.test(segment)) || (HAN.test(bare) && HAN.test(segment)))) words[last] += segment;
     else { words.push(opener + segment); opener = ""; }
   }
   if (opener) words.push(opener);
@@ -227,7 +229,9 @@ export function ReflectivePresent({
         </div>
       </div>;
     } },
-    { key: "r-learn", stage: "construct", step: regular.learn.title, title: regular.learn.title, steps: regular.learn.steps.length, art: "stage-construct", render: (step) => <div className="reflect-wide">
+    { key: "r-learn", stage: "construct", step: regular.learn.title, title: regular.learn.title, steps: regular.learn.steps.length,
+      // 步骤多（学唱常有六七步）时不配插画，让问题链排成两列；挤在插画旁一列会缩到六成大小，投影上看不清。
+      art: regular.learn.steps.length > 4 ? undefined : "stage-construct", render: (step) => <div className="reflect-wide">
       <h2>{regular.learn.title}</h2>
       <ol className="reflect-chain">{regular.learn.steps.map((item, index) => <li key={index} className={index <= step ? "is-shown" : ""}>{text(`r-learn-${index}`, item)}</li>)}</ol>
     </div> },
@@ -465,21 +469,33 @@ export function ReflectivePresent({
   useLayoutEffect(() => {
     const stageEl = stageRef.current, content = fitRef.current;
     if (!stageEl || !content) return;
-    let raf = 0;
+    let raf = 0, settle = 0, settleFrame = 0, ceiling = 1.01, lastAvail = 0;
     const measure = (sync = false) => {
       const style = getComputedStyle(stageEl);
       const avail = stageEl.clientHeight - parseFloat(style.paddingTop || "0") - parseFloat(style.paddingBottom || "0");
       if (!(avail > 0)) return;
+      // 舞台本身变了（全屏、拉窗口）就重新来过。
+      if (Math.abs(avail - lastAvail) > 1) { ceiling = 1.01; settle = 0; lastAvail = avail; }
       const rect = content.getBoundingClientRect();
-      const current = appliedFit.current;
-      const natural = current < 1 ? rect.height / current : rect.height;
+      // 按页面上实际生效的缩放换算（setFit 还没提交时 appliedFit 已经是新值）。
+      const shown = parseFloat(content.style.zoom) || 1;
+      const natural = rect.height / shown;
       if (!(natural > 0)) return;
-      const target = Math.max(0.5, Math.min(1, (avail - 12) / natural));
+      // 缩小后文字换行变少、高度变矮，算出来又想放大，放大后又放不下，会在两个大小之间来回跳。
+      // 所以量到某个大小放不下，就记下来，这一页以后不再回到这么大。
+      if (rect.height > avail + 1) ceiling = Math.min(ceiling, shown);
+      const target = Math.max(0.5, Math.min(1, (avail - 12) / natural, ceiling - 0.01));
+      const current = appliedFit.current;
+      const changed = Math.abs(target - current) > 0.01;
       // 放得下时不出滚动条：进场动画的位移会让舞台短暂溢出，滚动条一闪会把内容挤动一下。
-      stageEl.style.overflowY = natural * target <= avail ? "hidden" : "";
-      if (Math.abs(target - current) > 0.01) {
+      // 缩放后文字会重新换行、高度跟着变，所以不改缩放时按实际高度判断，放不下就留滚动条，免得底边被裁掉。
+      stageEl.style.overflowY = (changed ? natural * target : rect.height) <= avail ? "hidden" : "";
+      if (changed) {
         appliedFit.current = target;
         if (sync) flushSync(() => setFit(target)); else setFit(target);
+        // 缩放生效后下一帧再量一次（最多几次），直到稳定。
+        cancelAnimationFrame(settleFrame);
+        if (settle++ < 4) settleFrame = requestAnimationFrame(() => measure());
       }
     };
     measure();
@@ -491,7 +507,7 @@ export function ReflectivePresent({
     });
     observer.observe(content);
     observer.observe(stageEl);
-    return () => { observer.disconnect(); cancelAnimationFrame(raf); cancelAnimationFrame(loopFrame); };
+    return () => { observer.disconnect(); cancelAnimationFrame(raf); cancelAnimationFrame(loopFrame); cancelAnimationFrame(settleFrame); };
   }, [slideKey, step, preparing]);
 
   // 进入上课模式就把各页要用的图（谱例、情境图、主题图）先取回来，翻到那一页时图已在手，版面不会先矮后高地跳一下。

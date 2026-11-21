@@ -348,9 +348,12 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     const measure = () => {
       const box = score.getBoundingClientRect();
       if (!box.width) return; // on a closed page of the book: measured again when it opens (the observer sees the size change)
+      // 上课模式 shrinks a slide with CSS zoom: getBoundingClientRect is in screen pixels, but the arcs' SVG sits inside
+      // the zoomed box and gets zoomed again, so convert back to the score's own pixels.
+      const scale = score.offsetWidth ? box.width / score.offsetWidth : 1;
       const at = (el: Element) => {
         const r = el.getBoundingClientRect();
-        return { left: r.left - box.left + score.scrollLeft, right: r.right - box.left + score.scrollLeft, top: r.top - box.top + score.scrollTop, height: r.height };
+        return { left: (r.left - box.left) / scale + score.scrollLeft, right: (r.right - box.left) / scale + score.scrollLeft, top: (r.top - box.top) / scale + score.scrollTop, height: r.height / scale };
       };
       const digits = new Map<string, Element>();
       score.querySelectorAll("[data-arc]").forEach((el) => digits.set(el.getAttribute("data-arc")!, el));
@@ -632,6 +635,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     playbackCallback.current?.({ ctx, start, secondsPerBeat: beat });
     let raf = 0;
     let previousNotes = "";
+    let previousIndices = "";
     const tick = () => {
       const now = ctx.currentTime;
       if (now >= end) { stop(); return; }
@@ -642,7 +646,10 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         while (index > 0 && times[index] > now) index -= 1;
         return index;
       });
-      setCurrent(indices);
+      // Re-render the score only when the sounding note changes, not on every animation frame:
+      // a long score re-rendered 60 times a second drops frames on classroom computers.
+      const indicesKey = indices.join(",");
+      if (indicesKey !== previousIndices) { previousIndices = indicesKey; setCurrent(indices); }
       const notes = indices.flatMap((index, voice) => {
         const note = flats[voice][index];
         return on(voice) && note?.d && note.d !== 9 ? [midiOf(melody, note)] : [];

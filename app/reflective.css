@@ -69,7 +69,7 @@
 .reflect-two { display: grid; grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); gap: 4vw; align-items: center; width: min(1500px, 100%); }
 .reflect-two.is-even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 .reflect-two.is-score { grid-template-columns: minmax(0, 1.618fr) minmax(0, 1fr); }
-.reflect-panel { padding: 3.4vh 2.6vw; border: 1px solid rgba(48, 40, 24, .07); border-radius: 18px; background: rgba(255, 255, 255, .88); box-shadow: var(--card-shadow); backdrop-filter: blur(6px); }
+.reflect-panel { padding: 3.4vh 2.6vw; border: 1px solid rgba(48, 40, 24, .07); border-radius: 18px; background: rgba(255, 255, 255, .92); box-shadow: var(--card-shadow); }
 .reflect-panel h2 { font-size: clamp(28px, 2.8vw, 44px); }
 
 /* 封面：整幅插图铺满，左侧留出 38.2% 写标题，底部五个阶段 */
@@ -143,6 +143,8 @@
 /* 难点突破页给外框一个确定的宽度：否则外框跟着谱面缩、谱面又按外框算大小，两边互相追着一像素一像素地收，画面会抖。 */
 .reflect .present-fit:has(.is-practice) { width: 100%; }
 .reflect-wide.is-practice { width: min(1560px, 100%); margin-inline: auto; }
+/* 右下角的「工具」圆钮会压住谱子最右一小节：两边各让出一点。 */
+@media (min-width: 641px) { .reflect-wide.is-practice { width: min(1560px, calc(100% - 96px)); } }
 /* 难点突破：长谱子（如国歌）不再整页缩小，谱面在自己的框里上下滚动，播放时跟着当前音走 */
 .reflect-wide.is-practice .melody-score { max-height: calc(100vh - 380px); min-height: 180px; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; }
 
