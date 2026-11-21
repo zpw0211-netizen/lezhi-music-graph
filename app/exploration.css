@@ -117,7 +117,7 @@
 }
 
 /* 页面分块与律坊数据载入时的占位，留在面板里，标题与标签不再被推动。 */
-.exploration-panel > .app-view-status { display: grid; min-height: min(640px, calc(100dvh - 240px)); place-items: center; align-content: center; max-width: none; margin: 0; border: 0; background: transparent; color: var(--ink-2, #44544B); }
+.exploration-panel > .app-view-status, .exploration-canvas > .app-view-status { display: grid; min-height: min(640px, calc(100dvh - 240px)); place-items: center; align-content: center; max-width: none; margin: 0; border: 0; background: transparent; color: var(--ink-2, #44544B); }
 
 /* 手机上探索页两侧不再留双层边距。 */
 @media (max-width: 520px) {
@@ -151,3 +151,29 @@
   .exploration-group-label { display: none; }
   .exploration-tabs button { padding-inline: 10px 11px; }
 }
+
+/* 一屏画布：工具按 1256 × 600 排好，整体等比缩放，放进标题栏下面剩下的地方。 */
+.exploration-fit { position: relative; min-width: 0; }
+.is-fitted .exploration-fit { overflow: hidden; }
+.is-fitted .exploration-canvas { display: flex; flex-direction: column; box-sizing: border-box; transform-origin: 0 0; }
+.is-fitted .exploration-canvas > * { flex: 1 0 auto; }
+/* 画布里的工具不再自己留上下外边距，高度全给内容。 */
+.is-fitted .exploration-canvas > :is(section, div) { margin-block: 0 !important; }
+
+/* 投屏按钮：放在工具栏最右边。 */
+.exploration-project { display: none; }
+@media (min-width: 881px) {
+  .exploration-tabs .exploration-project { display: inline-flex; min-height: 40px; flex-direction: row; align-items: center; gap: 6px; margin-left: 12px; padding: 0 16px 0 13px; border: 1px solid var(--exploration-green); border-radius: 999px; background: #fff; color: var(--exploration-green); font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .exploration-tabs .exploration-project:hover { background: #F0F6F2; }
+  .exploration-tabs .exploration-project[aria-pressed="true"] { background: var(--exploration-green); color: #fff; }
+  .exploration-project svg { width: 18px; height: 18px; }
+}
+
+/* 投屏：探索页铺满屏幕，站点导航收起来，只留一条工具栏。 */
+.exploration-shell.is-projecting { position: fixed; z-index: 90; inset: 0; width: auto !important; max-width: none !important; margin: 0 !important; padding: 10px 18px 0 !important; overflow: auto; background: #F7F9F8; }
+.exploration-shell.is-projecting .exploration-heading { margin: 0 0 8px; padding: 4px 8px 4px 22px; }
+.exploration-shell.is-projecting .exploration-intro h1 { font-size: 20px; }
+.exploration-shell.is-projecting .exploration-tabs button { min-height: 36px; }
+
+/* 一屏模式：画布已经按窗口算好高度，外层不再撑满 100dvh（否则导航栏的外边距会多出十来像素滚动）。 */
+.route-view-exploration:has(> .exploration-shell.is-fitted) { min-height: 0; }

@@ -228,3 +228,34 @@
 .compose-next-button:disabled { border-color: var(--c-line); background: #F6F8F6; }
 .compose-next-button:disabled b { color: var(--c-ink-3); }
 .compose-next-button:disabled span { color: var(--c-ink-3); }
+
+/* ===== 一屏画布：标题行收紧；左边写旋律的工具压扁（节奏一行、音高台阶矮一点），右边作品卡不再吸顶。 ===== */
+.is-fitted .compose-lab { padding-bottom: 12px; }
+.is-fitted .compose-intro { padding: 4px 0 8px; }
+.is-fitted .compose-settings { margin-bottom: 10px; padding: 6px 14px; }
+.is-fitted .compose-workbench { gap: 16px; }
+.is-fitted .compose-workbench .compose-stage { position: static; gap: 8px; padding: 16px 20px; }
+.is-fitted .compose-editor { gap: 10px; padding: 16px 22px; }
+.is-fitted .compose-workbench .compose-bar-notes { min-height: 96px; }
+.is-fitted .compose-tools { gap: 8px; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; column-gap: 18px; }
+.is-fitted .compose-tools > :not(.compose-now, .compose-palette-label) { grid-column: 1 / -1; }
+.is-fitted .compose-tools > .compose-palette-label { grid-column: 2; grid-row: 2; margin: 0; }
+.is-fitted .compose-durations { flex-wrap: nowrap; align-items: center; }
+.is-fitted .compose-durations .compose-divider { flex: 0 0 1px; width: 1px; height: 28px; margin: 0 4px; background: var(--c-line); }
+.is-fitted .compose-palette .compose-block { padding-top: calc(4px + var(--step, 0) * 12px); }
+.is-fitted .compose-message:empty { display: none; }
+.is-fitted .compose-stage .compose-empty { padding-block: 14px; }
+/* 作品卡和左边一样高：谱子在卡里滚动，播放时跟着走；「接下来」的推荐在一屏里收起来（工具栏就能切过去）。 */
+.is-fitted .compose-lab { display: flex; flex-direction: column; }
+.is-fitted .compose-workbench { flex: 1 1 auto; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+.is-fitted .compose-workbench .compose-editor { align-self: start; }
+.is-fitted .compose-workbench .compose-stage { display: flex; flex-direction: column; }
+.is-fitted .compose-workbench .compose-stage > * { flex: none; }
+.is-fitted .compose-workbench .compose-stage > .compose-player { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+.is-fitted .compose-player .melody-player { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+.is-fitted .compose-player .melody-score { flex: 1 1 auto; min-height: 0; max-height: 250px; overflow-y: auto; }
+.is-fitted .compose-stage-kicker, .is-fitted .compose-next { display: none; }
+.is-fitted .compose-stage .compose-hints li:nth-child(n+2) { display: none; }
+.is-fitted .compose-workbench { grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); }
+.is-fitted .compose-stage .compose-lyrics, .is-fitted .compose-stage .compose-card-head { margin: 0; }
+.is-fitted .compose-player .melody-score { margin-top: 8px; padding-block: 12px 10px; }

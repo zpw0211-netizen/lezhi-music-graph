@@ -37,6 +37,7 @@ import "./account.css";
 import "./beat.css";
 import "./vary.css";
 import "./choir.css";
+import "./puzzle.css";
 import "./unify.css";
 import { AccountProvider } from "./components/account/AccountProvider";
 

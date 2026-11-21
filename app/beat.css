@@ -69,3 +69,27 @@
   .beat-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
+
+/* ===== 一屏画布：每个乐器一行压扁，右边节奏型卡片五个一排，侧栏不再吸顶。 ===== */
+.is-fitted .beat-lab { padding-bottom: 12px; }
+.is-fitted .beat-intro { padding-block: 4px 8px; }
+.is-fitted .beat-settings { padding-block: 6px; }
+.is-fitted .beat-workbench { gap: 16px; margin-top: 8px; }
+.is-fitted .beat-side { position: static; gap: 10px; }
+.is-fitted .beat-voice { padding: 8px 14px 10px; }
+.is-fitted .beat-voice-head { margin-bottom: 2px; }
+.is-fitted .beat-palette { gap: 8px; padding: 12px 14px; }
+.is-fitted .beat-cards { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.is-fitted .beat-card { min-height: 66px; gap: 2px; padding: 6px 4px; font-size: 25px; }
+.is-fitted .beat-score { gap: 10px; }
+.is-fitted .beat-transport { padding: 10px 14px; }
+.is-fitted .beat-hints > :nth-child(n+2) { display: none; }
+.is-fitted .beat-card > span:last-child { font-size: 11.5px; }
+.is-fitted .beat-palette .beat-caption { display: none; }
+.is-fitted .beat-card { min-height: 58px; font-size: 23px; }
+.is-fitted .beat-side .share-panel { margin-top: 0; }
+.is-fitted .beat-side .share-panel button { min-height: 30px; padding: 0 10px; border-radius: 9px; font-size: 12.5px; }
+.is-fitted .beat-hints { margin: 0; }
+.is-fitted .beat-lab { padding-bottom: 0; }
+.is-fitted .beat-side { gap: 8px; }
+.is-fitted .beat-palette { gap: 6px; padding-block: 10px; }

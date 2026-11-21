@@ -316,7 +316,7 @@ export function VaryPage() {
               {TECHNIQUES.filter((item) => item.group === group).map((item) => {
                 const at = recipe.indexOf(item.id);
                 const blocked = at < 0 ? applicable(item.id, variation) : null;
-                return <button key={item.id} type="button" aria-pressed={at >= 0} className={`vary-technique${at >= 0 ? " is-active" : ""}${blocked ? " is-blocked" : ""}`} onClick={() => toggle(item.id)}>
+                return <button key={item.id} type="button" aria-pressed={at >= 0} className={`vary-technique${at >= 0 ? " is-active" : ""}${blocked ? " is-blocked" : ""}`} title={blocked ?? item.caption} onClick={() => toggle(item.id)}>
                   <b>{item.label}{at >= 0 && <i>第 {at + 1} 步</i>}</b>
                   <span>{blocked ?? item.caption}</span>
                 </button>;

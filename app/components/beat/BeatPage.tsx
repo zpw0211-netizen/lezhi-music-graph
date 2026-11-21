@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { shrinkToCanvas, useFitToCanvas } from "../../lib/app/fit-canvas";
 import { getPianoAudioContext } from "../../lib/lesson/piano-sampler";
 import { loadPercussionStrokes, type PercussionKind } from "../../lib/lesson/percussion";
 import { softOutput, voiceBus } from "../../lib/lesson/percussion-mix";
@@ -102,6 +103,7 @@ export function BeatPage() {
   const [message, setMessage] = useState("");
   const stopRef = useRef<(() => void) | null>(null);
   const nextId = useRef(3);
+  const labRef = useRef<HTMLElement | null>(null);
 
   // 上次编到一半的合奏留在这台电脑上。
   const loaded = useRef(false);
@@ -318,7 +320,13 @@ export function BeatPage() {
     return list;
   }, [scores, voices.length, barCount, totalBeats, meter]);
 
-  return <section className="rhythm-lab beat-lab" aria-labelledby="beat-title">
+  // 一屏画布：乐器多了，每一行的节奏谱一起缩小一点。
+  useFitToCanvas(labRef, (lab) => {
+    const column = lab.querySelector<HTMLElement>(".beat-score");
+    if (column) shrinkToCanvas(column, [...column.querySelectorAll<HTMLElement>(".beat-voice-score .rhythm-score")], 20);
+  }, [voices.length, barCount, meterId]);
+
+  return <section ref={labRef} className="rhythm-lab beat-lab" aria-labelledby="beat-title">
     <header className="beat-intro">
       <div>
         <h2 id="beat-title">几件打击乐器，编一段合奏</h2>

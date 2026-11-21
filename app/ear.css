@@ -112,7 +112,7 @@
 .ear-answers.is-choice .ear-answer { justify-content: flex-start; min-width: 0; padding: 12px 18px; text-align: left; }
 .ear-answer-key { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--e-pine-soft); color: var(--e-pine); font: 600 14px/1 var(--serif, "Songti SC", serif); }
 .ear-answer-label { display: grid; gap: 2px; font: 400 24px/1.25 var(--kai, "LXGW WenKai", "KaiTi", serif); letter-spacing: .04em; }
-.ear-lab .ear-answer-label small { color: var(--e-ink-2); font: 400 13px/1.4 var(--ui, sans-serif); letter-spacing: 0; }
+.ear-lab .ear-answer-label small { color: var(--e-ink-2); font: 400 13px/1.4 var(--ui, sans-serif); letter-spacing: 0; text-wrap: balance; }
 .ear-answer.is-right, .ear-block.is-right { border-color: var(--e-pine); background: var(--e-pine-soft); color: var(--e-pine); box-shadow: inset 0 0 0 2px var(--e-pine); }
 .ear-answer.is-wrong { border-color: var(--e-seal); background: var(--e-seal-soft); color: var(--e-seal); }
 .ear-answer.is-dim, .ear-block.is-dim { opacity: .35; }
@@ -212,3 +212,30 @@
   .ear-block { flex: 1 1 52px; }
   .ear-slot { width: 52px; height: 66px; }
 }
+
+/* ===== 一屏画布：标题和学段并成一行，关卡卡片压扁，练习区占满剩下的高度。 ===== */
+.is-fitted .ear-lab { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr); column-gap: 24px; align-content: stretch; padding-bottom: 12px; }
+.is-fitted .ear-lab > :not(.ear-intro, .ear-groups) { grid-column: 1 / -1; }
+.is-fitted .ear-intro { flex-wrap: nowrap; align-items: baseline; justify-content: flex-start; gap: 18px; padding: 8px 0 12px; }
+.is-fitted .ear-intro h2 { white-space: nowrap; }
+.is-fitted .ear-groups { align-self: center; margin: 0; }
+.is-fitted .ear-level { padding: 8px 14px 7px; border-radius: 14px; }
+.is-fitted .ear-level strong { font-size: 18px; }
+.is-fitted .ear-lab .ear-level small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.is-fitted .ear-level-foot { margin-top: 2px; }
+.is-fitted .ear-stage { min-height: 0; margin-top: 12px; padding: 18px 24px; }
+.is-fitted .ear-stage.has-side { grid-template-columns: minmax(0, 1fr) 300px; }
+.is-fitted .ear-side { gap: 10px; }
+.is-fitted .ear-side-title { margin-bottom: 6px; }
+.is-fitted .ear-round-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 6px; }
+.is-fitted .ear-round-list li { min-height: 26px; padding: 0 6px; }
+.is-fitted .ear-teams { gap: 6px; }
+.is-fitted .ear-team { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "name score actions"; gap: 0 10px; padding: 5px 8px 5px 10px; }
+.is-fitted .ear-team-score { font-size: 24px; }
+.is-fitted .ear-team-actions button { min-width: 34px; min-height: 32px; }
+.is-fitted .ear-team-actions button.is-plus { min-width: 44px; }
+/* 本轮十题收成五个一排的小格：题号和对错，题目文字不再占行。 */
+.is-fitted .ear-round-list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.is-fitted .ear-round-list li { grid-template-columns: auto auto; justify-content: center; gap: 4px; padding: 0 4px; background: #fff; box-shadow: inset 0 0 0 1px var(--e-line); }
+.is-fitted .ear-round-list .ear-round-text { display: none; }
+.is-fitted .ear-round-list .is-current { box-shadow: inset 0 0 0 1px var(--e-pine); }
