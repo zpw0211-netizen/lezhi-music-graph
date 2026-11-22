@@ -3,12 +3,15 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNod
 import { EDITION, PUBLISHED_BOOK_SHORT_NAMES } from "../../lib/app/books";
 import { getScoreMedia } from "../../lib/app/unit-data";
 import { bareWorkName, type BookDirectory, type CanonicalGraph } from "../../lib/app/types";
-import { barsWith, buildKMap, excerpt, GROUPS, isExcerpt, melodyMode, mergeKMaps, scorePointOf, type KEdge, type KGroup, type KMap, type KNode, type KWork } from "../../lib/graph/kmap";
+import { barsWith, buildKMap, excerpt, GROUPS, isExcerpt, melodyMode, mergeKMaps, pointLabel, scorePointOf, type KDef, type KEdge, type KGroup, type KMap, type KNode, type KWork } from "../../lib/graph/kmap";
 import { melodiesFor } from "../../lib/lesson/melodies";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
 
 type Tool = "rhythm" | "ear" | "lab" | "compose";
+/** 五个版本课本里的讲解（scripts/build-kmap-shared-defs.mjs 生成），本册没讲的知识点借来用。 */
+type SharedDef = { e: string; label: string; text: string; book: string; page?: number };
+const HOME_EDITION = EDITION.key.replace(/-staff$/, "");
 type Point = { x: number; y: number };
 // 图是圆的：所有节点都排在一个（略扁的）圆里，要素在中圈，全套视图的分册在内圈。
 /** 画布：电脑上是横的椭圆；手机上是竖的长图，宽度贴着屏幕，高度随知识点多少伸缩。 */
@@ -288,6 +291,23 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
   const near = focus ? neighbours.get(focus) : undefined;
   const select = (node?: KNode) => onRoute(bookKey, node ? (node.kind === "work" ? bareWorkName(node.name) : node.name) : undefined);
 
+  // 本册没讲解的知识点，借用课本里的讲解：先找本版本其他分册，再找别的版本。讲解文件单独打包，用到时才下载。
+  const [sharedDefs, setSharedDefs] = useState<Record<string, SharedDef[]> | null>(null);
+  useEffect(() => {
+    let live = true;
+    import("../../lib/graph/kmap-shared-defs.json").then((module) => { if (live) setSharedDefs(module.default as Record<string, SharedDef[]>); }).catch(() => undefined);
+    return () => { live = false; };
+  }, []);
+  const defsOf = (node: KNode): { defs: KDef[]; borrowed: boolean } => {
+    if (node.defs.length || !sharedDefs) return { defs: node.defs, borrowed: false };
+    const seen = new Set<string>();
+    const found = [node.name, ...node.aliases].flatMap((name) => sharedDefs[name] ?? [])
+      .filter((def) => !seen.has(def.text) && Boolean(seen.add(def.text)))
+      .sort((a, b) => Number(b.e === HOME_EDITION) - Number(a.e === HOME_EDITION));
+    const home = found.some((def) => def.e === HOME_EDITION);
+    return { defs: found.slice(0, 2).map(({ label, text, book, page }) => ({ label, text, book, page })), borrowed: found.length > 0 && !home };
+  };
+
   const visible = (node: KNode) => node.core || (showAll && !map.whole) || node.id === selected?.id
     || (selected?.kind === "hub" && node.group === selected.group) || Boolean(selected && neighbours.get(selected.id)?.has(node.id));
   const visiblePoints = map.nodes.filter((node) => node.kind === "point" && visible(node));
@@ -356,6 +376,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
           <img alt={scores[0].title ?? `${work.name}课本乐谱`} loading="lazy" src={assetUrl(scores[0].url)} />}</Fold>}
       </li>;
     };
+    const { defs, borrowed } = defsOf(node);
     const otherBooks = node.books.filter((key) => books.some((item) => item.key === key));
     const practice = PRACTICE[node.group!] ?? [];
     // 和它有乐理关系的知识点：图上的连线写成文字，手机上没有连线图时也看得到。
@@ -366,17 +387,19 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
     return <>
       <header className="kmap-card-head">
         <span className={`kmap-chip hue-${GROUPS[node.group!].hue}`}>{GROUPS[node.group!].name}</span>
-        <h2>{node.name}</h2>
+        <h2>{pointLabel(node.name)}</h2>
         <p>{[node.aliases.length ? `教材里也写作 ${node.aliases.join("、")}` : "", `${here} ${works.length} 首作品用到`, scope && otherBooks.length ? `${otherBooks.length} 册学到` : ""].filter(Boolean).join(" · ")}</p>
       </header>
       <section>
         <h3>讲解</h3>
-        {node.defs.length ? <dl className="kmap-defs">{node.defs.map((def) => <div key={def.text}><dt>{def.label}</dt><dd>{def.text}{def.book || def.page ? <small>{[def.book, def.page ? `教材第 ${def.page} 页` : ""].filter(Boolean).join(" · ")}</small> : null}</dd></div>)}</dl>
-          : <p className="kmap-quiet">教材没有单独讲解它，下面是用到它的作品。</p>}
+        {defs.length ? <>
+          {borrowed && <p className="kmap-quiet">这一版教材没有单独讲解它，下面引自其他课本。</p>}
+          <dl className="kmap-defs">{defs.map((def) => <div key={def.text}><dt>{def.label}</dt><dd>{def.text}{def.book || def.page ? <small>{[def.book, def.page ? `教材第 ${def.page} 页` : ""].filter(Boolean).join(" · ")}</small> : null}</dd></div>)}</dl>
+        </> : <p className="kmap-quiet">教材没有单独讲解它，下面是用到它的作品。</p>}
       </section>
       {related.length > 0 && <section>
         <h3>相关知识点</h3>
-        <ul className="kmap-related">{related.map(({ other, label }) => <li key={other.id}><span>{label}</span><button type="button" className={`hue-${GROUPS[other.group!].hue}`} onClick={() => select(other)}>{other.name}</button></li>)}</ul>
+        <ul className="kmap-related">{related.map(({ other, label }) => <li key={other.id}><span>{label}</span><button type="button" className={`hue-${GROUPS[other.group!].hue}`} onClick={() => select(other)}>{pointLabel(other.name)}</button></li>)}</ul>
       </section>}
       {examples.length > 0 && <section>
         <h3>谱例与音频</h3>
@@ -427,7 +450,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       {node.defs.length > 0 && <section><h3>讲解</h3><dl className="kmap-defs">{node.defs.map((def) => <div key={def.text}><dt>{def.label}</dt><dd>{def.text}</dd></div>)}</dl></section>}
       <section>
         <h3>知识点</h3>
-        <ul className="kmap-members">{members.map((item) => <li key={item.id}><button type="button" onClick={() => select(item)}>{item.name}</button><small>{item.works.length ? `${item.works.length} 首作品` : "有讲解"}</small></li>)}</ul>
+        <ul className="kmap-members">{members.map((item) => <li key={item.id}><button type="button" onClick={() => select(item)}>{pointLabel(item.name)}</button><small>{item.works.length ? `${item.works.length} 首作品` : "有讲解"}</small></li>)}</ul>
       </section>
     </>;
   };
@@ -445,7 +468,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       </header>
       <section>
         <h3>这一课的知识点</h3>
-        <div className="kmap-tags">{linked.map((item) => <button type="button" key={item.id} className={`hue-${GROUPS[item.group!].hue}`} onClick={() => select(item)}>{item.name}</button>)}</div>
+        <div className="kmap-tags">{linked.map((item) => <button type="button" key={item.id} className={`hue-${GROUPS[item.group!].hue}`} onClick={() => select(item)}>{pointLabel(item.name)}</button>)}</div>
       </section>
       {melodies.length > 0 && <section><h3>旋律</h3><MelodySet melodies={melodies} notationStyle={notationStyle} /></section>}
     </>;
@@ -463,7 +486,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       </header>
       <section>
         <h3>知识点</h3>
-        <ul className="kmap-members">{linked.map(({ point, count }) => <li key={point.id}><button type="button" onClick={() => select(point)}>{point.name}</button><small>{count} 首作品</small></li>)}</ul>
+        <ul className="kmap-members">{linked.map(({ point, count }) => <li key={point.id}><button type="button" onClick={() => select(point)}>{pointLabel(point.name)}</button><small>{count} 首作品</small></li>)}</ul>
       </section>
     </>;
   };
@@ -478,19 +501,22 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
     const half = (textWidth(node.name, node.kind === "hub" ? 17 : 13) + 30) / 2;
     return [{ x0: at.x - half, x1: at.x + half, y0: at.y - (node.kind === "hub" ? 18 : 12), y1: at.y + (node.kind === "hub" ? 18 : 12) }];
   });
-  // 知识点名字默认写在圆点下面；会碰到胶囊、分册标签或已经写下的名字时改写在上面。
-  const nameAbove = new Set<string>();
+  // 知识点名字默认写在圆点下面；会碰到胶囊、分册标签或已经写下的名字时改写在上面，上下都挡住就写在右边或左边。
+  const namePlace = new Map<string, "above" | "right" | "left">();
   const nameBoxes: Box[] = [];
   for (const node of shown) {
     const at = positions.get(node.id);
     if (!at || node.kind !== "point") continue;
     const radius = node.core ? pointRadius(node) : 4.5;
-    const half = textWidth(node.name, node.core ? 14 : 12.5) / 2;
+    const half = textWidth(pointLabel(node.name), node.core ? 14 : 12.5) / 2;
     const taken = [...pills, ...nameBoxes];
     let name = { x0: at.x - half, x1: at.x + half, y0: at.y + radius + 2, y1: at.y + radius + 18 };
     if (taken.some((box) => overlaps(name, box))) {
       const above = { x0: name.x0, x1: name.x1, y0: at.y - radius - 20, y1: at.y - radius - 3 };
-      if (!taken.some((box) => overlaps(above, box))) { nameAbove.add(node.id); name = above; }
+      const right = { x0: at.x + radius + 3, x1: at.x + radius + 5 + half * 2, y0: at.y - 9, y1: at.y + 8 };
+      const left = { x0: at.x - radius - 5 - half * 2, x1: at.x - radius - 3, y0: at.y - 9, y1: at.y + 8 };
+      const free = ([["above", above], ["right", right], ["left", left]] as const).find(([, box]) => !taken.some((other) => overlaps(box, other)));
+      if (free) { namePlace.set(node.id, free[0]); name = free[1]; }
     }
     nameBoxes.push({ x0: at.x - radius, x1: at.x + radius, y0: at.y - radius, y1: at.y + radius }, name);
   }
@@ -514,7 +540,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       const size = 7 + Math.round(9 * Math.sqrt(node.works.length / max));
       const state = node.id === selected?.id ? " is-selected" : near?.has(node.id) ? " is-near" : selected ? " is-dim" : "";
       return <button key={node.id} type="button" data-kpoint={node.id} className={`kmap-pchip${small ? " is-small" : ""}${state}`} onClick={() => select(node)} aria-label={`知识点：${node.name}，${node.works.length} 首作品`}>
-        <i style={{ width: size, height: size }} />{node.name}{node.works.length > 0 && <small>{node.works.length}</small>}
+        <i style={{ width: size, height: size }} />{pointLabel(node.name)}{node.works.length > 0 && <small>{node.works.length}</small>}
       </button>;
     };
     const groups = (Object.keys(GROUPS) as KGroup[]).map((group) => ({ group, members: listed.filter((node) => node.group === group) })).filter(({ members }) => members.length);
@@ -637,7 +663,11 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             const radius = node.core ? pointRadius(node) : 4.5;
             return <g key={node.id} className={`kmap-node is-point hue-${GROUPS[node.group!].hue}${node.core ? "" : " is-minor"}${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" data-motion-ignore="" aria-label={`知识点：${node.name}，${node.works.length} 首作品`} onKeyDown={key} {...handlers}>
               <circle r={radius} />
-              <text textAnchor="middle" y={nameAbove.has(node.id) ? -radius - 7 : radius + 14}>{node.name}</text>
+              {(() => {
+                const place = namePlace.get(node.id);
+                if (place === "right" || place === "left") return <text textAnchor={place === "right" ? "start" : "end"} x={place === "right" ? radius + 4 : -radius - 4} dy="0.35em">{pointLabel(node.name)}</text>;
+                return <text textAnchor="middle" y={place === "above" ? -radius - 7 : radius + 14}>{pointLabel(node.name)}</text>;
+              })()}
             </g>;
           })}
         </svg>
@@ -650,7 +680,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
           {selected.kind === "hub" ? hubCard(selected) : selected.kind === "book" ? bookCard(selected) : selected.kind === "work" ? workCard(selected) : pointCard(selected)}
         </> : <>
           <header className="kmap-card-head"><h2>从这里开始</h2><p>{scope ? "全套教材" : "这一册"}用得最多的知识点：</p></header>
-          <ul className="kmap-members">{top.map((item) => <li key={item.id}><button type="button" onClick={() => select(item)}>{item.name}</button><small>{item.works.length} 首作品</small></li>)}</ul>
+          <ul className="kmap-members">{top.map((item) => <li key={item.id}><button type="button" onClick={() => select(item)}>{pointLabel(item.name)}</button><small>{item.works.length} 首作品</small></li>)}</ul>
           <p className="kmap-quiet">也可以直接点左边图里的圆点。线上的字是两头的关系，比如一首歌的“拍号”是二拍子。</p>
         </>}
       </aside>

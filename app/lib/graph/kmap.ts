@@ -21,6 +21,11 @@ export const GROUPS: Record<KGroup, { name: string; hue: "pine" | "ochre" | "bri
   perform: { name: "演唱演奏", hue: "ink" },
   sign: { name: "记号", hue: "ink" },
 };
+// 力度记号只写字母不好认，图上和标签里带上意思。
+const DYNAMIC_MEANING: Record<string, string> = { ppp: "最弱", pp: "很弱", p: "弱", mp: "中弱", mf: "中强", f: "强", ff: "很强", fff: "最强", sf: "突强", sfz: "突强", fp: "强后突弱" };
+/** 知识点显示用的名字（路由、查找仍用 name）。 */
+export const pointLabel = (name: string) => (DYNAMIC_MEANING[name] ? `${name} ${DYNAMIC_MEANING[name]}` : name);
+
 export type KDef = { label: string; text: string; page?: number; /** 讲解来自别的分册时，那一册的名字。 */ book?: string };
 export type KNode = {
   id: string;
@@ -199,7 +204,8 @@ export function excerpt(melody: Melody, start: number, count = 2): Melody {
   };
 }
 
-export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (workName: string) => Melody[], bookTitle: (key: string) => string | undefined = () => undefined): KMap {
+/** extraWork：这首作品不是目录里的课、也没录旋律（比如课本列出的欣赏曲目），也收进来，课程页要算它用到的知识点。 */
+export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (workName: string) => Melody[], bookTitle: (key: string) => string | undefined = () => undefined, extraWork?: string): KMap {
   const byId = new Map(graph.entities.map((entity) => [entity.id, entity]));
   const inBook = (entity?: Entity) => Boolean(entity?.bookKeys?.includes(bookKey));
   const relations = graph.relationships.filter((relation) => !relation.provenance && !relation.extended && matchesBookScope(bookKey, relation.bookKeys));
@@ -219,7 +225,7 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
   for (const relation of relations) if (relation.predicate === "学习方式") modes.set(relation.subject, valueOf(relation));
   for (const entity of graph.entities) {
     if (!entity.name.startsWith("《") || !inBook(entity)) continue;
-    if (!modes.has(entity.id) && !melodiesOf(entity.name).length) continue;
+    if (!modes.has(entity.id) && entity.id !== extraWork && !melodiesOf(entity.name).length) continue;
     const unit = unitOf.get(entity.id);
     works.set(entity.id, { id: entity.id, entity: entity.id, book: bookKey, name: entity.name, type: entity.type, unit: unit?.name, unitOrder: unit?.order ?? 99, page: entity.firstPageByBook?.[bookKey] ?? 999, mode: modes.get(entity.id) });
   }
