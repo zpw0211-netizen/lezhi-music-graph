@@ -351,7 +351,7 @@ const textbook = {
         },
         {
           name: "附点音符",
-          type: "附点音符",
+          type: "音乐概念",
           unit: 3,
           mode: "附点音符",
           page: 20,
@@ -850,7 +850,7 @@ const textbook = {
         },
         {
           name: "全音符",
-          type: "音的长短",
+          type: "音乐概念",
           unit: 6,
           mode: "音的长短",
           page: 49,
@@ -864,7 +864,7 @@ const textbook = {
         },
         {
           name: "音符时值",
-          type: "复习与回顾",
+          type: "音乐概念",
           unit: 6,
           mode: "复习与回顾",
           page: 49,
