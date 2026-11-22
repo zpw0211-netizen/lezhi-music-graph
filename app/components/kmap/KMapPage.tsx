@@ -11,10 +11,29 @@ import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
 type Tool = "rhythm" | "ear" | "lab" | "compose";
 type Point = { x: number; y: number };
 // 图是圆的：所有节点都排在一个（略扁的）圆里，要素在中圈，全套视图的分册在内圈。
-const W = 900;
-const H = 840;
-const RX = 432;
-const RY = 404;
+/** 画布：电脑上是横的椭圆；手机上是竖的长图，宽度贴着屏幕，高度随知识点多少伸缩。 */
+type Frame = { W: number; H: number; RX: number; RY: number; tall: boolean };
+const WIDE: Frame = { W: 900, H: 840, RX: 432, RY: 404, tall: false };
+/** 竖图里每个要素分到的一段高度：按这一组知识点多少定（隐藏的非核心点少算一些）。 */
+function tallBands(map: KMap): { bands: Map<string, { y0: number; y1: number }>; H: number } {
+  const placed = map.whole ? map.nodes.filter((node) => node.core) : map.nodes;
+  const bands = new Map<string, { y0: number; y1: number }>();
+  let y = 30;
+  for (const group of Object.keys(GROUPS) as KGroup[]) {
+    const points = placed.filter((node) => node.kind === "point" && node.group === group);
+    if (!points.length) continue;
+    // 只有隐藏的非核心点的要素只留一小段（勾“显示全部”时再挤一挤）。
+    const core = points.filter((node) => node.core).length;
+    const height = core ? Math.max(92, (core + (points.length - core) * 0.25) * 30) : 40;
+    bands.set(group, { y0: y, y1: y + height });
+    y += height;
+  }
+  return { bands, H: Math.round(y + 30) };
+}
+const tallFrame = (map: KMap): Frame => {
+  const { H } = tallBands(map);
+  return { W: 360, H, RX: 174, RY: H / 2 - 6, tall: true };
+};
 const melodyBook = (key: string) => (EDITION.notation === "staff" ? `wx-${key}` : key);
 const notationStyle = EDITION.notation === "staff" ? "staff" : "jianpu";
 const bookLabel = (book: BookDirectory) => PUBLISHED_BOOK_SHORT_NAMES[book.key] ?? `${book.grade}${book.semester.replace(/册$/, "")}`;
@@ -38,19 +57,26 @@ const PRACTICE: Partial<Record<KGroup, Array<{ tool: Tool; label: string; hint: 
 };
 
 /** 固定种子的力导向布局：同一册书每次打开位置都一样。 */
-function layout(map: KMap): Map<string, Point> {
+function layout(map: KMap, frame: Frame): Map<string, Point> {
+  const { W, H, RX, RY, tall } = frame;
   let seed = 20261111;
   const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
   const groups = Object.keys(GROUPS) as KGroup[];
   const anchor = new Map<string, Point>();
-  groups.forEach((group, index) => {
+  // 全套视图：分册在圆心围成一圈，从正上方起顺时针由低年级到高年级；非核心知识点不参与布局。
+  const placed = map.whole ? map.nodes.filter((node) => node.core) : map.nodes;
+  // 竖图：有知识点的要素从上到下各占一段，左右交错；知识点只在自己那一段里排；分册排在中线上。
+  const bands = tall ? tallBands(map).bands : new Map<string, { y0: number; y1: number }>();
+  if (tall) {
+    [...bands.entries()].forEach(([group, band], index) => anchor.set(`hub:${group}`, { x: W * (index % 2 ? 0.68 : 0.32), y: band.y0 + Math.min(48, (band.y1 - band.y0) / 2) }));
+    groups.filter((group) => !bands.has(group)).forEach((group) => anchor.set(`hub:${group}`, { x: W / 2, y: H / 2 }));
+  } else groups.forEach((group, index) => {
     const angle = (index / groups.length) * Math.PI * 2 - Math.PI / 2;
     anchor.set(`hub:${group}`, { x: W / 2 + Math.cos(angle) * RX * 0.66, y: H / 2 + Math.sin(angle) * RY * 0.66 });
   });
-  // 全套视图：分册在圆心围成一圈，从正上方起顺时针由低年级到高年级；非核心知识点不参与布局。
-  const placed = map.whole ? map.nodes.filter((node) => node.core) : map.nodes;
   const bookNodes = placed.filter((node) => node.kind === "book");
   bookNodes.forEach((node, index) => {
+    if (tall) { anchor.set(node.id, { x: W / 2, y: H * (0.1 + (0.8 * index) / Math.max(1, bookNodes.length - 1)) }); return; }
     const angle = (index / bookNodes.length) * Math.PI * 2 - Math.PI / 2;
     const ring = bookNodes.length > 8 ? 0.3 : 0.2;
     anchor.set(node.id, { x: W / 2 + Math.cos(angle) * RX * ring, y: H / 2 + Math.sin(angle) * RY * ring });
@@ -58,17 +84,20 @@ function layout(map: KMap): Map<string, Point> {
   const position = new Map<string, Point>();
   const reach = new Map<string, number>();
   for (const node of placed) {
-    const base = anchor.get(node.id) ?? (node.kind === "point" ? anchor.get(`hub:${node.group}`)! : { x: W / 2, y: H / 2 });
+    const band = node.kind === "point" ? bands.get(node.group!) : undefined;
+    const base = anchor.get(node.id) ?? (band ? { x: W / 2, y: (band.y0 + band.y1) / 2 } : node.kind === "point" ? anchor.get(`hub:${node.group}`)! : { x: W / 2, y: H / 2 });
     const spread = anchor.has(node.id) ? 0 : node.kind === "point" ? 70 : 150;
     position.set(node.id, { x: base.x + (random() - 0.5) * spread, y: base.y + (random() - 0.5) * spread });
     reach.set(node.id, node.kind === "hub" ? 36 : node.kind === "book" ? 22 : node.kind === "work" ? 11 : node.core ? Math.max(pointRadius(node) + 6, textWidth(node.name, 14) * 0.45 + 8) : 9);
   }
   const kind = new Map(placed.map((node) => [node.id, node.kind]));
+  const groupOf = new Map(placed.map((node) => [node.id, node.group]));
   const labelHalf = new Map(placed.filter((node) => node.kind === "point").map((node) => [node.id, textWidth(node.name, 14) / 2]));
   const springs = map.edges.filter((edge) => kind.has(edge.a) && kind.has(edge.b)).map((edge) => {
     const pair = [kind.get(edge.a), kind.get(edge.b)];
     const work = pair.includes("work") || pair.includes("book");
-    return { edge, length: work ? 120 : pair.includes("hub") ? 74 : 60, strength: work ? 0.006 : pair.includes("hub") ? 0.11 : 0.08 };
+    // 竖图里要素钉住不动，连它的弹簧放松一些，大组的知识点才能在整段里摊开。
+    return { edge, length: work ? 120 : pair.includes("hub") ? (tall ? 90 : 74) : 60, strength: work ? 0.006 : pair.includes("hub") ? (tall ? 0.025 : 0.11) : 0.08 };
   });
   const ids = placed.map((node) => node.id);
   for (let step = 0; step < 420; step++) {
@@ -83,7 +112,8 @@ function layout(map: KMap): Map<string, Point> {
         const dy = a.y - b.y || 0.01;
         const distance = Math.hypot(dx, dy);
         const room = reach.get(ids[i])! + reach.get(ids[j])! + 8;
-        const push = distance < room ? (room - distance) * 0.45 : (room * room) / (distance * distance) * 0.9;
+        // 竖图上下很长，远处的点不再互相推（否则各段都被挤到段边上）。
+        const push = distance < room ? (room - distance) * 0.45 : tall && distance > room * 2.2 ? 0 : (room * room) / (distance * distance) * 0.9;
         const fx = (dx / distance) * push;
         const fy = (dy / distance) * push;
         move.get(ids[i])!.x += fx; move.get(ids[i])!.y += fy;
@@ -97,20 +127,33 @@ function layout(map: KMap): Map<string, Point> {
       const dy = b.y - a.y;
       const distance = Math.hypot(dx, dy) || 1;
       const pull = (distance - length) * strength;
-      move.get(edge.a)!.x += (dx / distance) * pull; move.get(edge.a)!.y += (dy / distance) * pull;
-      move.get(edge.b)!.x -= (dx / distance) * pull; move.get(edge.b)!.y -= (dy / distance) * pull;
+      // 竖图：作品去找知识点，知识点不被作品和分册拽走（只动作品、分册那一头，力道加倍）。
+      const loose = (id: string) => kind.get(id) === "work" || kind.get(id) === "book";
+      const solo = tall ? (loose(edge.a) ? "a" : loose(edge.b) ? "b" : null) : null;
+      if (solo !== "b") { const k = solo ? 2 : 1; move.get(edge.a)!.x += (dx / distance) * pull * k; move.get(edge.a)!.y += (dy / distance) * pull * k; }
+      if (solo !== "a") { const k = solo ? 2 : 1; move.get(edge.b)!.x -= (dx / distance) * pull * k; move.get(edge.b)!.y -= (dy / distance) * pull * k; }
     }
     for (const id of ids) {
       const at = position.get(id)!;
       const delta = move.get(id)!;
+      // 竖图里要素钉在自己的位置上，知识点围着它们排。
+      if (tall && kind.get(id) === "hub") continue;
       const home = anchor.get(id);
-      if (home) { const hold = kind.get(id) === "book" ? 0.5 : 0.14; delta.x += (home.x - at.x) * hold; delta.y += (home.y - at.y) * hold; }
-      delta.x += (W / 2 - at.x) * 0.002; delta.y += (H / 2 - at.y) * 0.003;
+      if (home) { const hold = kind.get(id) === "book" ? 0.5 : tall ? 0.3 : 0.14; delta.x += (home.x - at.x) * hold; delta.y += (home.y - at.y) * hold; }
+
+      delta.x += (W / 2 - at.x) * 0.002; if (!tall) delta.y += (H / 2 - at.y) * 0.003;
       const size = Math.hypot(delta.x, delta.y) || 1;
       const limit = Math.min(size, 3 + 22 * heat);
       at.x += (delta.x / size) * limit;
       at.y += (delta.y / size) * limit;
-      // 出了圆就拉回到圆边上（标签长的点多留一点）。
+      // 出了圆就拉回到圆边上（标签长的点多留一点）；竖图是圆角长方形，出边就推回来。
+      if (tall) {
+        const side = kind.get(id) === "work" ? 10 : Math.max(26, (labelHalf.get(id) ?? 0) + 4);
+        const band = kind.get(id) === "point" ? bands.get(groupOf.get(id)!) : undefined;
+        at.x = Math.min(W - side, Math.max(side, at.x));
+        at.y = band ? Math.min(band.y1 - 22, Math.max(band.y0 + 12, at.y)) : Math.min(H - 30, Math.max(24, at.y));
+        continue;
+      }
       const rx = RX - (kind.get(id) === "work" ? 10 : Math.max(30, (labelHalf.get(id) ?? 0)));
       const ry = RY - (kind.get(id) === "work" ? 10 : 26);
       const out = Math.hypot((at.x - W / 2) / rx, (at.y - H / 2) / ry);
@@ -151,7 +194,18 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
     const inScope = books.filter((item) => SCOPES[scope].test(gradeOf(item.key))).sort((a, b) => a.key.replace(/^.*(g\d+s\d)$/, "$1").localeCompare(b.key.replace(/^.*(g\d+s\d)$/, "$1")));
     return mergeKMaps(inScope.map((item) => one(item.key)), inScope.map((item) => ({ key: item.key, label: bookLabel(item) })));
   }, [graph, bookKey, books, scope]);
-  const basePositions = useMemo(() => layout(map), [map]);
+  // 手机竖屏用竖的长图，不用左右滑。
+  const [narrow, setNarrow] = useState(() => typeof window !== "undefined" && window.matchMedia("(max-width: 700px)").matches);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 700px)");
+    const update = () => setNarrow(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  const frame = useMemo(() => (narrow ? tallFrame(map) : WIDE), [narrow, map]);
+  const { W, H, RX, RY } = frame;
+  const basePositions = useMemo(() => layout(map, frame), [map, frame]);
   const nodeById = useMemo(() => new Map(map.nodes.map((node) => [node.id, node])), [map]);
   const entityById = useMemo(() => new Map(graph.entities.map((entity) => [entity.id, entity])), [graph.entities]);
   const neighbours = useMemo(() => {
@@ -179,11 +233,12 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       const angle = index * 2.399963;
       const x = centre.x + Math.cos(angle) * radius * 1.35;
       const y = centre.y + Math.sin(angle) * radius;
+      if (frame.tall) { result.set(node.id, { x: Math.min(W - 30, Math.max(30, x)), y: Math.min(H - 30, Math.max(24, y)) }); continue; }
       const out = Math.max(1, Math.hypot((x - W / 2) / (RX - 34), (y - H / 2) / (RY - 24)));
       result.set(node.id, { x: W / 2 + (x - W / 2) / out, y: H / 2 + (y - H / 2) / out });
     }
     return result;
-  }, [basePositions, map]);
+  }, [basePositions, map, frame, W, H, RX, RY]);
   const [hover, setHoverNow] = useState<string | null>(null);
   // 鼠标划过一串点时不必每个都点亮：停稳一小会儿才算，离开也稍等一下（紧接着进了另一个点就直接换）。
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -197,8 +252,18 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
   const selectedAt = selected ? positions.get(selected.id) : undefined;
   useEffect(() => {
     const stage = stageRef.current;
-    if (!stage || !selectedAt || stage.scrollWidth <= stage.clientWidth) return;
+    if (!stage || !selectedAt) return;
+    // 竖图：讲解卡从底部升起，把选中的点滚到屏幕上方三分之一处。
+    if (frame.tall) {
+      const svg = stage.querySelector("svg");
+      if (!svg) return;
+      const box = svg.getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + box.top + (selectedAt.y / H) * box.height - window.innerHeight * 0.22, behavior: "smooth" });
+      return;
+    }
+    if (stage.scrollWidth <= stage.clientWidth) return;
     stage.scrollTo({ left: (selectedAt.x / W) * stage.scrollWidth - stage.clientWidth / 2, behavior: "smooth" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAt]);
   // 换一册时，没有选中的点就先看图的正中间（要素都在中圈）。
   useEffect(() => {
@@ -425,15 +490,19 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       </div>
     </header>
 
-    <div className={`kmap-body${selected ? " has-card" : ""}`}>
+    <div className={`kmap-body${selected ? " has-card" : ""}${frame.tall ? " is-tall" : ""}`}>
       <div className="kmap-stage" ref={stageRef}>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${title}核心知识点图`} onClick={() => select(undefined)}>
           <defs>
             <marker id="kmap-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L7 4 L0 7 z" fill="#A9B6AF" /></marker>
             <marker id="kmap-arrow-on" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L7 4 L0 7 z" fill="#1E7A4A" /></marker>
           </defs>
-          <ellipse className="kmap-disc" cx={W / 2} cy={H / 2} rx={RX + 10} ry={RY + 10} />
-          <ellipse className="kmap-ring" cx={W / 2} cy={H / 2} rx={RX * 0.66} ry={RY * 0.66} />
+          {frame.tall
+            ? <rect className="kmap-disc" x={3} y={3} width={W - 6} height={H - 6} rx={26} />
+            : <>
+              <ellipse className="kmap-disc" cx={W / 2} cy={H / 2} rx={RX + 10} ry={RY + 10} />
+              <ellipse className="kmap-ring" cx={W / 2} cy={H / 2} rx={RX * 0.66} ry={RY * 0.66} />
+            </>}
           <g className="kmap-edges">{map.edges.filter((edge) => shownIds.has(edge.a) && shownIds.has(edge.b)).map((edge) => {
             const labelBox = (x: number, y: number, text: string, angle: number) => {
               const w = textWidth(text, 11.5) / 2 + 1, h = 6, c = Math.abs(Math.cos(angle * Math.PI / 180)), s = Math.abs(Math.sin(angle * Math.PI / 180));

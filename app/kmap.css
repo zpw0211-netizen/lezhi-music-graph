@@ -107,6 +107,15 @@
   .kmap-legend { position:sticky; left:0; }
   .kmap-swipe { display:block; flex-basis:100%; color:var(--pine); }
 }
+/* 手机竖屏：竖的长图贴着屏幕宽，只上下滚；点开知识点，讲解卡从底部升起。 */
+@media (max-width:700px) {
+  .kmap-body.is-tall .kmap-stage { overflow:visible; }
+  .kmap-body.is-tall .kmap-stage svg { min-width:0; max-height:none; }
+  .kmap-body.is-tall .kmap-swipe { display:none; }
+  .kmap-body.is-tall.has-card { padding-bottom:58vh; }
+  .kmap-body.is-tall.has-card .kmap-card { position:fixed; left:0; right:0; bottom:0; z-index:60; max-height:58vh; overflow-y:auto; overscroll-behavior:contain; padding-top:28px; border-radius:16px 16px 0 0; box-shadow:0 -10px 30px rgba(20,42,31,.16); }
+  .kmap-body.is-tall.has-card .kmap-card::before { content:""; position:absolute; top:10px; left:50%; width:40px; height:4px; margin-left:-20px; border-radius:2px; background:var(--line); }
+}
 @media (prefers-reduced-motion:reduce) { .kmap-node circle { transition:none; } }
 
 /* 全套视图：分册点 */
