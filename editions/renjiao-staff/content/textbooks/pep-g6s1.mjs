@@ -69,7 +69,44 @@ const CONTENTS = [
 const SCORE_PAGES = {"前门情思大碗茶":[[8,0.04,0.035,0.96,0.94]],"故乡的小路":[[11,0.04,0.035,0.96,0.94]],"四小天鹅舞曲":[[21,0.04,0.035,0.96,0.94]],"大红枣儿甜又香":[[22,0.04,0.035,0.96,0.94]],"雪绒花":[[30,0.04,0.035,0.96,0.94]],"姹紫嫣红":[[42,0.04,0.035,0.96,0.94]],"都有一颗红亮的心":[[45,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
 const ENRICHMENT = pageEnrichmentFor("pep-g6s1");
+const TEXTBOOK_CONCEPTS = [
+  { name: "变声期", type: "音乐概念", unit: 1, page: 12, facts: [["含义", "青少年嗓音转变的时期，通常十二至十四岁开始，持续一至两年", null, "明", 12]] },
+  { name: "歌剧", type: "音乐体裁", unit: 3, page: 29, facts: [["定义为", "以音乐为主，融合戏剧、文学、舞蹈和舞台美术的综合艺术", null, "明", 29]] },
+  { name: "音乐剧", type: "音乐体裁", unit: 3, page: 29, facts: [["定义为", "由喜歌剧和小歌剧演变而来，融合戏剧、音乐和舞蹈", null, "明", 29]] },
+  { name: "念白", type: "表演形式", unit: 4, page: 48, facts: [
+    ["作用", "以富有音乐性和节奏感的语言交代剧情和人物", null, "明", 48],
+    ["包含", "韵白", "音乐概念", "明", 50],
+    ["包含", "方言白", "音乐概念", "明", 50],
+  ] },
+  { name: "韵白", type: "音乐概念", unit: 4, page: 50, facts: [["特点", "语音有规范，声调起伏夸张，富有韵律感", null, "明", 50]] },
+  { name: "方言白", type: "音乐概念", unit: 4, page: 50, facts: [["特点", "接近日常生活语言，生活气息浓郁", null, "明", 50]] },
+  { name: "曲牌", type: "音乐概念", unit: 4, page: 53, facts: [["定义为", "民间曲调的牌名，每个牌名有相应的曲调、字数和句数格式", null, "明", 53]] },
+  { name: "曲牌体", type: "音乐概念", unit: 4, page: 53, facts: [["定义为", "以曲牌为结构单位，可单用、叠用或联用曲牌的音乐结构", null, "明", 53]] },
+  { name: "点绛唇", type: "音乐概念", unit: 4, page: 54, facts: [["含义", "沿用至今的词牌和曲牌，常用于多个戏曲剧种", null, "明", 54]] },
+];
+const WORK_KNOWLEDGE = {
+  2: {
+    "采薇": [["来源体裁", "舞剧", "音乐体裁", "明", 20]],
+    "四小天鹅舞曲": [["来源体裁", "舞剧", "音乐体裁", "明", 21]],
+    "大红枣儿甜又香": [["来源体裁", "舞剧", "音乐体裁", "明", 22]],
+  },
+  3: {
+    "珊瑚颂": [["来源体裁", "歌剧", "音乐体裁", "明", 26]],
+    "快乐的捕鸟人": [["来源体裁", "歌剧", "音乐体裁", "明", 26]],
+    "雪绒花": [["来源体裁", "音乐剧", "音乐体裁", "明", 30], ["表演形式", "合唱", "表演形式", "明", 31]],
+  },
+};
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const conceptsForUnit = (no) => {
+  const additions = new Map(TEXTBOOK_CONCEPTS.filter((item) => item.unit === no).map((item) => [item.name, item]));
+  const existing = ENRICHMENT.concepts.filter((item) => item.unit === no).map((item) => {
+    const source = additions.get(item.name);
+    if (!source) return item;
+    additions.delete(item.name);
+    return { ...item, page: source.page, facts: [...(item.facts ?? []), ...source.facts] };
+  });
+  return [...existing, ...additions.values()];
+};
 const baseParts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, ...knowledgeForUnit("pep-g6s1", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g6s1", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
@@ -86,11 +123,17 @@ textbook.parts = withPrintedScores("pep-g6s1", baseParts.map((part) => {
   return {
     units: part.units,
     works: [...baseWorks, ...extraWorks],
-    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    concepts: conceptsForUnit(no),
     people: ENRICHMENT.people.filter((item) => item.unit === no),
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
+})).map((part) => ({
+  ...part,
+  works: part.works.map((work) => {
+    const facts = WORK_KNOWLEDGE[work.unit]?.[work.name];
+    return facts ? { ...work, facts: [...work.facts, ...facts] } : work;
+  }),
 }));
 
 export default textbook;
