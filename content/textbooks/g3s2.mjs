@@ -509,8 +509,8 @@ const textbook = {
       ["十六分音符", "X̲̲", null, "明"], ["十六分休止符", "0̲̲", null, "明"],
     ] },
     { name: "拍号", type: "音乐概念", unit: 4, page: 26, facts: [["包含", "四四拍", "拍号", "明", 26]] },
-    { name: "上行", type: "音乐概念", unit: 4, page: 29, facts: [] },
-    { name: "下行", type: "音乐概念", unit: 4, page: 29, facts: [] },
+    { name: "上行", type: "音乐概念", unit: 4, page: 29, facts: [["定义为", "旋律由低向高进行", null, "归", 29]] },
+    { name: "下行", type: "音乐概念", unit: 4, page: 29, facts: [["定义为", "旋律由高向低进行", null, "归", 29]] },
     { name: "音符", type: "音乐概念", unit: 4, page: 31, facts: [
       ["包含", "全音符", "音乐概念", "明", 31],
       ["包含", "二分音符", "音乐概念", "明", 31],
@@ -712,8 +712,8 @@ const textbook = {
     { name: "弱起", type: "音乐概念", page: 43, facts: [
       ["定义为", "指旋律从弱拍或弱位置开始", null, "明"],
     ] },
-    { name: "螺蛳结顶", type: "音乐概念", unit: 6, page: 41, facts: [] },
-    { name: "宝塔尖", type: "音乐概念", unit: 6, page: 41, facts: [] },
+    { name: "螺蛳结顶", type: "音乐概念", unit: 6, page: 41, facts: [["特点", "锣鼓经句子逐层缩短，呈倒三角形", null, "归", 41]] },
+    { name: "宝塔尖", type: "音乐概念", unit: 6, page: 41, facts: [["特点", "锣鼓经句子逐层增长，呈宝塔形", null, "归", 41]] },
     { name: "锣鼓经", type: "音乐概念", unit: 6, page: 41, facts: [] },
   ],
   people: [
