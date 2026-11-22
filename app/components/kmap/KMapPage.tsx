@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNod
 import { EDITION, PUBLISHED_BOOK_SHORT_NAMES } from "../../lib/app/books";
 import { getScoreMedia } from "../../lib/app/unit-data";
 import { bareWorkName, type BookDirectory, type CanonicalGraph } from "../../lib/app/types";
-import { barsWith, buildKMap, excerpt, GROUPS, isExcerpt, melodyMode, mergeKMaps, SCORE_POINTS, type KEdge, type KGroup, type KMap, type KNode, type KWork } from "../../lib/graph/kmap";
+import { barsWith, buildKMap, excerpt, GROUPS, isExcerpt, melodyMode, mergeKMaps, scorePointOf, type KEdge, type KGroup, type KMap, type KNode, type KWork } from "../../lib/graph/kmap";
 import { melodiesFor } from "../../lib/lesson/melodies";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
@@ -328,11 +328,12 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       const start = Math.max(0, last.bars.length - 2);
       return [{ work, melody: excerpt(last, start), bar: start + 1, reason: mode.reason }];
     }) : [];
-    const scored = SCORE_POINTS.includes(node.name) || modeExamples.length > 0;
+    const scorePoint = scorePointOf([node.name, ...node.aliases]);
+    const scored = Boolean(scorePoint) || modeExamples.length > 0;
     // 谱例：从乐谱里截出含有这个节奏型的两小节。
     const examples: Array<{ work: KWork; melody: ReturnType<typeof excerpt>; bar: number; reason?: string }> = modeExamples.length ? modeExamples : scored ? works.flatMap((work) => {
       for (const melody of melodiesOf(work)) {
-        const bars = barsWith(node.name, melody);
+        const bars = barsWith(scorePoint!, melody);
         if (bars.length) return [{ work, melody: excerpt(melody, Math.min(bars[0], Math.max(0, melody.bars.length - 2))), bar: bars[0] + 1 }];
       }
       return [];

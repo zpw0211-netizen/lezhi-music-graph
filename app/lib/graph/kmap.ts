@@ -56,6 +56,9 @@ const ALIAS: Record<string, string> = {
 };
 // 一首作品写了几个拍号（“4/4、2/4”）：拆开分别连到各个拍子上。
 const METER_LIST = /^\d+\/\d+(?:\s*[、，,]\s*\d+\/\d+)+$/;
+// 作品说明里的整句（“A段中板，B段慢板”“第一条2/4，第二条3/4”）不是知识点。
+const DESCRIPTION = /[，,；;：:]|均为|均用|分别|^(?:引子|主题|[A-Z]段|[A-Z]主题|第[一二三四五]条|首段|中段|两则|山间)/;
+const DESCRIPTION_TYPES = new Set(["速度术语", "拍号", "表演形式"]);
 const SYNONYMS = new Map<string, string[]>();
 for (const [a, predicate, targets] of KMAP_RELATIONS) {
   if (predicate !== "又称") continue;
@@ -95,6 +98,13 @@ function groupOf(entity: Entity): KGroup | null {
 
 /** 从转写的乐谱里认节奏型：返回含有它的小节序号。 */
 export function barsWith(pointName: string, melody: Melody): number[] {
+  // 弱起：第一小节不满一整小节（乐曲从弱拍或弱位开始）。
+  if (pointName === "弱起") {
+    const [num, den] = (melody.meter.split(/[、，,\s]+/)[0] ?? "").split("/").map(Number);
+    const first = melody.bars[0] ?? [];
+    const length = first.reduce((sum, note) => sum + note.b, 0);
+    return num && den && melody.bars.length >= 3 && length > 0 && length < (num * 4) / den - 0.01 && first.some((note) => note.d !== 0) ? [0] : [];
+  }
   const test: ((bar: MelodyNote[]) => boolean) | null =
     pointName === "附点节奏" ? (bar) => bar.some((note) => note.dots && note.d !== 0)
     : pointName === "三连音" ? (bar) => bar.some((note) => note.tri)
@@ -113,7 +123,11 @@ export function barsWith(pointName: string, melody: Melody): number[] {
   if (!test) return [];
   return melody.bars.flatMap((bar, index) => (test(bar) ? [index] : []));
 }
-export const SCORE_POINTS = ["附点节奏", "切分节奏", "三连音", "休止符"];
+export const SCORE_POINTS = ["附点节奏", "切分节奏", "三连音", "休止符", "弱起"];
+/** 谱面认出的点在课本里的其他写法。 */
+const SCORE_ALIASES: Record<string, string[]> = { 弱起: ["弱起小节"] };
+/** 图上的点对应哪种谱面认法（点名可能是“弱起小节”）。 */
+export const scorePointOf = (names: string[]) => SCORE_POINTS.find((point) => [point, ...(SCORE_ALIASES[point] ?? [])].some((name) => names.includes(name)));
 
 // ── 从旋律判断调式 ──
 // 只认有把握的：只用 1 2 3 5 6 的旋律按结束音定五声调式；大调、小调只给非民歌（或外国）作品判断，
@@ -230,10 +244,18 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
   const hubNames = new Map((Object.keys(GROUPS) as KGroup[]).map((group) => [GROUPS[group].name, group]));
   const nodeIdOf = new Map<string, string>(); // 实体 id → 节点 id
   const meterLists = new Map<string, string[]>(); // 实体 id → 拆开的拍号
+  const pointLists = new Map<string, { parts: string[]; type: string }>(); // 实体 id → 拆开的并列写法
   const nodeNamed = new Map<string, KNode>();
   for (const entity of candidates) {
     if (SKIP.has(entity.name)) continue;
     if (METER_LIST.test(entity.name)) { meterLists.set(entity.id, entity.name.split(/\s*[、，,]\s*/)); continue; }
+    if (DESCRIPTION_TYPES.has(entity.type) && DESCRIPTION.test(entity.name)) continue;
+    // “领唱、合唱”这种并列的演唱形式拆成单个知识点连到作品上；速度表情的并列（“优美、活泼地”）不上图。
+    if (DESCRIPTION_TYPES.has(entity.type) && entity.name.includes("、")) {
+      const parts = entity.name.split("、").map((part) => part.trim());
+      if (entity.type === "表演形式" && parts.every((part) => part.length >= 2 && part.length <= 8)) pointLists.set(entity.id, { parts, type: entity.type });
+      continue;
+    }
     const hub = hubNames.get(entity.name);
     if (hub) { nodeIdOf.set(entity.id, hubId(hub)); continue; }
     const target = canon(entity);
@@ -276,6 +298,20 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     link(work.id, node.id, "拍号", source);
     node.works.push(work.id);
   };
+  // 并列写法拆开后的一项：本册有这个点就连上，没有就按名字新建一个（找不到所属要素的不画）。
+  const linkPart = (work: KWork, name: string, type: string, label: string) => {
+    let node = pointByName.get(name);
+    if (!node) {
+      const group = groupOf({ name, type } as Entity);
+      if (!group) return;
+      node = { id: `kp:${name}`, name, kind: "point", group, core: false, aliases: [], defs: [], books: [bookKey], works: [] };
+      nodes.set(node.id, node);
+      pointByName.set(name, node);
+    }
+    if (node.works.includes(work.id)) return;
+    link(work.id, node.id, label, "text");
+    node.works.push(work.id);
+  };
   for (const relation of relations) {
     const subject = byId.get(relation.subject);
     if (!subject) continue;
@@ -289,6 +325,12 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     if (meters) {
       const work = works.get(subject.id);
       if (work) for (const meter of meters) linkMeter(work, meter, "text");
+      continue;
+    }
+    const list = relation.objectId ? pointLists.get(relation.objectId) : undefined;
+    if (list) {
+      const work = works.get(subject.id);
+      if (work) for (const part of list.parts) linkPart(work, part, list.type, relation.predicate);
       continue;
     }
     const to = relation.objectId ? nodeIdOf.get(relation.objectId) : undefined;
@@ -312,8 +354,8 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     if (!melodies.length) continue;
     for (const meter of new Set(melodies.flatMap((melody) => melody.meter.split(/[、，,\s]+/)))) linkMeter(work, meter, "score");
     for (const pointName of SCORE_POINTS) {
-      const entity = nameToEntity.get(pointName);
-      const id = entity && inBook(entity) ? nodeIdOf.get(entity.id) : undefined;
+      const entity = [pointName, ...(SCORE_ALIASES[pointName] ?? [])].map((name) => nameToEntity.get(name)).find((item) => item && inBook(item));
+      const id = entity ? nodeIdOf.get(entity.id) : undefined;
       if (!id || !melodies.some((melody) => barsWith(pointName, melody).length)) continue;
       link(work.id, id, "谱面出现", "score");
       const node = nodes.get(id)!;
@@ -352,6 +394,12 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
   // 没有上级知识点的，挂到所属要素上。
   const children = new Map<string, number>();
   for (const list of parents.values()) for (const parent of new Set(list)) children.set(parent, (children.get(parent) ?? 0) + 1);
+  // 和本册两个以上知识点有乐理关系的点数（高中编创里的织体、和声这类，课本没有作品连着），排完其他核心点后有空位再补上。
+  const peers = new Map<string, number>();
+  for (const edge of edges.values()) {
+    if (nodes.get(edge.a)?.kind !== "point" || nodes.get(edge.b)?.kind !== "point") continue;
+    for (const id of [edge.a, edge.b]) peers.set(id, (peers.get(id) ?? 0) + 1);
+  }
   for (const node of nodes.values()) {
     if (node.kind !== "point") continue;
     node.core = node.defs.length > 0 || node.works.length >= 2 || (children.get(node.id) ?? 0) >= 2;
@@ -379,6 +427,11 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     .filter((node) => !node.core && !folded.has(node.id) && (parents.get(node.id) ?? []).some((parent) => nodes.get(parent)?.core))
     .sort((a, b) => b.works.length - a.works.length);
   for (const node of theoryChildren) {
+    if (coreCount >= 46) break;
+    node.core = true;
+    coreCount += 1;
+  }
+  for (const node of points.filter((item) => !item.core && !folded.has(item.id) && (peers.get(item.id) ?? 0) >= 2).sort((a, b) => (peers.get(b.id) ?? 0) - (peers.get(a.id) ?? 0))) {
     if (coreCount >= 46) break;
     node.core = true;
     coreCount += 1;
