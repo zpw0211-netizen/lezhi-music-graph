@@ -16,6 +16,7 @@
 .kmap-body { display:grid; grid-template-columns:minmax(0,2.4fr) minmax(300px,1fr); gap:20px; align-items:start; margin-top:18px; }
 .kmap-stage { position:sticky; top:12px; border:1px solid var(--line); border-radius:6px; background:var(--sheet); overflow:hidden; }
 .kmap-stage svg { display:block; width:100%; height:auto; max-height:calc(100vh - 70px); touch-action:pan-y; }
+.kmap-swipe { display:none; }
 .kmap-legend { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:0; padding:8px 14px; border-top:1px solid var(--line); color:var(--ink-3); font-size:12.5px; }
 .kmap-legend .dot { width:10px; height:10px; border-radius:50%; background:var(--k-pine); }
 .kmap-legend .dot.is-work { width:7px; height:7px; margin-left:12px; background:#9AA6A0; }
@@ -104,6 +105,7 @@
   .kmap-stage { position:static; overflow-x:auto; }
   .kmap-stage svg { min-width:680px; }
   .kmap-legend { position:sticky; left:0; }
+  .kmap-swipe { display:block; flex-basis:100%; color:var(--pine); }
 }
 @media (prefers-reduced-motion:reduce) { .kmap-node circle { transition:none; } }
 

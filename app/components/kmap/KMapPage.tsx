@@ -200,6 +200,13 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
     if (!stage || !selectedAt || stage.scrollWidth <= stage.clientWidth) return;
     stage.scrollTo({ left: (selectedAt.x / W) * stage.scrollWidth - stage.clientWidth / 2, behavior: "smooth" });
   }, [selectedAt]);
+  // 换一册时，没有选中的点就先看图的正中间（要素都在中圈）。
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || selectedAt || stage.scrollWidth <= stage.clientWidth) return;
+    stage.scrollLeft = (stage.scrollWidth - stage.clientWidth) / 2;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookKey]);
   const [showAll, setShowAll] = useState(false);
   const focus = hover ?? selected?.id ?? null;
   const near = focus ? neighbours.get(focus) : undefined;
@@ -376,6 +383,32 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
   };
 
   const top = [...corePoints].sort((a, b) => b.works.length - a.works.length).slice(0, 8);
+  // 图上已经占住的文字位置：要素胶囊、分册标签、知识点圆点和名字。关系字避开它们。
+  type Box = { x0: number; x1: number; y0: number; y1: number };
+  const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+  const pills: Box[] = shown.flatMap((node) => {
+    const at = positions.get(node.id);
+    if (!at || (node.kind !== "hub" && node.kind !== "book")) return [];
+    const half = (textWidth(node.name, node.kind === "hub" ? 17 : 13) + 30) / 2;
+    return [{ x0: at.x - half, x1: at.x + half, y0: at.y - (node.kind === "hub" ? 18 : 12), y1: at.y + (node.kind === "hub" ? 18 : 12) }];
+  });
+  // 知识点名字默认写在圆点下面；会碰到胶囊、分册标签或已经写下的名字时改写在上面。
+  const nameAbove = new Set<string>();
+  const nameBoxes: Box[] = [];
+  for (const node of shown) {
+    const at = positions.get(node.id);
+    if (!at || node.kind !== "point") continue;
+    const radius = node.core ? pointRadius(node) : 4.5;
+    const half = textWidth(node.name, node.core ? 14 : 12.5) / 2;
+    const taken = [...pills, ...nameBoxes];
+    let name = { x0: at.x - half, x1: at.x + half, y0: at.y + radius + 2, y1: at.y + radius + 18 };
+    if (taken.some((box) => overlaps(name, box))) {
+      const above = { x0: name.x0, x1: name.x1, y0: at.y - radius - 20, y1: at.y - radius - 3 };
+      if (!taken.some((box) => overlaps(above, box))) { nameAbove.add(node.id); name = above; }
+    }
+    nameBoxes.push({ x0: at.x - radius, x1: at.x + radius, y0: at.y - radius, y1: at.y + radius }, name);
+  }
+  const textBoxes: Box[] = [...pills, ...nameBoxes];
   return <section className="lesson kmap" aria-labelledby="kmap-title">
     <header className="kmap-hero">
       <div>
@@ -402,6 +435,10 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
           <ellipse className="kmap-disc" cx={W / 2} cy={H / 2} rx={RX + 10} ry={RY + 10} />
           <ellipse className="kmap-ring" cx={W / 2} cy={H / 2} rx={RX * 0.66} ry={RY * 0.66} />
           <g className="kmap-edges">{map.edges.filter((edge) => shownIds.has(edge.a) && shownIds.has(edge.b)).map((edge) => {
+            const labelBox = (x: number, y: number, text: string, angle: number) => {
+              const w = textWidth(text, 11.5) / 2 + 1, h = 6, c = Math.abs(Math.cos(angle * Math.PI / 180)), s = Math.abs(Math.sin(angle * Math.PI / 180));
+              return { x0: x - (c * w + s * h), x1: x + (c * w + s * h), y0: y - (s * w + c * h), y1: y + (s * w + c * h) };
+            };
             const from = nodeById.get(edge.a)!;
             const to = nodeById.get(edge.b)!;
             const a = positions.get(edge.a)!;
@@ -420,12 +457,18 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             // 知识点之间的关系一直标着；作品的连线选中后才标，太多时不标（右边课例里有）。
             const toBook = from.kind === "book" || to.kind === "book";
             // “包含”每条线都一样，颜色和箭头已经说明了归属，只在选中时标出来。
-            const labelled = length > 46 && (toBook ? on : work ? on && !crowded : on || (!focus && edge.label !== "包含"));
             const angle = Math.atan2(uy, ux) * 180 / Math.PI;
+            const caption = edge.source === "score" ? (edge.label === "调式" ? "从乐谱判断" : "乐谱里出现") : edge.label;
+            // 没选中时，关系字不压知识点名字和别的关系字：中点挡住了就沿线挪一挪，都挡住就先不标（选中后再标）。
+            const hits = (box: Box) => textBoxes.some((other) => overlaps(box, other));
+            const spot = on ? 0.5 : [0.5, 0.38, 0.62, 0.3, 0.7].find((t) => !hits(labelBox(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t - 3, caption, angle)));
+            const labelled = spot !== undefined && length > 46 && (toBook ? on : work ? on && !crowded : on || (!focus && edge.label !== "包含"));
+            const lx = x1 + (x2 - x1) * (spot ?? 0.5), ly = y1 + (y2 - y1) * (spot ?? 0.5);
+            if (labelled && !on) textBoxes.push(labelBox(lx, ly - 3, caption, angle));
             const state = on ? " is-on" : focus ? " is-off" : "";
             return <g key={`${edge.a}-${edge.b}`} className={`${work ? "to-work" : "to-point"}${state}`}>
               <line x1={x1} y1={y1} x2={x2} y2={y2} markerEnd={on ? "url(#kmap-arrow-on)" : work ? undefined : "url(#kmap-arrow)"} />
-              {labelled && <text transform={`translate(${(x1 + x2) / 2},${(y1 + y2) / 2}) rotate(${angle > 90 || angle < -90 ? angle + 180 : angle})`} textAnchor="middle" dy={-3}>{edge.source === "score" ? (edge.label === "调式" ? "从乐谱判断" : "乐谱里出现") : edge.label}</text>}
+              {labelled && <text transform={`translate(${lx},${ly}) rotate(${angle > 90 || angle < -90 ? angle + 180 : angle})`} textAnchor="middle" dy={-3}>{caption}</text>}
             </g>;
           })}</g>
           {shown.map((node) => {
@@ -459,11 +502,11 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             const radius = node.core ? pointRadius(node) : 4.5;
             return <g key={node.id} className={`kmap-node is-point hue-${GROUPS[node.group!].hue}${node.core ? "" : " is-minor"}${state}`} transform={`translate(${at.x},${at.y})`} tabIndex={0} role="button" data-motion-ignore="" aria-label={`知识点：${node.name}，${node.works.length} 首作品`} onKeyDown={key} {...handlers}>
               <circle r={radius} />
-              <text textAnchor="middle" y={radius + 14}>{node.name}</text>
+              <text textAnchor="middle" y={nameAbove.has(node.id) ? -radius - 7 : radius + 14}>{node.name}</text>
             </g>;
           })}
         </svg>
-        <p className="kmap-legend"><span className="kmap-legend-item"><span className="dot is-point" />知识点（圆越大，用到它的作品越多）</span>{scope ? <span className="kmap-legend-item"><span className="square" />分册（线上的数字是这一册有几首作品用到）</span> : <span className="kmap-legend-item"><span className="dot is-work" />作品</span>}<span className="kmap-legend-item"><span className="pill" />音乐要素（箭头指向它包含的知识点，颜色相同）</span></p>
+        <p className="kmap-legend"><span className="kmap-swipe">图比屏幕宽，左右滑动看全图</span><span className="kmap-legend-item"><span className="dot is-point" />知识点（圆越大，用到它的作品越多）</span>{scope ? <span className="kmap-legend-item"><span className="square" />分册（线上的数字是这一册有几首作品用到）</span> : <span className="kmap-legend-item"><span className="dot is-work" />作品</span>}<span className="kmap-legend-item"><span className="pill" />音乐要素（箭头指向它包含的知识点，颜色相同）</span></p>
       </div>
 
       <aside className="kmap-card" aria-live="polite" style={{ "--kmap-hue": "var(--pine)" } as CSSProperties}>
