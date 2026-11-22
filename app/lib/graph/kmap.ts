@@ -74,20 +74,20 @@ const TRANSCRIPT = /^1=|[♩=]|^[\d i]+(?:（|$)|^[a-z]{1,3}、|[：:]/;
 function groupOf(entity: Entity): KGroup | null {
   const name = entity.name;
   if (TRANSCRIPT.test(name)) return null;
-  if (/西皮|二黄|板腔|曲牌|锣鼓|文场|武场|行当|念白|身段|脸谱|声腔|唱腔|剧种|亮相|数板|有板无眼|一板三眼|摇板|导板|过门|[生旦净丑]角|四击头|住头|抽头|撤锣|崩登仓|行弦|润腔/.test(name)) return "opera";
-  if (entity.type === "拍号" || /拍子|^节拍$|弱起|散板|强弱规律|小节/.test(name)) return "meter";
+  if (/西皮|二黄|板腔|曲牌|锣鼓|文场|武场|行当|念白|身段|脸谱|声腔|唱腔|剧种|亮相|数板|有板无眼|一板三眼|摇板|导板|过门|[生旦净丑]角|四击头|住头|抽头|撤锣|崩登仓|行弦|润腔|板式|一板一眼|无板无眼|唱念做打/.test(name)) return "opera";
+  if (entity.type === "拍号" || /拍子|^节拍$|弱起|散板|强弱规律|小节|稳定拍|击拍/.test(name)) return "meter";
   // “连音”单写是唱奏连贯（记号），“三连音”才是节奏。
   if (entity.type === "节奏型" || /节奏|休止符|附点|音符时值|[二三四五六七]连音|切分|分音符|全音符/.test(name)) return "rhythm";
   if (entity.type === "速度术语" || /速度/.test(name)) return "tempo";
   if (DYNAMICS.test(name) || /力度|渐强|渐弱|重音|音的强弱/.test(name)) return "dynamics";
   // 民歌里的“小调”是体裁，不是大小调的小调。
   if (entity.type === "音乐体裁" && /小调$/.test(name)) return "genre";
-  if (/调式|音阶|大调|小调|转调|变化音|^主音$|^[全半]音$|终止音/.test(name)) return "mode";
-  if (/反复|D\.C\.|D\.S\.|Fine|升记号|降记号|还原记号|变音记号|跳音|顿音|断音|保持音|^连音$|延长记号|换气记号|延音线|圆滑线|终止线|五线谱|工尺谱|谱号|谱表|^音符$|^符[头干尾]$/.test(name)) return "sign";
+  if (/调式|音阶|大调|小调|转调|变化音|^主音$|^[全半]音$|终止音|^清角$|^变宫$/.test(name)) return "mode";
+  if (/反复|D\.C\.|D\.S\.|Fine|升记号|降记号|还原记号|变音记号|跳音|顿音|断音|保持音|^连音$|延长记号|换气记号|延音线|圆滑线|终止线|五线谱|工尺谱|谱号|谱表|^音符$|^符[头干尾]$|^连线$|^调号$|省略记号|连音记号|移[高低]8度记号/.test(name)) return "sign";
   if (/和声|和弦|音程|复调|织体|卡农/.test(name)) return "harmony";
-  if (/旋律|音区|装饰音|倚音|波音|滑音|颤音|音色|模进|加花|骨干音|上行|下行|音的高低|音的长短|唱名|音名|衬词/.test(name)) return "melody";
-  if (/曲式|段体|引子|副歌|呈示部|结束句|尾声|乐段|乐句|变奏|重复|起承转合|同头换尾|换头合尾|^音乐主题$|主部主题|^主题$|插部/.test(name)) return "form";
-  if (/人声分类|男高音|男低音|女高音|女低音|假声|指法|独奏|合奏|领唱|合唱|齐唱|轮唱|重唱|对唱/.test(name)) return "perform";
+  if (/旋律|音区|装饰音|倚音|波音|滑音|颤音|音色|模进|加花|骨干音|上行|下行|音的高低|音的长短|唱名|音名|衬词|^级进$|^跳进$|螺蛳结顶|^借字$|蛇蜕壳/.test(name)) return "melody";
+  if (/曲式|段体|引子|副歌|呈示部|结束句|尾声|乐段|乐句|变奏|重复|起承转合|同头换尾|换头合尾|^音乐主题$|主部主题|副部主题|^主题$|插部|段式|分节歌|^主歌$|展开部|再现部|^动机$/.test(name)) return "form";
+  if (/人声分类|男高音|男低音|女高音|女低音|假声|指法|独奏|合奏|领唱|合唱|齐唱|轮唱|重唱|对唱|声势|呼唤与回应|^戏剧表演$|^[泛按散]音$|吐法|换气法|嗓音/.test(name)) return "perform";
   if (entity.type === "音乐体裁") return "genre";
   if (entity.type === "表演形式") return "perform";
   return null;
@@ -304,12 +304,12 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
       coreCount += 1;
     }
   }
-  // 核心知识点下面分出的知识点（五声调式→宫商角徵羽）本册也讲到了，一起显示；每册最多显示到 44 个，免得太乱。
+  // 核心知识点下面分出的知识点（五声调式→宫商角徵羽）本册也讲到了，一起显示；每册最多显示到 46 个，免得太乱。
   const theoryChildren = points
     .filter((node) => !node.core && !folded.has(node.id) && (parents.get(node.id) ?? []).some((parent) => nodes.get(parent)?.core))
     .sort((a, b) => b.works.length - a.works.length);
   for (const node of theoryChildren) {
-    if (coreCount >= 44) break;
+    if (coreCount >= 46) break;
     node.core = true;
     coreCount += 1;
   }
