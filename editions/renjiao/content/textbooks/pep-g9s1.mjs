@@ -50,7 +50,31 @@ const CONTENTS = [
 const SCORE_PAGES = {"红旗颂":[[5,0.04,0.035,0.96,0.94]],"回声":[[8,0.04,0.035,0.96,0.94]],"我爱你，中国":[[48,0.04,0.035,0.96,0.94]],"妈妈教我一支歌":[[50,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
 const ENRICHMENT = pageEnrichmentFor("pep-g9s1");
+const TEXTBOOK_CONCEPTS = [
+  { name: "MIDI", type: "音乐概念", unit: 1, page: 6, facts: [["定义为", "用数字指令控制电子乐器或音源等发声设备的通信协议", null, "明", 6]] },
+  { name: "录音", type: "音乐概念", unit: 1, page: 7, facts: [["定义为", "利用设备记录声音信号的过程", null, "明", 7]] },
+  { name: "混音", type: "音乐概念", unit: 1, page: 7, facts: [["定义为", "处理并整合多个音轨的声音信号，得到一个成品音频", null, "明", 7]] },
+  { name: "乐谱", type: "音乐概念", unit: 2, page: 12, facts: [["作用", "记录和保存音乐，使作品能跨越时间和空间流传", null, "明", 12]] },
+  { name: "二度创作", type: "音乐概念", unit: 2, page: 13, facts: [["含义", "表演者把作品化为音响时融入自己的理解，形成不同的演绎", null, "明", 13]] },
+  { name: "装台", type: "音乐概念", unit: 4, page: 41, facts: [["含义", "在舞台上组装布景、安装灯具并调试音响", null, "明", 41]] },
+  { name: "合成", type: "音乐概念", unit: 4, page: 41, facts: [["含义", "装台后协调舞台各技术部门配合演员完成舞台场面变换", null, "明", 41]] },
+];
+const WORK_KNOWLEDGE = {
+  2: {
+    "c小调第五（命运）交响曲": [["音乐体裁", "交响曲", "音乐体裁", "明", 13]],
+  },
+};
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const conceptsForUnit = (no) => {
+  const additions = new Map(TEXTBOOK_CONCEPTS.filter((item) => item.unit === no).map((item) => [item.name, item]));
+  const existing = ENRICHMENT.concepts.filter((item) => item.unit === no).map((item) => {
+    const source = additions.get(item.name);
+    if (!source) return item;
+    additions.delete(item.name);
+    return { ...item, page: source.page, facts: [...(item.facts ?? []), ...source.facts] };
+  });
+  return [...existing, ...additions.values()];
+};
 const baseParts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, ...knowledgeForUnit("pep-g9s1", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g9s1", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
@@ -67,11 +91,17 @@ textbook.parts = withPrintedScores("pep-g9s1", baseParts.map((part) => {
   return {
     units: part.units,
     works: [...baseWorks, ...extraWorks],
-    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    concepts: conceptsForUnit(no),
     people: ENRICHMENT.people.filter((item) => item.unit === no),
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
+})).map((part) => ({
+  ...part,
+  works: part.works.map((work) => {
+    const facts = WORK_KNOWLEDGE[work.unit]?.[work.name];
+    return facts ? { ...work, facts: [...work.facts, ...facts] } : work;
+  }),
 }));
 
 export default textbook;
