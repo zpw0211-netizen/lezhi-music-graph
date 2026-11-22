@@ -1081,7 +1081,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "西洋管弦乐队", type: "表演形式", unit: 6, page: 44, facts: [["特点","本单元分述弦乐组和打击乐器组",null,"明"]] },
+        { name: "西洋管弦乐队", type: "表演形式", unit: 6, page: 44, facts: [["特点", "以弦乐组为支柱，该组演奏人数最多", null, "明"]] },
         { name: "中提琴独奏", type: "表演形式", unit: 6, page: 45, facts: [] },
         { name: "蒙古族民歌", type: "音乐体裁", unit: 6, page: 45, facts: [] },
         { name: "大提琴独奏", type: "表演形式", unit: 6, page: 46, facts: [] },
