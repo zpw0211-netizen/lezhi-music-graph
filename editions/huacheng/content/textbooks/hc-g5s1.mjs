@@ -250,7 +250,6 @@ const textbook = {
         { name: "还原记号", type: "音乐概念", unit: 2, page: 8, facts: [["含义","取消已经用过的升降变化，回到原音",null,"明"]] },
         { name: "附点八分音符", type: "音乐概念", unit: 2, page: 8, facts: [] },
         { name: "二声部合唱", type: "表演形式", unit: 2, page: 8, facts: [] },
-        { name: "五声音阶", type: "音乐概念", unit: 2, page: 9, facts: [["特点","比较旋律由多少种音组成",null,"明"]] },
         { name: "小提琴独奏", type: "表演形式", unit: 2, page: 12, facts: [] },
       ],
       people: [],
