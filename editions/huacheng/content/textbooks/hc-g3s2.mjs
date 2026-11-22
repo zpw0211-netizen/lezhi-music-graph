@@ -444,7 +444,7 @@ const textbook = {
           ["包含","小提琴独奏","表演形式","明"],
         ] },
         { name: "小提琴独奏", type: "表演形式", unit: 3, page: 22, facts: [] },
-        { name: "弱起", type: "音乐概念", unit: 3, page: 23, facts: [["特点","练习用弱起小节体会乐句韵律",null,"明"]] },
+        { name: "弱起", type: "音乐概念", unit: 3, page: 24, facts: [["定义为", "小节从弱拍开始，或从强拍的弱位置开始", null, "明"]] },
         { name: "顺指法", type: "音乐概念", unit: 3, page: 25, facts: [["含义","又称原位指法，手指依次摆放在相邻琴键",null,"明"]] },
       ],
       people: [],
