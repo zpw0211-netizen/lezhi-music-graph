@@ -247,7 +247,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "前十六节奏", type: "节奏型", unit: 2, page: 9, facts: [["特点","一拍内先两个十六分时值，再接八分时值",null,"明"]] },
+        { name: "前八后十六", type: "节奏型", unit: 2, page: 9, facts: [["特点","一拍内先八分时值，再接两个十六分时值",null,"明"]] },
         { name: "独唱", type: "表演形式", unit: 2, page: 10, facts: [
           ["定义为","由一个人演唱",null,"明"],
           ["包含","女声独唱","表演形式","明"],
@@ -577,7 +577,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "前八后十六", type: "节奏型", unit: 4, page: 27, facts: [["特点","一拍内先八分时值，再接两个十六分时值",null,"明"]] },
+        { name: "前十六节奏", type: "节奏型", unit: 4, page: 27, facts: [["特点","一拍内先两个十六分时值，再接八分时值",null,"明"]] },
         { name: "八分休止符", type: "音乐概念", unit: 4, page: 31, facts: [["记法","简谱中在0下加一条横线",null,"明"]] },
       ],
       people: [],
