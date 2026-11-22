@@ -97,12 +97,12 @@ const textbook = {
         { name: "合唱", type: "表演形式", unit: 3, page: 22, facts: [] },
         { name: "歌剧", type: "音乐体裁", unit: 3, page: 26, facts: [] },
         { name: "二重唱", type: "表演形式", unit: 3, page: 27, facts: [] },
-        { name: "F大调", type: "音乐概念", unit: 3, page: 30, facts: [["含义","以F为主音并唱作do的大调",null,"明"]] },
+        { name: "F大调", type: "音乐概念", unit: 3, page: 30, facts: [["含义","以F为主音并唱作do的大调",null,"明"]], scores: [[30, 0.1, 0.37, 0.65, 0.57]] },
         { name: "调号", type: "音乐概念", unit: 3, page: 30, facts: [] },
         { name: "和弦", type: "音乐概念", unit: 3, page: 30, facts: [
           ["定义为","至少三个不同音有关系地组成，可同时或先后出现",null,"明"],
           ["包含","三和弦","音乐概念","明"],
-        ] },
+        ], scores: [[30, 0.41, 0.68, 0.91, 0.75]] },
         { name: "三和弦", type: "音乐概念", unit: 3, page: 30, facts: [
           ["定义为","由三个音组成的和弦",null,"明"],
           ["包含","大三和弦","音乐概念","明"],
