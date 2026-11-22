@@ -9,6 +9,8 @@ import { getPrintedPage, getScoreMedia, isStarredWork, matchesBookScope, parseUn
 import { SCORE_SIZES } from "../../lib/lesson/score-sizes";
 import { BOOK_BY_KEY, EDITION } from "../../lib/app/books";
 import { unitArtPath } from "../../lib/app/unit-art";
+import { buildKMap, GROUPS as KGROUPS, type KGroup } from "../../lib/graph/kmap";
+import type { CanonicalGraph } from "../../lib/app/types";
 
 type LessonEntity = {
   id: string;
@@ -110,8 +112,8 @@ export function LessonPage({
   onWorkGraph: (id: string) => void;
   /** 打开智能备课，课题已选好。 */
   onPlan?: (bookKey?: string) => void;
-  /** 打开核心知识点图并定位到这一课。 */
-  onKnowledge?: (bookKey?: string) => void;
+  /** 打开核心知识点图并定位到这一课（或这一课用到的某个知识点）。 */
+  onKnowledge?: (bookKey?: string, point?: string) => void;
 }) {
   const entityMap = useMemo(() => new Map(entities.map((entity) => [entity.id, entity])), [entities]);
   const work = entityMap.get(workId);
@@ -182,6 +184,22 @@ export function LessonPage({
     return result;
   }, [entityMap, lesson.bookKey, lesson.own, relationships, valueOf, work, workId]);
 
+  // 这一课用到的知识点：和知识图谱同一套算法（课本标注的 + 从乐谱里认出的节奏型、拍子、调式、弱起）。
+  const knowledgeTags = useMemo(() => {
+    const bookKey = lesson.bookKey;
+    if (!bookKey || !work) return [];
+    const melodyKey = EDITION.notation === "staff" ? `wx-${bookKey}` : bookKey;
+    const map = buildKMap({ entities, relationships } as unknown as CanonicalGraph, bookKey, (name) => melodiesFor(melodyKey, name));
+    const order = Object.keys(KGROUPS) as KGroup[];
+    const byId = new Map(map.nodes.map((node) => [node.id, node]));
+    return map.edges
+      .filter((edge) => edge.a === workId || edge.b === workId)
+      .map((edge) => ({ node: byId.get(edge.a === workId ? edge.b : edge.a)!, edge }))
+      .filter(({ node }) => node?.kind === "point")
+      .sort((a, b) => order.indexOf(a.node.group!) - order.indexOf(b.node.group!) || Number(b.node.core) - Number(a.node.core))
+      .map(({ node, edge }) => ({ name: node.name, hue: KGROUPS[node.group!].hue, score: edge.source === "score", label: edge.label }));
+  }, [entities, relationships, lesson.bookKey, work, workId]);
+
   const [conceptId, setConceptId] = useState<string | null>(null);
   const [presenting, setPresenting] = useState(false);
   const presentButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -233,6 +251,12 @@ export function LessonPage({
               {lesson.workPage && lesson.workPage !== scorePage && <span><small>教材</small>第 {lesson.workPage} 页</span>}
               {scorePage && <span><small>教材</small>第 {scorePage} 页</span>}
             </p>
+            {knowledgeTags.length > 0 && <p className="lesson-points" aria-label="这一课用到的知识点">
+              <small>用到的知识点</small>
+              {knowledgeTags.map((tag) => onKnowledge
+                ? <button key={tag.name} type="button" className={`lesson-point hue-${tag.hue}${tag.score ? " is-score" : ""}`} title={tag.score ? (tag.label === "调式" ? "从乐谱判断" : "乐谱里出现") : "教材标注"} onClick={() => onKnowledge(lesson.bookKey, tag.name)}>{tag.name}</button>
+                : <span key={tag.name} className={`lesson-point hue-${tag.hue}${tag.score ? " is-score" : ""}`}>{tag.name}</span>)}
+            </p>}
           </div>
           <div className="lesson-hero-actions">
             <button ref={presentButtonRef} type="button" className="lesson-present" onClick={() => setPresenting(true)}><WorkbenchIcon name="expand" />上课模式</button>

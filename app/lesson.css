@@ -427,3 +427,13 @@
 @media (prefers-reduced-motion: reduce) { .present-tools { animation:none; } .present-tools-fab { transition:none; } }
 /* 手机上题干和上下课标题按行均衡，不把一两个字甩到下一行 */
 .lesson-quiz legend, .lesson-pager button span { text-wrap:balance; }
+
+/* 这一课用到的知识点：和知识图谱同色，点了去图谱里看讲解。 */
+.lesson-points { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:12px 0 0; }
+.lesson-points > small { margin-right:4px; color:var(--ink-3); font-family:var(--serif); font-size:12px; letter-spacing:.08em; }
+.lesson-point { --hue:#1E7A4A; display:inline-flex; align-items:center; gap:5px; padding:3px 11px; border:1px solid color-mix(in srgb, var(--hue) 30%, transparent); border-radius:999px; background:color-mix(in srgb, var(--hue) 7%, transparent); color:var(--ink); font:inherit; font-size:13.5px; line-height:1.5; cursor:pointer; transition:background .2s ease, border-color .2s ease; }
+.lesson-point::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--hue); }
+.lesson-point.is-score::before { width:7px; height:7px; border-radius:2px; background:none; border:1.5px solid var(--hue); }
+button.lesson-point:hover { border-color:var(--hue); background:color-mix(in srgb, var(--hue) 14%, transparent); }
+.lesson-point.hue-pine { --hue:#1E7A4A; } .lesson-point.hue-ochre { --hue:#A8701A; } .lesson-point.hue-brick { --hue:#B2452F; }
+.lesson-point.hue-ink { --hue:#44524D; } .lesson-point.hue-teal { --hue:#256F7C; }

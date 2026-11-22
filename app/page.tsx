@@ -592,9 +592,9 @@ export default function Home() {
               const bookKey = lessonBookKey ?? route.book ?? routeWork.bookKeys?.[0];
               navigate({ view: "plan", ...(bookKey ? { book: bookKey, work: bareWorkName(routeWork.name) } : {}) });
             }}
-            onKnowledge={(lessonBookKey) => {
+            onKnowledge={(lessonBookKey, point) => {
               const bookKey = lessonBookKey ?? route.book ?? routeWork.bookKeys?.[0];
-              if (bookKey) navigate({ view: "kmap", book: bookKey, work: bareWorkName(routeWork.name) });
+              if (bookKey) navigate({ view: "kmap", book: bookKey, work: point ?? bareWorkName(routeWork.name) });
             }}
             />
           )}
