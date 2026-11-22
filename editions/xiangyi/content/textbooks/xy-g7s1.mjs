@@ -138,9 +138,7 @@ const textbook = {
         ["含义", "又称号子，内容贴合劳动方式与过程", null, "明"],
         ["特点", "常用一领众和，音乐质朴有力、律动明显", null, "明"],
       ] },
-      { name: "一领众和", type: "表演形式", unit: 2, page: 23, facts: [
-        ["特点", "课本列为劳动号子的主要演唱形式", null, "明"],
-      ] },
+      { name: "一领众和", type: "表演形式", unit: 2, page: 23, facts: [] },
       { name: "山歌", type: "音乐体裁", unit: 2, page: 23, facts: [
         ["定义为", "在山野田间传唱，用来抒情、传意或消除疲劳的歌曲", null, "明"],
         ["特点", "多自由奔放、悠长舒展", null, "明"],
@@ -264,9 +262,7 @@ const textbook = {
       { name: "领唱", type: "表演形式", unit: 5, page: 49, facts: [] },
       { name: "对答", type: "表演形式", unit: 5, page: 49, facts: [] },
       { name: "齐唱", type: "表演形式", unit: 5, page: 49, facts: [] },
-      { name: "乐句", type: "音乐概念", unit: 5, page: 51, facts: [
-        ["作用", "练习要求用乐句划分来观察作品结构", null, "明"],
-      ] },
+      { name: "乐句", type: "音乐概念", unit: 5, page: 51, facts: [] },
       { name: "休止符", type: "音乐概念", unit: 5, page: 54, facts: [
         ["作用", "在乐谱中标出乐音的停顿", null, "明"],
         ["包含", "全休止符", "音乐概念", "明"],
@@ -333,9 +329,7 @@ const textbook = {
         ["记法", "用上方半圆弧加点的记号标示自由延长", null, "明"],
       ] },
       { name: "安徽民歌", type: "音乐体裁", unit: 5, page: 56, facts: [] },
-      { name: "童话故事剧", type: "音乐体裁", unit: 6, page: 58, facts: [
-        ["特点", "本课根据语文课文改编，配有念白、演唱和动作", null, "明"],
-      ] },
+      { name: "童话故事剧", type: "音乐体裁", unit: 6, page: 58, facts: [] },
       { name: "半白半唱", type: "表演形式", unit: 6, page: 58, facts: [
         ["特点", "剧本要求歌舞者将念白与歌唱结合表演", null, "明"],
       ] },
