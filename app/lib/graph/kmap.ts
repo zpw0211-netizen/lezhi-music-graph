@@ -74,16 +74,19 @@ const TRANSCRIPT = /^1=|[♩=]|^[\d i]+(?:（|$)|^[a-z]{1,3}、|[：:]/;
 function groupOf(entity: Entity): KGroup | null {
   const name = entity.name;
   if (TRANSCRIPT.test(name)) return null;
-  if (/西皮|二黄|板腔|曲牌|锣鼓|文场|武场|行当|念白|身段|脸谱|声腔|剧种|亮相|数板|有板无眼|四击头|住头|抽头|撤锣|崩登仓|行弦|润腔/.test(name)) return "opera";
+  if (/西皮|二黄|板腔|曲牌|锣鼓|文场|武场|行当|念白|身段|脸谱|声腔|唱腔|剧种|亮相|数板|有板无眼|一板三眼|摇板|导板|过门|[生旦净丑]角|四击头|住头|抽头|撤锣|崩登仓|行弦|润腔/.test(name)) return "opera";
   if (entity.type === "拍号" || /拍子|^节拍$|弱起|散板|强弱规律|小节/.test(name)) return "meter";
-  if (entity.type === "节奏型" || /节奏|休止符|附点|音符时值|连音|切分|分音符|全音符/.test(name)) return "rhythm";
+  // “连音”单写是唱奏连贯（记号），“三连音”才是节奏。
+  if (entity.type === "节奏型" || /节奏|休止符|附点|音符时值|[二三四五六七]连音|切分|分音符|全音符/.test(name)) return "rhythm";
   if (entity.type === "速度术语" || /速度/.test(name)) return "tempo";
   if (DYNAMICS.test(name) || /力度|渐强|渐弱|重音|音的强弱/.test(name)) return "dynamics";
-  if (/调式|音阶|大调|小调|转调|变化音/.test(name)) return "mode";
-  if (/反复|D\.C\.|D\.S\.|Fine|升记号|降记号|还原记号|变音记号|跳音|延长记号|换气记号|延音线|圆滑线|终止线/.test(name)) return "sign";
+  // 民歌里的“小调”是体裁，不是大小调的小调。
+  if (entity.type === "音乐体裁" && /小调$/.test(name)) return "genre";
+  if (/调式|音阶|大调|小调|转调|变化音|^主音$|^[全半]音$|终止音/.test(name)) return "mode";
+  if (/反复|D\.C\.|D\.S\.|Fine|升记号|降记号|还原记号|变音记号|跳音|顿音|断音|保持音|^连音$|延长记号|换气记号|延音线|圆滑线|终止线|五线谱|工尺谱|谱号|谱表|^音符$|^符[头干尾]$/.test(name)) return "sign";
   if (/和声|和弦|音程|复调|织体|卡农/.test(name)) return "harmony";
-  if (/旋律|音区|装饰音|倚音|波音|滑音|颤音|音色|模进|加花|骨干音|上行|下行|音的高低|音的长短|唱名|音名/.test(name)) return "melody";
-  if (/曲式|段体|引子|副歌|呈示部|结束句|尾声|乐段|乐句|变奏|重复|起承转合|同头换尾|换头合尾/.test(name)) return "form";
+  if (/旋律|音区|装饰音|倚音|波音|滑音|颤音|音色|模进|加花|骨干音|上行|下行|音的高低|音的长短|唱名|音名|衬词/.test(name)) return "melody";
+  if (/曲式|段体|引子|副歌|呈示部|结束句|尾声|乐段|乐句|变奏|重复|起承转合|同头换尾|换头合尾|^音乐主题$|主部主题|^主题$|插部/.test(name)) return "form";
   if (/人声分类|男高音|男低音|女高音|女低音|假声|指法|独奏|合奏|领唱|合唱|齐唱|轮唱|重唱|对唱/.test(name)) return "perform";
   if (entity.type === "音乐体裁") return "genre";
   if (entity.type === "表演形式") return "perform";
@@ -283,6 +286,14 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
     if (node.kind !== "point") continue;
     node.core = node.defs.length > 0 || node.works.length >= 2 || (children.get(node.id) ?? 0) >= 2;
   }
+  // 成套的记号和时值（力度记号→ppp…fff、休止符→全休止符…）只显示上级，下面的在“显示全部”里看；作品用到的照常显示。
+  const folded = new Set<string>();
+  for (const node of nodes.values()) {
+    if (node.kind !== "point" || !node.core || !["rhythm", "dynamics", "sign"].includes(node.group!)) continue;
+    const kids = [...nodes.values()].filter((kid) => kid.kind === "point" && (parents.get(kid.id) ?? []).includes(node.id) && !kid.works.length && !children.get(kid.id));
+    if (kids.length < 4) continue;
+    for (const kid of kids) { kid.core = false; folded.add(kid.id); }
+  }
   // 低年级知识点少：核心不到 18 个时，有作品用到的都算。
   const points = [...nodes.values()].filter((node) => node.kind === "point");
   let coreCount = points.filter((node) => node.core).length;
@@ -295,12 +306,30 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
   }
   // 核心知识点下面分出的知识点（五声调式→宫商角徵羽）本册也讲到了，一起显示；每册最多显示到 44 个，免得太乱。
   const theoryChildren = points
-    .filter((node) => !node.core && (parents.get(node.id) ?? []).some((parent) => nodes.get(parent)?.core))
+    .filter((node) => !node.core && !folded.has(node.id) && (parents.get(node.id) ?? []).some((parent) => nodes.get(parent)?.core))
     .sort((a, b) => b.works.length - a.works.length);
   for (const node of theoryChildren) {
     if (coreCount >= 44) break;
     node.core = true;
     coreCount += 1;
+  }
+  // 知识讲得特别多的册（一册里讲京剧板式又讲歌剧样式）：超过 52 个时，先收起没有作品用到、又只连着一个核心知识点的末梢；
+  // 把几个核心知识点串起来的（西皮→原板、慢板、流水）留着。
+  if (coreCount > 52) {
+    const peers = new Map<string, number>();
+    for (const edge of edges.values()) {
+      const [a, b] = [nodes.get(edge.a), nodes.get(edge.b)];
+      if (a?.kind !== "point" || b?.kind !== "point" || !a.core || !b.core) continue;
+      for (const id of [edge.a, edge.b]) peers.set(id, (peers.get(id) ?? 0) + 1);
+    }
+    const spare = points
+      .filter((node) => node.core && !node.works.length && (peers.get(node.id) ?? 0) < 2)
+      .sort((a, b) => (peers.get(a.id) ?? 0) - (peers.get(b.id) ?? 0) || a.defs.length - b.defs.length);
+    for (const node of spare) {
+      if (coreCount <= 52) break;
+      node.core = false;
+      coreCount -= 1;
+    }
   }
   for (const node of nodes.values()) {
     if (node.kind !== "point") continue;
