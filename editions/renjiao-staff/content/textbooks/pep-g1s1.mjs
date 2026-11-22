@@ -88,7 +88,66 @@ const CONTENTS = [
 const SCORE_PAGES = {"doremi之歌":[[30,0.04,0.035,0.96,0.94]],"新年好":[[17,0.04,0.035,0.96,0.94]],"祖国祖国我们爱你":[[22,0.04,0.035,0.96,0.94],[23,0.04,0.035,0.96,0.94]],"洋娃娃和小熊跳舞":[[34,0.04,0.035,0.96,0.94]],"娃哈哈":[[36,0.04,0.035,0.96,0.94]],"数鸭子":[[43,0.04,0.035,0.96,0.94]],"玩具兵进行曲":[[44,0.04,0.035,0.96,0.94]],"乃哟乃":[[48,0.04,0.035,0.96,0.94]],"快乐的罗梭":[[58,0.04,0.035,0.96,0.94]],"中华人民共和国国歌":[[66,0.04,0.035,0.96,0.94]],"共产儿童团歌":[[68,0.04,0.035,0.96,0.94]],"小夜曲":[[74,0.04,0.035,0.96,0.94]],"我和小提琴":[[75,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
 const ENRICHMENT = pageEnrichmentFor("pep-g1s1");
+const TEXTBOOK_CONCEPTS = [
+  { name: "均拍", type: "节奏型", unit: 2, page: 14, facts: [["作用", "把拍子打得均匀可使节奏稳定", null, "明", 14]] },
+  { name: "音符", type: "音乐概念", unit: 2, page: 16, facts: [
+    ["包含", "全音符", "音乐概念", "明", 16],
+    ["包含", "二分音符", "音乐概念", "明", 16],
+    ["包含", "四分音符", "音乐概念", "明", 16],
+    ["包含", "八分音符", "音乐概念", "明", 16],
+    ["包含", "十六分音符", "音乐概念", "明", 16],
+  ] },
+  { name: "四拍子", type: "拍号", unit: 2, page: 17, facts: [["特点", "每小节四拍", null, "明", 17]] },
+  { name: "三拍子", type: "拍号", unit: 2, page: 17, facts: [["特点", "每小节三拍", null, "明", 17]] },
+  { name: "休止符", type: "音乐概念", unit: 2, page: 18, facts: [
+    ["作用", "加进休止符可以改变节奏", null, "明", 18],
+    ["包含", "全休止符", "音乐概念", "明", 18],
+    ["包含", "二分休止符", "音乐概念", "明", 18],
+    ["包含", "四分休止符", "音乐概念", "明", 18],
+    ["包含", "八分休止符", "音乐概念", "明", 18],
+    ["包含", "十六分休止符", "音乐概念", "明", 18],
+  ] },
+  { name: "二拍子", type: "拍号", unit: 2, page: 20, facts: [["特点", "每小节两拍", null, "明", 20]] },
+  { name: "五线谱", type: "音乐概念", unit: 3, page: 26, facts: [["特点", "由五条线和四个间组成，必要时可在上方或下方加线", null, "明", 26]] },
+  { name: "唱名", type: "音乐概念", unit: 3, page: 27, facts: [["记法", "七个基本唱名依次是do、re、mi、fa、sol、la、xi", null, "明", 27]] },
+  { name: "快速", type: "速度术语", unit: 3, page: 29, facts: [] },
+  { name: "进行曲", type: "音乐体裁", unit: 4, page: 44, facts: [["定义为", "用步伐节奏写成的歌或乐曲，结构整齐，节奏鲜明", null, "明", 44]] },
+  { name: "音量", type: "音乐概念", unit: 1, page: 9, facts: [["特点", "可按声音大小分成五个等级", null, "明", 9]] },
+  { name: "跳音", type: "音乐概念", unit: 5, page: 58, facts: [["特点", "用短促的声音演唱", null, "明", 58]] },
+];
+const WORK_KNOWLEDGE = {
+  1: {
+    "春天的芭蕾": [["表演形式", "花腔女高音独唱", "表演形式", "明", 8]],
+    "啊，多么快乐的一天": [["表演形式", "男高音独唱", "表演形式", "明", 8]],
+    "孤独的牧羊人": [["表演形式", "女声独唱", "表演形式", "明", 8]],
+    "卖荔枝": [["表演形式", "女声独唱", "表演形式", "明", 8]],
+    "跳蚤之歌": [["表演形式", "男低音独唱", "表演形式", "明", 8]],
+    "野蜂飞舞": [["表演形式", "女声独唱", "表演形式", "明", 8]],
+    "敕勒歌": [["表演形式", "女高音独唱", "表演形式", "明", 8]],
+    "北京的金山上": [["表演形式", "女声独唱", "表演形式", "明", 8]],
+  },
+  2: {
+    "茉莉花": [["音乐体裁", "江苏民歌", "音乐体裁", "明", 15]],
+    "小老鼠上灯台": [["音乐体裁", "童谣", "音乐体裁", "明", 20]],
+  },
+  4: {
+    "玩具兵进行曲": [["表演形式", "管弦乐合奏", "表演形式", "明", 44]],
+  },
+  5: {
+    "快乐的罗梭": [["音乐体裁", "云南民间舞曲", "音乐体裁", "明", 58]],
+  },
+};
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const conceptsForUnit = (no) => {
+  const additions = new Map(TEXTBOOK_CONCEPTS.filter((item) => item.unit === no).map((item) => [item.name, item]));
+  const existing = ENRICHMENT.concepts.filter((item) => item.unit === no).map((item) => {
+    const source = additions.get(item.name);
+    if (!source) return item;
+    additions.delete(item.name);
+    return { ...item, page: source.page, facts: [...(item.facts ?? []), ...source.facts] };
+  });
+  return [...existing, ...additions.values()];
+};
 const baseParts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, ...knowledgeForUnit("pep-g1s1", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g1s1", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
@@ -105,11 +164,17 @@ textbook.parts = withPrintedScores("pep-g1s1", baseParts.map((part) => {
   return {
     units: part.units,
     works: [...baseWorks, ...extraWorks],
-    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    concepts: conceptsForUnit(no),
     people: ENRICHMENT.people.filter((item) => item.unit === no),
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
+})).map((part) => ({
+  ...part,
+  works: part.works.map((work) => {
+    const facts = WORK_KNOWLEDGE[work.unit]?.[work.name];
+    return facts ? { ...work, facts: [...work.facts, ...facts] } : work;
+  }),
 }));
 
 export default textbook;
