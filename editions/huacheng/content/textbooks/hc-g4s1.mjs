@@ -393,7 +393,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "学堂乐歌", type: "音乐体裁", unit: 3, page: 15, facts: [["特点","课本所举实例用民间乐曲的曲调重新填词",null,"明"]] },
+        { name: "学堂乐歌", type: "音乐体裁", unit: 3, page: 15, facts: [] },
         { name: "民间乐曲", type: "音乐体裁", unit: 3, page: 15, facts: [] },
         { name: "连音", type: "音乐概念", unit: 3, page: 19, facts: [] },
         { name: "断音", type: "音乐概念", unit: 3, page: 19, facts: [] },
@@ -589,7 +589,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "四拍子", type: "拍号", unit: 4, page: 22, facts: [["特点","以强、弱、次强、弱的顺序练习四拍",null,"明"]] },
+        { name: "四拍子", type: "拍号", unit: 4, page: 22, facts: [["特点", "每小节四拍，强弱依次为强、弱、次强、弱", null, "明"]] },
         { name: "内蒙古民歌", type: "音乐体裁", unit: 4, page: 23, facts: [] },
         { name: "切分节奏", type: "节奏型", unit: 4, page: 24, facts: [["特点","从弱拍或拍的弱部分开始并延续到较强的位置",null,"明"]] },
         { name: "六拍子", type: "拍号", unit: 4, page: 27, facts: [["含义","以八分音符为单位，每小节六拍",null,"明"]] },
