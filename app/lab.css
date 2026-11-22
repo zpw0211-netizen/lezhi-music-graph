@@ -504,7 +504,8 @@
   .route-view-exploration { min-height: calc(100dvh - 56px); }
   .route-view-lab > .app-view-status,
   .route-view-exploration > .app-view-status { min-height: calc(100dvh - 56px); padding-top: 28px; }
-  .lupan-lab { width: calc(100% + 26px); margin-left: -13px; padding: 8px 17px 100px; }
+  /* 铺满屏幕宽：外框留白各处不一样（现在只有 6px），按留白反推会多出几像素让页面左右晃。律盘保持原来的大小。 */
+  .lupan-lab { width: 100vw; margin-left: calc(50% - 50vw); padding: 8px 10px 100px; }
   .lupan-intro { gap: 10px; padding: 10px 0 6px; }
   .lupan-kicker { margin-bottom: 0; font-size: 9px; letter-spacing: .2em; }
   .lupan-intro :is(h1, h2) { font-size: 24px; }
@@ -571,7 +572,6 @@
   .lupan-player-heading h2 { font-size: 22px; }
 }
 @media (max-width: 365px) {
-  .lupan-lab { padding-right: 12px; padding-left: 12px; }
   .lupan-bamboo { width: 44px; }
 }
 @media (min-width: 761px) and (max-height: 850px) {
