@@ -408,9 +408,9 @@ const textbook = {
     ] },
     { name: "沙槌", type: "乐器", page: 5, facts: [["乐器类别", "打击乐器", null, "补"]] },
     { name: "三角铁", type: "乐器", page: 5, facts: [["乐器类别", "打击乐器", null, "补"]] },
-    { name: "小节", type: "音乐概念", unit: 4, page: 41, facts: [] },
-    { name: "小节线", type: "音乐概念", unit: 4, page: 41, facts: [] },
-    { name: "终止线", type: "音乐概念", unit: 4, page: 41, facts: [] },
+    { name: "小节", type: "音乐概念", unit: 4, page: 41, facts: [["定义为", "乐谱中由小节线分隔的片段", null, "归", 41]] },
+    { name: "小节线", type: "音乐概念", unit: 4, page: 41, facts: [["作用", "分隔相邻的小节", null, "归", 41]] },
+    { name: "终止线", type: "音乐概念", unit: 4, page: 41, facts: [["作用", "标记乐曲的结束", null, "归", 41]] },
   ],
   people: [
     { name: "丁善德", facts: [["身份", "作曲家", null, "补"]] },
