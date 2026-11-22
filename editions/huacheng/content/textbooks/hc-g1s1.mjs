@@ -195,7 +195,7 @@ const textbook = {
       works: [
         {
           name: "音的长短",
-          type: "拍读",
+          type: "音乐概念",
           unit: 3,
           page: 12,
           facts: [
@@ -365,7 +365,11 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "声音的长短", type: "音乐概念", unit: 3, page: 12, facts: [["特点","同一句对白可用长短不同的节奏说出",null,"明"]] },
+        { name: "音的长短", type: "音乐概念", unit: 3, page: 13, facts: [
+          ["特点","日常说话时的声音有长有短",null,"明",12],
+          ["记法","拍读用 ta 对应一次拍手，ti ti 对应匀速拍两下",null,"明"],
+          ["记法","例中读 ta a 时先拍手，再保持拍手姿势平移",null,"明",23],
+        ] },
         { name: "童谣", type: "音乐体裁", unit: 3, page: 16, facts: [["特点","课本先安排节奏朗读，再安排配成歌曲演唱",null,"明"]] },
         { name: "音色", type: "音乐概念", unit: 3, page: 20, facts: [["特点","敲击不同乐器，比较各自发出的声音",null,"明"]] },
       ],
@@ -482,7 +486,6 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "延长一拍", type: "音乐概念", unit: 4, page: 23, facts: [["记法","练习用ta a表示声音再持续一拍",null,"明"]] },
         { name: "鼓号节奏", type: "节奏型", unit: 4, page: 24, facts: [["作用","把《小列兵》与《只怕不抵抗》串联起来",null,"明"]] },
         { name: "革命历史歌曲", type: "音乐体裁", unit: 4, page: 25, facts: [] },
       ],
