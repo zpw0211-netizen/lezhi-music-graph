@@ -287,7 +287,6 @@ const textbook = {
       concepts: [
         { name: "断音", type: "音乐概念", unit: 2, page: 12, facts: [["含义","又称顿音，唱奏得短促轻快",null,"明"]] },
         { name: "连音", type: "音乐概念", unit: 2, page: 12, facts: [["特点","过渡时维持连贯的声音和气息",null,"明"]] },
-        { name: "二声部合唱", type: "表演形式", unit: 2, page: 12, facts: [["特点","两组分别按唱名或手势演唱不同声部",null,"明"]] },
         { name: "音名", type: "音乐概念", unit: 2, page: 13, facts: [["记法","基本音名依次用C、D、E、F、G、A、B表示",null,"明"]] },
         { name: "唱名", type: "音乐概念", unit: 2, page: 14, facts: [["特点","同一练习旋律的do可以移到不同琴键",null,"明"]] },
       ],
