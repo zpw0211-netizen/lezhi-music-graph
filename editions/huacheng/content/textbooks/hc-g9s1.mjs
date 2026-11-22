@@ -42,6 +42,7 @@ const textbook = {
           mode: "参与·表现",
           page: 2,
           facts: [
+            ["表演形式","齐唱","表演形式","明",70],
             ["作词", "任红举", "人物", "明", 2],
             ["作词", "贺东久", "人物", "明", 2],
             ["作曲", "朱南溪", "人物", "明", 2],
@@ -228,7 +229,6 @@ const textbook = {
           mode: "参与·评述",
           page: 14,
           facts: [
-            ["表演形式","管弦乐","表演形式","明",14],
             ["来源体裁","山西民歌","音乐体裁","明",14],
             ["作曲", "鲍元恺", "人物", "明", 14],
             ["音乐体裁", "管弦乐曲", "音乐体裁", "明", 14],
@@ -291,7 +291,7 @@ const textbook = {
       ],
       concepts: [
         { name: "交响诗", type: "音乐体裁", unit: 2, page: 13, facts: [] },
-        { name: "管弦乐", type: "表演形式", unit: 2, page: 14, facts: [["特点","改编谱配器使用了多种中国传统打击乐器",null,"明"]] },
+        { name: "秧歌", type: "音乐体裁", unit: 2, page: 14, facts: [["定义为","北方乡村流行的民间歌舞，表演时边唱边舞",null,"明"]] },
         { name: "山西民歌", type: "音乐体裁", unit: 2, page: 14, facts: [] },
         { name: "管弦乐曲", type: "音乐体裁", unit: 2, page: 14, facts: [] },
         { name: "序曲", type: "音乐体裁", unit: 2, page: 16, facts: [] },
@@ -548,6 +548,7 @@ const textbook = {
           mode: "学吹竖笛",
           page: 30,
           facts: [
+            ["表演形式","竖笛合奏","表演形式","明",70],
             ["表演形式","合奏","表演形式","明",30],
             ["流传地区", "中国台湾", "地域", "明", 30],
             ["使用乐器", "竖笛", "乐器", "明", 30],
@@ -679,8 +680,10 @@ const textbook = {
           mode: "参与·表现",
           page: 34,
           facts: [
-            ["调式","民族五声羽调式","音乐概念","明",35],
+            ["调式","羽调式","音乐概念","明",35],
             ["表演形式","二声部合唱","表演形式","明",35],
+            ["来源体裁","云南民歌","音乐体裁","明",35],
+            ["涉及知识","变换拍子","拍号","明",35],
             ["编曲", "高梁", "人物", "明", 34],
             ["改编", "尹宜公", "人物", "明", 34],
             ["改编", "黄虹", "人物", "明", 34],
@@ -834,9 +837,11 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "民族五声羽调式", type: "音乐概念", unit: 4, page: 35, facts: [] },
+        { name: "羽调式", type: "音乐概念", unit: 4, page: 35, facts: [] },
         { name: "五声音阶", type: "音乐概念", unit: 4, page: 35, facts: [] },
         { name: "二声部合唱", type: "表演形式", unit: 4, page: 35, facts: [] },
+        { name: "云南民歌", type: "音乐体裁", unit: 4, page: 35, facts: [] },
+        { name: "变换拍子", type: "拍号", unit: 4, page: 35, facts: [["作用","用不同拍子的组合增加歌曲起伏的变化",null,"明"]] },
         { name: "侗族大歌", type: "音乐体裁", unit: 4, page: 36, facts: [] },
         { name: "领唱", type: "表演形式", unit: 4, page: 37, facts: [] },
         { name: "哩哩美调", type: "音乐体裁", unit: 4, page: 38, facts: [] },
@@ -951,7 +956,6 @@ const textbook = {
           page: 48,
           facts: [
             ["涉及知识","雷鬼音乐","音乐体裁","明",50],
-            ["节奏型","切分节奏","节奏型","明",50],
             ["所属国家", "牙买加", "地域", "明", 48],
             ["译配", "胡健", "人物", "明", 48],
             ["谱例类型", "节奏谱", null, "谱", 50],
@@ -1004,14 +1008,13 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "秧歌", type: "音乐体裁", unit: 5, page: 44, facts: [["特点","活动还用秧歌舞步配合两个主题",null,"明"]] },
         { name: "三拍子", type: "拍号", unit: 5, page: 47, facts: [] },
         { name: "加沃特舞曲", type: "音乐体裁", unit: 5, page: 48, facts: [
           ["定义为","法国古代舞曲的一种",null,"明"],
           ["特点","课文举出旋律中短促的顿音",null,"明"],
         ] },
         { name: "顿音", type: "音乐概念", unit: 5, page: 48, facts: [] },
-        { name: "雷鬼音乐", type: "音乐体裁", unit: 5, page: 49, facts: [["特点","采用明显的切分节奏",null,"明"]] },
+        { name: "雷鬼音乐", type: "音乐体裁", unit: 5, page: 50, facts: [["作用","用雷鬼音乐的基本节奏型为《玛丽安》伴奏",null,"明"]] },
         { name: "切分节奏", type: "节奏型", unit: 5, page: 49, facts: [] },
         { name: "巴西民间歌曲", type: "音乐体裁", unit: 5, page: 51, facts: [] },
         { name: "桑巴节奏", type: "节奏型", unit: 5, page: 52, facts: [["作用","以打击乐伴奏并配合桑巴基本舞步",null,"明"]] },
@@ -1179,7 +1182,6 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "变换拍子", type: "拍号", unit: 6, page: 56, facts: [] },
         { name: "船歌", type: "音乐体裁", unit: 6, page: 58, facts: [["特点","课本注明是意大利那不勒斯船歌",null,"明"]] },
         { name: "六拍子", type: "拍号", unit: 6, page: 59, facts: [] },
       ],
@@ -1308,7 +1310,10 @@ const textbook = {
           ]
         }
       ],
-      concepts: [],
+      concepts: [
+        { name: "齐唱", type: "表演形式", unit: 8, page: 70, facts: [] },
+        { name: "竖笛合奏", type: "表演形式", unit: 8, page: 70, facts: [] },
+      ],
       people: [],
       tasks: []
     }
