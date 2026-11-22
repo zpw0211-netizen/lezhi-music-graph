@@ -105,7 +105,7 @@ const textbook = {
       works: [
         {
           name: "力度记号",
-          type: "力度",
+          type: "音乐概念",
           unit: 2,
           mode: "力度",
           page: 6,
@@ -408,7 +408,7 @@ const textbook = {
         },
         {
           name: "顺指法",
-          type: "学键盘（三）",
+          type: "音乐概念",
           unit: 3,
           mode: "学键盘（三）",
           page: 25,
