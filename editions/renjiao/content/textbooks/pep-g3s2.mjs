@@ -69,7 +69,44 @@ const CONTENTS = [
 const SCORE_PAGES = {"美丽的草原我的家":[[2,0.04,0.035,0.96,0.94]],"春天来了":[[4,0.04,0.035,0.96,0.94]],"牧歌":[[9,0.04,0.035,0.96,0.94]],"万马奔腾":[[10,0.04,0.035,0.96,0.94]],"酒歌":[[12,0.04,0.035,0.96,0.94]],"赤诚花":[[14,0.04,0.035,0.96,0.94]],"四季歌":[[15,0.04,0.035,0.96,0.94]],"樱花":[[19,0.04,0.035,0.96,0.94]],"卖花姑娘":[[19,0.04,0.035,0.96,0.94]],"牧羊人的歌":[[20,0.04,0.035,0.96,0.94]],"美丽的夏牧场":[[26,0.04,0.035,0.96,0.94]],"幸福花儿开心上":[[28,0.04,0.035,0.96,0.94]],"北京的金山上":[[34,0.04,0.035,0.96,0.94]],"次仁拉索":[[36,0.04,0.035,0.96,0.94]],"我的家在日喀则":[[37,0.04,0.035,0.96,0.94]],"格桑拉":[[42,0.04,0.035,0.96,0.94]],"月亮叔叔住得远":[[44,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
 const ENRICHMENT = pageEnrichmentFor("pep-g3s2");
+const TEXTBOOK_CONCEPTS = [
+  { name: "呼麦", type: "表演形式", unit: 1, page: 4, facts: [["定义为", "蒙古族特有的一种歌唱形式", null, "明", 4]] },
+  { name: "长调", type: "音乐体裁", unit: 1, page: 7, facts: [["特点", "蒙古族民歌，音域宽广、节拍自由，旋律悠长而起伏较大", null, "明", 7]] },
+  { name: "短调", type: "音乐体裁", unit: 1, page: 7, facts: [["特点", "蒙古族民歌，节拍与节奏规整，结构方整、旋律较平稳", null, "明", 7]] },
+  { name: "能乐", type: "音乐体裁", unit: 2, page: 17, facts: [["特点", "日本传统歌舞戏剧艺术，表演常使用面具等道具", null, "明", 17]] },
+  { name: "半音", type: "音乐概念", unit: 2, page: 21, facts: [["定义为", "键盘上相邻琴键对应的两个音之间的距离", null, "明", 21]] },
+  { name: "小二度", type: "音乐概念", unit: 2, page: 21, facts: [["定义为", "距离为一个半音的二度音程", null, "明", 21]] },
+  { name: "大二度", type: "音乐概念", unit: 2, page: 21, facts: [["定义为", "距离为两个半音的二度音程", null, "明", 21]] },
+  { name: "协和音程", type: "音乐概念", unit: 2, page: 22, facts: [["特点", "在和声音程中，音响松弛悦耳", null, "明", 22]] },
+  { name: "不协和音程", type: "音乐概念", unit: 2, page: 22, facts: [["特点", "在和声音程中，音响紧张尖锐", null, "明", 22]] },
+  { name: "二段体", type: "音乐体裁", unit: 3, page: 27, facts: [["特点", "由两个乐段组成，含有对比或再现", null, "明", 27]] },
+  { name: "三段体", type: "音乐体裁", unit: 3, page: 27, facts: [["特点", "由三个乐段组成，含有对比或再现", null, "明", 27]] },
+  { name: "同音换指", type: "音乐概念", unit: 3, page: 29, facts: [["定义为", "用不同的手指交替弹奏同一个音", null, "明", 29]] },
+  { name: "赛乃姆", type: "音乐体裁", unit: 3, page: 30, facts: [["特点", "维吾尔族民间歌舞，常在节庆表演，可独舞、对舞或多人共舞", null, "明", 30]] },
+  { name: "黑走马", type: "音乐体裁", unit: 3, page: 30, facts: [["特点", "哈萨克族民间舞，以抖肩和马步等模拟骏马奔跑", null, "明", 30]] },
+  { name: "木卡姆", type: "音乐体裁", unit: 3, page: 31, facts: [["定义为", "综合歌唱、舞蹈和器乐的艺术形式，体裁和风格多样", null, "明", 31]] },
+  { name: "三十二分音符", type: "音乐概念", unit: 3, page: 31, facts: [["含义", "时值是十六分音符的一半", null, "明", 31]] },
+  { name: "紧缩", type: "音乐概念", unit: 4, page: 37, facts: [["作用", "收紧节奏，推动音乐发展并丰富旋律表现", null, "明", 37]] },
+  { name: "放大", type: "音乐概念", unit: 4, page: 37, facts: [["作用", "放宽节奏，推动音乐发展并丰富旋律表现", null, "明", 37]] },
+  { name: "堆谐", type: "音乐体裁", unit: 4, page: 39, facts: [["特点", "藏族代表性民间舞蹈之一，突出脚的踢踏动作", null, "明", 39]] },
+  { name: "锅庄", type: "音乐体裁", unit: 4, page: 40, facts: [["特点", "西藏等地流行的围圈舞，象征团结和圆满", null, "明", 40]] },
+];
+const WORK_KNOWLEDGE = {
+  3: {
+    "乌孜哈勒木卡姆第一达斯坦间奏曲": [["音乐体裁", "民间乐曲", "音乐体裁", "明", 31], ["来源体裁", "木卡姆", "音乐体裁", "明", 31]],
+  },
+};
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const conceptsForUnit = (no) => {
+  const additions = new Map(TEXTBOOK_CONCEPTS.filter((item) => item.unit === no).map((item) => [item.name, item]));
+  const existing = ENRICHMENT.concepts.filter((item) => item.unit === no).map((item) => {
+    const source = additions.get(item.name);
+    if (!source) return item;
+    additions.delete(item.name);
+    return { ...item, page: source.page, facts: [...(item.facts ?? []), ...source.facts] };
+  });
+  return [...existing, ...additions.values()];
+};
 const baseParts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, ...knowledgeForUnit("pep-g3s2", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g3s2", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
@@ -86,11 +123,17 @@ textbook.parts = withPrintedScores("pep-g3s2", baseParts.map((part) => {
   return {
     units: part.units,
     works: [...baseWorks, ...extraWorks],
-    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    concepts: conceptsForUnit(no),
     people: ENRICHMENT.people.filter((item) => item.unit === no),
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
+})).map((part) => ({
+  ...part,
+  works: part.works.map((work) => {
+    const facts = WORK_KNOWLEDGE[work.unit]?.[work.name];
+    return facts ? { ...work, facts: [...work.facts, ...facts] } : work;
+  }),
 }));
 
 export default textbook;
