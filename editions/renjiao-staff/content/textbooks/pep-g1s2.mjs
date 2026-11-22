@@ -86,7 +86,54 @@ const CONTENTS = [
 const SCORE_PAGES = {"爱的奉献":[[3,0.04,0.035,0.96,0.94]],"摇篮曲":[[5,0.04,0.035,0.96,0.94]],"找朋友":[[14,0.04,0.035,0.96,0.94]],"绿色的祖国":[[26,0.04,0.035,0.96,0.94]],"小松树":[[29,0.04,0.035,0.96,0.94]],"蓝色多瑙河圆舞曲":[[33,0.04,0.035,0.96,0.94]],"溜冰圆舞曲":[[33,0.04,0.035,0.96,0.94]],"请你唱首歌吧":[[36,0.04,0.035,0.96,0.94]],"劳动最光荣":[[40,0.04,0.035,0.96,0.94]],"勤快人和懒惰人":[[42,0.04,0.035,0.96,0.94]],"打麦号子":[[43,0.04,0.035,0.96,0.94]],"牧童谣":[[46,0.04,0.035,0.96,0.94]],"老爷爷赶鹅":[[50,0.04,0.035,0.96,0.94]],"观灯":[[52,0.04,0.035,0.96,0.94]],"在钟表店里":[[53,0.04,0.035,0.96,0.94]],"小邋遢":[[62,0.04,0.035,0.96,0.94]],"大风车":[[63,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
 const ENRICHMENT = pageEnrichmentFor("pep-g1s2");
+const TEXTBOOK_CONCEPTS = [
+  { name: "摇篮曲", type: "音乐体裁", unit: 1, page: 6, facts: [["定义为", "原是哄婴儿入睡的歌，又叫催眠曲，后来发展为音乐体裁", null, "明", 6]] },
+  { name: "力度记号", type: "音乐概念", unit: 1, page: 8, facts: [
+    ["包含", "pp", "音乐概念", "明", 8],
+    ["包含", "p", "音乐概念", "明", 8],
+    ["包含", "mp", "音乐概念", "明", 8],
+    ["包含", "mf", "音乐概念", "明", 8],
+    ["包含", "f", "音乐概念", "明", 8],
+    ["包含", "ff", "音乐概念", "明", 8],
+  ] },
+  { name: "pp", type: "音乐概念", unit: 1, page: 8, facts: [["含义", "很弱", null, "明", 8]] },
+  { name: "p", type: "音乐概念", unit: 1, page: 8, facts: [["含义", "弱", null, "明", 8]] },
+  { name: "mp", type: "音乐概念", unit: 1, page: 8, facts: [["含义", "中弱", null, "明", 8]] },
+  { name: "mf", type: "音乐概念", unit: 1, page: 8, facts: [["含义", "中强", null, "明", 8]] },
+  { name: "f", type: "音乐概念", unit: 1, page: 8, facts: [["含义", "强", null, "明", 8]] },
+  { name: "ff", type: "音乐概念", unit: 1, page: 8, facts: [["含义", "很强", null, "明", 8]] },
+  { name: "圆舞曲", type: "音乐体裁", unit: 1, page: 9, facts: [["特点", "采用三拍子的一种音乐体裁", null, "明", 9]] },
+  { name: "变化音", type: "音乐概念", unit: 3, page: 27, facts: [["记法", "升音唱名的韵母唱i，降音唱名的韵母唱u", null, "明", 27]] },
+  { name: "乐句", type: "音乐概念", unit: 4, page: 36, facts: [["定义为", "构成歌曲或乐曲的基本单位，如同文章中的一句话", null, "明", 36]] },
+  { name: "乐段", type: "音乐概念", unit: 6, page: 53, facts: [["定义为", "由若干乐句组成的音乐段落", null, "明", 53]] },
+];
+const WORK_KNOWLEDGE = {
+  2: {
+    "龟兔赛跑": [["表演形式", "管弦乐合奏", "表演形式", "明", 20]],
+  },
+  3: {
+    "春江花月夜": [["音乐体裁", "古曲", "音乐体裁", "明", 30]],
+  },
+  5: {
+    "劳动最光荣": [["音乐体裁", "动画主题歌", "音乐体裁", "明", 40]],
+    "勤快人和懒惰人": [["音乐体裁", "童谣", "音乐体裁", "明", 42]],
+    "打麦号子": [["音乐体裁", "江苏民歌", "音乐体裁", "明", 43], ["音乐体裁", "劳动号子", "音乐体裁", "明", 43], ["表演形式", "一领众和", "表演形式", "明", 43]],
+  },
+  7: {
+    "小邋遢": [["音乐体裁", "动画主题歌", "音乐体裁", "明", 62]],
+  },
+};
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const conceptsForUnit = (no) => {
+  const additions = new Map(TEXTBOOK_CONCEPTS.filter((item) => item.unit === no).map((item) => [item.name, item]));
+  const existing = ENRICHMENT.concepts.filter((item) => item.unit === no && item.name !== "欢快、活泼地").map((item) => {
+    const source = additions.get(item.name);
+    if (!source) return item;
+    additions.delete(item.name);
+    return { ...item, page: source.page, facts: [...(item.facts ?? []), ...source.facts] };
+  });
+  return [...existing, ...additions.values()];
+};
 const baseParts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, ...knowledgeForUnit("pep-g1s2", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g1s2", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
@@ -103,11 +150,17 @@ textbook.parts = withPrintedScores("pep-g1s2", baseParts.map((part) => {
   return {
     units: part.units,
     works: [...baseWorks, ...extraWorks],
-    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    concepts: conceptsForUnit(no),
     people: ENRICHMENT.people.filter((item) => item.unit === no),
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
+})).map((part) => ({
+  ...part,
+  works: part.works.map((work) => {
+    const facts = WORK_KNOWLEDGE[work.unit]?.[work.name];
+    return facts ? { ...work, facts: [...work.facts, ...facts] } : work;
+  }),
 }));
 
 export default textbook;
