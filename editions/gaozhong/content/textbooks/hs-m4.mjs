@@ -117,6 +117,7 @@ const textbook = {
     { name: "渐慢", type: "速度术语", unit: 1, page: 9, facts: [["记法", "速度逐渐放慢，可标作rit.", null, "明", 9]] },
     { name: "回原速", type: "速度术语", unit: 1, page: 9, facts: [["记法", "恢复先前的速度，写作a tempo", null, "明", 9]] },
     { name: "自由速度", type: "速度术语", unit: 1, page: 9, facts: [["记法", "写作tempo rubato", null, "明", 9]] },
+    { name: "延长记号", type: "音乐概念", unit: 1, page: 9, facts: [] },
   ],
   works: [
     {
@@ -1439,9 +1440,9 @@ const textbook = {
       ["包含", "调内模进", "音乐概念", "明", 110],
       ["包含", "转调模进", "音乐概念", "明", 110],
     ] },
-    { name: "调内模进", type: "音乐概念", unit: 8, page: 110, facts: [["特点", "把音乐材料移到同一调内的其他音高位置重复", null, "明", 110]] },
+    { name: "调内模进", type: "音乐概念", unit: 8, page: 110, facts: [] },
     { name: "转调模进", type: "音乐概念", unit: 8, page: 110, facts: [["特点", "音乐材料按指定音程移位，使模进进入其他调性", null, "明", 110]] },
-    { name: "倒影", type: "音乐概念", unit: 8, page: 110, facts: [["特点", "把旋律以轴心音为参照，反向处理其音高进行", null, "明", 111]] },
+    { name: "倒影", type: "音乐概念", unit: 8, page: 110, facts: [] },
     { name: "逆行", type: "音乐概念", unit: 8, page: 110, facts: [["特点", "把音高次序或节奏次序从后往前排列，也可两者同时倒转", null, "明", 111]] },
   ],
   works: [
