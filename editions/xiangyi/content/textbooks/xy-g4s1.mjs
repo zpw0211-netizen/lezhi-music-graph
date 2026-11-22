@@ -92,7 +92,7 @@ const textbook = {
       { name: "江苏民歌", type: "音乐体裁", unit: 3, page: 14, facts: [] },
       { name: "旋律线", type: "音乐概念", unit: 3, page: 15, facts: [] },
       { name: "竖笛指法", type: "音乐概念", unit: 3, page: 18, facts: [] },
-      { name: "音乐主题Ⅱ", type: "音乐概念", unit: 4, page: 21, facts: [["学习内容","背唱音乐主题Ⅱ并聆听其在乐曲中出现的次数",null,"明",21]] },
+      { name: "音乐主题", type: "音乐概念", unit: 4, page: 21, facts: [["学习内容","背唱音乐主题Ⅱ并聆听其在乐曲中出现的次数",null,"明",21]] },
       { name: "进行曲", type: "音乐体裁", unit: 4, page: 21, facts: [] },
       { name: "钢琴独奏", type: "表演形式", unit: 4, page: 21, facts: [] },
       { name: "变奏曲", type: "音乐体裁", unit: 4, page: 22, facts: [["特点","主题来自《闪烁的小星》，在钢琴上作了十二次变化",null,"明"]] },
