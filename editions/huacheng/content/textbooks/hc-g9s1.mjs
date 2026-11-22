@@ -1182,7 +1182,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "船歌", type: "音乐体裁", unit: 6, page: 58, facts: [["特点","课本注明是意大利那不勒斯船歌",null,"明"]] },
+        { name: "船歌", type: "音乐体裁", unit: 6, page: 58, facts: [] },
         { name: "六拍子", type: "拍号", unit: 6, page: 59, facts: [] },
       ],
       people: [],
