@@ -1025,7 +1025,7 @@ const textbook = {
         { name: "旦角", type: "音乐概念", unit: 5, page: 42, facts: [] },
         { name: "净角", type: "音乐概念", unit: 5, page: 42, facts: [] },
         { name: "丑角", type: "音乐概念", unit: 5, page: 42, facts: [] },
-        { name: "文场", type: "音乐概念", unit: 5, page: 46, facts: [["特点","课本图示用京胡等伴奏唱腔",null,"明"]] },
+        { name: "文场", type: "音乐概念", unit: 5, page: 46, facts: [["特点", "京剧的器乐伴奏部分之一，常用京胡、京二胡、月琴等", null, "明"]] },
         { name: "武场", type: "音乐概念", unit: 5, page: 46, facts: [["特点","用鼓、锣、钹等伴奏舞台表演",null,"明"]] },
       ],
       people: [],
@@ -1365,7 +1365,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "情景剧", type: "音乐体裁", unit: 7, page: 62, facts: [["特点","学生选择校园歌曲和表演形式组织场景",null,"明"]] },
+        { name: "情景剧", type: "音乐体裁", unit: 7, page: 62, facts: [] },
         { name: "电影插曲", type: "音乐体裁", unit: 7, page: 65, facts: [] },
       ],
       people: [],
