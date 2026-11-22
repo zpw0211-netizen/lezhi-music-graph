@@ -130,7 +130,7 @@ const textbook = {
       { name: "歌剧", type: "音乐体裁", unit: 4, page: 44, facts: [] },
       { name: "管弦乐曲", type: "音乐体裁", unit: 4, page: 44, facts: [] },
       { name: "变奏", type: "音乐概念", unit: 4, page: 45, facts: [] },
-      { name: "西洋管弦乐队", type: "表演形式", unit: 4, page: 46, facts: [["特点","教材划分弦乐、木管、铜管和打击乐四组",null,"明"]] },
+      { name: "西洋管弦乐队", type: "表演形式", unit: 4, page: 46, facts: [["特点", "常见编制包括弦乐、木管、铜管和打击乐四组", null, "明"]] },
       { name: "河北民歌", type: "音乐体裁", unit: 4, page: 48, facts: [] },
       { name: "艺术歌曲", type: "音乐体裁", unit: 5, page: 55, facts: [] },
       { name: "藏族民歌", type: "音乐体裁", unit: 5, page: 58, facts: [] },
