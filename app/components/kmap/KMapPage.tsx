@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNod
 import { EDITION, PUBLISHED_BOOK_SHORT_NAMES } from "../../lib/app/books";
 import { getScoreMedia } from "../../lib/app/unit-data";
 import { bareWorkName, type BookDirectory, type CanonicalGraph } from "../../lib/app/types";
-import { barsWith, buildKMap, excerpt, GROUPS, mergeKMaps, SCORE_POINTS, type KEdge, type KGroup, type KMap, type KNode, type KWork } from "../../lib/graph/kmap";
+import { barsWith, buildKMap, excerpt, GROUPS, isExcerpt, melodyMode, mergeKMaps, SCORE_POINTS, type KEdge, type KGroup, type KMap, type KNode, type KWork } from "../../lib/graph/kmap";
 import { melodiesFor } from "../../lib/lesson/melodies";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { MelodyPlayer, MelodySet } from "../lesson/MelodyPlayer";
@@ -234,9 +234,20 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
 
   const pointCard = (node: KNode) => {
     const works = worksOf(node);
-    const scored = SCORE_POINTS.includes(node.name);
+    // 调式知识点：从乐谱判断出来的作品，截出结尾两小节，听它落在哪个音上。
+    const modeExamples = node.group === "mode" ? works.flatMap((work) => {
+      const melodies = melodiesOf(work);
+      const last = melodies[melodies.length - 1];
+      const names = [node.name, ...node.aliases];
+      // 图上的连线已经判断过是不是外国作品，这里两种都试，找出判断的理由。
+      const mode = last && [false, true].map((foreign) => melodyMode(last, { excerpt: isExcerpt(work.name, last), foreign, tonal: true })).find((item) => item && names.some((name) => item.names.includes(name)));
+      if (!mode) return [];
+      const start = Math.max(0, last.bars.length - 2);
+      return [{ work, melody: excerpt(last, start), bar: start + 1, reason: mode.reason }];
+    }) : [];
+    const scored = SCORE_POINTS.includes(node.name) || modeExamples.length > 0;
     // 谱例：从乐谱里截出含有这个节奏型的两小节。
-    const examples = scored ? works.flatMap((work) => {
+    const examples: Array<{ work: KWork; melody: ReturnType<typeof excerpt>; bar: number; reason?: string }> = modeExamples.length ? modeExamples : scored ? works.flatMap((work) => {
       for (const melody of melodiesOf(work)) {
         const bars = barsWith(node.name, melody);
         if (bars.length) return [{ work, melody: excerpt(melody, Math.min(bars[0], Math.max(0, melody.bars.length - 2))), bar: bars[0] + 1 }];
@@ -253,7 +264,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       return <li key={work.id}>
         <div>
           <button type="button" className="kmap-work-name" onClick={() => openWork(work)}>{work.name}</button>
-          <small>{[work.mode, scope ? work.unit : edge?.source === "score" ? "乐谱里出现" : edge?.label].filter(Boolean).join(" · ")}</small>
+          <small>{[work.mode, scope ? work.unit : edge?.source === "score" ? (edge.label === "调式" ? "从乐谱判断" : "乐谱里出现") : edge?.label].filter(Boolean).join(" · ")}</small>
         </div>
         {workActions(work)}
         {scores[0] && <Fold label="看课本乐谱">{() =>
@@ -276,13 +287,13 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
       </section>
       {examples.length > 0 && <section>
         <h3>谱例与音频</h3>
-        <p className="kmap-quiet">从课本乐谱里截出的小节，点播放就能听。</p>
-        {examples.slice(0, 3).map(({ work, melody, bar }) => <figure className="kmap-example" key={work.id}>
-          <figcaption>{work.name} <small>第 {bar} 小节起</small></figcaption>
+        <p className="kmap-quiet">{modeExamples.length ? "截出歌曲最后两小节，听它停在哪个音上。" : "从课本乐谱里截出的小节，点播放就能听。"}</p>
+        {examples.slice(0, 3).map(({ work, melody, bar, reason }) => <figure className="kmap-example" key={work.id}>
+          <figcaption>{work.name} <small>{reason ? `${reason} · 第 ${bar} 小节起` : `第 ${bar} 小节起`}</small></figcaption>
           <MelodyPlayer melody={melody} notationStyle={notationStyle} />
         </figure>)}
-        {examples.length > 3 && <Fold label={`再看 ${Math.min(examples.length, 12) - 3} 首`}>{() => examples.slice(3, 12).map(({ work, melody, bar }) => <figure className="kmap-example" key={work.id}>
-          <figcaption>{work.name} <small>第 {bar} 小节起</small></figcaption>
+        {examples.length > 3 && <Fold label={`再看 ${Math.min(examples.length, 12) - 3} 首`}>{() => examples.slice(3, 12).map(({ work, melody, bar, reason }) => <figure className="kmap-example" key={work.id}>
+          <figcaption>{work.name} <small>{reason ? `${reason} · 第 ${bar} 小节起` : `第 ${bar} 小节起`}</small></figcaption>
           <MelodyPlayer melody={melody} notationStyle={notationStyle} />
         </figure>)}</Fold>}
       </section>}
@@ -414,7 +425,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
             const state = on ? " is-on" : focus ? " is-off" : "";
             return <g key={`${edge.a}-${edge.b}`} className={`${work ? "to-work" : "to-point"}${state}`}>
               <line x1={x1} y1={y1} x2={x2} y2={y2} markerEnd={on ? "url(#kmap-arrow-on)" : work ? undefined : "url(#kmap-arrow)"} />
-              {labelled && <text transform={`translate(${(x1 + x2) / 2},${(y1 + y2) / 2}) rotate(${angle > 90 || angle < -90 ? angle + 180 : angle})`} textAnchor="middle" dy={-3}>{edge.source === "score" ? "乐谱里出现" : edge.label}</text>}
+              {labelled && <text transform={`translate(${(x1 + x2) / 2},${(y1 + y2) / 2}) rotate(${angle > 90 || angle < -90 ? angle + 180 : angle})`} textAnchor="middle" dy={-3}>{edge.source === "score" ? (edge.label === "调式" ? "从乐谱判断" : "乐谱里出现") : edge.label}</text>}
             </g>;
           })}</g>
           {shown.map((node) => {

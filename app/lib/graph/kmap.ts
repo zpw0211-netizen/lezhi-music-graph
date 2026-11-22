@@ -115,6 +115,62 @@ export function barsWith(pointName: string, melody: Melody): number[] {
 }
 export const SCORE_POINTS = ["附点节奏", "切分节奏", "三连音", "休止符"];
 
+// ── 从旋律判断调式 ──
+// 只认有把握的：只用 1 2 3 5 6 的旋律按结束音定五声调式；大调、小调只给非民歌（或外国）作品判断，
+// 免得把中国民歌的七声调式说成大小调。片段只判断是不是五声调式，草稿不判断。
+const PENTA_MODE: Record<number, string> = { 1: "宫调式", 2: "商调式", 3: "角调式", 5: "徵调式", 6: "羽调式" };
+const PENTA_SOUND: Record<number, string> = { 1: "宫（do）", 2: "商（re）", 3: "角（mi）", 5: "徵（sol）", 6: "羽（la）" };
+/** 作品说明里看得出是中国民间音乐。 */
+export const FOLK_TEXT = /民歌|民间|民谣|童谣|山歌|小调(?![式音])|号子|花儿|信天游|戏曲|京剧|越剧|黄梅戏|昆曲|豫剧|评剧|粤剧|曲艺|古曲|琴歌|琴曲|吹打|丝竹|锣鼓/;
+/** 外国作品的标记：〔德〕、美国民歌… */
+export const FOREIGN_TEXT = /〔|德国|美国|英国|法国|俄罗斯|苏联|意大利|奥地利|捷克|波兰|日本|朝鲜|韩国|印度|澳大利亚|西班牙|苏格兰|爱尔兰|墨西哥|巴西|芬兰|挪威|瑞典|丹麦|匈牙利|罗马尼亚|保加利亚|西印度群岛|加拿大|新西兰|菲律宾|巴基斯坦|土耳其|以色列|智利|阿根廷|秘鲁|古巴|乌克兰|荷兰|瑞士|希腊|埃及|南非|肯尼亚|叙利亚|伊朗|越南|泰国|缅甸|马来西亚|新加坡|印度尼西亚|蒙古国|哈萨克斯坦|斯洛伐克|立陶宛|比利时|葡萄牙|威尔士|夏威夷|阿拉伯|美洲|欧洲|非洲|拉丁/;
+export type MelodyMode = { names: string[]; reason: string };
+export type ModeOptions = {
+  /** 片段（选段、唱段、器乐主题）：结尾不一定落在主音上，只判断是不是五声调式。 */
+  excerpt: boolean;
+  /** 外国作品：不套用宫商角徵羽的调式名。 */
+  foreign: boolean;
+  /** 不是中国民间音乐，才按大小调判断。 */
+  tonal: boolean;
+};
+/** 作品是不是只截了一段：名字写着选段、唱段，或旋律没有歌词（器乐主题）。 */
+export function isExcerpt(workName: string, melody: Melody): boolean {
+  return Boolean(melody.title) || /选段|唱段|片段|节选|主题/.test(workName) || !melody.bars.some((bar) => bar.some((note) => note.lyric));
+}
+export function melodyMode(melody: Melody, options: ModeOptions): MelodyMode | null {
+  if (melody.quality === "draft") return null;
+  const flat = melody.bars.flat().filter((note) => !note.inst);
+  const pitched = flat.filter((note) => note.d >= 1 && note.d <= 7 && !note.tie);
+  if (pitched.length < 16) return null;
+  const count = (d: number) => pitched.filter((note) => note.d === d).length;
+  const altered = pitched.filter((note) => note.a === 1 || note.a === -1);
+  const pentatonic = !altered.length && !count(4) && !count(7) && new Set(pitched.map((note) => note.d)).size >= 4;
+  if (pentatonic && options.foreign) return null;
+  const family = ["五声调式", "中国五声调式", "中国民族五声调式"];
+  if (pentatonic && options.excerpt) return { names: family, reason: "旋律只用宫、商、角、徵、羽五个音" };
+  if (options.excerpt) return null;
+  // 结束音要落稳：最后一个音（连同延音）至少一拍。
+  const lastAt = flat.findLastIndex((note) => note.d >= 1 && note.d <= 7 && !note.tie);
+  const held = flat.slice(lastAt).filter((note, index) => index === 0 || note.tie).reduce((sum, note) => sum + note.b, 0);
+  const final = flat[lastAt];
+  if (held < 1 || final.a === 1 || final.a === -1) return null;
+  if (pentatonic) {
+    const mode = PENTA_MODE[final.d];
+    return mode ? { names: [...family, mode, ...(final.d === 6 ? ["民族五声羽调式"] : [])], reason: `旋律只用宫、商、角、徵、羽五个音，结束在${PENTA_SOUND[final.d]}上` } : null;
+  }
+  if (!options.tonal || !count(4) || !count(7) || count(4) + count(7) < pitched.length * 0.06) return null;
+  const sharpFive = altered.filter((note) => note.d === 5 && note.a === 1).length;
+  if (altered.length - sharpFive > pitched.length * 0.03) return null;
+  const tonic = melody.key.replace(/^1=/, "").trim();
+  // 大调：结束在 do，并且有导音 si 解决到 do。
+  const leading = pitched.some((note, index) => note.d === 7 && !note.a && pitched[index + 1]?.d === 1);
+  if (final.d === 1 && !sharpFive && leading) return { names: ["大调式", "自然大调音阶", "自然大调", `${tonic}大调`], reason: `旋律用到七个音，si 解决到 do，结束在主音 do（${tonic}）上` };
+  // 小调：结束在 la。中国作品只有升高 sol（和声小调）才算，免得和七声羽调式混在一起。
+  const harmonic = sharpFive >= 2;
+  if (final.d === 6 && (harmonic || options.foreign)) return { names: ["小调式", harmonic ? "和声小调音阶" : "自然小调音阶", harmonic ? "和声小调" : "自然小调"], reason: harmonic ? "旋律结束在 la 上，并把 sol 升高半音（#5）" : "旋律用到七个音，结束在 la 上" };
+  return null;
+}
+
 /** 截出谱例：从第一个含有该节奏型的小节起取 count 小节。 */
 export function excerpt(melody: Melody, start: number, count = 2): Melody {
   const end = Math.min(melody.bars.length, start + count);
@@ -247,7 +303,10 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
       if (relation.predicate === "属于") parents.set(from, [...(parents.get(from) ?? []), to]);
     }
   }
-  // 谱面里认出的拍号和节奏型。
+  // 作品自己的说明文字（来源、体裁…），判断调式时用来区分民歌和外国作品。
+  const workText = new Map<string, string[]>();
+  for (const relation of relations) if (works.has(relation.subject)) workText.set(relation.subject, [...(workText.get(relation.subject) ?? []), valueOf(relation)]);
+  // 谱面里认出的拍号、节奏型和调式。
   for (const work of works.values()) {
     const melodies = melodiesOf(work.name);
     if (!melodies.length) continue;
@@ -259,6 +318,17 @@ export function buildKMap(graph: CanonicalGraph, bookKey: string, melodiesOf: (w
       link(work.id, id, "谱面出现", "score");
       const node = nodes.get(id)!;
       if (!node.works.includes(work.id)) node.works.push(work.id);
+    }
+    // 调式：看最后一段旋律（整首歌的结尾），只连到本册讲到的调式知识点。
+    const text = [work.name, ...(workText.get(work.id) ?? [])].join(" ");
+    const last = melodies[melodies.length - 1];
+    const foreign = FOREIGN_TEXT.test(text);
+    const mode = melodyMode(last, { excerpt: isExcerpt(work.name, last), foreign, tonal: foreign || !FOLK_TEXT.test(text) });
+    for (const name of mode?.names ?? []) {
+      const node = pointByName.get(name);
+      if (!node || node.works.includes(work.id)) continue;
+      link(work.id, node.id, "调式", "score");
+      node.works.push(work.id);
     }
   }
   // 知识点之间的乐理关系（各版本共用的表）：两头都在本册才连。
