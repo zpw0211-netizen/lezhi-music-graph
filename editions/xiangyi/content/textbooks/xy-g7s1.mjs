@@ -149,7 +149,7 @@ const textbook = {
         ["特点", "流行于城镇，结构匀整，风格细腻柔婉", null, "明"],
       ] },
       { name: "蒙古族民歌", type: "音乐体裁", unit: 2, page: 24, facts: [] },
-      { name: "六孔竖笛F调（全按作5）", type: "音乐概念", unit: 2, page: 24, facts: [
+      { name: "竖笛指法", type: "音乐概念", unit: 2, page: 24, facts: [
         ["记法", "指法表以六孔全按为低音5展示各音", null, "明"],
       ] },
       { name: "歌剧", type: "音乐体裁", unit: 3, page: 30, facts: [] },
@@ -361,7 +361,7 @@ const textbook = {
       { name: "力度", type: "音乐概念", page: 66, facts: [
         ["定义为", "音乐音量的强弱程度", null, "明"],
       ] },
-      { name: "音乐的速度", type: "速度术语", page: 66, facts: [
+      { name: "速度", type: "音乐概念", page: 66, facts: [
         ["定义为", "音乐进行时节拍的快慢程度", null, "明"],
       ] },
       { name: "力度记号", type: "音乐概念", page: 66, facts: [
