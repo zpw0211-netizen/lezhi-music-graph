@@ -130,16 +130,12 @@ const textbook = {
         { name: "团歌", type: "音乐体裁", unit: 1, page: 4, facts: [
           ["特点", "课文说明该曲定为中国共产主义青年团团歌", null, "明"],
         ] },
-        { name: "领唱", type: "表演形式", unit: 1, page: 5, facts: [
-          ["特点", "练习指定它与齐唱配合演唱", null, "明"],
-        ] },
+        { name: "领唱", type: "表演形式", unit: 1, page: 5, facts: [] },
         { name: "齐唱", type: "表演形式", unit: 1, page: 5, facts: [
           ["特点", "素质评价安排全班共同齐唱国歌", null, "明", 70],
         ] },
         { name: "电影插曲", type: "音乐体裁", unit: 1, page: 6, facts: [] },
-        { name: "副歌", type: "音乐概念", unit: 1, page: 8, facts: [
-          ["特点", "练习要求听到副歌时全班跟唱", null, "明"],
-        ] },
+        { name: "副歌", type: "音乐概念", unit: 1, page: 8, facts: [] },
       ],
       people: [],
       tasks: []
@@ -403,9 +399,7 @@ const textbook = {
           ["作用", "《岭南春早》谱例标出了末尾的结束句", null, "明"],
         ] },
         { name: "潮州小锣鼓", type: "音乐体裁", unit: 2, page: 12, facts: [] },
-        { name: "指挥图示", type: "音乐概念", unit: 2, page: 13, facts: [
-          ["作用", "练习要求跟随老师的指挥图示演唱", null, "明"],
-        ] },
+        { name: "指挥图示", type: "音乐概念", unit: 2, page: 13, facts: [] },
         { name: "丝竹乐", type: "音乐体裁", unit: 2, page: 14, facts: [
           ["包含", "广东音乐", "音乐体裁", "明"],
         ] },
@@ -457,7 +451,7 @@ const textbook = {
           ["特点", "相连的音吹得连贯平滑，先吹tu，后续音只延续u", null, "明"],
         ] },
         { name: "圆滑线", type: "音乐概念", unit: 2, page: 22, facts: [
-          ["记法", "课本称连音线，以弧线连接需连贯吹奏的音", null, "明"],
+          ["记法", "用弧线标出需要连贯吹奏的一组音", null, "明"],
         ] },
       ],
       people: [],
@@ -656,17 +650,13 @@ const textbook = {
         { name: "终止音", type: "音乐概念", unit: 3, page: 28, facts: [
           ["作用", "用谱上标出的乐句终止音判断歌曲的分段", null, "明"],
         ] },
-        { name: "曲式结构", type: "音乐概念", unit: 3, page: 28, facts: [
-          ["特点", "此练习要求按乐句和终止音判断分段", null, "明"],
-        ] },
+        { name: "曲式结构", type: "音乐概念", unit: 3, page: 28, facts: [] },
         { name: "自然小调音阶", type: "音乐概念", unit: 3, page: 29, facts: [
           ["特点", "以la为主音，si到do、mi到fa为半音，其余相邻音为全音", null, "明"],
           ["特点", "此调式的曲子大多结束在la", null, "明"],
         ] },
         { name: "德国民歌", type: "音乐体裁", unit: 3, page: 30, facts: [] },
-        { name: "和声小调音阶", type: "音乐概念", unit: 3, page: 30, facts: [
-          ["特点", "课本以《怎样才能把门打开》练习确定主音并排列音阶", null, "明"],
-        ] },
+        { name: "和声小调音阶", type: "音乐概念", unit: 3, page: 30, facts: [] },
         { name: "旋律小调", type: "音乐概念", unit: 3, page: 32, facts: [
           ["特点", "音阶上行与下行不同，谱例上行升4和5，下行还原", null, "明"],
         ] },
@@ -1086,7 +1076,7 @@ const textbook = {
           ["特点", "京剧唱腔的讲解指出，其过门与西皮不同", null, "明"],
         ] },
         { name: "西皮流水板的过门", type: "音乐概念", unit: 4, page: 42, facts: [
-          ["特点", "不同角色的过门相近，课本用基本接唱句示范", null, "明"],
+          ["特点", "不同角色的过门音调相近，有共同的基本接唱句", null, "明"],
         ] },
         { name: "西皮二六", type: "音乐概念", unit: 4, page: 43, facts: [] },
       ],
@@ -1303,7 +1293,7 @@ const textbook = {
         ] },
         { name: "清唱剧", type: "音乐体裁", unit: 5, page: 48, facts: [] },
         { name: "混合拍子", type: "音乐概念", unit: 5, page: 49, facts: [
-          ["特点", "课本用二拍子与三拍子组合的5/4拍作示例", null, "明"],
+          ["特点", "五四拍由二拍子和三拍子合成，两者的顺序可以互换", null, "明"],
         ] },
         { name: "5/4", type: "拍号", unit: 5, page: 49, facts: [
           ["特点", "常见组合为2/4加3/4，或3/4加2/4", null, "明"],
@@ -1314,9 +1304,7 @@ const textbook = {
         { name: "三拍子", type: "拍号", unit: 5, page: 49, facts: [
           ["特点", "与二拍子按不同次序组合可构成5/4拍", null, "明"],
         ] },
-        { name: "变音记号", type: "音乐概念", unit: 5, page: 49, facts: [
-          ["作用", "练习要求听辨《卖布谣》临时变音记号带来的调式变化", null, "明"],
-        ] },
+        { name: "变音记号", type: "音乐概念", unit: 5, page: 49, facts: [] },
         { name: "小提琴独奏", type: "表演形式", unit: 5, page: 50, facts: [
           ["特点", "本页的改编谱要求用小提琴G弦演奏全曲", null, "明"],
         ] },
@@ -1331,7 +1319,7 @@ const textbook = {
           ["定义为", "用变奏手法组织而成的曲式", null, "明"],
         ] },
         { name: "变奏曲", type: "音乐体裁", unit: 5, page: 52, facts: [
-          ["特点", "教材把《惊愕》交响曲第二乐章列作变奏曲", null, "明"],
+          ["定义为", "运用变奏手法构成曲式的乐曲", null, "明"],
         ] },
         { name: "民歌改编曲", type: "音乐体裁", unit: 5, page: 55, facts: [] },
         { name: "单吐法", type: "音乐概念", unit: 5, page: 56, facts: [
@@ -1558,12 +1546,8 @@ const textbook = {
         { name: "中国歌剧", type: "音乐体裁", unit: 6, page: 58, facts: [
           ["特点", "20世纪前半叶出现，40年代以后发展并形成中国特色", null, "明"],
         ] },
-        { name: "儿童歌舞剧", type: "音乐体裁", unit: 6, page: 58, facts: [
-          ["特点", "课本用《小小画家》说明中国歌剧的早期先导", null, "明"],
-        ] },
-        { name: "秧歌剧", type: "音乐体裁", unit: 6, page: 58, facts: [
-          ["特点", "课本以安波的《兄妹开荒》为例", null, "明"],
-        ] },
+        { name: "儿童歌舞剧", type: "音乐体裁", unit: 6, page: 58, facts: [] },
+        { name: "秧歌剧", type: "音乐体裁", unit: 6, page: 58, facts: [] },
         { name: "咏叹调", type: "音乐体裁", unit: 6, page: 58, facts: [] },
         { name: "宣叙调", type: "音乐体裁", unit: 6, page: 58, facts: [] },
         { name: "重唱", type: "表演形式", unit: 6, page: 58, facts: [] },
@@ -1571,13 +1555,11 @@ const textbook = {
           ["作用", "歌剧中可为声乐曲伴奏，也可独立演奏", null, "明"],
         ] },
         { name: "序曲", type: "音乐体裁", unit: 6, page: 58, facts: [
-          ["特点", "课本列为歌剧中可单独演奏的器乐曲", null, "明"],
+          ["特点", "歌剧的序曲是一类可由管弦乐队单独演奏的器乐曲", null, "明"],
         ] },
         { name: "间奏曲", type: "音乐体裁", unit: 6, page: 58, facts: [] },
         { name: "舞曲", type: "音乐体裁", unit: 6, page: 58, facts: [] },
-        { name: "衬词", type: "音乐概念", unit: 6, page: 60, facts: [
-          ["作用", "练习要求比较有无衬词时歌曲的情感表达", null, "明"],
-        ] },
+        { name: "衬词", type: "音乐概念", unit: 6, page: 60, facts: [] },
         { name: "西方歌剧", type: "音乐体裁", unit: 6, page: 62, facts: [
           ["特点", "近代西方歌剧发端于16世纪佛罗伦萨的演唱剧", null, "明"],
           ["包含", "大歌剧", "音乐体裁", "明"],
@@ -1587,9 +1569,7 @@ const textbook = {
         { name: "大歌剧", type: "音乐体裁", unit: 6, page: 62, facts: [] },
         { name: "喜歌剧", type: "音乐体裁", unit: 6, page: 62, facts: [] },
         { name: "轻歌剧", type: "音乐体裁", unit: 6, page: 62, facts: [] },
-        { name: "歌剧序曲", type: "音乐体裁", unit: 6, page: 64, facts: [
-          ["特点", "课本列有歌剧《卡门》的序曲作为欣赏实例", null, "明"],
-        ] },
+        { name: "歌剧序曲", type: "音乐体裁", unit: 6, page: 64, facts: [] },
         { name: "主部主题", type: "音乐概念", unit: 6, page: 64, facts: [
           ["特点", "《卡门》序曲将节日进行曲标为主部主题A", null, "明"],
         ] },
@@ -1653,9 +1633,7 @@ const textbook = {
         { name: "朗诵", type: "表演形式", unit: 7, page: 68, facts: [
           ["特点", "艺术实践以朗诵为主，兼用演奏、舞蹈、配乐", null, "明"],
         ] },
-        { name: "情景剧", type: "音乐体裁", unit: 7, page: 68, facts: [
-          ["特点", "课本以宋词为素材，由学生分工编排演出", null, "明"],
-        ] },
+        { name: "情景剧", type: "音乐体裁", unit: 7, page: 68, facts: [] },
       ],
       people: [],
       tasks: []
@@ -1780,9 +1758,7 @@ const textbook = {
         }
       ],
       concepts: [
-        { name: "竖笛合奏", type: "表演形式", unit: 8, page: 70, facts: [
-          ["特点", "《吐鲁番的风》列为老师和全班学生合作吹奏的节目", null, "明"],
-        ] },
+        { name: "竖笛合奏", type: "表演形式", unit: 8, page: 70, facts: [] },
       ],
       people: [],
       tasks: []
