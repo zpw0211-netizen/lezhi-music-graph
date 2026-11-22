@@ -57,7 +57,33 @@ const CONTENTS = [
 const SCORE_PAGES = {"歌唱祖国":[[4,0.04,0.035,0.96,0.94]],"丑末寅初":[[24,0.04,0.035,0.96,0.94]],"蝶恋花·答李淑一":[[25,0.04,0.035,0.96,0.94]],"牧歌":[[28,0.04,0.035,0.96,0.94]],"上去高山望平川":[[29,0.04,0.035,0.96,0.94]],"歌唱美丽的家乡":[[30,0.04,0.035,0.96,0.94]],"阳关三叠":[[50,0.04,0.035,0.96,0.94]],"中华人民共和国国歌":[[80,0.04,0.035,0.96,0.94]],"国际歌":[[81,0.04,0.035,0.96,0.94]]};
 const scoresFor = (title) => SCORE_PAGES[title.replace(/^《|》$/g, "").replace(/\s+/g, "")] ?? [];
 const ENRICHMENT = pageEnrichmentFor("pep-g7s1");
+const TEXTBOOK_CONCEPTS = [
+  { name: "叠", type: "音乐概念", unit: 3, page: 51, facts: [["含义", "古代同曲变奏结构的称谓，三叠指演唱或变奏了三次", null, "明", 51]] },
+  { name: "巴洛克音乐", type: "音乐概念", unit: 4, page: 66, facts: [["特点", "重视装饰，以大小调和声和主调织体为创作基础", null, "明", 66]] },
+  { name: "古典主义音乐", type: "音乐概念", unit: 4, page: 66, facts: [["特点", "在创作和表演中追求和谐、均衡、自然与规则", null, "明", 66]] },
+  { name: "浪漫主义音乐", type: "音乐概念", unit: 4, page: 71, facts: [["特点", "重视个人情感和民族性，形式多样，也强调与其他艺术结合", null, "明", 71]] },
+];
+const WORK_KNOWLEDGE = {
+  4: {
+    "我看到云雀高飞": [["音乐体裁", "世俗歌曲", "音乐体裁", "明", 64]],
+    "D大调第五号勃兰登堡协奏曲": [["音乐体裁", "协奏曲", "音乐体裁", "明", 66]],
+    "G大调第一百（军队）交响曲": [["音乐体裁", "交响曲", "音乐体裁", "明", 67]],
+    "C大调第二十一钢琴奏鸣曲": [["音乐体裁", "奏鸣曲", "音乐体裁", "明", 67]],
+    "e小调小提琴协奏曲": [["音乐体裁", "小提琴协奏曲", "音乐体裁", "明", 71]],
+    "B大调第一钢琴三重奏": [["表演形式", "钢琴三重奏", "表演形式", "明", 71]],
+  },
+};
 const bare = (title) => String(title).replace(/^《|》$/g, "").replace(/[\s，,。.!！？?；;：:]/g, "");
+const conceptsForUnit = (no) => {
+  const additions = new Map(TEXTBOOK_CONCEPTS.filter((item) => item.unit === no).map((item) => [item.name, item]));
+  const existing = ENRICHMENT.concepts.filter((item) => item.unit === no).map((item) => {
+    const source = additions.get(item.name);
+    if (!source) return item;
+    additions.delete(item.name);
+    return { ...item, page: source.page, facts: [...(item.facts ?? []), ...source.facts] };
+  });
+  return [...existing, ...additions.values()];
+};
 const baseParts = CONTENTS.map(([no, name, page, items]) => ({
   units: [{ no, name, page, ...knowledgeForUnit("pep-g7s1", no) }],
   works: items.map(([section, title, itemPage, type]) => ({ name: title, type, unit: no, mode: section, page: itemPage, facts: factsForItem("pep-g7s1", title), ...(scoresFor(title).length ? { scores: scoresFor(title) } : {}) })),
@@ -74,11 +100,17 @@ textbook.parts = withPrintedScores("pep-g7s1", baseParts.map((part) => {
   return {
     units: part.units,
     works: [...baseWorks, ...extraWorks],
-    concepts: ENRICHMENT.concepts.filter((item) => item.unit === no),
+    concepts: conceptsForUnit(no),
     people: ENRICHMENT.people.filter((item) => item.unit === no),
     tasks: ENRICHMENT.tasks.filter((item) => item.unit === no),
     references: ENRICHMENT.references.filter((item) => item.unit === no),
   };
+})).map((part) => ({
+  ...part,
+  works: part.works.map((work) => {
+    const facts = WORK_KNOWLEDGE[work.unit]?.[work.name];
+    return facts ? { ...work, facts: [...work.facts, ...facts] } : work;
+  }),
 }));
 
 export default textbook;
