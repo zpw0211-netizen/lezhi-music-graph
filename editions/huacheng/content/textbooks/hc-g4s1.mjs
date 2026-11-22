@@ -44,6 +44,7 @@ const textbook = {
           mode: "演唱",
           page: 2,
           facts: [
+            ["音乐体裁","江西民歌","音乐体裁","明",2],
             ["来源标注", "江西民歌", null, "明", 2],
             ["流传地区", "江西", "地域", "明", 2],
             ["编曲", "焕之", "人物", "明", 2],
@@ -80,7 +81,9 @@ const textbook = {
           ]
         }
       ],
-      concepts: [],
+      concepts: [
+        { name: "江西民歌", type: "音乐体裁", unit: 1, page: 2, facts: [] },
+      ],
       people: [],
       tasks: []
     },
@@ -140,6 +143,8 @@ const textbook = {
           mode: "听赏",
           page: 7,
           facts: [
+            ["来源体裁","喜歌剧","音乐体裁","明",7],
+            ["音乐体裁","舞曲","音乐体裁","明",7],
             ["音乐体裁", "管弦乐曲", "音乐体裁", "明", 7],
             ["作曲", "奥芬巴赫", "人物", "明", 7],
             ["来源标注", "喜歌剧《地狱中的奥菲欧》序曲", null, "明", 7]
@@ -181,6 +186,8 @@ const textbook = {
           mode: "听赏",
           page: 8,
           facts: [
+            ["表演形式","钢琴独奏","表演形式","明",8],
+            ["涉及知识","速度","音乐概念","明",9],
             ["作曲", "丁善德", "人物", "明", 8],
             ["主奏乐器", "钢琴", "乐器", "明", 8],
             ["学习活动", "对比两个主题的速度变化，随音乐游戏。", null, "明", 9],
@@ -250,7 +257,19 @@ const textbook = {
           scores: []
         }
       ],
-      concepts: [],
+      concepts: [
+        { name: "管弦乐曲", type: "音乐体裁", unit: 2, page: 6, facts: [] },
+        { name: "喜歌剧", type: "音乐体裁", unit: 2, page: 7, facts: [] },
+        { name: "舞曲", type: "音乐体裁", unit: 2, page: 7, facts: [] },
+        { name: "钢琴独奏", type: "表演形式", unit: 2, page: 8, facts: [] },
+        { name: "速度", type: "音乐概念", unit: 2, page: 9, facts: [["记法","速度常用快、慢、稍快、稍慢、中速等词写在曲谱左上角",null,"明"]] },
+        { name: "快速", type: "速度术语", unit: 2, page: 9, facts: [] },
+        { name: "慢速", type: "速度术语", unit: 2, page: 9, facts: [] },
+        { name: "稍快", type: "速度术语", unit: 2, page: 9, facts: [] },
+        { name: "稍慢", type: "速度术语", unit: 2, page: 9, facts: [] },
+        { name: "中速", type: "速度术语", unit: 2, page: 9, facts: [] },
+        { name: "顺指法", type: "音乐概念", unit: 2, page: 10, facts: [["特点","把手指依次放在相邻琴键上",null,"明"]] },
+      ],
       people: [],
       tasks: []
     },
@@ -295,6 +314,7 @@ const textbook = {
           mode: "听赏",
           page: 15,
           facts: [
+            ["来源体裁","民间乐曲","音乐体裁","明",15],
             ["来源标注", "中国传统民间乐曲", null, "明", 15],
             ["学习活动", "欣赏并与《祖国歌》的旋律比较。", null, "明", 15]
           ],
@@ -372,7 +392,12 @@ const textbook = {
           scores: []
         }
       ],
-      concepts: [],
+      concepts: [
+        { name: "学堂乐歌", type: "音乐体裁", unit: 3, page: 15, facts: [["特点","课本所举实例用民间乐曲的曲调重新填词",null,"明"]] },
+        { name: "民间乐曲", type: "音乐体裁", unit: 3, page: 15, facts: [] },
+        { name: "连音", type: "音乐概念", unit: 3, page: 19, facts: [] },
+        { name: "断音", type: "音乐概念", unit: 3, page: 19, facts: [] },
+      ],
       people: [],
       tasks: []
     },
@@ -415,6 +440,8 @@ const textbook = {
           mode: "听赏",
           page: 23,
           facts: [
+            ["涉及知识","四拍子","拍号","明",23],
+            ["音乐体裁","内蒙古民歌","音乐体裁","明",23],
             ["来源标注", "内蒙古民歌", null, "明", 23],
             ["流传地区", "内蒙古", "地域", "明", 23],
             ["填词", "红岚", "人物", "明", 23],
@@ -519,6 +546,7 @@ const textbook = {
           mode: "演唱",
           page: 29,
           facts: [
+            ["音乐体裁","俄罗斯民歌","音乐体裁","明",29],
             ["来源标注", "俄罗斯民歌", null, "明", 29],
             ["所属国家", "俄罗斯", "地域", "明", 29],
             ["译词", "何燕生", "人物", "明", 29],
@@ -536,7 +564,7 @@ const textbook = {
         },
         {
           name: "拍号",
-          type: "小知识",
+          type: "音乐概念",
           unit: 4,
           mode: "小知识",
           page: 30,
@@ -560,7 +588,19 @@ const textbook = {
           ]
         }
       ],
-      concepts: [],
+      concepts: [
+        { name: "四拍子", type: "拍号", unit: 4, page: 22, facts: [["特点","以强、弱、次强、弱的顺序练习四拍",null,"明"]] },
+        { name: "内蒙古民歌", type: "音乐体裁", unit: 4, page: 23, facts: [] },
+        { name: "切分节奏", type: "节奏型", unit: 4, page: 24, facts: [["特点","从弱拍或拍的弱部分开始并延续到较强的位置",null,"明"]] },
+        { name: "六拍子", type: "拍号", unit: 4, page: 27, facts: [["含义","以八分音符为单位，每小节六拍",null,"明"]] },
+        { name: "俄罗斯民歌", type: "音乐体裁", unit: 4, page: 29, facts: [] },
+        { name: "拍号", type: "音乐概念", unit: 4, page: 30, facts: [
+          ["作用","标记乐谱所用的拍子",null,"明"],
+          ["记法","下数说明以几分音符为一拍，上数说明每小节几拍",null,"明"],
+        ] },
+        { name: "二拍子", type: "拍号", unit: 4, page: 30, facts: [] },
+        { name: "三拍子", type: "拍号", unit: 4, page: 30, facts: [] },
+      ],
       people: [],
       tasks: []
     },
@@ -586,6 +626,8 @@ const textbook = {
           mode: "唱游",
           page: 32,
           facts: [
+            ["涉及知识","渐强","音乐概念","明",34],
+            ["涉及知识","渐弱","音乐概念","明",34],
             ["来源标注", "加勒比海地区游戏歌曲", null, "明", 32],
             ["流传地区", "加勒比海地区", "地域", "明", 32],
             ["改编", "郑炳元", "人物", "明", 32],
@@ -671,7 +713,10 @@ const textbook = {
           ]
         }
       ],
-      concepts: [],
+      concepts: [
+        { name: "渐强", type: "音乐概念", unit: 5, page: 34, facts: [["作用","离目标近时逐渐加强演唱",null,"明"]] },
+        { name: "渐弱", type: "音乐概念", unit: 5, page: 34, facts: [["作用","离目标远时逐渐减弱演唱",null,"明"]] },
+      ],
       people: [],
       tasks: []
     },
@@ -748,6 +793,8 @@ const textbook = {
           mode: "演唱",
           page: 44,
           facts: [
+            ["涉及知识","卡农","音乐概念","明",44],
+            ["表演形式","轮唱","表演形式","明",44],
             ["来源标注", "法国儿歌", null, "明", 44],
             ["所属国家", "法国", "地域", "明", 44],
             ["演唱形式", "二部轮唱", null, "明", 44],
@@ -763,7 +810,7 @@ const textbook = {
         },
         {
           name: "卡农",
-          type: "小知识",
+          type: "音乐概念",
           unit: 6,
           mode: "小知识",
           page: 45,
@@ -779,6 +826,7 @@ const textbook = {
           mode: "听赏",
           page: 46,
           facts: [
+            ["表演形式","二声部合唱","表演形式","明",46],
             ["作词", "塞克", "人物", "明", 46],
             ["作曲", "冼星海", "人物", "明", 46],
             ["学习活动", "聆听二声部合唱版本，辨别演唱形式。", null, "明", 46],
@@ -825,7 +873,19 @@ const textbook = {
           ]
         }
       ],
-      concepts: [],
+      concepts: [
+        { name: "独唱", type: "表演形式", unit: 6, page: 41, facts: [["定义为","由一人演唱，可按人声音区区分",null,"明"]] },
+        { name: "重唱", type: "表演形式", unit: 6, page: 41, facts: [] },
+        { name: "对唱", type: "表演形式", unit: 6, page: 41, facts: [] },
+        { name: "合唱", type: "表演形式", unit: 6, page: 41, facts: [
+          ["定义为","两个或更多声部同时演唱一首歌曲",null,"明"],
+          ["包含","轮唱","表演形式","明"],
+        ] },
+        { name: "轮唱", type: "表演形式", unit: 6, page: 41, facts: [["定义为","不同声部先后进入，轮流演唱同一旋律",null,"明"]] },
+        { name: "卡农", type: "音乐概念", unit: 6, page: 45, facts: [["定义为","各声部先后进入，在相同或不同音高唱奏同一旋律",null,"明"]] },
+        { name: "二声部合唱", type: "表演形式", unit: 6, page: 46, facts: [] },
+        { name: "节奏卡农", type: "节奏型", unit: 6, page: 48, facts: [["特点","用不同音色敲拍同一节奏，间隔一小节进入",null,"明"]] },
+      ],
       people: [],
       tasks: []
     },
