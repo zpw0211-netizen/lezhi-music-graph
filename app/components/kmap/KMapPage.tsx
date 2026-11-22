@@ -14,6 +14,8 @@ type Point = { x: number; y: number };
 /** 画布：电脑上是横的椭圆；手机上是竖的长图，宽度贴着屏幕，高度随知识点多少伸缩。 */
 type Frame = { W: number; H: number; RX: number; RY: number; tall: boolean };
 const WIDE: Frame = { W: 900, H: 840, RX: 432, RY: 404, tall: false };
+const byUse = (a: KNode, b: KNode) => b.works.length - a.works.length || b.defs.length - a.defs.length || a.name.localeCompare(b.name, "zh");
+
 /** 竖图里每个要素分到的一段高度：按这一组知识点多少定（隐藏的非核心点少算一些）。 */
 function tallBands(map: KMap): { bands: Map<string, { y0: number; y1: number }>; H: number } {
   const placed = map.whole ? map.nodes.filter((node) => node.core) : map.nodes;
@@ -248,9 +250,18 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
   };
   useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
   // 窄屏上图可以左右拖：选中一个点后把它移到中间。
+  // 手机上默认看分组的知识点卡片；想看网状的连线图再切过去。
+  const [netView, setNetView] = useState(false);
+  const listMode = frame.tall && !netView;
   const stageRef = useRef<HTMLDivElement | null>(null);
   const selectedAt = selected ? positions.get(selected.id) : undefined;
   useEffect(() => {
+    // 分组卡片：把选中的知识点滚到屏幕上方，讲解卡从底部升起。
+    if (listMode) {
+      const chip = selected && document.querySelector<HTMLElement>(`[data-kpoint="${CSS.escape(selected.id)}"]`);
+      if (chip) window.scrollTo({ top: window.scrollY + chip.getBoundingClientRect().top - window.innerHeight * 0.18, behavior: "smooth" });
+      return;
+    }
     const stage = stageRef.current;
     if (!stage || !selectedAt) return;
     // 竖图：讲解卡从底部升起，把选中的点滚到屏幕上方三分之一处。
@@ -346,6 +357,11 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
     };
     const otherBooks = node.books.filter((key) => books.some((item) => item.key === key));
     const practice = PRACTICE[node.group!] ?? [];
+    // 和它有乐理关系的知识点：图上的连线写成文字，手机上没有连线图时也看得到。
+    const related = [...(neighbours.get(node.id)?.entries() ?? [])]
+      .map(([id, edge]) => ({ other: nodeById.get(id)!, edge }))
+      .filter(({ other }) => other?.kind === "point")
+      .map(({ other, edge }) => ({ other, label: edge.label === "包含" ? (edge.a === node.id ? "下面有" : "属于") : edge.label }));
     return <>
       <header className="kmap-card-head">
         <span className={`kmap-chip hue-${GROUPS[node.group!].hue}`}>{GROUPS[node.group!].name}</span>
@@ -357,6 +373,10 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
         {node.defs.length ? <dl className="kmap-defs">{node.defs.map((def) => <div key={def.text}><dt>{def.label}</dt><dd>{def.text}{def.book || def.page ? <small>{[def.book, def.page ? `教材第 ${def.page} 页` : ""].filter(Boolean).join(" · ")}</small> : null}</dd></div>)}</dl>
           : <p className="kmap-quiet">教材没有单独讲解它，下面是用到它的作品。</p>}
       </section>
+      {related.length > 0 && <section>
+        <h3>相关知识点</h3>
+        <ul className="kmap-related">{related.map(({ other, label }) => <li key={other.id}><span>{label}</span><button type="button" className={`hue-${GROUPS[other.group!].hue}`} onClick={() => select(other)}>{other.name}</button></li>)}</ul>
+      </section>}
       {examples.length > 0 && <section>
         <h3>谱例与音频</h3>
         <p className="kmap-quiet">{modeExamples.length ? "截出歌曲最后两小节，听它停在哪个音上。" : "从课本乐谱里截出的小节，点播放就能听。"}</p>
@@ -474,6 +494,50 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
     nameBoxes.push({ x0: at.x - radius, x1: at.x + radius, y0: at.y - radius, y1: at.y + radius }, name);
   }
   const textBoxes: Box[] = [...pills, ...nameBoxes];
+
+  // ── 手机：分组的知识点卡片 ──
+  const pointList = () => {
+    const listed = points.filter((node) => node.core || (showAll && !map.whole));
+    const listedIds = new Set(listed.map((node) => node.id));
+    const parentOf = new Map<string, string>();
+    for (const edge of map.edges) {
+      if (edge.label !== "包含" || !listedIds.has(edge.a) || !listedIds.has(edge.b) || parentOf.has(edge.b)) continue;
+      if (nodeById.get(edge.a)?.group === nodeById.get(edge.b)?.group) parentOf.set(edge.b, edge.a);
+    }
+    // 只挂一层：上级自己也挂在别人下面时，就把它的下级直接放到同组顶层。
+    for (const [child, parent] of [...parentOf]) if (parentOf.has(parent)) parentOf.delete(child);
+    const kidsOf = (id: string) => listed.filter((node) => parentOf.get(node.id) === id).sort(byUse);
+    const near = selected ? neighbours.get(selected.id) : undefined;
+    const max = Math.max(1, ...listed.map((node) => node.works.length));
+    const chip = (node: KNode, small = false) => {
+      const size = 7 + Math.round(9 * Math.sqrt(node.works.length / max));
+      const state = node.id === selected?.id ? " is-selected" : near?.has(node.id) ? " is-near" : selected ? " is-dim" : "";
+      return <button key={node.id} type="button" data-kpoint={node.id} className={`kmap-pchip${small ? " is-small" : ""}${state}`} onClick={() => select(node)} aria-label={`知识点：${node.name}，${node.works.length} 首作品`}>
+        <i style={{ width: size, height: size }} />{node.name}{node.works.length > 0 && <small>{node.works.length}</small>}
+      </button>;
+    };
+    const groups = (Object.keys(GROUPS) as KGroup[]).map((group) => ({ group, members: listed.filter((node) => node.group === group) })).filter(({ members }) => members.length);
+    return <div className="kmap-groups">
+      {groups.map(({ group, members }) => {
+        const tops = members.filter((node) => !parentOf.has(node.id)).sort(byUse);
+        const leaves = tops.filter((node) => !kidsOf(node.id).length);
+        const trees = tops.filter((node) => kidsOf(node.id).length);
+        const hub = nodeById.get(`hub:${group}`);
+        const used = new Set(members.flatMap((node) => node.works)).size;
+        return <section key={group} className={`kmap-group hue-${GROUPS[group].hue}${selected?.id === hub?.id ? " is-selected" : ""}`}>
+          <header>
+            <button type="button" className="kmap-group-name" onClick={() => hub && select(hub)}>{GROUPS[group].name}</button>
+            <small>{members.length} 个知识点{used ? ` · ${used} 首作品用到` : ""}</small>
+          </header>
+          {trees.map((node) => <div key={node.id} className="kmap-tree">
+            {chip(node)}
+            <div className="kmap-kids">{kidsOf(node.id).map((kid) => chip(kid, true))}</div>
+          </div>)}
+          {leaves.length > 0 && <div className="kmap-chips">{leaves.map((node) => chip(node))}</div>}
+        </section>;
+      })}
+    </div>;
+  };
   return <section className="lesson kmap" aria-labelledby="kmap-title">
     <header className="kmap-hero">
       <div>
@@ -487,11 +551,12 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
           {books.map((item) => <option key={item.key} value={item.key}>{bookLabel(item)}</option>)}
         </select></label>
         {!scope && <label className="kmap-check"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />显示全部 {points.length} 个知识点</label>}
+        {frame.tall && <button type="button" className="kmap-view-switch" onClick={() => setNetView((value) => !value)}>{netView ? "看分组卡片" : "看连线图"}</button>}
       </div>
     </header>
 
     <div className={`kmap-body${selected ? " has-card" : ""}${frame.tall ? " is-tall" : ""}`}>
-      <div className="kmap-stage" ref={stageRef}>
+      {listMode ? pointList() : <div className="kmap-stage" ref={stageRef}>
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${title}核心知识点图`} onClick={() => select(undefined)}>
           <defs>
             <marker id="kmap-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L7 4 L0 7 z" fill="#A9B6AF" /></marker>
@@ -576,7 +641,7 @@ export function KMapPage({ graph, books, bookKey: routeBook, fallbackBook, point
           })}
         </svg>
         <p className="kmap-legend"><span className="kmap-swipe">图比屏幕宽，左右滑动看全图</span><span className="kmap-legend-item"><span className="dot is-point" />知识点（圆越大，用到它的作品越多）</span>{scope ? <span className="kmap-legend-item"><span className="square" />分册（线上的数字是这一册有几首作品用到）</span> : <span className="kmap-legend-item"><span className="dot is-work" />作品</span>}<span className="kmap-legend-item"><span className="pill" />音乐要素（箭头指向它包含的知识点，颜色相同）</span></p>
-      </div>
+      </div>}
 
       <aside className="kmap-card" aria-live="polite" style={{ "--kmap-hue": "var(--pine)" } as CSSProperties}>
         {selected ? <>
