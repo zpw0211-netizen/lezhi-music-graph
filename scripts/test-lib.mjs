@@ -110,7 +110,7 @@ const MUTATIONS = [
     file: "labScales",
     from: 'name: "变徵", solfege: "♯fa", degree: "♯4", semitone: 6',
     to: 'name: "变徵", solfege: "♯fa", degree: "♯4", semitone: 7',
-    expectedFailure: "七声音阶半音数：雅乐（正声调式）",
+    expectedFailure: "七声音阶半音数：雅乐（正声音阶 · 古音阶）",
   },
   {
     id: "i",
@@ -400,26 +400,26 @@ const EXPECTED_HEPTATONIC_INTERVALS = {
   yanyue: [0, 2, 4, 5, 7, 9, 10],
 };
 
-t("七声音阶半音数：清乐（下徵调式 / 新音阶）", () => {
+t("七声音阶半音数：清乐（下徵音阶 · 新音阶）", () => {
   const scale = HEPTATONIC_MODES.qingyue;
   assert.equal(scale.name, "清乐");
-  assert.match(scale.alias, /下徵调式.*新音阶/);
+  assert.match(scale.alias, /下徵音阶.*新音阶/);
   assert.deepEqual(scale.notes.map((note) => note.semitone), EXPECTED_HEPTATONIC_INTERVALS.qingyue);
   assert.deepEqual(scale.notes.filter((note) => note.altered).map((note) => note.name), ["清角", "变宫"]);
 });
 
-t("七声音阶半音数：雅乐（正声调式）", () => {
+t("七声音阶半音数：雅乐（正声音阶 · 古音阶）", () => {
   const scale = HEPTATONIC_MODES.yayue;
   assert.equal(scale.name, "雅乐");
-  assert.match(scale.alias, /正声调式.*古音阶/);
+  assert.match(scale.alias, /正声音阶.*古音阶/);
   assert.deepEqual(scale.notes.map((note) => note.semitone), EXPECTED_HEPTATONIC_INTERVALS.yayue);
   assert.deepEqual(scale.notes.filter((note) => note.altered).map((note) => note.name), ["变徵", "变宫"]);
 });
 
-t("七声音阶半音数：燕乐（清商调式）", () => {
+t("七声音阶半音数：燕乐（清商音阶 · 俗乐音阶）", () => {
   const scale = HEPTATONIC_MODES.yanyue;
   assert.equal(scale.name, "燕乐");
-  assert.equal(scale.alias, "清商调式");
+  assert.equal(scale.alias, "清商音阶 · 俗乐音阶");
   assert.deepEqual(scale.notes.map((note) => note.semitone), EXPECTED_HEPTATONIC_INTERVALS.yanyue);
   assert.deepEqual(scale.notes.filter((note) => note.altered).map((note) => note.name), ["清角", "闰"]);
 });

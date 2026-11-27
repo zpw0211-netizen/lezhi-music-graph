@@ -8,26 +8,97 @@ import { PendingKnowledge } from "./PendingKnowledge";
 import { EDITION, PUBLISHED_BOOK_COUNT_LABEL, PUBLISHED_EDITION_LABEL } from "../../lib/app/books";
 import { fetchWithRetry } from "../../lib/app/fetch-retry";
 
-// 首页示例问题分「学生常问 / 备课常用」两组，全部逐题跑过本地图谱问答
+// 首页示例问题分「学生常问 / 备课常用」两组，按教材版本分别配置，并逐题跑过本地图谱问答
 // （scripts/test-sample-questions.mjs）：答案非空、引用教材证据、口径为 supported。
 // 增删问题必须同步复跑该脚本。
 const AI_API_URL = process.env.NEXT_PUBLIC_AI_API_URL ?? "";
-export const SAMPLE_QUESTIONS = {
-  student: [
-    { q: "《歌唱祖国》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}七年级上册 · 词曲作者与创作背景` },
-    { q: "《游击队歌》的音乐特点是什么？", tag: "音乐特点 · 节奏动机", hint: `${EDITION.label}八年级下册 · 小军鼓动机与前八后十六` },
-    { q: "什么是五声调式？", tag: "乐理常识 · 调式体系", hint: EDITION.key === "renjiao" ? "人教版四年级上册 · 宫、商、角、徵、羽与简谱对应" : "宫、商、角、徵、羽五阶民族调式" },
-    { q: "《义勇军进行曲》是谁作曲的？", tag: "词曲作者 · 国歌", hint: `${EDITION.label}七年级上册 · 中华人民共和国国歌` },
-    { q: "琵琶属于哪类乐器？", tag: "乐器常识 · 民族乐器", hint: `${EDITION.label}民族乐器分类 · 弹拨乐器` },
-  ],
-  teacher: [
-    { q: "序曲赏听单元有哪些作品？", tag: "单元备课 · 单元曲目", hint: `${EDITION.label}七年级下册 · 单元收录全部曲目` },
-    { q: "哪些作品用了 2/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 进行曲与舞曲常用节拍" },
-    { q: "哪些作品适合作为合唱曲目？", tag: "按形式选曲 · 合唱", hint: `${EDITION.label}演唱形式 · 多声部与合唱曲目` },
-    { q: "哪些作品的曲作者是贺绿汀？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国近现代作曲家 · 作品名录` },
-    { q: "备课：哪些作品可以用来讲进行曲？", tag: "备课专题 · 进行曲", hint: `${EDITION.label}音乐体裁 · 教学选曲与曲目推荐` },
-  ],
-} as const;
+type SampleQuestion = { readonly q: string; readonly tag: string; readonly hint: string };
+type SampleQuestionSet = { readonly student: readonly SampleQuestion[]; readonly teacher: readonly SampleQuestion[] };
+export const SAMPLE_QUESTIONS_BY_EDITION: Record<string, SampleQuestionSet> = {
+  renyin: {
+    student: [
+      { q: "《歌唱祖国》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}七年级上册 · 词曲作者与创作背景` },
+      { q: "《游击队歌》的音乐特点是什么？", tag: "音乐特点 · 节奏动机", hint: `${EDITION.label}八年级下册 · 小军鼓动机与前八后十六` },
+      { q: "什么是五声调式？", tag: "乐理常识 · 调式体系", hint: "宫、商、角、徵、羽五阶民族调式" },
+      { q: "《义勇军进行曲》是谁作曲的？", tag: "词曲作者 · 国歌", hint: `${EDITION.label}七年级上册 · 中华人民共和国国歌` },
+      { q: "琵琶属于哪类乐器？", tag: "乐器常识 · 民族乐器", hint: `${EDITION.label}民族乐器分类 · 弹拨乐器` },
+    ],
+    teacher: [
+      { q: "序曲赏听单元有哪些作品？", tag: "单元备课 · 单元曲目", hint: `${EDITION.label}七年级下册 · 单元收录全部曲目` },
+      { q: "哪些作品用了 2/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 进行曲与舞曲常用节拍" },
+      { q: "哪些作品适合作为合唱曲目？", tag: "按形式选曲 · 合唱", hint: `${EDITION.label}演唱形式 · 多声部与合唱曲目` },
+      { q: "哪些作品的曲作者是贺绿汀？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国近现代作曲家 · 作品名录` },
+      { q: "备课：哪些作品可以用来讲进行曲？", tag: "备课专题 · 进行曲", hint: `${EDITION.label}音乐体裁 · 教学选曲与曲目推荐` },
+    ],
+  },
+  renjiao: {
+    student: [
+      { q: "《歌唱祖国》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}七年级上册 · 词曲作者与创作背景` },
+      { q: "《游击队歌》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}四年级上册 / 七年级下册 · 词曲作者` },
+      { q: "什么是五声调式？", tag: "乐理常识 · 调式体系", hint: `${EDITION.label}四年级上册 · 宫、商、角、徵、羽与简谱对应` },
+      { q: "《欢乐颂》是谁作曲的？", tag: "词曲作者 · 合唱经典", hint: `${EDITION.label}二年级下册 · 贝多芬与合唱作品` },
+      { q: "《回声》是谁作曲的？", tag: "词曲作者 · 无伴奏合唱", hint: `${EDITION.label}二年级下册 / 九年级上册 · 拉索` },
+    ],
+    teacher: [
+      { q: "多彩的音乐风格单元有哪些作品？", tag: "单元备课 · 单元曲目", hint: `${EDITION.label}七年级上册 · 单元收录全部曲目` },
+      { q: "哪些作品用了 2/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 进行曲与舞曲常用节拍" },
+      { q: "哪些作品适合作为合唱曲目？", tag: "按形式选曲 · 合唱", hint: `${EDITION.label}演唱形式 · 多声部与合唱曲目` },
+      { q: "哪些作品的曲作者是冼星海？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国近现代作曲家 · 作品名录` },
+      { q: "备课：哪些作品可以用来讲进行曲？", tag: "备课专题 · 进行曲", hint: `${EDITION.label}音乐体裁 · 教学选曲与曲目推荐` },
+    ],
+  },
+  xiangyi: {
+    student: [
+      { q: "《中华人民共和国国歌（义勇军进行曲）》是谁作曲的？", tag: "词曲作者 · 国歌", hint: `${EDITION.label}七年级上册 · 田汉作词、聂耳作曲` },
+      { q: "《不忘初心》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}七年级上册 · 词曲作者与谱面要素` },
+      { q: "《没有共产党就没有新中国》是谁写的？", tag: "作品解读 · 红色经典", hint: `${EDITION.label}七年级上册 · 词曲作者与拍号速度` },
+      { q: "《七子之歌——澳门》是谁写的？", tag: "作品解读 · 合唱歌曲", hint: `${EDITION.label}五年级上册 · 闻一多作词、李海鹰作曲` },
+      { q: "《放马山歌》有什么音乐特点？", tag: "民歌体裁 · 衬词", hint: `${EDITION.label}七年级上册 · 云南民歌与山歌衬词` },
+    ],
+    teacher: [
+      { q: "哪些作品用了 2/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 进行曲与舞曲常用节拍" },
+      { q: "哪些作品用了 3/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 圆舞曲与抒情歌曲常用节拍" },
+      { q: "哪些作品的曲作者是谷建芬？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国当代作曲家 · 作品名录` },
+      { q: "哪些作品的曲作者是冼星海？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国近现代作曲家 · 作品名录` },
+      { q: "备课：哪些作品可以用来讲进行曲？", tag: "备课专题 · 进行曲", hint: `${EDITION.label}音乐体裁 · 教学选曲与曲目推荐` },
+    ],
+  },
+  huacheng: {
+    student: [
+      { q: "《歌唱祖国》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}八年级上册 · 词曲作者与二声部合唱` },
+      { q: "《祖国颂》是谁写的？", tag: "作品解读 · 合唱曲式", hint: `${EDITION.label}八年级上册 · 乔羽作词、刘炽作曲` },
+      { q: "《保卫黄河（选段）》的表演形式是什么？", tag: "演唱形式 · 轮唱卡农", hint: `${EDITION.label}八年级上册 · 轮唱与卡农` },
+      { q: "《游击队歌》是谁写的？", tag: "作品解读 · 词曲作者", hint: `${EDITION.label}三年级下册 · 贺绿汀词曲` },
+      { q: "什么是五声调式？", tag: "乐理常识 · 调式体系", hint: `${EDITION.label}六年级上册 / 八年级上册 · 民族调式` },
+    ],
+    teacher: [
+      { q: "红色足迹·时代号角（三）单元有哪些作品？", tag: "单元备课 · 单元曲目", hint: `${EDITION.label}八年级上册 · 单元收录全部曲目` },
+      { q: "哪些作品用了 2/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 进行曲与舞曲常用节拍" },
+      { q: "哪些作品的曲作者是贺绿汀？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国近现代作曲家 · 作品名录` },
+      { q: "哪些作品的曲作者是冼星海？", tag: "按作者选曲 · 作曲家", hint: `${EDITION.label}中国近现代作曲家 · 作品名录` },
+      { q: "备课：哪些作品可以用来讲进行曲？", tag: "备课专题 · 进行曲", hint: `${EDITION.label}音乐体裁 · 教学选曲与曲目推荐` },
+    ],
+  },
+  gaozhong: {
+    student: [
+      { q: "《不忘初心》是谁写的？", tag: "作品鉴赏 · 词曲作者", hint: "高中必修1《音乐鉴赏》· 序篇 不忘初心" },
+      { q: "《吐鲁番的葡萄熟了》的音乐特点是什么？", tag: "作品鉴赏 · 音乐特点", hint: "高中必修1《音乐鉴赏》· 维吾尔族手鼓节奏" },
+      { q: "《轻骑兵序曲》是谁作曲的？", tag: "作品鉴赏 · 作曲家", hint: "高中必修1《音乐鉴赏》· 第一单元 学会聆听" },
+      { q: "《娱乐升平》的音乐特点是什么？", tag: "作品鉴赏 · 广东音乐", hint: "高中必修1《音乐鉴赏》· 丝竹相和" },
+      { q: "《祝酒歌》是谁写的？", tag: "作品鉴赏 · 词曲作者", hint: "高中必修1《音乐鉴赏》· 音乐情感及情绪" },
+    ],
+    teacher: [
+      { q: "学会聆听单元有哪些作品？", tag: "单元备课 · 单元曲目", hint: "高中必修1《音乐鉴赏》· 第一单元收录全部曲目" },
+      { q: "哪些作品用了 4/4 拍？", tag: "按知识点选曲 · 节拍", hint: "节拍节奏 · 鉴赏与编创谱例检索" },
+      { q: "哪些作品的曲作者是冼星海？", tag: "按作者选曲 · 作曲家", hint: "高中音乐教材 · 冼星海相关作品" },
+      { q: "哪些作品的曲作者是施光南？", tag: "按作者选曲 · 作曲家", hint: "高中音乐教材 · 施光南相关作品" },
+      { q: "哪些作品的曲作者是赵季平？", tag: "按作者选曲 · 作曲家", hint: "高中音乐教材 · 赵季平相关作品" },
+    ],
+  },
+};
+const SAMPLE_EDITION_KEY = EDITION.key.replace(/-staff$/, "");
+export const SAMPLE_QUESTIONS: SampleQuestionSet =
+  SAMPLE_QUESTIONS_BY_EDITION[SAMPLE_EDITION_KEY] ?? SAMPLE_QUESTIONS_BY_EDITION.renyin;
 
 type Message = { question: string; result: AnswerResult };
 
@@ -224,7 +295,7 @@ export function AssistantPage({
 
   const placeholderText = currentMessage
     ? `已提问：“${currentMessage.question}” · 输入新问题回车可重查……`
-    : "想问教材什么？比如：《歌唱祖国》是谁写的？";
+    : `想问教材什么？比如：${SAMPLE_QUESTIONS.student[0]?.q ?? "《歌唱祖国》是谁写的？"}`;
 
   // 学生题与备课题交错排开，只留两行（六个）气泡，各自漂浮。
   const bubbles = SAMPLE_QUESTIONS.student.flatMap((item, index) => {

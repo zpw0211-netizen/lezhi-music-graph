@@ -21,11 +21,12 @@ import { EDITION } from "../data/books.mjs";
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const pageFile = path.join(root, "app/components/assistant/AssistantPage.tsx");
 
-// --- 从页面源码提取 SAMPLE_QUESTIONS 字面量（纯数据，无 JSX） ---
+// --- 从页面源码提取 SAMPLE_QUESTIONS_BY_EDITION 字面量（纯数据，无 JSX） ---
 const pageSource = readFileSync(pageFile, "utf8");
-const match = pageSource.match(/export const SAMPLE_QUESTIONS = (\{[\s\S]*?\}) as const;/);
-if (!match) throw new Error("AssistantPage.tsx 中找不到 SAMPLE_QUESTIONS 常量（结构变更请同步本脚本）");
-const SAMPLE_QUESTIONS = new Function("EDITION", `return ${match[1]}`)(EDITION);
+const match = pageSource.match(/export const SAMPLE_QUESTIONS_BY_EDITION(?::[^=]+)? = (\{[\s\S]*?\n\});/);
+if (!match) throw new Error("AssistantPage.tsx 中找不到 SAMPLE_QUESTIONS_BY_EDITION 常量（结构变更请同步本脚本）");
+const SAMPLE_QUESTIONS_BY_EDITION = new Function("EDITION", `return ${match[1]}`)(EDITION);
+const SAMPLE_QUESTIONS = SAMPLE_QUESTIONS_BY_EDITION[EDITION.key.replace(/-staff$/, "")] ?? SAMPLE_QUESTIONS_BY_EDITION.renyin;
 
 // --- 内存 CommonJS 注册表：graph-rag 的依赖闭包（无第三方运行时依赖） ---
 const sources = new Map();

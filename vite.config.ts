@@ -12,17 +12,27 @@ const isGitHubPages = process.env.GITHUB_PAGES === 'true';
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID = '00000000-0000-4000-8000-000000000000';
 const { d1, r2 } = hostingConfig;
 
-// 人音 editions never look up 人教 books (findMelodies keeps pep-* keys apart), so their
-// transcriptions — about half the melody data — are left out of those editions' bundles.
+// Each edition only plays its own books' transcriptions (findMelodies isolates pep/xy/hc/hs/ss
+// from renyin), so other editions' melody modules are replaced with an empty object at build time.
 const EMPTY_MELODIES = '\0yapu-empty-melodies';
-function omitPepMelodies(): Plugin {
-  const books = JSON.parse(readFileSync(new URL('./data/books.json', import.meta.url), 'utf8'));
-  const omit = String(books.edition?.key ?? '').startsWith('renyin');
+function omitOtherEditionMelodies(): Plugin {
+  const registry = JSON.parse(readFileSync(new URL('./data/books.json', import.meta.url), 'utf8'));
+  const staff = registry.edition?.notation === 'staff';
+  const keep = new Set<string>();
+  for (const book of registry.books ?? []) {
+    const key = String(book?.key ?? '');
+    if (!key) continue;
+    const bare = key.replace(/^wx-/, '');
+    keep.add(key);
+    keep.add(bare);
+    if (staff) keep.add(`wx-${bare}`);
+  }
   return {
-    name: 'yapu-omit-pep-melodies',
+    name: 'yapu-omit-other-edition-melodies',
     enforce: 'pre',
     resolveId(source) {
-      if (omit && /^\.\/melodies-(wx-)?pep-g\d+s[12]$/.test(source)) return EMPTY_MELODIES;
+      const match = source.match(/(?:^|[\\/])melodies-((?:wx-)?(?:(?:pep|xy|hc|ss)-)?g\d+s[12]|hs-m\d+)(?:\.ts)?$/);
+      if (match && !keep.has(match[1])) return EMPTY_MELODIES;
     },
     load(id) {
       if (id === EMPTY_MELODIES) return 'export default {};';
@@ -35,7 +45,7 @@ export default defineConfig(async () => {
     css: { postcss: { plugins: [tailwindcss()] } },
     server: isCodexSeatbeltSandbox ? { watch: { useFsEvents: false, usePolling: true } } : undefined,
   };
-  if (isGitHubPages) return { ...base, plugins: [omitPepMelodies(), vinext()] };
+  if (isGitHubPages) return { ...base, plugins: [omitOtherEditionMelodies(), vinext()] };
   process.env.WRANGLER_WRITE_LOGS ??= 'false';
   process.env.WRANGLER_LOG_PATH ??= '.wrangler/logs';
   process.env.MINIFLARE_REGISTRY_PATH ??= '.wrangler/registry';

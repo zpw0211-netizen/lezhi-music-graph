@@ -71,7 +71,13 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET" || request.headers.has("range")) return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || !url.pathname.startsWith(SCOPE)) return;
+  if (url.origin !== self.location.origin) return;
+  // 跨版本共享在根目录下的课程插图与皮肤（/art/works/、/art/skin/）同样走图片缓存。
+  if (url.pathname.startsWith("/art/") && /\.(webp|png|jpe?g|svg|gif)$/i.test(url.pathname)) {
+    event.respondWith(imageFirst(event));
+    return;
+  }
+  if (!url.pathname.startsWith(SCOPE)) return;
   const rest = url.pathname.slice(SCOPE.length);
   if (request.mode === "navigate") {
     if (rest === "" || rest === "index.html") event.respondWith(appFirst(request, INDEX));
