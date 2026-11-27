@@ -32,9 +32,9 @@ const work = path.resolve(process.env.EDITION_WORKDIR ?? path.join(root, ".editi
 await rm(work, { recursive: true, force: true });
 await mkdir(work, { recursive: true });
 
-// 1. Scratch copy of the repo: tracked plus untracked-but-not-ignored files (no node_modules, dist, .git).
+// 1. Scratch copy of the repo: tracked plus untracked-but-not-ignored files (no node_modules, dist, .git, or shared art).
 const files = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" })
-  .split("\0").filter((file) => file && !file.startsWith("editions/") && existsSync(path.join(root, file)));
+  .split("\0").filter((file) => file && !file.startsWith("editions/") && !file.startsWith("public/art/works/") && !file.startsWith("public/art/skin/") && existsSync(path.join(root, file)));
 for (const file of files) await cp(path.join(root, file), path.join(work, file), { force: true });
 await symlink(path.join(root, "node_modules"), path.join(work, "node_modules"), process.platform === "win32" ? "junction" : "dir");
 

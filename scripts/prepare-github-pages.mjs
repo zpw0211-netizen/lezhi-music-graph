@@ -15,10 +15,11 @@ const excludedGraphFiles = new Set([
   "data/music-graph.json",
 ]);
 const ROOT_ICONS = ["favicon.ico", "favicon.svg", "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
-// Large files every edition uses (the sung-vocal audio, ~260 MB) are published once at the domain
-// root (yapu.studio/audio/vocal/…) instead of inside every edition; the app reads them with
-// sharedAssetUrl. Five copies would push the site past GitHub Pages' 1 GB limit.
-const SHARED_DIRS = ["audio/vocal"];
+// Large files shared across editions (sung-vocal audio ~340 MB + per-lesson illustrations ~160 MB)
+// are published once at the domain root (yapu.studio/audio/vocal/… and /art/works/…) instead of
+// inside every edition; the app reads them with sharedAssetUrl. Duplicating them across editions
+// would push the site past GitHub Pages' 1 GB limit.
+const SHARED_DIRS = ["audio/vocal", "art/works", "art/skin"];
 const isShared = (relative) => SHARED_DIRS.some((dir) => relative === dir || relative.startsWith(`${dir}/`));
 
 await mkdir(siteRoot, { recursive: true });

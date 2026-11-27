@@ -20,6 +20,7 @@ import { SKIN_NAMES, SKIN_SLOTS, isSkinKey, skinOf, type SkinKey } from "../../l
 import { REGULAR_STAGES, regularScript } from "../../lib/lesson/regular";
 import { STANDARD } from "../../lib/lesson/curriculum";
 import { EDITION } from "../../lib/app/books";
+import { sharedAssetUrl } from "../../lib/app/assets";
 import { workArtPath } from "../../lib/app/unit-art";
 
 type ScoreAsset = { url: string; title?: string };
@@ -595,7 +596,7 @@ export function ReflectivePresent({
     </div>}
     <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}-${model}`} ref={stageRef}>
       {slide.art && (slotArt && SKIN_SLOTS.has(slide.art)
-        ? <Picture className="reflect-art is-skin" src={assetUrl(slotArt)} art={skin ?? `work-${workId}`} />
+        ? <Picture className="reflect-art is-skin" src={sharedAssetUrl(slotArt)} art={skin ?? `work-${workId}`} />
         : <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />)}
       <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
     </div>
