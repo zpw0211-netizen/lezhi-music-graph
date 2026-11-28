@@ -456,12 +456,9 @@ button.lesson-point:hover { border-color:var(--hue); background:color-mix(in srg
 .melody-loop-bar select { height:30px; padding:0 8px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-primary); font:inherit; }
 .melody-loop-bar small { flex:1 1 18em; color:var(--text-secondary); font-size:12px; }
 .melody-bar { position:relative; }
-.melody-bar-num { position:absolute; top:-16px; left:6px; padding:0 5px; border:0; border-radius:4px; background:transparent; color:#62675B; font:600 11px/1.4 var(--font-ui, sans-serif); font-variant-numeric:tabular-nums; cursor:pointer; transition:background .15s, color .15s; }
-.melody-bar-num:hover { background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent); }
-.melody-bar.is-loop-bar { background:color-mix(in srgb, var(--accent) 9%, transparent); border-radius:6px; }
-.melody-bar.is-loop-bar .melody-bar-num { background:var(--accent); color:#fff; }
-.melody-bar.has-mark .melody-mark { left:28px; }
-.melody-score:not(.is-staff) { padding-top:24px; }
+.melody-bar.is-clickable { cursor:pointer; transition:background .15s; }
+.melody-bar.is-clickable:hover { background:color-mix(in srgb, var(--accent) 5%, transparent); }
+.melody-bar.is-loop-bar { background:color-mix(in srgb, var(--accent) 10%, transparent); border-radius:6px; }
 .present.reflect .melody-transpose, .present.reflect .melody-vocal-rate, .present.reflect .melody-countin { font-size:clamp(13px, 1.05vw, 16px); }
 .present.reflect .melody-transpose button, .present.reflect .melody-vocal-rate button { height:34px; padding:0 10px; }
 .present.reflect .melody-countin { height:34px; }

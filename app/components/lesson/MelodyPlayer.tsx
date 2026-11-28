@@ -1043,7 +1043,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       <button type="button" className="melody-follow-go" disabled={loadingSampler || !!follow} onClick={() => (loopActive ? stop() : void playFrom(loopRange.start, loopRange.end, true))}>
         {loopActive ? "■ 停止循环" : "↻ 循环播放"}
       </button>
-      <small>也可直接点击下方谱面小节号选起止范围；关闭本栏后点击任意小节号可从该小节起播。</small>
+      <small>也可直接点击下方谱面任意小节选起止范围；平时点击任意小节可直接从该小节起播。</small>
     </div>}
     {canFollow && followOpen && <div className={`melody-follow${follow ? ` is-${follow.kind}` : ""}`} role="group" aria-label="跟唱">
       {follow ? <>
@@ -1083,8 +1083,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         const inLoop = Boolean((loopOpen || loopActive) && loopRange && barIndex >= loopRange.start && barIndex <= loopRange.end);
         const dimmed = Boolean((activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar))
           || (loopActive && loopRange && (barIndex < loopRange.start || barIndex > loopRange.end)));
-        return <span key={barIndex} className={`melody-bar${melody.marks?.[barIndex] ? " has-mark" : ""}${inLoop ? " is-loop-bar" : ""}${dimmed ? " is-dim" : ""}`}>
-        {canLoop && <button type="button" className="melody-bar-num" onClick={() => onBarClick(barIndex)} title={loopOpen ? `设为循环${loopPick === "start" ? "起" : "止"}点（第 ${barIndex + 1} 小节）` : `从第 ${barIndex + 1} 小节起播`} aria-label={`第 ${barIndex + 1} 小节`}>{barIndex + 1}</button>}
+        return <span key={barIndex} className={`melody-bar${melody.marks?.[barIndex] ? " has-mark" : ""}${canLoop ? " is-clickable" : ""}${inLoop ? " is-loop-bar" : ""}${dimmed ? " is-dim" : ""}`} onClick={canLoop ? () => onBarClick(barIndex) : undefined} title={canLoop ? (loopOpen ? `点击设为循环${loopPick === "start" ? "起" : "止"}点（第 ${barIndex + 1} 小节）` : `点击从第 ${barIndex + 1} 小节起播`) : undefined}>
         {melody.marks?.[barIndex] && <b className="melody-mark">{melody.marks[barIndex]}</b>}
         {lines.map((line, voice) => {
           const rowStart = Math.floor(barIndex / barsPerRow) * barsPerRow;
