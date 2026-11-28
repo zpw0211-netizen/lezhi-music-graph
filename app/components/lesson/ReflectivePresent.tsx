@@ -209,6 +209,12 @@ export function ReflectivePresent({
     });
   };
   const [podiumOpen, setPodiumOpen] = useState(false);
+  const annotatingRef = useRef(false);
+  const podiumOpenRef = useRef(false);
+  const mediaOpenRef = useRef(false);
+  useEffect(() => { annotatingRef.current = annotating; }, [annotating]);
+  useEffect(() => { podiumOpenRef.current = podiumOpen; }, [podiumOpen]);
+  useEffect(() => { mediaOpenRef.current = mediaOpen; }, [mediaOpen]);
   const togglePick = (row: string, option: string) => setPicks((current) => {
     const list = current[row] ?? [];
     return { ...current, [row]: list.includes(option) ? list.filter((item) => item !== option) : [...list, option] };
@@ -469,8 +475,14 @@ export function ReflectivePresent({
         return;
       }
       if (target?.closest("textarea, input, [contenteditable=true]")) { if (event.key === "Escape") target.blur(); return; }
-      const onWidget = Boolean(target?.closest("button, select, a, summary"));
-      if (event.key === "Escape") { event.preventDefault(); closeRef.current(); }
+      const onWidget = Boolean(target?.closest("button, select, a, summary, audio, video"));
+      if (event.key === "Escape") {
+        event.preventDefault();
+        if (annotatingRef.current) setAnnotating(false);
+        else if (podiumOpenRef.current) setPodiumOpen(false);
+        else if (mediaOpenRef.current) setMediaOpen(false);
+        else closeRef.current();
+      }
       else if (["ArrowRight", "PageDown"].includes(event.key)) { event.preventDefault(); forward(); }
       else if (["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); back(); }
       else if (event.key === " " && !onWidget) { event.preventDefault(); togglePlayback(); }
@@ -634,11 +646,13 @@ export function ReflectivePresent({
         </div>}
       </aside>
     </div>}
-    <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}-${model}`} ref={stageRef}>
-      {slide.art && (slotArt && SKIN_SLOTS.has(slide.art)
-        ? <Picture className="reflect-art is-skin" src={sharedAssetUrl(slotArt)} art={skin ?? `work-${workId}`} />
-        : <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />)}
-      <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
+    <div className="present-stage-wrap">
+      <div className={`present-stage${preparing && isHidden ? " is-muted" : ""}${slide.art ? " has-art" : ""}`} key={`${slide.key}-${kind}-${model}`} ref={stageRef}>
+        {slide.art && (slotArt && SKIN_SLOTS.has(slide.art)
+          ? <Picture className="reflect-art is-skin" src={sharedAssetUrl(slotArt)} art={skin ?? `work-${workId}`} />
+          : <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />)}
+        <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
+      </div>
       <AnnotationLayer
         active={annotating}
         pen={pen}

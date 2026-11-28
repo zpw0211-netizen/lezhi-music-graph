@@ -389,6 +389,7 @@
 }
 
 /* ---- 一线讲台扩展：谱面画笔、本地音视频直挂、讲台小工具、教案同步标记 ---- */
+.present-stage-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .present-stage { position: relative; }
 .present-annot-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
 .present-annot-canvas.is-drawing { pointer-events: auto; cursor: crosshair; touch-action: none; }

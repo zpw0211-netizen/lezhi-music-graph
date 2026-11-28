@@ -580,24 +580,54 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     const delayMs = Math.max(0, (when - ctx.currentTime) * 1000);
     const el = new Audio(blobUrl);
     el.preload = "auto";
-    el.playbackRate = rate;
-    const pitchEl = el as HTMLAudioElement & { preservesPitch?: boolean; webkitPreservesPitch?: boolean; mozPreservesPitch?: boolean };
-    if ("preservesPitch" in pitchEl) pitchEl.preservesPitch = true;
-    if ("webkitPreservesPitch" in pitchEl) pitchEl.webkitPreservesPitch = true;
-    if ("mozPreservesPitch" in pitchEl) pitchEl.mozPreservesPitch = true;
+    const applyPitchAndRate = () => {
+      el.playbackRate = rate;
+      const pitchEl = el as HTMLAudioElement & { preservesPitch?: boolean; webkitPreservesPitch?: boolean; mozPreservesPitch?: boolean };
+      if ("preservesPitch" in pitchEl) pitchEl.preservesPitch = true;
+      if ("webkitPreservesPitch" in pitchEl) pitchEl.webkitPreservesPitch = true;
+      if ("mozPreservesPitch" in pitchEl) pitchEl.mozPreservesPitch = true;
+    };
+    applyPitchAndRate();
     el.volume = 0.92;
+    let cancelled = false;
     let stopTimer: number | undefined;
-    const startTimer = window.setTimeout(() => {
-      try { el.currentTime = offset; } catch { /* ignore */ }
+    const seek = () => {
+      if (offset > 0) {
+        try {
+          const maxTime = Number.isFinite(el.duration) ? Math.max(0, el.duration - 0.05) : offset;
+          el.currentTime = Math.min(offset, maxTime);
+        } catch { /* ignore until metadata ready */ }
+      }
+    };
+    const onMetadata = () => {
+      if (cancelled) return;
+      applyPitchAndRate();
+      seek();
+    };
+    el.addEventListener("loadedmetadata", onMetadata, { once: true });
+    if (el.readyState >= 1) seek();
+
+    const beginPlay = () => {
+      if (cancelled) return;
+      applyPitchAndRate();
+      if (Math.abs(el.currentTime - offset) > 0.08) seek();
       void el.play().catch(() => undefined);
       if (to != null) {
         const durMs = Math.max(40, ((to - from) * origBeat / rate + VOCAL_PREROLL / rate) * 1000);
         stopTimer = window.setTimeout(() => { el.pause(); }, durMs);
       }
+    };
+    const startTimer = window.setTimeout(() => {
+      if (cancelled) return;
+      if (el.readyState >= 1) beginPlay();
+      else el.addEventListener("loadedmetadata", beginPlay, { once: true });
     }, delayMs);
     cleanups.push(() => {
+      cancelled = true;
       window.clearTimeout(startTimer);
       if (stopTimer !== undefined) window.clearTimeout(stopTimer);
+      el.removeEventListener("loadedmetadata", onMetadata);
+      el.removeEventListener("loadedmetadata", beginPlay);
       el.pause();
       el.src = "";
     });
@@ -967,7 +997,12 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         setLoopEnd((prev) => (prev < barIndex ? barIndex : prev));
         setLoopPick("end");
       } else {
-        setLoopEnd(barIndex);
+        if (barIndex < loopStart) {
+          setLoopEnd(loopStart);
+          setLoopStart(barIndex);
+        } else {
+          setLoopEnd(barIndex);
+        }
         setLoopPick("start");
       }
       return;
@@ -1028,14 +1063,14 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     </div>
     {canLoop && loopOpen && loopRange && <div className="melody-loop-bar" role="group" aria-label="小节循环练习">
       <label>第
-        <select value={loopRange.start} disabled={playing || loadingSampler} onChange={(event) => setLoopStart(Number(event.target.value))}>
+        <select value={loopRange.start} disabled={playing || loadingSampler} onChange={(event) => { const v = Number(event.target.value); setLoopStart(v); if (v > loopEnd) setLoopEnd(v); }}>
           {melody.bars.map((_, idx) => <option key={idx} value={idx}>{idx + 1}</option>)}
         </select>
         小节
       </label>
       <span>至</span>
       <label>第
-        <select value={loopRange.end} disabled={playing || loadingSampler} onChange={(event) => setLoopEnd(Number(event.target.value))}>
+        <select value={loopRange.end} disabled={playing || loadingSampler} onChange={(event) => { const v = Number(event.target.value); setLoopEnd(v); if (v < loopStart) setLoopStart(v); }}>
           {melody.bars.map((_, idx) => <option key={idx} value={idx}>{idx + 1}</option>)}
         </select>
         小节
