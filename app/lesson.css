@@ -437,3 +437,31 @@
 button.lesson-point:hover { border-color:var(--hue); background:color-mix(in srgb, var(--hue) 14%, transparent); }
 .lesson-point.hue-pine { --hue:#1E7A4A; } .lesson-point.hue-ochre { --hue:#A8701A; } .lesson-point.hue-brick { --hue:#B2452F; }
 .lesson-point.hue-ink { --hue:#44524D; } .lesson-point.hue-teal { --hue:#256F7C; }
+
+/* ---- 课前一键离线预备按钮 ---- */
+.lesson-hero-actions .lesson-offline.is-ready { background:color-mix(in srgb, var(--pine) 12%, var(--sheet)); border-color:var(--pine); color:var(--pine-deep); font-weight:600; }
+.lesson-hero-actions .lesson-offline:disabled { opacity:.72; cursor:wait; }
+
+/* ---- 课堂教唱扩展控件（移调 / 预备拍 / 人声慢速 / 小节循环 / 可点小节号） ---- */
+.melody-transpose, .melody-vocal-rate { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--text-secondary); white-space:nowrap; }
+.melody-transpose button, .melody-vocal-rate button { min-width:28px; height:28px; padding:0 8px; border:1px solid var(--border); border-radius:999px; background:var(--surface); color:var(--text-primary); font:inherit; font-weight:600; cursor:pointer; }
+.melody-transpose button:hover:not(:disabled), .melody-vocal-rate button:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+.melody-transpose button:disabled, .melody-vocal-rate button:disabled { opacity:.45; cursor:default; }
+.melody-transpose b { min-width:2.6em; text-align:center; font-variant-numeric:tabular-nums; color:var(--text-primary); }
+.melody-vocal-rate button.is-active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.melody-countin { display:inline-flex; align-items:center; gap:5px; height:30px; padding:0 10px; border:1px solid var(--border); border-radius:999px; background:var(--surface); font-size:12px; color:var(--text-secondary); white-space:nowrap; cursor:pointer; }
+.melody-countin input { accent-color:var(--accent); }
+.melody-loop-bar { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-top:10px; padding:10px 14px; border:1px solid color-mix(in srgb, var(--accent) 28%, var(--border)); border-radius:12px; background:color-mix(in srgb, var(--accent) 6%, var(--surface)); font-size:13px; color:var(--text-primary); }
+.melody-loop-bar label { display:inline-flex; align-items:center; gap:6px; }
+.melody-loop-bar select { height:30px; padding:0 8px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-primary); font:inherit; }
+.melody-loop-bar small { flex:1 1 18em; color:var(--text-secondary); font-size:12px; }
+.melody-bar { position:relative; }
+.melody-bar-num { position:absolute; top:-16px; left:6px; padding:0 5px; border:0; border-radius:4px; background:transparent; color:#62675B; font:600 11px/1.4 var(--font-ui, sans-serif); font-variant-numeric:tabular-nums; cursor:pointer; transition:background .15s, color .15s; }
+.melody-bar-num:hover { background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent); }
+.melody-bar.is-loop-bar { background:color-mix(in srgb, var(--accent) 9%, transparent); border-radius:6px; }
+.melody-bar.is-loop-bar .melody-bar-num { background:var(--accent); color:#fff; }
+.melody-bar.has-mark .melody-mark { left:28px; }
+.melody-score:not(.is-staff) { padding-top:24px; }
+.present.reflect .melody-transpose, .present.reflect .melody-vocal-rate, .present.reflect .melody-countin { font-size:clamp(13px, 1.05vw, 16px); }
+.present.reflect .melody-transpose button, .present.reflect .melody-vocal-rate button { height:34px; padding:0 10px; }
+.present.reflect .melody-countin { height:34px; }

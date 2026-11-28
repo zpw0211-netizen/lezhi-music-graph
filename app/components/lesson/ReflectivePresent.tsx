@@ -5,9 +5,10 @@
 // 文字脚本来自 lib/lesson/reflective.ts 与 lib/lesson/regular.ts；谱例、旋律、插图按本课数据有无决定是否出现，缺数据的页面自动跳过。
 // 老师可在“备课”里改课型、隐藏页面、改写提问；这些只存在本机浏览器（localStorage），不影响别人。
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ChangeEvent, CSSProperties, ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { MelodySet } from "./MelodyPlayer";
+import { AnnotationLayer, AnnotationToolbar, LocalMediaDock, PodiumToolkit, type LocalMediaItem, type PenKind, type Stroke } from "./ClassroomExtras";
 import type { Melody } from "../../lib/lesson/melodies";
 import { WorkbenchIcon } from "../WorkbenchIcon";
 import { ExplorationPage } from "../exploration/ExplorationPage";
@@ -28,7 +29,7 @@ type Question = { id: string; prompt: string; options: string[]; answer: string 
 // art：这一页右侧的课件插画（public/art/lesson/<art>.webp，人教版由 editions/renjiao 覆盖成剪纸风格的同名图）。
 type Slide = { key: string; stage: StageKey; step: string; title: string; steps: number; art?: string; render: (step: number) => ReactNode };
 // skin：老师在备课里指定的主题图；"none" 是不用主题图，不写就自动：有本课专属插图用专属插图，没有按本课数据选主题图。
-type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string>; skin?: SkinKey | "none" };
+type Saved = { kind?: LessonKind; hidden?: string[]; edits?: Record<string, string>; skin?: SkinKey | "none"; syncedFromPlanAt?: string; boardNote?: string };
 
 const STORAGE_PREFIX = "yapu-reflective:";
 
@@ -171,6 +172,43 @@ export function ReflectivePresent({
   const [picks, setPicks] = useState<Record<string, string[]>>({});
   const [boards, setBoards] = useState<string[]>(["", "", "", ""]);
   const [stars, setStars] = useState<Record<string, number>>({});
+  // 讲台课堂扩展：谱面画笔批注（按页暂存）、本地原曲音视频挂载、讲台工具箱（节拍器/定音键/倒计时）。
+  const [annotating, setAnnotating] = useState(false);
+  const [pen, setPen] = useState<PenKind>("red");
+  const [strokesBySlide, setStrokesBySlide] = useState<Record<string, Stroke[]>>({});
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [localMedia, setLocalMedia] = useState<LocalMediaItem[]>([]);
+  const [activeMediaId, setActiveMediaId] = useState<string | null>(null);
+  const mediaInputRef = useRef<HTMLInputElement | null>(null);
+  const localMediaRef = useRef<LocalMediaItem[]>([]);
+  useEffect(() => { localMediaRef.current = localMedia; }, [localMedia]);
+  useEffect(() => () => {
+    localMediaRef.current.forEach((item) => URL.revokeObjectURL(item.url));
+  }, []);
+  const onAddLocalMedia = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = [...(event.target.files ?? [])];
+    event.target.value = "";
+    if (!files.length) return;
+    const added: LocalMediaItem[] = files.map((file, idx) => ({
+      id: `${Date.now()}-${idx}-${file.name}`,
+      name: file.name.replace(/\.[^.]+$/, ""),
+      kind: file.type.startsWith("video/") || /\.(mp4|webm|mov|mkv)$/i.test(file.name) ? "video" : "audio",
+      url: URL.createObjectURL(file),
+    }));
+    setLocalMedia((prev) => [...prev, ...added]);
+    setActiveMediaId(added[0].id);
+    setMediaOpen(true);
+  };
+  const onRemoveLocalMedia = (id: string) => {
+    setLocalMedia((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target) URL.revokeObjectURL(target.url);
+      const next = prev.filter((item) => item.id !== id);
+      if (activeMediaId === id) setActiveMediaId(next[0]?.id ?? null);
+      return next;
+    });
+  };
+  const [podiumOpen, setPodiumOpen] = useState(false);
   const togglePick = (row: string, option: string) => setPicks((current) => {
     const list = current[row] ?? [];
     return { ...current, [row]: list.includes(option) ? list.filter((item) => item !== option) : [...list, option] };
@@ -517,7 +555,7 @@ export function ReflectivePresent({
 
   // 进入上课模式就把各页要用的图（谱例、情境图、主题图）先取回来，翻到那一页时图已在手，版面不会先矮后高地跳一下。
   const preloadList = [artUrl, ...scores.map((score) => assetUrl(score.url)),
-    ...slides.map((item) => (item.art ? assetUrl(slotArt && SKIN_SLOTS.has(item.art) ? slotArt : `art/lesson/${item.art}.webp`) : ""))].filter(Boolean).join("\n");
+    ...slides.map((item) => (item.art ? (slotArt && SKIN_SLOTS.has(item.art) ? sharedAssetUrl(slotArt) : assetUrl(`art/lesson/${item.art}.webp`)) : ""))].filter(Boolean).join("\n");
   const preloaded = useRef<HTMLImageElement[]>([]);
   useEffect(() => {
     preloaded.current = [...new Set(preloadList.split("\n").filter(Boolean))].map((url) => { const image = new Image(); image.decoding = "async"; image.src = url; return image; });
@@ -577,11 +615,13 @@ export function ReflectivePresent({
         {!canToggleHidden && <span>上课至少保留一页。</span>}
         {!visibleSlides.length && <span>旧设置隐藏了全部页面，上课时会恢复显示。</span>}
         {legacy && <button type="button" onClick={() => update(legacy)}>将旧投屏设置导入本册</button>}
-        {saved.edits && Object.keys(saved.edits).length > 0 && <button type="button" onClick={() => update({ edits: {} })}>恢复默认文字</button>}
+        {saved.edits && Object.keys(saved.edits).length > 0 && <button type="button" onClick={() => update({ edits: {}, syncedFromPlanAt: undefined })}>恢复默认文字</button>}
+        {saved.syncedFromPlanAt && <span className="reflect-sync-badge">✓ 已同步智能备课教案</span>}
         <span>虚线框里的文字可以直接改写，只保存在这台电脑上。</span>
       </div>
       <aside className="reflect-teacher" aria-label="教师提示（课堂上不显示）">
         <p><b>设计意图</b>{DESIGN_NOTES[slide.key]}</p>
+        {saved.boardNote && <p><b>板书设计（同步自教案）</b><span className="reflect-board-note">{saved.boardNote}</span></p>}
         {(slide.key === "cover" || slide.key === "r-cover") && <p><b>课标依据</b>{regular.standard.band} · 学习任务“{regular.standard.task}”（{STANDARD}第 {regular.standard.page} 页）</p>}
         {(slide.key === "cover" || slide.key === "wonder") && <div className="reflect-teacher-goals"><b>教学目标</b>
           <ul>{script.goals.map((goal, index) => <li key={goal.area}><em>{goal.area}</em>{text(`goal-${index}`, goal.text)}</li>)}</ul>
@@ -599,7 +639,35 @@ export function ReflectivePresent({
         ? <Picture className="reflect-art is-skin" src={sharedAssetUrl(slotArt)} art={skin ?? `work-${workId}`} />
         : <Picture className="reflect-art" src={assetUrl(`art/lesson/${slide.art}.webp`)} art={slide.art} />)}
       <div className="present-fit" ref={fitRef} style={fit === 1 ? undefined : { zoom: fit }}>{slide.render(Math.min(position.step, slide.steps - 1))}</div>
+      <AnnotationLayer
+        active={annotating}
+        pen={pen}
+        strokes={strokesBySlide[slide.key] ?? []}
+        onStrokesChange={(next) => setStrokesBySlide((prev) => ({ ...prev, [slide.key]: next }))}
+      />
     </div>
+    <input ref={mediaInputRef} type="file" accept="audio/*,video/*" multiple hidden onChange={onAddLocalMedia} />
+    {annotating && (
+      <AnnotationToolbar
+        pen={pen}
+        hasStrokes={(strokesBySlide[slide.key]?.length ?? 0) > 0}
+        onPenChange={setPen}
+        onUndo={() => setStrokesBySlide((prev) => ({ ...prev, [slide.key]: (prev[slide.key] ?? []).slice(0, -1) }))}
+        onClear={() => setStrokesBySlide((prev) => ({ ...prev, [slide.key]: [] }))}
+        onClose={() => setAnnotating(false)}
+      />
+    )}
+    {mediaOpen && (
+      <LocalMediaDock
+        items={localMedia}
+        activeId={activeMediaId}
+        onSelect={setActiveMediaId}
+        onRemove={onRemoveLocalMedia}
+        onAddClick={() => mediaInputRef.current?.click()}
+        onClose={() => setMediaOpen(false)}
+      />
+    )}
+    {podiumOpen && <PodiumToolkit onClose={() => setPodiumOpen(false)} />}
     <footer className="present-bar">
       <span>{work} · {LESSON_KINDS[kind]}</span>
       <div className="present-model" role="radiogroup" aria-label="课堂模式">{(Object.keys(MODELS) as Model[]).map((key) => <button key={key} type="button" role="radio" aria-checked={model === key} className={model === key ? "is-active" : ""} onClick={() => setModel(key)}>{key === "regular" ? "常规课" : "反思型"}</button>)}</div>
@@ -607,6 +675,9 @@ export function ReflectivePresent({
         className={`${index === current ? "active" : ""}${hidden.has(item.key) ? " is-hidden" : ""}`} aria-label={`第 ${index + 1} 页 ${item.title}`} aria-current={index === current ? "step" : undefined}
         style={{ "--i": index } as CSSProperties} onClick={() => goTo(index)} />)}</nav>
       <div className="present-nav">
+        <button type="button" aria-pressed={annotating} title="在乐谱或课件上直接画线圈重点" onClick={() => setAnnotating((on) => !on)}>画笔</button>
+        <button type="button" aria-pressed={mediaOpen} title="挂载本机原曲 MP3/视频在课件内播放" onClick={() => (localMedia.length ? setMediaOpen((on) => !on) : setMediaOpen(true))}>{localMedia.length ? `音视频(${localMedia.length})` : "音视频"}</button>
+        <button type="button" aria-pressed={podiumOpen} title="讲台工具：节拍器、定音琴键、倒计时" onClick={() => setPodiumOpen((on) => !on)}>讲台</button>
         <button type="button" aria-pressed={preparing} onClick={togglePreparing}>{preparing ? "完成备课" : "备课"}</button>
         {canFullscreen && <button type="button" onClick={toggleFullscreen} aria-label={isFullscreen ? "退出全屏" : "进入全屏"}>{isFullscreen ? "取消全屏" : "全屏"}</button>}
         <button type="button" onClick={back} aria-label="上一段"><WorkbenchIcon name="left" /><span>上一段</span></button>

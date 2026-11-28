@@ -8,7 +8,9 @@ import { WorkbenchIcon } from "../WorkbenchIcon";
 import { getPrintedPage, getScoreMedia, isStarredWork, matchesBookScope, parseUnitTask } from "../../lib/app/unit-data";
 import { SCORE_SIZES } from "../../lib/lesson/score-sizes";
 import { BOOK_BY_KEY, EDITION } from "../../lib/app/books";
-import { unitArtPath } from "../../lib/app/unit-art";
+import { sharedAssetUrl } from "../../lib/app/assets";
+import { unitArtPath, workArtPath } from "../../lib/app/unit-art";
+import { checkLessonOfflineReady, collectLessonOfflineUrls, prepareLessonOffline } from "../../lib/lesson/offline-prep";
 import { buildKMap, GROUPS as KGROUPS, pointLabel, type KGroup } from "../../lib/graph/kmap";
 import type { CanonicalGraph } from "../../lib/app/types";
 
@@ -203,7 +205,19 @@ export function LessonPage({
   }, [entities, relationships, tagBookKey, work, workId]);
 
   const [conceptId, setConceptId] = useState<string | null>(null);
-  const [presenting, setPresenting] = useState(false);
+  const [presenting, setPresenting] = useState(() => {
+    if (typeof window === "undefined" || !work) return false;
+    try {
+      const target = window.sessionStorage.getItem("yapu-auto-present");
+      if (target && target === work.name.replace(/^《|》$/g, "")) {
+        window.sessionStorage.removeItem("yapu-auto-present");
+        return true;
+      }
+    } catch { /* ignore */ }
+    return false;
+  });
+  const [offlineState, setOfflineState] = useState<"idle" | "loading" | "ready" | "partial">("idle");
+  const [offlineProgress, setOfflineProgress] = useState<{ done: number; total: number }>({ done: 0, total: 0 });
   const presentButtonRef = useRef<HTMLButtonElement | null>(null);
   // Esc 退出上课模式后，焦点必须回到触发按钮（教师用键盘/翻页笔的核心动线）。
   const closePresent = useCallback(() => {
@@ -213,14 +227,40 @@ export function LessonPage({
   // The parent remounts this page per lesson (key), so only scrolling is needed here.
   useEffect(() => { window.scrollTo?.({ top: 0 }); }, [workId]);
 
-  if (!work) return <section className="lesson-empty"><p>没有找到这一课。</p><button type="button" onClick={onBack}>返回</button></section>;
   const melodyBookKey = lesson.bookKey && EDITION.notation === "staff" ? `wx-${lesson.bookKey}` : lesson.bookKey;
-  const bookMelodies = melodiesFor(melodyBookKey, work.name);
+  const bookMelodies = useMemo(() => (work ? melodiesFor(melodyBookKey, work.name) : []), [melodyBookKey, work]);
   const melody = bookMelodies.length ? bookMelodies : undefined;
+  const scoreMedia = useMemo(() => (work ? getScoreMedia(work.media, lesson.bookKey) : []), [work, lesson.bookKey]);
+  const offlineUrls = useMemo(() => {
+    if (!work) return [];
+    const dedicated = workArtPath(lesson.bookKey, work.name);
+    return collectLessonOfflineUrls({
+      scoreUrls: scoreMedia.map((asset) => assetUrl(asset.url)),
+      artUrls: [lesson.artPath ? assetUrl(lesson.artPath) : null, dedicated ? sharedAssetUrl(dedicated) : null],
+      melodies: melody,
+    });
+  }, [work, lesson.bookKey, lesson.artPath, scoreMedia, assetUrl, melody]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void checkLessonOfflineReady(offlineUrls).then((ready) => {
+      if (!cancelled) setOfflineState(ready ? "ready" : "idle");
+    });
+    return () => { cancelled = true; };
+  }, [offlineUrls]);
+
+  const runOfflinePrep = async () => {
+    if (offlineState === "loading" || !offlineUrls.length) return;
+    setOfflineState("loading");
+    setOfflineProgress({ done: 0, total: offlineUrls.length });
+    const result = await prepareLessonOffline(offlineUrls, (done, total) => setOfflineProgress({ done, total }));
+    setOfflineState(result.failed === 0 ? "ready" : "partial");
+  };
+
+  if (!work) return <section className="lesson-empty"><p>没有找到这一课。</p><button type="button" onClick={onBack}>返回</button></section>;
   const creators = mergeCreators(lesson.own
     .filter((relation) => /^(作词|作曲|词曲作者|填词|改词|编词|译配|译词|配歌|配曲|编曲|编配|改编|整理|整理改编|记谱|记谱配词|记录|传谱|编合唱|配合唱)$/.test(relation.predicate))
     .map((relation) => ({ id: relation.id, label: relation.predicate, value: valueOf(relation) })));
-  const scoreMedia = getScoreMedia(work.media, lesson.bookKey);
   const scorePage = getPrintedPage(scoreMedia);
   // 栏目名、没有谱例的活动（我爱大自然、音乐万花筒……）和目录外只在节目单里提到的曲名不是一课：目录和翻页都不列。
   // 规则与 build-units 的单元作品列表一致：有栏目、有旋律、有谱例或是朗诵作品才算一课。
@@ -263,6 +303,21 @@ export function LessonPage({
           <div className="lesson-hero-actions">
             <button ref={presentButtonRef} type="button" className="lesson-present" onClick={() => setPresenting(true)}><WorkbenchIcon name="expand" />上课模式</button>
             {onPlan && <button type="button" onClick={() => onPlan(lesson.bookKey)}><WorkbenchIcon name="spark" />智能备课</button>}
+            <button
+              type="button"
+              className={`lesson-offline${offlineState === "ready" ? " is-ready" : ""}`}
+              disabled={offlineState === "loading"}
+              title={offlineState === "ready" ? "本课谱图、插图、钢琴与范唱已缓存，断网也可正常上课" : "提前缓存本课谱图、插图、钢琴与范唱，防教室弱网卡顿"}
+              onClick={() => void runOfflinePrep()}
+            >
+              {offlineState === "loading"
+                ? `预备中 ${offlineProgress.done}/${offlineProgress.total}`
+                : offlineState === "ready"
+                  ? "✓ 已离线就绪"
+                  : offlineState === "partial"
+                    ? "部分就绪 · 重试"
+                    : "离线预备"}
+            </button>
             {onKnowledge && <button type="button" onClick={() => onKnowledge(lesson.bookKey)}><WorkbenchIcon name="graph" />本课知识点</button>}
             <button type="button" onClick={() => onWorkGraph(workId)}><WorkbenchIcon name="graph" />作品图谱</button>
           </div>

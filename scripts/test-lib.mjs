@@ -44,6 +44,8 @@ const SOURCES = {
   assets: path.join(repoRoot, "app", "lib", "app", "assets.ts"),
   labScales: path.join(repoRoot, "app", "components", "lab", "heptatonic.ts"),
   lupanModel: path.join(repoRoot, "app", "components", "lab", "lupan-model.ts"),
+  classroomHelpers: path.join(repoRoot, "app", "lib", "lesson", "classroom-helpers.ts"),
+  planSync: path.join(repoRoot, "app", "lib", "lesson", "plan-sync.ts"),
 };
 
 // ---- 变异定义：每条都是「源码文本替换」，替换必须真的发生（否则视为脚本自身出错） ----
@@ -188,6 +190,8 @@ const { parseRoute, formatRoute, HOME_ROUTE } = await loaded.routing;
 const { isStarredWork, hasMelody, getScoreMedia, getPrintedPage, matchesBookScope, parseUnitTask } = await loaded.unitData;
 const { CHROMATIC_PITCH_NAMES, HEPTATONIC_MODES, heptatonicPhrase, transposePitchClass } = await loaded.labScales;
 const { makeLupanPhrase, normalizePitchClass, transposeTonicFromDrag } = await loaded.lupanModel;
+const { transposedKeyLabel, countInBeatsOf, barBeatSpans, normalizeLoopRange } = await loaded.classroomHelpers;
+const { buildSlideSyncFromPlan, slideStorageKey } = await loaded.planSync;
 
 // ---- 测试登记（顶层 test()；node:test 在进程退出前执行，失败置非零退出码） ----
 
@@ -975,6 +979,76 @@ t("人物补充：写入源数据与发布数据不改教材数据且字节稳�
   } finally {
     rmSync(scratch, { recursive: true, force: true });
   }
+});
+
+// ---- 课堂教唱助手与教案→课件同步 ----
+
+t("课堂移调：0 半音保持原写法，升降半音正确换算调名", () => {
+  assert.equal(transposedKeyLabel("1=G", 67, 0), "1=G");
+  assert.equal(transposedKeyLabel("1=G", 67, -2), "1=F（-2半音）");
+  assert.equal(transposedKeyLabel("1=C", 60, 2), "1=D（+2半音）");
+  assert.equal(transposedKeyLabel("1=C", 60, -1), "1=B（-1半音）");
+});
+
+t("课堂预备拍：2/4、3/4、4/4、6/8 拍数与时长准确", () => {
+  assert.deepEqual(countInBeatsOf("2/4"), { count: 2, beatLen: 1 });
+  assert.deepEqual(countInBeatsOf("3/4"), { count: 3, beatLen: 1 });
+  assert.deepEqual(countInBeatsOf("4/4"), { count: 4, beatLen: 1 });
+  assert.deepEqual(countInBeatsOf("6/8"), { count: 6, beatLen: 0.5 });
+});
+
+t("小节拍区间与循环范围规范化", () => {
+  const spans = barBeatSpans([[{ d: 1, b: 1 }, { d: 2, b: 1 }], [{ d: 3, b: 2 }]]);
+  assert.deepEqual(spans, [{ start: 0, end: 2 }, { start: 2, end: 4 }]);
+  assert.deepEqual(normalizeLoopRange(5, 2, 8), { start: 2, end: 5 });
+  assert.deepEqual(normalizeLoopRange(-1, 99, 4), { start: 0, end: 3 });
+  assert.equal(normalizeLoopRange(0, 0, 0), null);
+});
+
+t("智能备课同步上课模式：正确映射目标、重难点、导入语、提问、作业与板书", () => {
+  assert.equal(slideStorageKey("renyin", "g8s1", "W1"), "yapu-reflective:v2:renyin:g8s1:W1");
+  const sync = buildSlideSyncFromPlan({
+    version: 2,
+    workName: "《茉莉花》",
+    kind: "sing",
+    minutes: 40,
+    goals: [
+      { area: "审美感知", text: "感受江南民歌委婉细腻的旋律。" },
+      { area: "艺术表现", text: "用柔和连贯的声音演唱歌曲。" },
+    ],
+    focus: { key: "用连贯气息唱好一字多音", hard: "第 5 小节切分节奏与高音衔接" },
+    board: "《茉莉花》\n江南民歌 · 柔和连贯",
+    homework: "回家把歌曲唱给家人听。",
+    stages: [
+      {
+        key: "motivate",
+        name: "情境导入",
+        theme: "激发兴趣",
+        minutes: 5,
+        activities: [
+          { id: "a1", title: "情境导入 · 完整初听", text: "教师：出示课题，说导入语——“听一听江南春日的花香。”\n学生：完整聆听。", resources: [] },
+        ],
+      },
+      {
+        key: "conflict",
+        name: "感知体验",
+        theme: "审美感知",
+        minutes: 8,
+        activities: [
+          { id: "a2", title: "初听感受", text: "教师：提问引导。\n提问：歌曲的情绪是怎样的？\n提问：速度是快还是慢？", resources: [] },
+        ],
+      },
+    ],
+  }, "2026-11-28T10:50:00.000Z");
+  assert.equal(sync.kind, "sing");
+  assert.equal(sync.edits["r-goal-0"], "感受江南民歌委婉细腻的旋律。");
+  assert.equal(sync.edits["r-focus-key"], "用连贯气息唱好一字多音");
+  assert.equal(sync.edits["r-focus-hard"], "第 5 小节切分节奏与高音衔接");
+  assert.equal(sync.edits["r-scene"], "听一听江南春日的花香。");
+  assert.equal(sync.edits["r-first-0"], "歌曲的情绪是怎样的？");
+  assert.equal(sync.edits["r-first-1"], "速度是快还是慢？");
+  assert.equal(sync.edits["r-homework"], "回家把歌曲唱给家人听。");
+  assert.equal(sync.boardNote, "《茉莉花》\n江南民歌 · 柔和连贯");
 });
 
 // ---- 变异检查（父进程）：仅完整测试运行中预期用例失败才算捕获 ----

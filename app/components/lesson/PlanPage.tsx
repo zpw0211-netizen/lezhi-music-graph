@@ -3,6 +3,7 @@ import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "rea
 import { melodiesFor } from "../../lib/lesson/melodies";
 import { buildPlan, checkPlan, fitMinutes, planText, resolvePlanRequest, type LessonPlan, type PlanIssue, type PlanResource } from "../../lib/lesson/plan";
 import { applyBackup, collectBackup, planDocx, planPrintHtml, readBackup, saveFile } from "../../lib/lesson/plan-export";
+import { syncPlanToSlides } from "../../lib/lesson/plan-sync";
 import { LESSON_KINDS, lessonKindOf, type LessonFact, type LessonKind } from "../../lib/lesson/reflective";
 import type { Melody } from "../../lib/lesson/jianpu";
 import { getScoreMedia, matchesBookScope } from "../../lib/app/unit-data";
@@ -182,13 +183,13 @@ export function PlanPage({ graph, books, bookKey: routeBook, work: routeWork, as
         <p>{text}</p>
       </li>)}</ul>
     </section>}
-    {work && context && <PlanEditor key={`${bookKey}:${work.id}:${asked.token}`} bookKey={bookKey} context={context} asked={asked.options}
+    {work && context && <PlanEditor key={`${bookKey}:${work.id}:${asked.token}`} bookKey={bookKey} workId={work.id} context={context} asked={asked.options}
       assetUrl={assetUrl} books={books} graph={graph} onOpenLesson={onOpenLesson} />}
   </section>;
 }
 
-function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLesson }: {
-  bookKey: string; context: Context; asked: Options | null; assetUrl: (path: string) => string;
+function PlanEditor({ bookKey, workId, context, asked, assetUrl, books, graph, onOpenLesson }: {
+  bookKey: string; workId: string; context: Context; asked: Options | null; assetUrl: (path: string) => string;
   books: BookDirectory[]; graph: CanonicalGraph; onOpenLesson: (work: string, bookKey: string) => void;
 }) {
   const make = (options: Options) => buildPlan({
@@ -249,6 +250,20 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
     document.body.appendChild(frame);
   };
 
+  const syncToSlides = () => {
+    if (!plan) return;
+    const res = syncPlanToSlides(EDITION.key, bookKey, workId, plan);
+    setMessage(res.ok
+      ? `已将教案的目标、导入、提问、重难点与板书（共 ${res.syncedFields} 项）同步到本课上课课件。`
+      : "浏览器不允许写入本机存储（可能是无痕窗口），未能同步到上课课件。");
+  };
+
+  const syncAndOpenLesson = () => {
+    if (plan) syncPlanToSlides(EDITION.key, bookKey, workId, plan);
+    try { window.sessionStorage.setItem("yapu-auto-present", work); } catch { /* ignore */ }
+    onOpenLesson(work, bookKey);
+  };
+
   const resource = (res: PlanResource, key: string) => {
     if (res.kind === "score") {
       const url = context.scoreUrls.includes(res.url) ? res.url : context.scoreUrls[0];
@@ -297,7 +312,8 @@ function PlanEditor({ bookKey, context, asked, assetUrl, books, graph, onOpenLes
       <button type="button" className="is-main" onClick={exportWord}>导出 Word</button>
       <button type="button" onClick={print}>打印</button>
       <button type="button" onClick={copy}>复制文字</button>
-      <button type="button" className="is-wide" onClick={() => onOpenLesson(work, bookKey)}>打开这一课 · 上课模式</button>
+      <button type="button" className="is-wide" onClick={syncToSlides}>同步到上课课件</button>
+      <button type="button" className="is-wide is-sync-open" onClick={syncAndOpenLesson}>同步并打开上课模式</button>
     </div>}
     {plan && <nav className="plan-outline" aria-label="教案目录">
       <p className="plan-rail-title">目录</p>

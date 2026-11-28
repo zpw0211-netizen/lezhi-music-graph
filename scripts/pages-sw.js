@@ -6,6 +6,7 @@ const SCOPE = new URL(self.registration.scope).pathname;
 const PREFIX = `yapu${SCOPE}`;
 const APP_CACHE = `${PREFIX}app-${VERSION}`;
 const IMAGE_CACHE = `${PREFIX}images`;
+const OFFLINE_CACHE = "yapu-lesson-offline";
 const IMAGE_LIMIT = 400;
 const INDEX = SCOPE;
 const GRAPH = `${SCOPE}data/graph-index.json`;
@@ -67,14 +68,26 @@ async function imageFirst(event) {
   return update;
 }
 
+async function offlineFirst(request) {
+  const cache = await caches.open(OFFLINE_CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  return fetch(request);
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET" || request.headers.has("range")) return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // 课前「离线预备」缓存的钢琴采样与人声示范，优先命中本机离线缓存。
+  if (url.pathname.startsWith("/audio/vocal/") || url.pathname.includes("/media/instruments/")) {
+    event.respondWith(offlineFirst(request));
+    return;
+  }
   // 跨版本共享在根目录下的课程插图与皮肤（/art/works/、/art/skin/）同样走图片缓存。
   if (url.pathname.startsWith("/art/") && /\.(webp|png|jpe?g|svg|gif)$/i.test(url.pathname)) {
-    event.respondWith(imageFirst(event));
+    event.respondWith(caches.open(OFFLINE_CACHE).then((c) => c.match(request)).then((hit) => hit ?? imageFirst(event)));
     return;
   }
   if (!url.pathname.startsWith(SCOPE)) return;
@@ -91,5 +104,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(appFirst(request, url.pathname + url.search));
     return;
   }
-  if (/\.(webp|png|jpe?g|svg|gif)$/i.test(rest)) event.respondWith(imageFirst(event));
+  if (/\.(webp|png|jpe?g|svg|gif)$/i.test(rest)) {
+    event.respondWith(caches.open(OFFLINE_CACHE).then((c) => c.match(request)).then((hit) => hit ?? imageFirst(event)));
+  }
 });

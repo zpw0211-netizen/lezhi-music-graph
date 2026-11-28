@@ -15,6 +15,7 @@ import { findVocal, vocalCredit, type Vocal } from "../../lib/lesson/vocal";
 import { loadPercussionStrokes, percussionKind, playPercussion } from "../../lib/lesson/percussion";
 import { sharedAssetUrl } from "../../lib/app/assets";
 import { ACC_STYLES, accompaniment, type AccStyle } from "../../lib/lesson/accompany";
+import { barBeatSpans, countInBeatsOf, normalizeLoopRange, transposedKeyLabel, VOCAL_RATES, type VocalRate } from "../../lib/lesson/classroom-helpers";
 
 type Line = { label: string; bars: MelodyNote[][] };
 type BeamRun = { start: number; end: number; level: number };
@@ -118,6 +119,31 @@ function getBeamRuns(notes: MelodyNote[], meter: string): BeamRun[] {
 // Keep decoded instrument banks for the session so switching excerpts does not re-decode samples.
 const sharedSamplers: Partial<Record<InstrumentId, InstrumentSampler>> = {};
 const sharedVocals: Record<string, Promise<AudioBuffer>> = {};
+const sharedVocalUrls: Record<string, Promise<string>> = {};
+
+async function loadCachedSampler(ctx: AudioContext, id: InstrumentId): Promise<InstrumentSampler> {
+  const cached = sharedSamplers[id];
+  if (cached) return cached;
+  const loaded = await loadInstrumentSampler(ctx, id);
+  sharedSamplers[id] = loaded;
+  return loaded;
+}
+
+function loadCachedVocalBuffer(ctx: AudioContext, url: string): Promise<AudioBuffer> {
+  sharedVocals[url] ??= fetch(url).then((response) => {
+    if (!response.ok) throw new Error(String(response.status));
+    return response.arrayBuffer();
+  }).then((data) => ctx.decodeAudioData(data));
+  return sharedVocals[url].catch((error) => { delete sharedVocals[url]; throw error; });
+}
+
+function loadCachedVocalBlobUrl(url: string): Promise<string> {
+  sharedVocalUrls[url] ??= fetch(url).then((response) => {
+    if (!response.ok) throw new Error(String(response.status));
+    return response.blob();
+  }).then((blob) => URL.createObjectURL(blob));
+  return sharedVocalUrls[url].catch((error) => { delete sharedVocalUrls[url]; throw error; });
+}
 type Timbre = InstrumentId | "vocal" | "choir";
 const VOCAL_LABEL = "人声（童声）";
 /** With a male recording for a lower part: women's voice on top, men's voice below. */
@@ -239,10 +265,23 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
   const [current, setCurrent] = useState<number[]>([]);
   const [announcement, setAnnouncement] = useState("");
   const [tempo, setTempo] = useState(melody.bpm);
-  // The recording is sung at the textbook tempo.
-  const playTempo = singing ? melody.bpm : tempo;
+  const [vocalRate, setVocalRate] = useState<VocalRate>(1);
+  const [transpose, setTranspose] = useState(0);
+  const [countIn, setCountIn] = useState(false);
+  const [loopOpen, setLoopOpen] = useState(false);
+  const [loopStart, setLoopStart] = useState(0);
+  const [loopEnd, setLoopEnd] = useState(() => Math.min(3, Math.max(0, melody.bars.length - 1)));
+  const [loopActive, setLoopActive] = useState(false);
+  const [loopPick, setLoopPick] = useState<"start" | "end">("start");
+  const pitchShift = singing ? 0 : transpose;
+  // 人声支持 0.75× / 0.85× / 原速不变调带唱；乐器走自由速度滑块。
+  const playTempo = singing ? Math.round(melody.bpm * vocalRate) : tempo;
+  const barSpans = useMemo(() => barBeatSpans(melody.bars), [melody.bars]);
+  const loopRange = useMemo(() => normalizeLoopRange(loopStart, loopEnd, melody.bars.length), [loopEnd, loopStart, melody.bars.length]);
+  const canLoop = melody.bars.length > 1 && !partLevels;
   const [enabled, setEnabled] = useState<boolean[]>(() => lines.map(() => true));
   const rhythmOnly = melody.bars.every((bar) => bar.every((note) => note.d === 0 || note.d === 9));
+  const canTranspose = !rhythmOnly && !partLevels;
   const mounted = useRef(true);
   const playbackActive = useRef(false);
   const samplerLoading = useRef(false);
@@ -294,6 +333,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     stopRef.current();
     stopRef.current = () => {};
     setPlaying(false);
+    setLoopActive(false);
     setFollow(null);
     beatRef.current = -1;
     setCurrent([]);
@@ -438,8 +478,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       try {
         await ctx.resume();
         await Promise.all(needed.map(async (timbre) => {
-          const loaded = sharedSamplers[timbre] ?? await loadInstrumentSampler(ctx, timbre);
-          sharedSamplers[timbre] = loaded;
+          const loaded = await loadCachedSampler(ctx, timbre);
           choirSamplers.current[timbre] = loaded;
         }));
       } catch {
@@ -451,23 +490,28 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     }
     const pianoNeeded = !choirMode || colors.some((color) => !color || !choirSamplers.current[color.timbre]);
     let voices: (AudioBuffer | null)[] = vocals.map(() => null);
+    let voiceUrls: (string | null)[] = vocals.map(() => null);
     if (singing) {
       samplerLoading.current = true;
       setLoadingSampler(true);
       setAnnouncement("载入" + vocalLabel + "…");
       try {
         await ctx.resume();
-        voices = await Promise.all(vocals.map((part) => {
-          if (!part) return null;
+        const loaded = await Promise.all(vocals.map(async (part) => {
+          if (!part) return { buffer: null as AudioBuffer | null, blobUrl: null as string | null };
           const url = sharedAssetUrl(part.file);
-          sharedVocals[url] ??= fetch(url).then((response) => {
-            if (!response.ok) throw new Error(String(response.status));
-            return response.arrayBuffer();
-          }).then((data) => ctx.decodeAudioData(data));
-          return sharedVocals[url].catch((error) => { delete sharedVocals[url]; throw error; });
+          if (vocalRate !== 1 && typeof URL !== "undefined" && typeof URL.createObjectURL === "function") {
+            const blobUrl = await loadCachedVocalBlobUrl(url);
+            return { buffer: null as AudioBuffer | null, blobUrl };
+          }
+          const buffer = await loadCachedVocalBuffer(ctx, url);
+          return { buffer, blobUrl: null as string | null };
         }));
+        voices = loaded.map((item) => item.buffer);
+        voiceUrls = loaded.map((item) => item.blobUrl);
       } catch {
         voices = vocals.map(() => null);
+        voiceUrls = vocals.map(() => null);
         samplerLoadFailed = true;
       } finally {
         samplerLoading.current = false;
@@ -480,8 +524,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       setAnnouncement("载入" + instrumentLabel + "音色…");
       try {
         await ctx.resume();
-        sampler = await loadInstrumentSampler(ctx, sampleInstrument);
-        sharedSamplers[sampleInstrument] = sampler;
+        sampler = await loadCachedSampler(ctx, sampleInstrument);
         if (mounted.current) setAudioMode("sampled");
       } catch {
         samplerLoadFailed = true;
@@ -496,7 +539,68 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     }
     // The reader may have left the lesson while the samples were loading.
     if (!mounted.current || request !== playRequestRef.current) return null;
-    return { ctx, sampler, samplerLoadFailed, voices, voice: voices[0] };
+    return { ctx, sampler, samplerLoadFailed, voices, voice: voices[0], voiceUrls, voiceUrl: voiceUrls[0] };
+  };
+
+  /** Play 1 measure of woodblock clicks before beat 0; returns count-in duration in seconds. */
+  const scheduleCountIn = (ctx: AudioContext, out: AudioNode, t0: number, beat: number) => {
+    const { count, beatLen } = countInBeatsOf(melody.meter);
+    for (let i = 0; i < count; i += 1) {
+      const at = t0 + i * beatLen * beat;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = i === 0 ? 1480 : 1040;
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(i === 0 ? 0.22 : 0.14, at + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.055);
+      osc.connect(gain).connect(out);
+      osc.start(at);
+      osc.stop(at + 0.07);
+    }
+    return count * beatLen * beat;
+  };
+
+  /** Pitch-preserved HTMLAudio playback for slowed vocal rates (0.75x / 0.85x). */
+  const scheduleSlowVocal = (
+    ctx: AudioContext,
+    blobUrl: string,
+    from: number,
+    at: number,
+    rate: number,
+    to: number | undefined,
+    part: Vocal | null,
+    cleanups: Array<() => void>,
+  ) => {
+    if (!part || typeof Audio === "undefined") return;
+    const origBeat = 60 / melody.bpm;
+    let offset = part.offset + (from - part.leadBeats) * origBeat - VOCAL_PREROLL;
+    let when = at - VOCAL_PREROLL / rate;
+    if (offset < 0) { when -= offset / rate; offset = 0; }
+    const delayMs = Math.max(0, (when - ctx.currentTime) * 1000);
+    const el = new Audio(blobUrl);
+    el.preload = "auto";
+    el.playbackRate = rate;
+    const pitchEl = el as HTMLAudioElement & { preservesPitch?: boolean; webkitPreservesPitch?: boolean; mozPreservesPitch?: boolean };
+    if ("preservesPitch" in pitchEl) pitchEl.preservesPitch = true;
+    if ("webkitPreservesPitch" in pitchEl) pitchEl.webkitPreservesPitch = true;
+    if ("mozPreservesPitch" in pitchEl) pitchEl.mozPreservesPitch = true;
+    el.volume = 0.92;
+    let stopTimer: number | undefined;
+    const startTimer = window.setTimeout(() => {
+      try { el.currentTime = offset; } catch { /* ignore */ }
+      void el.play().catch(() => undefined);
+      if (to != null) {
+        const durMs = Math.max(40, ((to - from) * origBeat / rate + VOCAL_PREROLL / rate) * 1000);
+        stopTimer = window.setTimeout(() => { el.pause(); }, durMs);
+      }
+    }, delayMs);
+    cleanups.push(() => {
+      window.clearTimeout(startTimer);
+      if (stopTimer !== undefined) window.clearTimeout(stopTimer);
+      el.pause();
+      el.src = "";
+    });
   };
 
   /**
@@ -557,12 +661,12 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
           }
         } else if (choirMode && partColorsRef.current?.[voice] && choirSamplers.current[partColorsRef.current[voice]!.timbre]) {
           const color = partColorsRef.current[voice]!;
-          playInstrumentSample(ctx, color.timbre, choirSamplers.current[color.timbre]!, midiOf(melody, note), t, length, master, (color.level ?? 1) * levelScale);
+          playInstrumentSample(ctx, color.timbre, choirSamplers.current[color.timbre]!, midiOf(melody, note) + pitchShift, t, length, master, (color.level ?? 1) * levelScale);
         } else if (sampler) {
           const level = (voice === 0 ? 1 : voice === 1 ? 0.7 : 0.58) * levelScale;
-          playInstrumentSample(ctx, sampleInstrument, sampler, midiOf(melody, note), t, length, master, level);
+          playInstrumentSample(ctx, sampleInstrument, sampler, midiOf(melody, note) + pitchShift, t, length, master, level);
         } else {
-          const frequency = 440 * Math.pow(2, (midiOf(melody, note) - 69) / 12);
+          const frequency = 440 * Math.pow(2, (midiOf(melody, note) + pitchShift - 69) / 12);
           const timbre = TIMBRES[voice] ?? TIMBRES[2];
           for (const [wave, level, multiple] of [[timbre.wave, timbre.level * levelScale, 1], ["sine" as OscillatorType, timbre.level * timbre.overtone * levelScale, 2]] as const) {
             const osc = ctx.createOscillator();
@@ -582,94 +686,156 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     return { times, end: t };
   };
 
-  const play = async () => {
-    if (playing || follow) { stop(); return; }
+  const playFrom = async (startBar = 0, endBar = melody.bars.length - 1, shouldLoop = false) => {
+    stop();
+    const firstBar = Math.max(0, Math.min(melody.bars.length - 1, startBar));
+    const lastBar = Math.max(firstBar, Math.min(melody.bars.length - 1, endBar));
+    const isFullStart = firstBar === 0;
+    const isFullEnd = lastBar === melody.bars.length - 1;
     const request = ++playRequestRef.current;
     const audio = await prepareAudio(request);
     if (!audio) return;
-    const { ctx, sampler, samplerLoadFailed, voices } = audio;
-    const voiced = voices.some(Boolean);
-
-    const beat = 60 / playTempo;
+    const { ctx, sampler, samplerLoadFailed, voices, voiceUrls } = audio;
+    const slowVocal = singing && vocalRate !== 1 && voiceUrls.some(Boolean);
+    const voiced = voices.some(Boolean) || slowVocal;
+    const beat = singing ? (60 / melody.bpm) / vocalRate : 60 / tempo;
+    const startBeat = barSpans[firstBar]?.start ?? 0;
+    const endBeat = barSpans[lastBar]?.end ?? barSpans.at(-1)?.end ?? 0;
     const acc = singing && voiced && sampler ? accomp : null;
-    // The intro is played only when the accompaniment is on at the start.
-    const lead = acc && accompanyRef.current ? acc.intro * beat : 0;
-    const start = ctx.currentTime + (voiced ? 0.12 + VOCAL_PREROLL : 0.12) + lead;
-    const master = ctx.createGain();
-    master.gain.value = lines.length > 1 ? 0.24 : 0.34;
-    master.connect(ctx.destination);
-    accGain.current = null;
-    if (acc && sampler) {
-      const accOut = ctx.createGain();
-      accOut.gain.value = accompanyRef.current ? ACC_GAIN : 0;
-      accOut.connect(master);
-      accGain.current = { ctx, node: accOut };
-      for (const note of acc.notes) {
-        if (note.at < 0 && !lead) continue;
-        playInstrumentSample(ctx, "piano", sampler, note.midi, start + note.at * beat, note.length * beat, accOut, note.level);
-      }
-    }
-    const outs = lines.map((_, part) => {
-      const gain = ctx.createGain();
-      gain.gain.value = partLevelsRef.current?.[part] ?? 1;
-      const color = choirMode ? partColorsRef.current?.[part] : undefined;
-      gain.connect(color ? colorChain(ctx, color, master) : master);
-      return gain;
-    });
-    partGains.current = { ctx, nodes: outs };
     const on = (part: number) => !!partLevelsRef.current || enabled[part];
-    let end = start;
-    const timeline = flats.map((notes, part) => {
-      if (!on(part)) {
-        // Muted voices still advance so their notes keep highlighting in step.
-        let t = start;
-        return notes.map((note) => { const at = t; t += note.b * beat; end = Math.max(end, t); return at; });
+
+    let activeRaf = 0;
+    let activeMaster: GainNode | null = null;
+    let cleanups: Array<() => void> = [];
+
+    const tearDownPass = () => {
+      cancelAnimationFrame(activeRaf);
+      cleanups.forEach((fn) => fn());
+      cleanups = [];
+      if (activeMaster) {
+        const node = activeMaster;
+        activeMaster = null;
+        node.gain.cancelScheduledValues(ctx.currentTime);
+        node.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
+        setTimeout(() => node.disconnect(), 100);
       }
-      const scheduled = scheduleRange(ctx, outs[part], sampler, part, 0, notes.length, start, beat, 1, !!voices[part]);
-      end = Math.max(end, scheduled.end);
-      return scheduled.times;
-    });
-    voices.forEach((buffer, part) => { if (buffer && on(part)) scheduleVocal(ctx, outs[part], buffer, 0, start, beat, undefined, vocals[part]); });
-    // Let the closing chord ring out.
-    if (acc) end += 1.2;
-    playbackCallback.current?.({ ctx, start, secondsPerBeat: beat });
-    let raf = 0;
-    let previousNotes = "";
-    let previousIndices = "";
-    const tick = () => {
-      const now = ctx.currentTime;
-      if (now >= end) { stop(); return; }
-      beatRef.current = now < start ? -1 : (now - start) / beat;
-      const indices = timeline.map((times) => {
-        if (now < start) return -1;
-        let index = times.length - 1;
-        while (index > 0 && times[index] > now) index -= 1;
-        return index;
-      });
-      // Re-render the score only when the sounding note changes, not on every animation frame:
-      // a long score re-rendered 60 times a second drops frames on classroom computers.
-      const indicesKey = indices.join(",");
-      if (indicesKey !== previousIndices) { previousIndices = indicesKey; setCurrent(indices); }
-      const notes = indices.flatMap((index, voice) => {
-        const note = flats[voice][index];
-        return on(voice) && note?.d && note.d !== 9 ? [midiOf(melody, note)] : [];
-      });
-      if (notes.join(",") !== previousNotes) {
-        previousNotes = notes.join(",");
-        soundingCallback.current?.(notes, true);
+    };
+
+    const runPass = (withLeadAndCountIn: boolean) => {
+      if (!mounted.current || request !== playRequestRef.current) return;
+      tearDownPass();
+      const master = ctx.createGain();
+      master.gain.value = lines.length > 1 ? 0.24 : 0.34;
+      master.connect(ctx.destination);
+      activeMaster = master;
+
+      const wantIntro = withLeadAndCountIn && isFullStart && !shouldLoop && !countIn && acc && accompanyRef.current;
+      const lead = wantIntro ? acc.intro * beat : 0;
+      const baseT0 = ctx.currentTime + (voiced ? 0.12 + VOCAL_PREROLL / (slowVocal ? vocalRate : 1) : 0.12);
+      const countDur = withLeadAndCountIn && countIn ? scheduleCountIn(ctx, master, baseT0, beat) : 0;
+      const start = baseT0 + countDur + lead;
+
+      accGain.current = null;
+      if (acc && sampler) {
+        const accOut = ctx.createGain();
+        accOut.gain.value = accompanyRef.current ? ACC_GAIN : 0;
+        accOut.connect(master);
+        accGain.current = { ctx, node: accOut };
+        for (const note of acc.notes) {
+          if (note.at < 0) {
+            if (!wantIntro) continue;
+          } else if (note.at < startBeat - 1e-6 || note.at >= endBeat - 1e-6) {
+            continue;
+          }
+          playInstrumentSample(ctx, "piano", sampler, note.midi + pitchShift, start + (note.at - startBeat) * beat, note.length * beat, accOut, note.level);
+        }
       }
-      raf = requestAnimationFrame(tick);
+      const outs = lines.map((_, part) => {
+        const gain = ctx.createGain();
+        gain.gain.value = partLevelsRef.current?.[part] ?? 1;
+        const color = choirMode ? partColorsRef.current?.[part] : undefined;
+        gain.connect(color ? colorChain(ctx, color, master) : master);
+        return gain;
+      });
+      partGains.current = { ctx, nodes: outs };
+
+      let end = start;
+      const fromNotes = lines.map((_, part) => offsets[part][firstBar] ?? 0);
+      const toNotes = lines.map((_, part) => (lastBar + 1 < melody.bars.length ? (offsets[part][lastBar + 1] ?? flats[part].length) : flats[part].length));
+      const timeline = flats.map((notes, part) => {
+        const from = fromNotes[part];
+        const to = toNotes[part];
+        if (!on(part)) {
+          let t = start;
+          return notes.slice(from, to).map((note) => { const at = t; t += note.b * beat; end = Math.max(end, t); return at; });
+        }
+        const partVoiced = Boolean(voices[part] || (slowVocal && voiceUrls[part]));
+        const scheduled = scheduleRange(ctx, outs[part], sampler, part, from, to, start, beat, 1, partVoiced);
+        end = Math.max(end, scheduled.end);
+        return scheduled.times;
+      });
+      if (slowVocal) {
+        voiceUrls.forEach((blobUrl, part) => {
+          if (blobUrl && on(part)) scheduleSlowVocal(ctx, blobUrl, startBeat, start, vocalRate, isFullEnd && !shouldLoop ? undefined : endBeat, vocals[part], cleanups);
+        });
+      } else {
+        voices.forEach((buffer, part) => {
+          if (buffer && on(part)) scheduleVocal(ctx, outs[part], buffer, startBeat, start, beat, isFullEnd && !shouldLoop ? undefined : endBeat, vocals[part]);
+        });
+      }
+      if (acc && isFullEnd && !shouldLoop) end += 1.2;
+      if (withLeadAndCountIn) playbackCallback.current?.({ ctx, start, secondsPerBeat: beat });
+
+      let previousNotes = "";
+      let previousIndices = "";
+      const tick = () => {
+        const now = ctx.currentTime;
+        if (now >= end) {
+          if (shouldLoop && playbackActive.current && request === playRequestRef.current) {
+            runPass(false);
+            return;
+          }
+          stop();
+          return;
+        }
+        beatRef.current = now < start ? -1 : startBeat + (now - start) / beat;
+        const indices = timeline.map((times, part) => {
+          if (now < start || !times.length) return -1;
+          let idx = times.length - 1;
+          while (idx > 0 && times[idx] > now) idx -= 1;
+          return fromNotes[part] + idx;
+        });
+        const indicesKey = indices.join(",");
+        if (indicesKey !== previousIndices) { previousIndices = indicesKey; setCurrent(indices); }
+        const notes = indices.flatMap((idx, voice) => {
+          const note = idx >= 0 ? flats[voice][idx] : undefined;
+          return on(voice) && note?.d && note.d !== 9 ? [midiOf(melody, note) + pitchShift] : [];
+        });
+        if (notes.join(",") !== previousNotes) {
+          previousNotes = notes.join(",");
+          soundingCallback.current?.(notes, true);
+        }
+        activeRaf = requestAnimationFrame(tick);
+      };
+      activeRaf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    stopRef.current = () => {
-      cancelAnimationFrame(raf);
-      master.gain.cancelScheduledValues(ctx.currentTime);
-      master.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
-      setTimeout(() => master.disconnect(), 100);
-    };
+
+    stopRef.current = tearDownPass;
     playbackActive.current = true;
     setPlaying(true);
-    setAnnouncement(samplerLoadFailed ? instrumentLabel + "音色加载失败，改用" + (singing ? "钢琴" : "电子音色") + "。开始播放" : "开始播放");
+    setLoopActive(shouldLoop);
+    runPass(true);
+    const scopeText = shouldLoop
+      ? `循环播放第 ${firstBar + 1}–${lastBar + 1} 小节`
+      : firstBar > 0
+        ? `从第 ${firstBar + 1} 小节开始播放`
+        : "开始播放";
+    setAnnouncement(samplerLoadFailed ? instrumentLabel + "音色加载失败，改用" + (singing ? "钢琴" : "电子音色") + "。" + scopeText : scopeText);
+  };
+
+  const play = async () => {
+    if (playing || follow) { stop(); return; }
+    await playFrom(0, melody.bars.length - 1, false);
   };
 
   /**
@@ -682,20 +848,23 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     const request = ++playRequestRef.current;
     const audio = await prepareAudio(request);
     if (!audio) return;
-    const { ctx, sampler, voice } = audio;
-    const beat = 60 / playTempo;
+    const { ctx, sampler, voice, voiceUrl } = audio;
+    const slowVocal = singing && vocalRate !== 1 && Boolean(voiceUrl);
+    const beat = singing ? (60 / melody.bpm) / vocalRate : 60 / tempo;
     const master = ctx.createGain();
     master.gain.value = 0.34;
     master.connect(ctx.destination);
     type Segment = { phrase: number; kind: "listen" | "sing"; t0: number; t1: number; times: number[] };
     const segments: Segment[] = [];
-    let t = ctx.currentTime + 0.15 + (voice ? VOCAL_PREROLL : 0);
+    const followCleanups: Array<() => void> = [];
+    let t = ctx.currentTime + 0.15 + (voice || slowVocal ? VOCAL_PREROLL / (slowVocal ? vocalRate : 1) : 0);
     for (let p = first; p < phrases.length; p += 1) {
       const phrase = phrases[p];
       let lastListen: Segment | null = null;
       for (let round = 0; round < listenTimes; round += 1) {
-        const scheduled = scheduleRange(ctx, master, sampler, 0, phrase.startNote, phrase.endNote, t, beat, 1, !!voice);
-        if (voice) scheduleVocal(ctx, master, voice, phrase.startBeat, t, beat, phrase.endBeat);
+        const scheduled = scheduleRange(ctx, master, sampler, 0, phrase.startNote, phrase.endNote, t, beat, 1, Boolean(voice || slowVocal));
+        if (slowVocal && voiceUrl) scheduleSlowVocal(ctx, voiceUrl, phrase.startBeat, t, vocalRate, phrase.endBeat, vocal, followCleanups);
+        else if (voice) scheduleVocal(ctx, master, voice, phrase.startBeat, t, beat, phrase.endBeat);
         lastListen = { phrase: p, kind: "listen", t0: t, t1: scheduled.end, times: scheduled.times };
         segments.push(lastListen);
         t = scheduled.end;
@@ -751,6 +920,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     raf = requestAnimationFrame(tick);
     stopRef.current = () => {
       cancelAnimationFrame(raf);
+      followCleanups.forEach((fn) => fn());
       master.gain.cancelScheduledValues(ctx.currentTime);
       master.gain.setTargetAtTime(0, ctx.currentTime, 0.015);
       setTimeout(() => master.disconnect(), 100);
@@ -789,6 +959,22 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       {renderNoteLyric(note, active, `lyric-${key}`)}
     </span>;
 
+  const onBarClick = (barIndex: number) => {
+    if (loadingSampler || follow) return;
+    if (loopOpen) {
+      if (loopPick === "start") {
+        setLoopStart(barIndex);
+        setLoopEnd((prev) => (prev < barIndex ? barIndex : prev));
+        setLoopPick("end");
+      } else {
+        setLoopEnd(barIndex);
+        setLoopPick("start");
+      }
+      return;
+    }
+    void playFrom(barIndex, melody.bars.length - 1, false);
+  };
+
   return <div className={`melody-player ${large ? "is-large" : ""} ${lines.length > 1 ? "is-choral" : ""}`}>
     {melody.title && !large && <p className="melody-title">{melody.title}</p>}
     {melody.quality === "draft" && <p className="melody-draft">自动识谱草稿 · 待人工核对。音高、节奏或调号可能有误，请对照教材原谱。</p>}
@@ -797,9 +983,10 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
         {!loadingSampler && (playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" /></svg> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>)}
         {loadingSampler ? "载入" + instrumentLabel + "音色…" : playing ? "停止" : rhythmOnly ? "播放节奏" : playLabel}
       </button>
-      {canFollow && <button type="button" className={`melody-follow-toggle${followOpen ? " is-open" : ""}`} aria-expanded={followOpen} onClick={() => { if (follow) stop(); setFollowOpen((open) => !open); }}>跟唱</button>}
+      {canFollow && <button type="button" className={`melody-follow-toggle${followOpen ? " is-open" : ""}`} aria-expanded={followOpen} onClick={() => { if (follow) stop(); setFollowOpen((open) => !open); setLoopOpen(false); }}>跟唱</button>}
+      {canLoop && <button type="button" className={`melody-follow-toggle melody-loop-toggle${loopOpen || loopActive ? " is-open" : ""}`} aria-expanded={loopOpen} onClick={() => { setLoopOpen((open) => !open); setFollowOpen(false); setLoopPick("start"); }}>{loopActive && loopRange ? `循环 ${loopRange.start + 1}–${loopRange.end + 1}` : "循环"}</button>}
       <span role="status" aria-live="polite" aria-atomic="true" style={VISUALLY_HIDDEN}>{announcement}</span>
-      <span className="melody-key">{melody.key} · {displayMeter(melody.meter)}</span>
+      <span className="melody-key">{transposedKeyLabel(melody.key, melody.tonicMidi, pitchShift)} · {displayMeter(melody.meter)}</span>
       <label className="melody-instrument">音色
         <select value={instrument} disabled={playing || loadingSampler} onChange={(event) => { setInstrument(event.target.value as Timbre); setAudioMode("unknown"); }}>
           {timbres.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
@@ -812,6 +999,16 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
           <option value="off">不要伴奏（清唱）</option>
         </select>
       </label>}
+      {canTranspose && !singing && <span className="melody-transpose" role="group" aria-label="一键移调">
+        <span>移调</span>
+        <button type="button" disabled={playing || loadingSampler || !!follow || transpose <= -4} onClick={() => setTranspose((v) => Math.max(-4, v - 1))} aria-label="降低半音">−</button>
+        <b>{transpose === 0 ? "原调" : `${transpose > 0 ? "+" : ""}${transpose}`}</b>
+        <button type="button" disabled={playing || loadingSampler || !!follow || transpose >= 4} onClick={() => setTranspose((v) => Math.min(4, v + 1))} aria-label="升高半音">＋</button>
+      </span>}
+      {!partLevels && <label className="melody-countin">
+        <input type="checkbox" checked={countIn} disabled={playing || loadingSampler || !!follow} onChange={(event) => setCountIn(event.target.checked)} />
+        预备拍
+      </label>}
       {lines.length > 1 && !partLevels && <span className="melody-voices" role="group" aria-label="选择声部">
         {lines.map((line, k) => <label key={line.label} className={`voice-${k}`}>
           <input type="checkbox" checked={enabled[k]} disabled={playing || loadingSampler} onChange={(event) => setEnabled((value) => value.map((item, i) => (i === k ? event.target.checked : item)))} />
@@ -821,12 +1018,33 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
       {!rhythmOnly && <span className="melody-view" role="radiogroup" aria-label="显示方式">
         {([["score", "谱子"], ["line", "旋律线"]] as const).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={view === value} className={view === value ? "is-active" : ""} onClick={() => setView(value)}>{label}</button>)}
       </span>}
-      <label className="melody-tempo">速度
-        <input type="range" min={40} max={160} step={4} value={playTempo} aria-valuetext={`每分钟 ${playTempo} 拍`} disabled={singing || playing || loadingSampler || !!follow} onChange={(event) => setTempo(Number(event.target.value))} />
+      {singing ? <span className="melody-vocal-rate" role="radiogroup" aria-label="人声带唱速度">
+        <span>速度</span>
+        {VOCAL_RATES.map((rate) => <button key={rate} type="button" role="radio" aria-checked={vocalRate === rate} className={vocalRate === rate ? "is-active" : ""} disabled={playing || loadingSampler || !!follow} onClick={() => setVocalRate(rate)}>{rate === 1 ? "原速" : `${rate}×`}</button>)}
+      </span> : <label className="melody-tempo">速度
+        <input type="range" min={40} max={160} step={4} value={playTempo} aria-valuetext={`每分钟 ${playTempo} 拍`} disabled={playing || loadingSampler || !!follow} onChange={(event) => setTempo(Number(event.target.value))} />
         <b>♩={playTempo}</b>
-        {singing && <small className="melody-tempo-note">按原速演唱</small>}
-      </label>
+      </label>}
     </div>
+    {canLoop && loopOpen && loopRange && <div className="melody-loop-bar" role="group" aria-label="小节循环练习">
+      <label>第
+        <select value={loopRange.start} disabled={playing || loadingSampler} onChange={(event) => setLoopStart(Number(event.target.value))}>
+          {melody.bars.map((_, idx) => <option key={idx} value={idx}>{idx + 1}</option>)}
+        </select>
+        小节
+      </label>
+      <span>至</span>
+      <label>第
+        <select value={loopRange.end} disabled={playing || loadingSampler} onChange={(event) => setLoopEnd(Number(event.target.value))}>
+          {melody.bars.map((_, idx) => <option key={idx} value={idx}>{idx + 1}</option>)}
+        </select>
+        小节
+      </label>
+      <button type="button" className="melody-follow-go" disabled={loadingSampler || !!follow} onClick={() => (loopActive ? stop() : void playFrom(loopRange.start, loopRange.end, true))}>
+        {loopActive ? "■ 停止循环" : "↻ 循环播放"}
+      </button>
+      <small>也可直接点击下方谱面小节号选起止范围；关闭本栏后点击任意小节号可从该小节起播。</small>
+    </div>}
     {canFollow && followOpen && <div className={`melody-follow${follow ? ` is-${follow.kind}` : ""}`} role="group" aria-label="跟唱">
       {follow ? <>
         <div className="melody-follow-status">
@@ -861,7 +1079,12 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
     </div>}
     {view === "line" && !rhythmOnly ? <MelodyLine notes={flats[0]} bars={melody.bars} phrases={phrases} current={current[0] ?? -1} activePhrase={follow ? follow.phrase : null} singing={follow?.kind === "sing"} beatRef={beatRef} /> :
     <div ref={scoreRef} className={`melody-score${notationStyle === "staff" ? " is-staff" : ""}${melody.marks ? " has-marks" : ""}`} style={{ "--bars": barsPerRow, "--melody-fit": noteFit } as CSSProperties} role="img" aria-label={`${notationStyle === "staff" ? "五线谱" : "简谱"}旋律，共 ${melody.bars.length} 小节，${melody.key}，${displayMeter(melody.meter)} 拍`}>
-      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} height={staffHeight} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => <span key={barIndex} className={`melody-bar${melody.marks?.[barIndex] ? " has-mark" : ""}${activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar) ? " is-dim" : ""}`}>
+      {notationStyle === "staff" ? <StaffNotation melody={melody} lines={lines as MelodyLineData[]} current={current} offsets={offsets} width={staffRoom} height={staffHeight} activePhrase={activePhrase} large={large} /> : melody.bars.map((_, barIndex) => {
+        const inLoop = Boolean((loopOpen || loopActive) && loopRange && barIndex >= loopRange.start && barIndex <= loopRange.end);
+        const dimmed = Boolean((activePhrase && (barIndex < activePhrase.startBar || barIndex >= activePhrase.endBar))
+          || (loopActive && loopRange && (barIndex < loopRange.start || barIndex > loopRange.end)));
+        return <span key={barIndex} className={`melody-bar${melody.marks?.[barIndex] ? " has-mark" : ""}${inLoop ? " is-loop-bar" : ""}${dimmed ? " is-dim" : ""}`}>
+        {canLoop && <button type="button" className="melody-bar-num" onClick={() => onBarClick(barIndex)} title={loopOpen ? `设为循环${loopPick === "start" ? "起" : "止"}点（第 ${barIndex + 1} 小节）` : `从第 ${barIndex + 1} 小节起播`} aria-label={`第 ${barIndex + 1} 小节`}>{barIndex + 1}</button>}
         {melody.marks?.[barIndex] && <b className="melody-mark">{melody.marks[barIndex]}</b>}
         {lines.map((line, voice) => {
           const rowStart = Math.floor(barIndex / barsPerRow) * barsPerRow;
@@ -903,7 +1126,7 @@ export function MelodyPlayer({ melody, large, notationStyle = "jianpu", onSoundi
           }
           return <span key={voice} className={`melody-voice voice-${voice}`} style={{ "--melody-head-height": `${headHeights[voice]}em` } as CSSProperties}>{rendered}</span>;
         })}
-      </span>)}
+      </span>; })}
       {notationStyle !== "staff" && arcs.length > 0 && <svg className="melody-arcs" aria-hidden="true">{arcs.map((d, k) => <path key={k} d={d} />)}</svg>}
     </div>}
     {/* Source notes and sample credits live in the home page footer; only a fallback warning shows here. */}

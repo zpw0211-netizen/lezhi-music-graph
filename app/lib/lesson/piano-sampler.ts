@@ -32,6 +32,11 @@ function sampleUrl(midi: number) {
   return publicAssetUrl(`media/instruments/piano/${sampleFileName(midi)}`);
 }
 
+/** Public URLs of all 22 piano samples, for classroom offline preloading. */
+export function pianoSampleUrls() {
+  return SAMPLE_MIDIS.map(sampleUrl);
+}
+
 function sampleBytes(url: string) {
   const existing = bytesByUrl.get(url);
   if (existing) return existing;
